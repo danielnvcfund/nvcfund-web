@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_jwt_extended import JWTManager
+from flask_wtf.csrf import CSRFProtect
 
 
 # Configure logging
@@ -17,7 +18,7 @@ class Base(DeclarativeBase):
 
 
 db = SQLAlchemy(model_class=Base)
-# create the app
+# Create the app
 app = Flask(__name__)
 # Set a default secret key if SESSION_SECRET environment variable isn't available
 app.secret_key = os.environ.get("SESSION_SECRET", "dev_secret_key_for_testing_only")
@@ -33,9 +34,12 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 # Configure JWT
 app.config["JWT_SECRET_KEY"] = os.environ.get("SESSION_SECRET", "dev_secret_key_for_testing_only")  # Using same secret for simplicity
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  # 1 hour
-jwt = JWTManager(app)
 
-# Initialize the database
+# Enable CSRF protection
+csrf = CSRFProtect(app)
+
+# Initialize extensions
+jwt = JWTManager(app)
 db.init_app(app)
 
 with app.app_context():
