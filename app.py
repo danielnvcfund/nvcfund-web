@@ -19,7 +19,8 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 # create the app
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET")
+# Set a default secret key if SESSION_SECRET environment variable isn't available
+app.secret_key = os.environ.get("SESSION_SECRET", "dev_secret_key_for_testing_only")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
 
 # Configure the database
@@ -30,7 +31,7 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 }
 
 # Configure JWT
-app.config["JWT_SECRET_KEY"] = os.environ.get("SESSION_SECRET")  # Using same secret for simplicity
+app.config["JWT_SECRET_KEY"] = os.environ.get("SESSION_SECRET", "dev_secret_key_for_testing_only")  # Using same secret for simplicity
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  # 1 hour
 jwt = JWTManager(app)
 
