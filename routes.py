@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from flask import render_template, request, redirect, url_for, flash, jsonify, session, abort
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
+from forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, ForgotUsernameForm
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import app, db
@@ -42,19 +43,14 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """User login route"""
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
-        if not username or not password:
-            flash('Please provide both username and password', 'danger')
-            return render_template('login.html')
-        
-        user = authenticate_user(username, password)
+    form = LoginForm()
+    
+    if form.validate_on_submit():
+        user = authenticate_user(form.username.data, form.password.data)
         
         if not user:
             flash('Invalid username or password', 'danger')
-            return render_template('login.html')
+            return render_template('login.html', form=form)
         
         # Set user session
         session['user_id'] = user.id
@@ -70,6 +66,8 @@ def login():
         
         return redirect(url_for('dashboard'))
     
+    # For backward compatibility with current login.html template
+    # In the future we could modify the template to use the form object directly
     return render_template('login.html')
 
 @app.route('/logout')
@@ -82,33 +80,103 @@ def logout():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """User registration route"""
-    if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        
-        # Validate input
-        if not username or not email or not password:
-            flash('Please fill in all required fields', 'danger')
-            return render_template('login.html', register=True)
-        
-        if password != confirm_password:
-            flash('Passwords do not match', 'danger')
-            return render_template('login.html', register=True)
-        
+    form = RegistrationForm()
+    
+    if form.validate_on_submit():
         # Register user
-        user, error = register_user(username, email, password)
+        user, error = register_user(form.username.data, form.email.data, form.password.data)
         
         if error:
             flash(error, 'danger')
-            return render_template('login.html', register=True)
+            return render_template('login.html', register=True, form=form)
         
         flash('Registration successful! You can now log in.', 'success')
         return redirect(url_for('login'))
     
-    # GET request, show registration form
+    # If there were form validation errors or this is a GET request
+    if form.errors and request.method == 'POST':
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
+    
+    # For compatibility with the current login.html template, we still use register=True
+    # but in the future, we can pass the form object directly
     return render_template('login.html', register=True)
+
+@app.route('/reset_password_request', methods=['GET', 'POST'])
+def reset_request():
+    """Route for requesting a password reset"""
+    # If user is already logged in, redirect to dashboard
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
+    
+    form = RequestResetForm()
+    
+    if form.validate_on_submit():
+        # Find user by email
+        user = User.query.filter_by(email=form.email.data).first()
+        
+        # Generate reset token
+        token = generate_reset_token(user)
+        
+        # Here you would typically send an email with the reset token
+        # For now, we'll just display it in a flash message for testing
+        reset_url = url_for('reset_password', token=token, _external=True)
+        
+        flash(f'A password reset link has been sent to your email. For testing, use this link: {reset_url}', 'info')
+        return redirect(url_for('login'))
+    
+    return render_template('reset_request.html', form=form)
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    """Route for resetting password using a token"""
+    # If user is already logged in, redirect to dashboard
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
+    
+    # Verify token and get user
+    user = verify_reset_token(token)
+    
+    if not user:
+        flash('Invalid or expired reset token', 'danger')
+        return redirect(url_for('reset_request'))
+    
+    form = ResetPasswordForm()
+    
+    if form.validate_on_submit():
+        # Update user's password
+        user.set_password(form.password.data)
+        db.session.commit()
+        
+        flash('Your password has been updated! You can now log in.', 'success')
+        return redirect(url_for('login'))
+    
+    return render_template('reset_password.html', form=form)
+
+@app.route('/forgot_username', methods=['GET', 'POST'])
+def forgot_username():
+    """Route for recovering username"""
+    # If user is already logged in, redirect to dashboard
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
+    
+    form = ForgotUsernameForm()
+    
+    if form.validate_on_submit():
+        # Find user by email
+        user = User.query.filter_by(email=form.email.data).first()
+        
+        if user:
+            # Here you would typically send an email with the username
+            # For now, we'll just display it in a flash message for testing
+            flash(f'Your username is: {user.username}', 'info')
+        else:
+            flash('No user found with that email address', 'danger')
+        
+        return redirect(url_for('login'))
+    
+    return render_template('forgot_username.html', form=form)
 
 @app.route('/dashboard')
 @login_required
