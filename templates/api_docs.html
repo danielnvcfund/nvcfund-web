@@ -1,0 +1,394 @@
+{% extends 'layout.html' %}
+
+{% block title %}API Documentation - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-book me-2"></i>API Documentation</h1>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Overview</h5>
+        </div>
+        <div class="card-body">
+            <p>
+                The NVC Banking Platform API provides integration capabilities between nvcplatform.net and financial institutions or payment gateways.
+                All transactions are settled on the Ethereum blockchain, ensuring security and transparency.
+            </p>
+            
+            <h6 class="mt-4">Authentication</h6>
+            <p>The API supports two authentication methods:</p>
+            <ul>
+                <li><strong>JWT Authentication:</strong> For user-based access using a JSON Web Token</li>
+                <li><strong>API Key Authentication:</strong> For server-to-server integration using an API key in the header</li>
+            </ul>
+            
+            <h6 class="mt-4">Base URL</h6>
+            <div class="alert alert-dark">
+                <code>https://nvcplatform.net/api</code>
+            </div>
+            
+            <h6 class="mt-4">Response Format</h6>
+            <p>All API responses are in JSON format with the following structure:</p>
+            <div class="api-response">
+<pre>{
+  "success": true|false,
+  "data": { ... },  // On success
+  "error": "Error message"  // On failure
+}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication Endpoints -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-key me-2"></i>Authentication</h5>
+        </div>
+        <div class="card-body">
+            <div class="api-endpoint">
+                <h6>Get Authentication Token</h6>
+                <div class="endpoint-url">
+                    <span class="http-method post">POST</span>
+                    <code>/token</code>
+                </div>
+                
+                <div class="api-parameters">
+                    <h6>Request Body</h6>
+<pre>{
+  "username": "string",
+  "password": "string"
+}</pre>
+                </div>
+                
+                <div class="api-response">
+                    <h6>Response</h6>
+<pre>{
+  "access_token": "string",
+  "user_id": "integer",
+  "username": "string"
+}</pre>
+                </div>
+            </div>
+            
+            <div class="api-endpoint">
+                <h6>Create New User</h6>
+                <div class="endpoint-url">
+                    <span class="http-method post">POST</span>
+                    <code>/users</code>
+                </div>
+                
+                <div class="api-parameters">
+                    <h6>Request Body</h6>
+<pre>{
+  "username": "string",
+  "email": "string",
+  "password": "string"
+}</pre>
+                </div>
+                
+                <div class="api-response">
+                    <h6>Response</h6>
+<pre>{
+  "id": "integer",
+  "username": "string",
+  "email": "string",
+  "api_key": "string",
+  "ethereum_address": "string"
+}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Endpoints -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Transactions</h5>
+        </div>
+        <div class="card-body">
+            <div class="api-endpoint">
+                <h6>Get Transactions</h6>
+                <div class="endpoint-url">
+                    <span class="http-method get">GET</span>
+                    <code>/transactions</code>
+                </div>
+                
+                <div class="api-parameters">
+                    <h6>Query Parameters</h6>
+                    <ul>
+                        <li><code>type</code> (optional) - Filter by transaction type</li>
+                        <li><code>status</code> (optional) - Filter by transaction status</li>
+                        <li><code>start_date</code> (optional) - Filter by start date (YYYY-MM-DD)</li>
+                        <li><code>end_date</code> (optional) - Filter by end date (YYYY-MM-DD)</li>
+                        <li><code>limit</code> (optional) - Number of results (default: 50)</li>
+                        <li><code>offset</code> (optional) - Result offset for pagination (default: 0)</li>
+                    </ul>
+                </div>
+                
+                <div class="api-response">
+                    <h6>Response</h6>
+<pre>{
+  "transactions": [
+    {
+      "id": "integer",
+      "transaction_id": "string",
+      "amount": "number",
+      "currency": "string",
+      "type": "string",
+      "status": "string",
+      "description": "string",
+      "eth_transaction_hash": "string",
+      "created_at": "string",
+      "updated_at": "string"
+    }
+  ],
+  "total": "integer",
+  "limit": "integer",
+  "offset": "integer"
+}</pre>
+                </div>
+            </div>
+            
+            <div class="api-endpoint">
+                <h6>Get Transaction Details</h6>
+                <div class="endpoint-url">
+                    <span class="http-method get">GET</span>
+                    <code>/transactions/{transaction_id}</code>
+                </div>
+                
+                <div class="api-parameters">
+                    <h6>Path Parameters</h6>
+                    <ul>
+                        <li><code>transaction_id</code> - Transaction ID</li>
+                    </ul>
+                </div>
+                
+                <div class="api-response">
+                    <h6>Response</h6>
+<pre>{
+  "id": "integer",
+  "transaction_id": "string",
+  "user_id": "integer",
+  "amount": "number",
+  "currency": "string",
+  "type": "string",
+  "status": "string",
+  "description": "string",
+  "eth_transaction_hash": "string",
+  "institution_id": "integer",
+  "gateway_id": "integer",
+  "created_at": "string",
+  "updated_at": "string",
+  "blockchain_transaction": {
+    "eth_tx_hash": "string",
+    "from_address": "string",
+    "to_address": "string",
+    "amount": "number",
+    "gas_used": "integer",
+    "gas_price": "number",
+    "block_number": "integer",
+    "status": "string"
+  }
+}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Endpoints -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Payments</h5>
+        </div>
+        <div class="card-body">
+            <div class="api-endpoint">
+                <h6>Create Payment</h6>
+                <div class="endpoint-url">
+                    <span class="http-method post">POST</span>
+                    <code>/payments</code>
+                </div>
+                
+                <div class="api-parameters">
+                    <h6>Request Body</h6>
+<pre>{
+  "gateway_id": "integer",
+  "amount": "number",
+  "currency": "string",
+  "description": "string",
+  "metadata": {
+    "custom_field": "value"
+  }
+}</pre>
+                </div>
+                
+                <div class="api-response">
+                    <h6>Response</h6>
+<pre>{
+  "success": true,
+  "transaction_id": "string",
+  // Gateway-specific fields
+  "hosted_url": "string",  // For Coinbase
+  "approval_url": "string", // For PayPal
+  "client_secret": "string" // For Stripe
+}</pre>
+                </div>
+            </div>
+            
+            <div class="api-endpoint">
+                <h6>Check Payment Status</h6>
+                <div class="endpoint-url">
+                    <span class="http-method get">GET</span>
+                    <code>/payments/{transaction_id}/status</code>
+                </div>
+                
+                <div class="api-parameters">
+                    <h6>Path Parameters</h6>
+                    <ul>
+                        <li><code>transaction_id</code> - Transaction ID</li>
+                    </ul>
+                </div>
+                
+                <div class="api-response">
+                    <h6>Response</h6>
+<pre>{
+  "success": true,
+  "transaction_id": "string",
+  "status": "string",
+  "internal_status": "string",
+  "amount": "number",
+  "currency": "string"
+}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Endpoints -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-university me-2"></i>Transfers</h5>
+        </div>
+        <div class="card-body">
+            <div class="api-endpoint">
+                <h6>Create Transfer</h6>
+                <div class="endpoint-url">
+                    <span class="http-method post">POST</span>
+                    <code>/transfers</code>
+                </div>
+                
+                <div class="api-parameters">
+                    <h6>Request Body</h6>
+<pre>{
+  "institution_id": "integer",
+  "amount": "number",
+  "currency": "string",
+  "description": "string",
+  "recipient_info": {
+    "account_number": "string",
+    "routing_number": "string"
+  }
+}</pre>
+                </div>
+                
+                <div class="api-response">
+                    <h6>Response</h6>
+<pre>{
+  "success": true,
+  "transaction_id": "string",
+  "transfer_id": "string",
+  "status": "string",
+  "amount": "number",
+  "currency": "string"
+}</pre>
+                </div>
+            </div>
+            
+            <div class="api-endpoint">
+                <h6>Check Transfer Status</h6>
+                <div class="endpoint-url">
+                    <span class="http-method get">GET</span>
+                    <code>/transfers/{transaction_id}/status</code>
+                </div>
+                
+                <div class="api-parameters">
+                    <h6>Path Parameters</h6>
+                    <ul>
+                        <li><code>transaction_id</code> - Transaction ID</li>
+                    </ul>
+                </div>
+                
+                <div class="api-response">
+                    <h6>Response</h6>
+<pre>{
+  "success": true,
+  "transaction_id": "string",
+  "transfer_id": "string",
+  "status": "string",
+  "internal_status": "string",
+  "amount": "number",
+  "currency": "string"
+}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blockchain Endpoints -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-link me-2"></i>Blockchain</h5>
+        </div>
+        <div class="card-body">
+            <div class="api-endpoint">
+                <h6>Create Blockchain Transaction</h6>
+                <div class="endpoint-url">
+                    <span class="http-method post">POST</span>
+                    <code>/blockchain/transactions</code>
+                </div>
+                
+                <div class="api-parameters">
+                    <h6>Request Body</h6>
+<pre>{
+  "to_address": "string",
+  "amount": "number",
+  "description": "string",
+  "use_contract": true|false
+}</pre>
+                </div>
+                
+                <div class="api-response">
+                    <h6>Response</h6>
+<pre>{
+  "success": true,
+  "transaction_id": "string",
+  "eth_transaction_hash": "string",
+  "amount": "number",
+  "to_address": "string"
+}</pre>
+                </div>
+            </div>
+            
+            <div class="api-endpoint">
+                <h6>Get Ethereum Balance</h6>
+                <div class="endpoint-url">
+                    <span class="http-method get">GET</span>
+                    <code>/blockchain/balances</code>
+                </div>
+                
+                <div class="api-response">
+                    <h6>Response</h6>
+<pre>{
+  "success": true,
+  "address": "string",
+  "balance_eth": "number",
+  "balance_wei": "string"
+}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

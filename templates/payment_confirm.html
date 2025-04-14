@@ -1,0 +1,77 @@
+{% extends 'layout.html' %}
+
+{% block title %}Confirm Payment - NVC Banking Platform{% endblock %}
+
+{% block head_scripts %}
+<!-- Stripe JS -->
+<script src="https://js.stripe.com/v3/"></script>
+<input type="hidden" id="stripe-public-key" value="pk_test_sample">
+<input type="hidden" id="client-secret" value="{{ client_secret }}">
+<input type="hidden" id="transaction-id" value="{{ transaction_id }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-credit-card me-2"></i>Confirm Payment</h1>
+        <div>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Payment Confirmation Form -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-lock me-2"></i>Secure Payment</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i> You're about to make a payment of <strong>{{ amount }} {{ currency }}</strong>
+                    </div>
+                    
+                    <form id="stripe-payment-form">
+                        <div class="mb-3">
+                            <label for="cardholder-name" class="form-label">Cardholder Name</label>
+                            <input type="text" class="form-control" id="cardholder-name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="card-element" class="form-label">Credit or Debit Card</label>
+                            <div id="card-element" class="form-control p-3">
+                                <!-- Stripe Card Element will be inserted here -->
+                            </div>
+                            <div id="card-errors" role="alert" class="text-danger mt-2"></div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-lock me-1"></i> Pay {{ amount }} {{ currency }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-shield-alt text-primary me-3 fa-2x"></i>
+                        <div>
+                            <h5 class="mb-1">Secure Payment Processing</h5>
+                            <p class="mb-0">Your payment information is securely processed and your card details are never stored on our servers. All transactions are secured with blockchain technology for added protection.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/payment_form.js') }}"></script>
+{% endblock %}

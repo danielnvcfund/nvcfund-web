@@ -1,0 +1,269 @@
+{% extends 'layout.html' %}
+
+{% block title %}Dashboard - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h1>
+        <div>
+            <a href="{{ url_for('new_payment') }}" class="btn btn-primary">
+                <i class="fas fa-credit-card me-1"></i> Make Payment
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card dashboard-widget quick-stats-card bg-gradient">
+                <div class="card-body">
+                    <i class="fas fa-wallet icon"></i>
+                    <div class="value" id="blockchainBalance" data-address="{{ user.ethereum_address }}">Loading...</div>
+                    <div class="label">ETH Balance</div>
+                    <button class="btn btn-sm btn-outline-primary mt-2 btn-refresh" data-target="blockchainBalance">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-widget quick-stats-card bg-gradient">
+                <div class="card-body">
+                    <i class="fas fa-exchange-alt icon"></i>
+                    <div class="value">{{ recent_transactions|length }}</div>
+                    <div class="label">Recent Transactions</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-widget quick-stats-card bg-gradient">
+                <div class="card-body">
+                    <i class="fas fa-check-circle icon"></i>
+                    <div class="value">
+                        {% set completed = namespace(count=0) %}
+                        {% for tx in recent_transactions %}
+                            {% if tx.status.value == 'completed' %}
+                                {% set completed.count = completed.count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ completed.count }}
+                    </div>
+                    <div class="label">Completed</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-widget quick-stats-card bg-gradient">
+                <div class="card-body">
+                    <i class="fas fa-spinner icon"></i>
+                    <div class="value">
+                        {% set pending = namespace(count=0) %}
+                        {% for tx in recent_transactions %}
+                            {% if tx.status.value == 'pending' or tx.status.value == 'processing' %}
+                                {% set pending.count = pending.count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ pending.count }}
+                    </div>
+                    <div class="label">Pending</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Recent Transactions -->
+        <div class="col-md-12 col-lg-6">
+            <div class="card dashboard-widget">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Recent Transactions</h5>
+                    <button class="btn btn-sm btn-outline-primary btn-refresh" data-target="recentTransactions">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentTransactions">
+                                {% if recent_transactions %}
+                                    {% for tx in recent_transactions %}
+                                    <tr>
+                                        <td><a href="{{ url_for('transaction_details', transaction_id=tx.transaction_id) }}">{{ tx.transaction_id[:8] }}...</a></td>
+                                        <td>{{ tx.transaction_type.value }}</td>
+                                        <td>{{ tx.amount }} {{ tx.currency }}</td>
+                                        <td>
+                                            {% if tx.status.value == 'completed' %}
+                                                <span class="badge bg-success">{{ tx.status.value }}</span>
+                                            {% elif tx.status.value == 'pending' %}
+                                                <span class="badge bg-warning text-dark">{{ tx.status.value }}</span>
+                                            {% elif tx.status.value == 'processing' %}
+                                                <span class="badge bg-info text-dark">{{ tx.status.value }}</span>
+                                            {% elif tx.status.value == 'failed' %}
+                                                <span class="badge bg-danger">{{ tx.status.value }}</span>
+                                            {% elif tx.status.value == 'refunded' %}
+                                                <span class="badge bg-secondary">{{ tx.status.value }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ tx.status.value }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">No transactions found</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer text-end">
+                    <a href="{{ url_for('transactions') }}" class="btn btn-sm btn-outline-primary">View All <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Information -->
+        <div class="col-md-12 col-lg-6">
+            <div class="card dashboard-widget mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-user-circle me-2"></i>Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Username:</div>
+                        <div class="col-md-8">{{ user.username }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Email:</div>
+                        <div class="col-md-8">{{ user.email }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">ETH Address:</div>
+                        <div class="col-md-8">
+                            <span class="ethereum-address">{{ user.ethereum_address }}</span>
+                            <a href="https://ropsten.etherscan.io/address/{{ user.ethereum_address }}" target="_blank" class="btn btn-sm btn-outline-info ms-2">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Account Type:</div>
+                        <div class="col-md-8">
+                            <span class="badge bg-primary">{{ user.role.value }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 fw-bold">Created At:</div>
+                        <div class="col-md-8">{{ user.created_at.strftime('%Y-%m-%d') }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Key Info (for API users) -->
+            {% if user.role.value == 'api' %}
+            <div class="card dashboard-widget mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-key me-2"></i>API Access</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Your API key is sensitive. Don't share it with anyone.
+                    </div>
+                    <div class="input-group mb-3">
+                        <input type="password" class="form-control" id="apiKey" value="{{ user.api_key }}" readonly>
+                        <button class="btn btn-outline-secondary" type="button" id="toggleApiKey">Show</button>
+                        <button class="btn btn-outline-secondary" type="button" id="copyApiKey">Copy</button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Transaction Analytics -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card dashboard-widget">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Transaction Analytics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="chart-container">
+                                <canvas id="transactionsByDateChart" data-transactions="{{ analytics|tojson }}"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="row">
+                                <div class="col-md-12 mb-4">
+                                    <div class="chart-container" style="height: 200px;">
+                                        <canvas id="transactionsByTypeChart" data-transactions="{{ analytics|tojson }}"></canvas>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="chart-container" style="height: 200px;">
+                                        <canvas id="transactionsByStatusChart" data-transactions="{{ analytics|tojson }}"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Toggle API key visibility
+    const toggleApiKey = document.getElementById('toggleApiKey');
+    const apiKeyField = document.getElementById('apiKey');
+    
+    if (toggleApiKey && apiKeyField) {
+        toggleApiKey.addEventListener('click', function() {
+            if (apiKeyField.type === 'password') {
+                apiKeyField.type = 'text';
+                toggleApiKey.textContent = 'Hide';
+            } else {
+                apiKeyField.type = 'password';
+                toggleApiKey.textContent = 'Show';
+            }
+        });
+    }
+    
+    // Copy API key to clipboard
+    const copyApiKey = document.getElementById('copyApiKey');
+    
+    if (copyApiKey && apiKeyField) {
+        copyApiKey.addEventListener('click', function() {
+            apiKeyField.type = 'text';
+            apiKeyField.select();
+            document.execCommand('copy');
+            apiKeyField.type = 'password';
+            
+            // Show temporary copied message
+            const originalText = copyApiKey.textContent;
+            copyApiKey.textContent = 'Copied!';
+            setTimeout(() => {
+                copyApiKey.textContent = originalText;
+            }, 2000);
+        });
+    }
+</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,232 @@
+{% extends 'layout.html' %}
+
+{% block title %}Blockchain Status - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-link me-2"></i>Blockchain Status</h1>
+        <div>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#settlementModal">
+                <i class="fas fa-money-bill-wave me-1"></i> New Settlement
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Blockchain Transaction History -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Blockchain Transactions</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_blockchain_txs %}
+                        {% for tx in recent_blockchain_txs %}
+                        <div class="blockchain-transaction">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <strong>TX Hash:</strong> 
+                                        <a href="https://sepolia.etherscan.io/tx/{{ tx.eth_tx_hash }}" target="_blank" class="transaction-hash">
+                                            {{ tx.eth_tx_hash[:10] }}...{{ tx.eth_tx_hash[-8:] }}
+                                        </a>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>From:</strong> 
+                                        <span class="ethereum-address">{{ tx.from_address[:10] }}...{{ tx.from_address[-8:] }}</span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>To:</strong> 
+                                        <span class="ethereum-address">{{ tx.to_address[:10] }}...{{ tx.to_address[-8:] }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <strong>Amount:</strong> {{ tx.amount }} ETH
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Block:</strong> {{ tx.block_number or 'Pending' }}
+                                    </div>
+                                    <div>
+                                        <strong>Status:</strong> 
+                                        <span class="badge {% if tx.status == 'confirmed' %}bg-success{% elif tx.status == 'pending' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                            {{ tx.status }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-end">
+                                <small class="text-muted">{{ tx.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-info-circle fa-3x mb-3 text-muted"></i>
+                            <p>No blockchain transactions found</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Blockchain Transaction Lookup -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-search me-2"></i>Transaction Lookup</h5>
+                </div>
+                <div class="card-body">
+                    <form id="blockchain-lookup-form">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="tx_hash" placeholder="Enter Ethereum transaction hash" required>
+                            <button class="btn btn-primary" type="submit">Lookup</button>
+                        </div>
+                    </form>
+                    <div id="blockchain-lookup-result" class="mt-3">
+                        <!-- Lookup results will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Account Ethereum Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-wallet me-2"></i>Your Ethereum Account</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Address:</strong>
+                        <div class="d-flex align-items-center mt-1">
+                            <span class="ethereum-address">{{ user.ethereum_address }}</span>
+                            <a href="https://sepolia.etherscan.io/address/{{ user.ethereum_address }}" target="_blank" class="btn btn-sm btn-outline-info ms-2">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Balance:</strong>
+                        <div class="mt-1" id="blockchainBalance" data-address="{{ user.ethereum_address }}">Loading...</div>
+                        <button class="btn btn-sm btn-outline-primary mt-2 btn-refresh" data-target="blockchainBalance">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> All settlement transactions use this Ethereum address
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart Contracts -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-file-contract me-2"></i>Smart Contracts</h5>
+                </div>
+                <div class="card-body">
+                    {% if contracts %}
+                        {% for contract in contracts %}
+                        <div class="mb-3">
+                            <strong>{{ contract.name }}</strong>
+                            <div class="ethereum-address mt-1">{{ contract.address }}</div>
+                            <div class="mt-2">
+                                <a href="https://sepolia.etherscan.io/address/{{ contract.address }}" target="_blank" class="btn btn-sm btn-outline-info me-1">
+                                    <i class="fas fa-external-link-alt me-1"></i> View
+                                </a>
+                                <button class="btn btn-sm btn-outline-primary contract-function" data-contract-address="{{ contract.address }}" data-function-name="settlePayment">
+                                    settlePayment()
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary contract-function mt-1" data-contract-address="{{ contract.address }}" data-function-name="getSettlementStatus">
+                                    getSettlementStatus()
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center">No smart contracts found</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Blockchain Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Network Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <strong>Network:</strong> Sepolia Testnet
+                    </div>
+                    <div class="mb-2">
+                        <strong>Blockchain:</strong> Ethereum
+                    </div>
+                    <div>
+                        <strong>Block Explorer:</strong>
+                        <a href="https://sepolia.etherscan.io/" target="_blank" class="ms-1">Etherscan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Settlement Modal -->
+<div class="modal fade" id="settlementModal" tabindex="-1" aria-labelledby="settlementModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="settlementModalLabel"><i class="fas fa-money-bill-wave me-2"></i>New Settlement Transaction</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="settlement-form">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="recipient_address" class="form-label">Recipient Ethereum Address</label>
+                        <input type="text" class="form-control" id="recipient_address" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount (ETH)</label>
+                        <input type="number" class="form-control" id="amount" step="0.000001" min="0.000001" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" rows="2">Settlement payment</textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="use_contract">
+                        <label class="form-check-label" for="use_contract">Use Settlement Contract</label>
+                        <div class="form-text">Using the smart contract provides additional security and tracking features</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Send Settlement</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Contract Function Modal -->
+<div class="modal fade" id="contractFunctionModal" tabindex="-1" aria-labelledby="contractFunctionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contractFunctionModalLabel">Execute Contract Function</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="contractFunctionModalBody">
+                <!-- Contract function form will be inserted here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/blockchain.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

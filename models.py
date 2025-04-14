@@ -1,0 +1,125 @@
+import enum
+from datetime import datetime
+from app import db
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+
+class UserRole(enum.Enum):
+    ADMIN = "admin"
+    USER = "user"
+    API = "api"
+
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256))
+    role = db.Column(db.Enum(UserRole), default=UserRole.USER)
+    api_key = db.Column(db.String(64), unique=True)
+    ethereum_address = db.Column(db.String(64))
+    ethereum_private_key = db.Column(db.String(256))
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+class TransactionStatus(enum.Enum):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    REFUNDED = "refunded"
+
+class TransactionType(enum.Enum):
+    DEPOSIT = "deposit"
+    WITHDRAWAL = "withdrawal"
+    TRANSFER = "transfer"
+    PAYMENT = "payment"
+    SETTLEMENT = "settlement"
+
+class Transaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    transaction_id = db.Column(db.String(64), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), default="ETH")
+    transaction_type = db.Column(db.Enum(TransactionType), nullable=False)
+    status = db.Column(db.Enum(TransactionStatus), default=TransactionStatus.PENDING)
+    description = db.Column(db.String(256))
+    eth_transaction_hash = db.Column(db.String(128))
+    institution_id = db.Column(db.Integer, db.ForeignKey('financial_institution.id'))
+    gateway_id = db.Column(db.Integer, db.ForeignKey('payment_gateway.id'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = db.relationship('User', backref=db.backref('transactions', lazy=True))
+    institution = db.relationship('FinancialInstitution', backref=db.backref('transactions', lazy=True))
+    gateway = db.relationship('PaymentGateway', backref=db.backref('transactions', lazy=True))
+
+class FinancialInstitutionType(enum.Enum):
+    BANK = "bank"
+    CREDIT_UNION = "credit_union"
+    INVESTMENT_FIRM = "investment_firm"
+    OTHER = "other"
+
+class FinancialInstitution(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), nullable=False)
+    institution_type = db.Column(db.Enum(FinancialInstitutionType), nullable=False)
+    api_endpoint = db.Column(db.String(256))
+    api_key = db.Column(db.String(256))
+    ethereum_address = db.Column(db.String(64))
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class PaymentGatewayType(enum.Enum):
+    STRIPE = "stripe"
+    PAYPAL = "paypal"
+    SQUARE = "square"
+    COINBASE = "coinbase"
+    CUSTOM = "custom"
+
+class PaymentGateway(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), nullable=False)
+    gateway_type = db.Column(db.Enum(PaymentGatewayType), nullable=False)
+    api_endpoint = db.Column(db.String(256))
+    api_key = db.Column(db.String(256))
+    webhook_secret = db.Column(db.String(256))
+    ethereum_address = db.Column(db.String(64))
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class BlockchainTransaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'), nullable=False)
+    eth_tx_hash = db.Column(db.String(128), unique=True, nullable=False)
+    from_address = db.Column(db.String(64), nullable=False)
+    to_address = db.Column(db.String(64), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    gas_used = db.Column(db.Integer)
+    gas_price = db.Column(db.Float)
+    block_number = db.Column(db.Integer)
+    status = db.Column(db.String(64), default="pending")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    transaction = db.relationship('Transaction', backref=db.backref('blockchain_transactions', lazy=True))
+
+class SmartContract(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), nullable=False)
+    address = db.Column(db.String(64), unique=True, nullable=False)
+    abi = db.Column(db.Text, nullable=False)
+    bytecode = db.Column(db.Text)
+    is_active = db.Column(db.Boolean, default=True)
+    description = db.Column(db.String(256))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

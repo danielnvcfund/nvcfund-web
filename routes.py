@@ -1,0 +1,1208 @@
+import os
+import json
+import uuid
+import logging
+from datetime import datetime, timedelta
+from flask import render_template, request, redirect, url_for, flash, jsonify, session, abort
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.exc import SQLAlchemyError
+
+from app import app, db
+from models import (
+    User, UserRole, Transaction, TransactionStatus, TransactionType,
+    FinancialInstitution, FinancialInstitutionType,
+    PaymentGateway, PaymentGatewayType, SmartContract, BlockchainTransaction
+)
+from auth import (
+    login_required, admin_required, api_key_required, authenticate_user,
+    register_user, generate_jwt_token, verify_reset_token, generate_reset_token
+)
+from blockchain import (
+    send_ethereum_transaction, settle_payment_via_contract,
+    get_transaction_status, generate_ethereum_account
+)
+from payment_gateways import get_gateway_handler
+from financial_institutions import get_institution_handler
+from utils import (
+    generate_transaction_id, generate_api_key, format_currency,
+    calculate_transaction_fee, get_transaction_analytics,
+    check_pending_transactions, validate_ethereum_address,
+    validate_api_request
+)
+
+logger = logging.getLogger(__name__)
+
+# Web Routes for User Interface
+@app.route('/')
+def index():
+    """Homepage route"""
+    return render_template('index.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """User login route"""
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if not username or not password:
+            flash('Please provide both username and password', 'danger')
+            return render_template('login.html')
+        
+        user = authenticate_user(username, password)
+        
+        if not user:
+            flash('Invalid username or password', 'danger')
+            return render_template('login.html')
+        
+        # Set user session
+        session['user_id'] = user.id
+        session['username'] = user.username
+        session['role'] = user.role.value
+        
+        flash(f'Welcome back, {user.username}!', 'success')
+        
+        # Redirect to next parameter or dashboard
+        next_page = request.args.get('next')
+        if next_page:
+            return redirect(next_page)
+        
+        return redirect(url_for('dashboard'))
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    """User logout route"""
+    session.clear()
+    flash('You have been logged out', 'info')
+    return redirect(url_for('index'))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """User registration route"""
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        
+        # Validate input
+        if not username or not email or not password:
+            flash('Please fill in all required fields', 'danger')
+            return render_template('login.html', register=True)
+        
+        if password != confirm_password:
+            flash('Passwords do not match', 'danger')
+            return render_template('login.html', register=True)
+        
+        # Register user
+        user, error = register_user(username, email, password)
+        
+        if error:
+            flash(error, 'danger')
+            return render_template('login.html', register=True)
+        
+        flash('Registration successful! You can now log in.', 'success')
+        return redirect(url_for('login'))
+    
+    # GET request, show registration form
+    return render_template('login.html', register=True)
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    """User dashboard route"""
+    user_id = session.get('user_id')
+    user = User.query.get(user_id)
+    
+    # Get recent transactions
+    recent_transactions = Transaction.query.filter_by(user_id=user_id)\
+        .order_by(Transaction.created_at.desc())\
+        .limit(5).all()
+    
+    # Get transaction analytics
+    analytics = get_transaction_analytics(user_id, days=30)
+    
+    return render_template(
+        'dashboard.html',
+        user=user,
+        recent_transactions=recent_transactions,
+        analytics=analytics
+    )
+
+@app.route('/transactions')
+@login_required
+def transactions():
+    """Transaction history route"""
+    user_id = session.get('user_id')
+    
+    # Get filters from query parameters
+    transaction_type = request.args.get('type')
+    status = request.args.get('status')
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    
+    # Base query
+    query = Transaction.query.filter_by(user_id=user_id)
+    
+    # Apply filters
+    if transaction_type:
+        try:
+            query = query.filter_by(transaction_type=TransactionType(transaction_type))
+        except ValueError:
+            pass
+    
+    if status:
+        try:
+            query = query.filter_by(status=TransactionStatus(status))
+        except ValueError:
+            pass
+    
+    if start_date:
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
+            query = query.filter(Transaction.created_at >= start_date_obj)
+        except ValueError:
+            pass
+    
+    if end_date:
+        try:
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d')
+            end_date_obj = end_date_obj + timedelta(days=1)  # Include the end date
+            query = query.filter(Transaction.created_at <= end_date_obj)
+        except ValueError:
+            pass
+    
+    # Order by creation date (newest first)
+    transactions = query.order_by(Transaction.created_at.desc()).all()
+    
+    return render_template(
+        'transactions.html',
+        transactions=transactions,
+        transaction_types=TransactionType,
+        transaction_statuses=TransactionStatus
+    )
+
+@app.route('/transaction/<transaction_id>')
+@login_required
+def transaction_details(transaction_id):
+    """Transaction details route"""
+    user_id = session.get('user_id')
+    
+    # Get transaction
+    transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+    
+    if not transaction:
+        flash('Transaction not found', 'danger')
+        return redirect(url_for('transactions'))
+    
+    # Check if the transaction belongs to the user or user is admin
+    if transaction.user_id != user_id and session.get('role') != UserRole.ADMIN.value:
+        flash('You do not have permission to view this transaction', 'danger')
+        return redirect(url_for('transactions'))
+    
+    # Get blockchain transaction if available
+    blockchain_tx = None
+    if transaction.eth_transaction_hash:
+        blockchain_tx = BlockchainTransaction.query.filter_by(eth_tx_hash=transaction.eth_transaction_hash).first()
+        
+        # If not in our database, try to get from blockchain
+        if not blockchain_tx:
+            blockchain_tx = get_transaction_status(transaction.eth_transaction_hash)
+    
+    return render_template(
+        'transaction_details.html',
+        transaction=transaction,
+        blockchain_tx=blockchain_tx
+    )
+
+@app.route('/payment/new', methods=['GET', 'POST'])
+@login_required
+def new_payment():
+    """New payment route"""
+    user_id = session.get('user_id')
+    user = User.query.get(user_id)
+    
+    # Get available payment gateways
+    gateways = PaymentGateway.query.filter_by(is_active=True).all()
+    
+    if request.method == 'POST':
+        gateway_id = request.form.get('gateway_id')
+        amount = request.form.get('amount')
+        currency = request.form.get('currency', 'USD')
+        description = request.form.get('description', 'Payment from nvcplatform.net')
+        
+        # Validate input
+        if not gateway_id or not amount:
+            flash('Please provide gateway and amount', 'danger')
+            return render_template('payment_form.html', gateways=gateways, user=user)
+        
+        try:
+            gateway_id = int(gateway_id)
+            amount = float(amount)
+        except ValueError:
+            flash('Invalid gateway or amount', 'danger')
+            return render_template('payment_form.html', gateways=gateways, user=user)
+        
+        # Get gateway handler
+        try:
+            gateway_handler = get_gateway_handler(gateway_id)
+        except ValueError as e:
+            flash(str(e), 'danger')
+            return render_template('payment_form.html', gateways=gateways, user=user)
+        
+        # Process payment
+        result = gateway_handler.process_payment(amount, currency, description, user_id)
+        
+        if result.get('success'):
+            flash('Payment initiated successfully', 'success')
+            
+            # Different gateways return different data
+            if 'hosted_url' in result:  # Coinbase
+                return redirect(result['hosted_url'])
+            elif 'approval_url' in result:  # PayPal
+                return redirect(result['approval_url'])
+            elif 'client_secret' in result:  # Stripe
+                return render_template(
+                    'payment_confirm.html',
+                    client_secret=result['client_secret'],
+                    payment_intent_id=result['payment_intent_id'],
+                    amount=amount,
+                    currency=currency,
+                    transaction_id=result['transaction_id']
+                )
+            else:
+                # Generic success
+                return redirect(url_for('transaction_details', transaction_id=result['transaction_id']))
+        else:
+            flash(f"Payment failed: {result.get('error', 'Unknown error')}", 'danger')
+            return render_template('payment_form.html', gateways=gateways, user=user)
+    
+    # GET request, show payment form
+    return render_template('payment_form.html', gateways=gateways, user=user)
+
+@app.route('/financial_institutions')
+@admin_required
+def financial_institutions():
+    """Financial institutions management route"""
+    institutions = FinancialInstitution.query.all()
+    return render_template(
+        'financial_institutions.html',
+        institutions=institutions,
+        institution_types=FinancialInstitutionType
+    )
+
+@app.route('/financial_institution/new', methods=['GET', 'POST'])
+@admin_required
+def new_financial_institution():
+    """Add new financial institution route"""
+    if request.method == 'POST':
+        name = request.form.get('name')
+        institution_type = request.form.get('institution_type')
+        api_endpoint = request.form.get('api_endpoint')
+        api_key = request.form.get('api_key')
+        
+        # Validate input
+        if not name or not institution_type:
+            flash('Please provide name and type', 'danger')
+            return redirect(url_for('financial_institutions'))
+        
+        try:
+            institution_type = FinancialInstitutionType(institution_type)
+        except ValueError:
+            flash('Invalid institution type', 'danger')
+            return redirect(url_for('financial_institutions'))
+        
+        # Generate Ethereum address for the institution
+        eth_address, _ = generate_ethereum_account()
+        
+        if not eth_address:
+            flash('Failed to generate Ethereum address', 'danger')
+            return redirect(url_for('financial_institutions'))
+        
+        # Create institution
+        institution = FinancialInstitution(
+            name=name,
+            institution_type=institution_type,
+            api_endpoint=api_endpoint,
+            api_key=api_key,
+            ethereum_address=eth_address,
+            is_active=True
+        )
+        
+        db.session.add(institution)
+        db.session.commit()
+        
+        flash('Financial institution added successfully', 'success')
+        return redirect(url_for('financial_institutions'))
+    
+    # GET request, show form in the main page with form=True
+    return redirect(url_for('financial_institutions', form=True))
+
+@app.route('/financial_institution/<int:institution_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_financial_institution(institution_id):
+    """Edit financial institution route"""
+    institution = FinancialInstitution.query.get_or_404(institution_id)
+    
+    if request.method == 'POST':
+        institution.name = request.form.get('name', institution.name)
+        
+        institution_type = request.form.get('institution_type')
+        if institution_type:
+            try:
+                institution.institution_type = FinancialInstitutionType(institution_type)
+            except ValueError:
+                flash('Invalid institution type', 'danger')
+                return redirect(url_for('financial_institutions'))
+        
+        institution.api_endpoint = request.form.get('api_endpoint', institution.api_endpoint)
+        
+        api_key = request.form.get('api_key')
+        if api_key:
+            institution.api_key = api_key
+        
+        institution.is_active = request.form.get('is_active') == 'on'
+        institution.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        flash('Financial institution updated successfully', 'success')
+        return redirect(url_for('financial_institutions'))
+    
+    # GET request, show form in the main page with the institution to edit
+    return redirect(url_for('financial_institutions', edit_id=institution_id))
+
+@app.route('/payment_gateways')
+@admin_required
+def payment_gateways():
+    """Payment gateways management route"""
+    gateways = PaymentGateway.query.all()
+    return render_template(
+        'payment_gateways.html',
+        gateways=gateways,
+        gateway_types=PaymentGatewayType
+    )
+
+@app.route('/payment_gateway/new', methods=['GET', 'POST'])
+@admin_required
+def new_payment_gateway():
+    """Add new payment gateway route"""
+    if request.method == 'POST':
+        name = request.form.get('name')
+        gateway_type = request.form.get('gateway_type')
+        api_endpoint = request.form.get('api_endpoint')
+        api_key = request.form.get('api_key')
+        webhook_secret = request.form.get('webhook_secret')
+        
+        # Validate input
+        if not name or not gateway_type:
+            flash('Please provide name and type', 'danger')
+            return redirect(url_for('payment_gateways'))
+        
+        try:
+            gateway_type = PaymentGatewayType(gateway_type)
+        except ValueError:
+            flash('Invalid gateway type', 'danger')
+            return redirect(url_for('payment_gateways'))
+        
+        # Generate Ethereum address for the gateway
+        eth_address, _ = generate_ethereum_account()
+        
+        if not eth_address:
+            flash('Failed to generate Ethereum address', 'danger')
+            return redirect(url_for('payment_gateways'))
+        
+        # Create gateway
+        gateway = PaymentGateway(
+            name=name,
+            gateway_type=gateway_type,
+            api_endpoint=api_endpoint,
+            api_key=api_key,
+            webhook_secret=webhook_secret,
+            ethereum_address=eth_address,
+            is_active=True
+        )
+        
+        db.session.add(gateway)
+        db.session.commit()
+        
+        flash('Payment gateway added successfully', 'success')
+        return redirect(url_for('payment_gateways'))
+    
+    # GET request, show form in the main page with form=True
+    return redirect(url_for('payment_gateways', form=True))
+
+@app.route('/payment_gateway/<int:gateway_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_payment_gateway(gateway_id):
+    """Edit payment gateway route"""
+    gateway = PaymentGateway.query.get_or_404(gateway_id)
+    
+    if request.method == 'POST':
+        gateway.name = request.form.get('name', gateway.name)
+        
+        gateway_type = request.form.get('gateway_type')
+        if gateway_type:
+            try:
+                gateway.gateway_type = PaymentGatewayType(gateway_type)
+            except ValueError:
+                flash('Invalid gateway type', 'danger')
+                return redirect(url_for('payment_gateways'))
+        
+        gateway.api_endpoint = request.form.get('api_endpoint', gateway.api_endpoint)
+        
+        api_key = request.form.get('api_key')
+        if api_key:
+            gateway.api_key = api_key
+        
+        webhook_secret = request.form.get('webhook_secret')
+        if webhook_secret:
+            gateway.webhook_secret = webhook_secret
+        
+        gateway.is_active = request.form.get('is_active') == 'on'
+        gateway.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        flash('Payment gateway updated successfully', 'success')
+        return redirect(url_for('payment_gateways'))
+    
+    # GET request, show form in the main page with the gateway to edit
+    return redirect(url_for('payment_gateways', edit_id=gateway_id))
+
+@app.route('/blockchain')
+@login_required
+def blockchain_status():
+    """Blockchain status route"""
+    user_id = session.get('user_id')
+    user = User.query.get(user_id)
+    
+    # Get smart contracts
+    contracts = SmartContract.query.filter_by(is_active=True).all()
+    
+    # Get recent blockchain transactions
+    if session.get('role') == UserRole.ADMIN.value:
+        # Admin sees all transactions
+        recent_blockchain_txs = BlockchainTransaction.query\
+            .order_by(BlockchainTransaction.created_at.desc())\
+            .limit(10).all()
+    else:
+        # Regular users see only their transactions
+        user_transactions = Transaction.query.filter_by(user_id=user_id).all()
+        transaction_ids = [tx.id for tx in user_transactions]
+        
+        recent_blockchain_txs = BlockchainTransaction.query\
+            .filter(BlockchainTransaction.transaction_id.in_(transaction_ids))\
+            .order_by(BlockchainTransaction.created_at.desc())\
+            .limit(10).all()
+    
+    return render_template(
+        'blockchain_status.html',
+        user=user,
+        contracts=contracts,
+        recent_blockchain_txs=recent_blockchain_txs
+    )
+
+@app.route('/api_docs')
+def api_docs():
+    """API documentation route"""
+    return render_template('api_docs.html')
+
+@app.route('/error')
+def error():
+    """Error page route"""
+    error_code = request.args.get('code', 500)
+    error_message = request.args.get('message', 'An unexpected error occurred')
+    
+    return render_template('error.html', error_code=error_code, error_message=error_message)
+
+# API Routes for Integration with nvcplatform.net
+@app.route('/api/token', methods=['POST'], endpoint='api_get_token')
+def get_token():
+    """Get JWT token for API access"""
+    if not request.is_json:
+        return jsonify({'error': 'Missing JSON in request'}), 400
+    
+    username = request.json.get('username')
+    password = request.json.get('password')
+    
+    if not username or not password:
+        return jsonify({'error': 'Missing username or password'}), 400
+    
+    user = authenticate_user(username, password)
+    
+    if not user:
+        return jsonify({'error': 'Invalid username or password'}), 401
+    
+    # Create access token
+    access_token = generate_jwt_token(user.id)
+    
+    return jsonify({
+        'access_token': access_token,
+        'user_id': user.id,
+        'username': user.username
+    }), 200
+
+@app.route('/api/users', methods=['POST'], endpoint='api_create_user')
+def create_user():
+    """Create a new user via API"""
+    if not request.is_json:
+        return jsonify({'error': 'Missing JSON in request'}), 400
+    
+    username = request.json.get('username')
+    email = request.json.get('email')
+    password = request.json.get('password')
+    
+    if not username or not email or not password:
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    # Register user with API role
+    user, error = register_user(username, email, password, role=UserRole.API)
+    
+    if error:
+        return jsonify({'error': error}), 400
+    
+    return jsonify({
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'api_key': user.api_key,
+        'ethereum_address': user.ethereum_address
+    }), 201
+
+@app.route('/api/transactions', methods=['GET'], endpoint='api_get_transactions')
+@jwt_required
+def get_transactions(user):
+    """Get user transactions via API"""
+    # Get filters from query parameters
+    transaction_type = request.args.get('type')
+    status = request.args.get('status')
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    limit = request.args.get('limit', 50)
+    offset = request.args.get('offset', 0)
+    
+    try:
+        limit = int(limit)
+        offset = int(offset)
+    except ValueError:
+        return jsonify({'error': 'Invalid limit or offset'}), 400
+    
+    # Base query
+    query = Transaction.query.filter_by(user_id=user.id)
+    
+    # Apply filters
+    if transaction_type:
+        try:
+            query = query.filter_by(transaction_type=TransactionType(transaction_type))
+        except ValueError:
+            return jsonify({'error': f'Invalid transaction type: {transaction_type}'}), 400
+    
+    if status:
+        try:
+            query = query.filter_by(status=TransactionStatus(status))
+        except ValueError:
+            return jsonify({'error': f'Invalid status: {status}'}), 400
+    
+    if start_date:
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
+            query = query.filter(Transaction.created_at >= start_date_obj)
+        except ValueError:
+            return jsonify({'error': f'Invalid start date format: {start_date}'}), 400
+    
+    if end_date:
+        try:
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d')
+            end_date_obj = end_date_obj + timedelta(days=1)  # Include the end date
+            query = query.filter(Transaction.created_at <= end_date_obj)
+        except ValueError:
+            return jsonify({'error': f'Invalid end date format: {end_date}'}), 400
+    
+    # Get total count
+    total_count = query.count()
+    
+    # Apply pagination
+    transactions = query.order_by(Transaction.created_at.desc())\
+        .limit(limit).offset(offset).all()
+    
+    # Format response
+    result = []
+    for tx in transactions:
+        result.append({
+            'id': tx.id,
+            'transaction_id': tx.transaction_id,
+            'amount': tx.amount,
+            'currency': tx.currency,
+            'type': tx.transaction_type.value,
+            'status': tx.status.value,
+            'description': tx.description,
+            'eth_transaction_hash': tx.eth_transaction_hash,
+            'created_at': tx.created_at.isoformat(),
+            'updated_at': tx.updated_at.isoformat()
+        })
+    
+    return jsonify({
+        'transactions': result,
+        'total': total_count,
+        'limit': limit,
+        'offset': offset
+    }), 200
+
+@app.route('/api/transactions/<transaction_id>', methods=['GET'], endpoint='api_get_transaction')
+@jwt_required
+def get_transaction(user, transaction_id):
+    """Get transaction details via API"""
+    transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+    
+    if not transaction:
+        return jsonify({'error': 'Transaction not found'}), 404
+    
+    # Check if the transaction belongs to the user
+    if transaction.user_id != user.id:
+        return jsonify({'error': 'You do not have permission to view this transaction'}), 403
+    
+    # Get blockchain transaction if available
+    blockchain_tx_data = None
+    if transaction.eth_transaction_hash:
+        blockchain_tx = BlockchainTransaction.query.filter_by(eth_tx_hash=transaction.eth_transaction_hash).first()
+        
+        if blockchain_tx:
+            blockchain_tx_data = {
+                'eth_tx_hash': blockchain_tx.eth_tx_hash,
+                'from_address': blockchain_tx.from_address,
+                'to_address': blockchain_tx.to_address,
+                'amount': blockchain_tx.amount,
+                'gas_used': blockchain_tx.gas_used,
+                'gas_price': blockchain_tx.gas_price,
+                'block_number': blockchain_tx.block_number,
+                'status': blockchain_tx.status,
+                'created_at': blockchain_tx.created_at.isoformat()
+            }
+        else:
+            # Try to get from blockchain
+            blockchain_tx_data = get_transaction_status(transaction.eth_transaction_hash)
+    
+    result = {
+        'id': transaction.id,
+        'transaction_id': transaction.transaction_id,
+        'user_id': transaction.user_id,
+        'amount': transaction.amount,
+        'currency': transaction.currency,
+        'type': transaction.transaction_type.value,
+        'status': transaction.status.value,
+        'description': transaction.description,
+        'eth_transaction_hash': transaction.eth_transaction_hash,
+        'institution_id': transaction.institution_id,
+        'gateway_id': transaction.gateway_id,
+        'created_at': transaction.created_at.isoformat(),
+        'updated_at': transaction.updated_at.isoformat(),
+        'blockchain_transaction': blockchain_tx_data
+    }
+    
+    return jsonify(result), 200
+
+@app.route('/api/payments', methods=['POST'], endpoint='api_create_payment')
+@jwt_required
+def create_payment(user):
+    """Create a new payment via API"""
+    if not request.is_json:
+        return jsonify({'error': 'Missing JSON in request'}), 400
+    
+    # Validate required fields
+    required_fields = ['gateway_id', 'amount', 'currency', 'description']
+    optional_fields = {'metadata': None}
+    
+    valid, data = validate_api_request(request.json, required_fields, optional_fields)
+    
+    if not valid:
+        return jsonify({'error': data}), 400
+    
+    try:
+        gateway_id = int(data['gateway_id'])
+        amount = float(data['amount'])
+    except ValueError:
+        return jsonify({'error': 'Invalid gateway_id or amount'}), 400
+    
+    # Get gateway handler
+    try:
+        gateway_handler = get_gateway_handler(gateway_id)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    
+    # Process payment
+    result = gateway_handler.process_payment(
+        amount,
+        data['currency'],
+        data['description'],
+        user.id,
+        data['metadata']
+    )
+    
+    if result.get('success'):
+        # Return appropriate response based on gateway
+        response = {
+            'success': True,
+            'transaction_id': result['transaction_id']
+        }
+        
+        # Add gateway-specific fields
+        if 'hosted_url' in result:  # Coinbase
+            response['hosted_url'] = result['hosted_url']
+            response['charge_id'] = result['charge_id']
+        elif 'approval_url' in result:  # PayPal
+            response['approval_url'] = result['approval_url']
+            response['paypal_order_id'] = result['paypal_order_id']
+        elif 'client_secret' in result:  # Stripe
+            response['client_secret'] = result['client_secret']
+            response['payment_intent_id'] = result['payment_intent_id']
+        
+        return jsonify(response), 201
+    else:
+        return jsonify({
+            'success': False,
+            'error': result.get('error', 'Unknown error')
+        }), 400
+
+@app.route('/api/payments/<transaction_id>/status', methods=['GET'], endpoint='api_get_payment_status')
+@jwt_required
+def get_payment_status(user, transaction_id):
+    """Get payment status via API"""
+    transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+    
+    if not transaction:
+        return jsonify({'error': 'Transaction not found'}), 404
+    
+    # Check if the transaction belongs to the user
+    if transaction.user_id != user.id:
+        return jsonify({'error': 'You do not have permission to view this transaction'}), 403
+    
+    # Check if it's a payment transaction
+    if transaction.transaction_type != TransactionType.PAYMENT:
+        return jsonify({'error': 'Not a payment transaction'}), 400
+    
+    # Get gateway handler
+    if not transaction.gateway_id:
+        return jsonify({'error': 'No payment gateway associated with this transaction'}), 400
+    
+    try:
+        gateway_handler = get_gateway_handler(transaction.gateway_id)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    
+    # Check payment status
+    result = gateway_handler.check_payment_status(transaction_id)
+    
+    if result.get('success'):
+        return jsonify(result), 200
+    else:
+        return jsonify({
+            'success': False,
+            'error': result.get('error', 'Unknown error')
+        }), 400
+
+@app.route('/api/transfers', methods=['POST'], endpoint='api_create_transfer')
+@jwt_required
+def create_transfer(user):
+    """Create a new transfer via API"""
+    if not request.is_json:
+        return jsonify({'error': 'Missing JSON in request'}), 400
+    
+    # Validate required fields
+    required_fields = ['institution_id', 'amount', 'currency', 'description']
+    optional_fields = {'recipient_info': None}
+    
+    valid, data = validate_api_request(request.json, required_fields, optional_fields)
+    
+    if not valid:
+        return jsonify({'error': data}), 400
+    
+    try:
+        institution_id = int(data['institution_id'])
+        amount = float(data['amount'])
+    except ValueError:
+        return jsonify({'error': 'Invalid institution_id or amount'}), 400
+    
+    # Get institution handler
+    try:
+        institution_handler = get_institution_handler(institution_id)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    
+    # Initiate transfer
+    result = institution_handler.initiate_transfer(
+        amount,
+        data['currency'],
+        data['description'],
+        user.id,
+        data['recipient_info']
+    )
+    
+    if result.get('success'):
+        return jsonify({
+            'success': True,
+            'transaction_id': result['transaction_id'],
+            'transfer_id': result.get('transfer_id'),
+            'status': result.get('status'),
+            'amount': result['amount'],
+            'currency': result['currency']
+        }), 201
+    else:
+        return jsonify({
+            'success': False,
+            'error': result.get('error', 'Unknown error')
+        }), 400
+
+@app.route('/api/transfers/<transaction_id>/status', methods=['GET'], endpoint='api_get_transfer_status')
+@jwt_required
+def get_transfer_status(user, transaction_id):
+    """Get transfer status via API"""
+    transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+    
+    if not transaction:
+        return jsonify({'error': 'Transaction not found'}), 404
+    
+    # Check if the transaction belongs to the user
+    if transaction.user_id != user.id:
+        return jsonify({'error': 'You do not have permission to view this transaction'}), 403
+    
+    # Check if it's a transfer transaction
+    if transaction.transaction_type != TransactionType.TRANSFER:
+        return jsonify({'error': 'Not a transfer transaction'}), 400
+    
+    # Get institution handler
+    if not transaction.institution_id:
+        return jsonify({'error': 'No financial institution associated with this transaction'}), 400
+    
+    try:
+        institution_handler = get_institution_handler(transaction.institution_id)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    
+    # Check transfer status
+    result = institution_handler.check_transfer_status(transaction_id)
+    
+    if result.get('success'):
+        return jsonify(result), 200
+    else:
+        return jsonify({
+            'success': False,
+            'error': result.get('error', 'Unknown error')
+        }), 400
+
+@app.route('/api/blockchain/transactions', methods=['POST'], endpoint='api_create_blockchain_transaction')
+@jwt_required
+def create_blockchain_transaction(user):
+    """Create a new blockchain transaction via API"""
+    if not request.is_json:
+        return jsonify({'error': 'Missing JSON in request'}), 400
+    
+    # Validate required fields
+    required_fields = ['to_address', 'amount', 'description']
+    optional_fields = {'use_contract': False}
+    
+    valid, data = validate_api_request(request.json, required_fields, optional_fields)
+    
+    if not valid:
+        return jsonify({'error': data}), 400
+    
+    try:
+        amount = float(data['amount'])
+    except ValueError:
+        return jsonify({'error': 'Invalid amount'}), 400
+    
+    # Validate Ethereum address
+    if not validate_ethereum_address(data['to_address']):
+        return jsonify({'error': 'Invalid Ethereum address'}), 400
+    
+    # Create transaction record
+    transaction_id = generate_transaction_id()
+    
+    transaction = Transaction(
+        transaction_id=transaction_id,
+        user_id=user.id,
+        amount=amount,
+        currency='ETH',
+        transaction_type=TransactionType.SETTLEMENT,
+        status=TransactionStatus.PENDING,
+        description=data['description'],
+        created_at=datetime.utcnow()
+    )
+    
+    db.session.add(transaction)
+    db.session.commit()
+    
+    # Send Ethereum transaction
+    if data['use_contract']:
+        tx_hash = settle_payment_via_contract(
+            user.ethereum_address,
+            data['to_address'],
+            amount,
+            user.ethereum_private_key,
+            transaction.id
+        )
+    else:
+        tx_hash = send_ethereum_transaction(
+            user.ethereum_address,
+            data['to_address'],
+            amount,
+            user.ethereum_private_key,
+            transaction.id
+        )
+    
+    if tx_hash:
+        return jsonify({
+            'success': True,
+            'transaction_id': transaction_id,
+            'eth_transaction_hash': tx_hash,
+            'amount': amount,
+            'to_address': data['to_address']
+        }), 201
+    else:
+        # Transaction was already created, but blockchain transaction failed
+        transaction.status = TransactionStatus.FAILED
+        db.session.commit()
+        
+        return jsonify({
+            'success': False,
+            'error': 'Failed to send Ethereum transaction',
+            'transaction_id': transaction_id
+        }), 400
+
+@app.route('/api/blockchain/balances', methods=['GET'], endpoint='api_get_blockchain_balance')
+@jwt_required
+def get_blockchain_balance(user):
+    """Get Ethereum balance via API"""
+    from web3 import Web3, HTTPProvider
+    
+    # Initialize Web3
+    eth_node_url = os.environ.get("ETHEREUM_NODE_URL", "https://ropsten.infura.io/v3/YOUR_INFURA_PROJECT_ID")
+    web3 = Web3(HTTPProvider(eth_node_url))
+    
+    # Get Ethereum balance
+    try:
+        balance_wei = web3.eth.get_balance(user.ethereum_address)
+        balance_eth = web3.from_wei(balance_wei, 'ether')
+        
+        return jsonify({
+            'success': True,
+            'address': user.ethereum_address,
+            'balance_eth': float(balance_eth),
+            'balance_wei': balance_wei
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
+
+# Webhook routes for payment gateways
+@app.route('/webhooks/stripe', methods=['POST'])
+def stripe_webhook():
+    """Webhook handler for Stripe"""
+    payload = request.get_data()
+    signature = request.headers.get('Stripe-Signature')
+    
+    if not payload or not signature:
+        return jsonify({'error': 'Missing payload or signature'}), 400
+    
+    # Get gateway with Stripe type
+    gateway = PaymentGateway.query.filter_by(gateway_type=PaymentGatewayType.STRIPE).first()
+    
+    if not gateway:
+        return jsonify({'error': 'Stripe gateway not configured'}), 400
+    
+    # Verify webhook signature
+    import stripe
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, signature, gateway.webhook_secret
+        )
+    except ValueError:
+        return jsonify({'error': 'Invalid payload'}), 400
+    except stripe.error.SignatureVerificationError:
+        return jsonify({'error': 'Invalid signature'}), 400
+    
+    # Handle the event
+    if event['type'] == 'payment_intent.succeeded':
+        payment_intent = event['data']['object']
+        transaction_id = payment_intent['metadata'].get('transaction_id')
+        
+        if transaction_id:
+            transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+            
+            if transaction:
+                transaction.status = TransactionStatus.COMPLETED
+                db.session.commit()
+                
+                # Log successful payment
+                logger.info(f"Payment succeeded for transaction {transaction_id}")
+    
+    elif event['type'] == 'payment_intent.payment_failed':
+        payment_intent = event['data']['object']
+        transaction_id = payment_intent['metadata'].get('transaction_id')
+        
+        if transaction_id:
+            transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+            
+            if transaction:
+                transaction.status = TransactionStatus.FAILED
+                db.session.commit()
+                
+                # Log failed payment
+                logger.info(f"Payment failed for transaction {transaction_id}")
+    
+    return jsonify({'success': True}), 200
+
+@app.route('/webhooks/paypal', methods=['POST'])
+def paypal_webhook():
+    """Webhook handler for PayPal"""
+    if not request.is_json:
+        return jsonify({'error': 'Missing JSON in request'}), 400
+    
+    event_type = request.json.get('event_type')
+    resource = request.json.get('resource', {})
+    
+    if not event_type:
+        return jsonify({'error': 'Missing event type'}), 400
+    
+    # Get gateway with PayPal type
+    gateway = PaymentGateway.query.filter_by(gateway_type=PaymentGatewayType.PAYPAL).first()
+    
+    if not gateway:
+        return jsonify({'error': 'PayPal gateway not configured'}), 400
+    
+    # Verify webhook signature
+    webhook_id = request.headers.get('Paypal-Transmission-Id')
+    if not webhook_id:
+        return jsonify({'error': 'Missing webhook ID'}), 400
+    
+    # Handle the event
+    if event_type == 'PAYMENT.CAPTURE.COMPLETED':
+        # Get custom ID (our transaction ID)
+        custom_id = resource.get('custom_id')
+        
+        if custom_id:
+            transaction = Transaction.query.filter_by(transaction_id=custom_id).first()
+            
+            if transaction:
+                transaction.status = TransactionStatus.COMPLETED
+                db.session.commit()
+                
+                # Log successful payment
+                logger.info(f"PayPal payment completed for transaction {custom_id}")
+    
+    elif event_type == 'PAYMENT.CAPTURE.DENIED':
+        # Get custom ID (our transaction ID)
+        custom_id = resource.get('custom_id')
+        
+        if custom_id:
+            transaction = Transaction.query.filter_by(transaction_id=custom_id).first()
+            
+            if transaction:
+                transaction.status = TransactionStatus.FAILED
+                db.session.commit()
+                
+                # Log failed payment
+                logger.info(f"PayPal payment denied for transaction {custom_id}")
+    
+    return jsonify({'success': True}), 200
+
+@app.route('/webhooks/coinbase', methods=['POST'])
+def coinbase_webhook():
+    """Webhook handler for Coinbase"""
+    payload = request.get_data()
+    signature = request.headers.get('X-CC-Webhook-Signature')
+    
+    if not payload or not signature:
+        return jsonify({'error': 'Missing payload or signature'}), 400
+    
+    # Get gateway with Coinbase type
+    gateway = PaymentGateway.query.filter_by(gateway_type=PaymentGatewayType.COINBASE).first()
+    
+    if not gateway:
+        return jsonify({'error': 'Coinbase gateway not configured'}), 400
+    
+    # Verify webhook signature
+    import hmac
+    import hashlib
+    
+    expected_signature = hmac.new(
+        gateway.webhook_secret.encode(),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+    
+    if not hmac.compare_digest(expected_signature, signature):
+        return jsonify({'error': 'Invalid signature'}), 400
+    
+    # Parse the payload
+    if not request.is_json:
+        return jsonify({'error': 'Invalid payload format'}), 400
+    
+    event = request.json
+    
+    # Handle the event
+    if event['type'] == 'charge:confirmed':
+        # Get metadata (our transaction ID)
+        metadata = event['data']['metadata']
+        transaction_id = metadata.get('transaction_id')
+        
+        if transaction_id:
+            transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+            
+            if transaction:
+                transaction.status = TransactionStatus.COMPLETED
+                
+                # Try to extract blockchain transaction hash
+                payments = event['data'].get('payments', [])
+                for payment in payments:
+                    if payment['network'] == 'ethereum':
+                        transaction.eth_transaction_hash = payment['transaction_id']
+                        break
+                
+                db.session.commit()
+                
+                # Log successful payment
+                logger.info(f"Coinbase payment confirmed for transaction {transaction_id}")
+    
+    elif event['type'] == 'charge:failed':
+        # Get metadata (our transaction ID)
+        metadata = event['data']['metadata']
+        transaction_id = metadata.get('transaction_id')
+        
+        if transaction_id:
+            transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+            
+            if transaction:
+                transaction.status = TransactionStatus.FAILED
+                db.session.commit()
+                
+                # Log failed payment
+                logger.info(f"Coinbase payment failed for transaction {transaction_id}")
+    
+    return jsonify({'success': True}), 200
+
+# Error handlers
+@app.errorhandler(404)
+def page_not_found(e):
+    """404 error handler"""
+    return render_template('error.html', error_code=404, error_message="Page not found"), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    """500 error handler"""
+    return render_template('error.html', error_code=500, error_message="Internal server error"), 500
+
+@app.errorhandler(403)
+def forbidden(e):
+    """403 error handler"""
+    return render_template('error.html', error_code=403, error_message="Forbidden"), 403
+
+@app.errorhandler(400)
+def bad_request(e):
+    """400 error handler"""
+    return render_template('error.html', error_code=400, error_message="Bad request"), 400
