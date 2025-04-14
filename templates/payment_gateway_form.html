@@ -1,0 +1,126 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+{% if is_new %}Add New Payment Gateway{% else %}Edit Payment Gateway{% endif %} - NVC Banking Platform
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-credit-card me-2"></i>
+            {% if is_new %}Add New Payment Gateway{% else %}Edit Payment Gateway{% endif %}
+        </h1>
+        <div>
+            <a href="{{ url_for('payment_gateways') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Payment Gateways
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-credit-card me-2"></i>
+                        Gateway Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ request.url }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control", required=true) }}
+                            <div class="form-text">Choose a descriptive name for this payment gateway.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.gateway_type.label(class="form-label") }}
+                            {{ form.gateway_type(class="form-select", required=true) }}
+                            <div class="form-text">Select the type of payment gateway.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.api_endpoint.label(class="form-label") }}
+                            {{ form.api_endpoint(class="form-control", placeholder="https://api.example.com/v1") }}
+                            <div class="form-text">The API endpoint URL for integration.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.api_key.label(class="form-label") }}
+                            {{ form.api_key(class="form-control", placeholder="API key for authentication") }}
+                            <div class="form-text">API key for authentication with the gateway's API.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.webhook_secret.label(class="form-label") }}
+                            {{ form.webhook_secret(class="form-control", placeholder="Secret for webhook verification") }}
+                            <div class="form-text">Secret used to verify webhook callbacks from the payment gateway.</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.is_active(class="form-check-input") }}
+                            {{ form.is_active.label(class="form-check-label") }}
+                            <div class="form-text">Inactive gateways will not be available for payments.</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Information</h5>
+                </div>
+                <div class="card-body">
+                    <p>Payment gateways enable secure processing of payments through our banking platform.</p>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-shield-alt me-2"></i> All payments are processed securely and settled on the Ethereum blockchain.
+                    </div>
+                    
+                    <h6 class="mt-4">Gateway Types:</h6>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fab fa-stripe me-2"></i>
+                            <div>
+                                <strong>Stripe</strong>
+                                <div class="small text-muted">Credit card and direct debit payments</div>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fab fa-paypal me-2"></i>
+                            <div>
+                                <strong>PayPal</strong>
+                                <div class="small text-muted">PayPal balance and credit card payments</div>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fab fa-ethereum me-2"></i>
+                            <div>
+                                <strong>Coinbase</strong>
+                                <div class="small text-muted">Cryptocurrency payments</div>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-cogs me-2"></i>
+                            <div>
+                                <strong>Custom</strong>
+                                <div class="small text-muted">Custom payment processor integration</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

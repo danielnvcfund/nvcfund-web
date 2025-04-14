@@ -6,7 +6,10 @@ from datetime import datetime, timedelta
 from flask import render_template, request, redirect, url_for, flash, jsonify, session, abort
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
-from forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, ForgotUsernameForm
+from forms import (
+    LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, ForgotUsernameForm,
+    PaymentForm, TransferForm, BlockchainTransactionForm, FinancialInstitutionForm, PaymentGatewayForm
+)
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import app, db
@@ -364,23 +367,9 @@ def financial_institutions():
 @admin_required
 def new_financial_institution():
     """Add new financial institution route"""
-    if request.method == 'POST':
-        name = request.form.get('name')
-        institution_type = request.form.get('institution_type')
-        api_endpoint = request.form.get('api_endpoint')
-        api_key = request.form.get('api_key')
-        
-        # Validate input
-        if not name or not institution_type:
-            flash('Please provide name and type', 'danger')
-            return redirect(url_for('financial_institutions'))
-        
-        try:
-            institution_type = FinancialInstitutionType(institution_type)
-        except ValueError:
-            flash('Invalid institution type', 'danger')
-            return redirect(url_for('financial_institutions'))
-        
+    form = FinancialInstitutionForm()
+    
+    if form.validate_on_submit():
         # Generate Ethereum address for the institution
         eth_address, _ = generate_ethereum_account()
         
@@ -390,12 +379,12 @@ def new_financial_institution():
         
         # Create institution
         institution = FinancialInstitution(
-            name=name,
-            institution_type=institution_type,
-            api_endpoint=api_endpoint,
-            api_key=api_key,
+            name=form.name.data,
+            institution_type=FinancialInstitutionType[form.institution_type.data],
+            api_endpoint=form.api_endpoint.data,
+            api_key=form.api_key.data,
             ethereum_address=eth_address,
-            is_active=True
+            is_active=form.is_active.data
         )
         
         db.session.add(institution)
@@ -404,8 +393,14 @@ def new_financial_institution():
         flash('Financial institution added successfully', 'success')
         return redirect(url_for('financial_institutions'))
     
-    # GET request, show form in the main page with form=True
-    return redirect(url_for('financial_institutions', form=True))
+    # If there were form validation errors
+    if form.errors and request.method == 'POST':
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
+    
+    # GET request or validation failed, show form
+    return render_template('financial_institution_form.html', form=form, is_new=True)
 
 @app.route('/financial_institution/<int:institution_id>/edit', methods=['GET', 'POST'])
 @admin_required
@@ -413,24 +408,18 @@ def edit_financial_institution(institution_id):
     """Edit financial institution route"""
     institution = FinancialInstitution.query.get_or_404(institution_id)
     
-    if request.method == 'POST':
-        institution.name = request.form.get('name', institution.name)
+    # Create form and populate with institution data
+    form = FinancialInstitutionForm(obj=institution)
+    
+    # For the institution_type field, we need to provide the Enum name instead of value
+    form.institution_type.data = institution.institution_type.name
+    
+    if form.validate_on_submit():
+        # Update institution from form data
+        form.populate_obj(institution)
         
-        institution_type = request.form.get('institution_type')
-        if institution_type:
-            try:
-                institution.institution_type = FinancialInstitutionType(institution_type)
-            except ValueError:
-                flash('Invalid institution type', 'danger')
-                return redirect(url_for('financial_institutions'))
-        
-        institution.api_endpoint = request.form.get('api_endpoint', institution.api_endpoint)
-        
-        api_key = request.form.get('api_key')
-        if api_key:
-            institution.api_key = api_key
-        
-        institution.is_active = request.form.get('is_active') == 'on'
+        # Handle the institution_type specifically since it's an Enum
+        institution.institution_type = FinancialInstitutionType[form.institution_type.data]
         institution.updated_at = datetime.utcnow()
         
         db.session.commit()
@@ -438,8 +427,14 @@ def edit_financial_institution(institution_id):
         flash('Financial institution updated successfully', 'success')
         return redirect(url_for('financial_institutions'))
     
-    # GET request, show form in the main page with the institution to edit
-    return redirect(url_for('financial_institutions', edit_id=institution_id))
+    # If there were form validation errors
+    if form.errors and request.method == 'POST':
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
+    
+    # GET request or validation failed, show form
+    return render_template('financial_institution_form.html', form=form, is_new=False)
 
 @app.route('/payment_gateways')
 @admin_required
@@ -456,24 +451,9 @@ def payment_gateways():
 @admin_required
 def new_payment_gateway():
     """Add new payment gateway route"""
-    if request.method == 'POST':
-        name = request.form.get('name')
-        gateway_type = request.form.get('gateway_type')
-        api_endpoint = request.form.get('api_endpoint')
-        api_key = request.form.get('api_key')
-        webhook_secret = request.form.get('webhook_secret')
-        
-        # Validate input
-        if not name or not gateway_type:
-            flash('Please provide name and type', 'danger')
-            return redirect(url_for('payment_gateways'))
-        
-        try:
-            gateway_type = PaymentGatewayType(gateway_type)
-        except ValueError:
-            flash('Invalid gateway type', 'danger')
-            return redirect(url_for('payment_gateways'))
-        
+    form = PaymentGatewayForm()
+    
+    if form.validate_on_submit():
         # Generate Ethereum address for the gateway
         eth_address, _ = generate_ethereum_account()
         
@@ -483,13 +463,13 @@ def new_payment_gateway():
         
         # Create gateway
         gateway = PaymentGateway(
-            name=name,
-            gateway_type=gateway_type,
-            api_endpoint=api_endpoint,
-            api_key=api_key,
-            webhook_secret=webhook_secret,
+            name=form.name.data,
+            gateway_type=PaymentGatewayType[form.gateway_type.data],
+            api_endpoint=form.api_endpoint.data,
+            api_key=form.api_key.data,
+            webhook_secret=form.webhook_secret.data,
             ethereum_address=eth_address,
-            is_active=True
+            is_active=form.is_active.data
         )
         
         db.session.add(gateway)
@@ -498,8 +478,14 @@ def new_payment_gateway():
         flash('Payment gateway added successfully', 'success')
         return redirect(url_for('payment_gateways'))
     
-    # GET request, show form in the main page with form=True
-    return redirect(url_for('payment_gateways', form=True))
+    # If there were form validation errors
+    if form.errors and request.method == 'POST':
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
+    
+    # GET request or validation failed, show form
+    return render_template('payment_gateway_form.html', form=form, is_new=True)
 
 @app.route('/payment_gateway/<int:gateway_id>/edit', methods=['GET', 'POST'])
 @admin_required
@@ -507,28 +493,18 @@ def edit_payment_gateway(gateway_id):
     """Edit payment gateway route"""
     gateway = PaymentGateway.query.get_or_404(gateway_id)
     
-    if request.method == 'POST':
-        gateway.name = request.form.get('name', gateway.name)
+    # Create form and populate with gateway data
+    form = PaymentGatewayForm(obj=gateway)
+    
+    # For the gateway_type field, we need to provide the Enum name instead of value
+    form.gateway_type.data = gateway.gateway_type.name
+    
+    if form.validate_on_submit():
+        # Update gateway from form data
+        form.populate_obj(gateway)
         
-        gateway_type = request.form.get('gateway_type')
-        if gateway_type:
-            try:
-                gateway.gateway_type = PaymentGatewayType(gateway_type)
-            except ValueError:
-                flash('Invalid gateway type', 'danger')
-                return redirect(url_for('payment_gateways'))
-        
-        gateway.api_endpoint = request.form.get('api_endpoint', gateway.api_endpoint)
-        
-        api_key = request.form.get('api_key')
-        if api_key:
-            gateway.api_key = api_key
-        
-        webhook_secret = request.form.get('webhook_secret')
-        if webhook_secret:
-            gateway.webhook_secret = webhook_secret
-        
-        gateway.is_active = request.form.get('is_active') == 'on'
+        # Handle the gateway_type specifically since it's an Enum
+        gateway.gateway_type = PaymentGatewayType[form.gateway_type.data]
         gateway.updated_at = datetime.utcnow()
         
         db.session.commit()
@@ -536,8 +512,14 @@ def edit_payment_gateway(gateway_id):
         flash('Payment gateway updated successfully', 'success')
         return redirect(url_for('payment_gateways'))
     
-    # GET request, show form in the main page with the gateway to edit
-    return redirect(url_for('payment_gateways', edit_id=gateway_id))
+    # If there were form validation errors
+    if form.errors and request.method == 'POST':
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
+    
+    # GET request or validation failed, show form
+    return render_template('payment_gateway_form.html', form=form, is_new=False)
 
 @app.route('/blockchain')
 @login_required
