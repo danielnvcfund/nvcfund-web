@@ -576,6 +576,51 @@ def blockchain_status():
         recent_blockchain_txs=recent_blockchain_txs
     )
 
+@app.route('/user_management')
+@admin_required
+def user_management():
+    """User management route"""
+    users = User.query.all()
+    return render_template(
+        'user_management.html',
+        users=users,
+        roles=UserRole
+    )
+
+@app.route('/user/<int:user_id>/update_role', methods=['POST'])
+@admin_required
+def update_user_role(user_id):
+    """Update user role route"""
+    user = User.query.get_or_404(user_id)
+    role_name = request.form.get('role')
+    
+    if role_name:
+        try:
+            user.role = UserRole[role_name]
+            db.session.commit()
+            flash(f'Role for {user.username} updated successfully to {user.role.value}', 'success')
+        except (KeyError, ValueError) as e:
+            flash(f'Error updating role: {str(e)}', 'danger')
+    else:
+        flash('No role selected', 'danger')
+    
+    return redirect(url_for('user_management'))
+
+@app.route('/user/<int:user_id>/toggle_status', methods=['POST'])
+@admin_required
+def toggle_user_status(user_id):
+    """Toggle user active status route"""
+    user = User.query.get_or_404(user_id)
+    
+    # Toggle status
+    user.is_active = not user.is_active
+    db.session.commit()
+    
+    status = 'activated' if user.is_active else 'deactivated'
+    flash(f'User {user.username} has been {status}', 'success')
+    
+    return redirect(url_for('user_management'))
+
 @app.route('/api_docs')
 def api_docs():
     """API documentation route"""
