@@ -46,6 +46,10 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """User login route"""
+    # If user is already logged in, redirect to dashboard
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
+        
     form = LoginForm()
     
     if form.validate_on_submit():
@@ -69,9 +73,14 @@ def login():
         
         return redirect(url_for('dashboard'))
     
-    # For backward compatibility with current login.html template
-    # In the future we could modify the template to use the form object directly
-    return render_template('login.html')
+    # If there were form validation errors
+    if form.errors and request.method == 'POST':
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
+    
+    # For GET request or form validation failed, show login form
+    return render_template('login.html', form=form)
 
 @app.route('/logout')
 def logout():
@@ -83,6 +92,10 @@ def logout():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """User registration route"""
+    # If user is already logged in, redirect to dashboard
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
+        
     form = RegistrationForm()
     
     if form.validate_on_submit():
@@ -104,7 +117,7 @@ def register():
     
     # For compatibility with the current login.html template, we still use register=True
     # but in the future, we can pass the form object directly
-    return render_template('login.html', register=True)
+    return render_template('login.html', register=True, form=form)
 
 @app.route('/reset_password_request', methods=['GET', 'POST'])
 def reset_request():
@@ -186,7 +199,16 @@ def forgot_username():
 def dashboard():
     """User dashboard route"""
     user_id = session.get('user_id')
+    if not user_id:
+        flash('Please log in to access the dashboard', 'danger')
+        return redirect(url_for('login'))
+    
     user = User.query.get(user_id)
+    if not user:
+        # If user doesn't exist in database, clear session and redirect to login
+        session.clear()
+        flash('User not found, please log in again', 'danger')
+        return redirect(url_for('login'))
     
     # Get recent transactions
     recent_transactions = Transaction.query.filter_by(user_id=user_id)\

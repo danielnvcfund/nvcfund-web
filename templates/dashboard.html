@@ -161,7 +161,11 @@
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Account Type:</div>
                         <div class="col-md-8">
-                            <span class="badge bg-primary">{{ user.role.value }}</span>
+                            {% if user.role %}
+                                <span class="badge bg-primary">{{ user.role.value }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Standard User</span>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="row">
@@ -172,7 +176,7 @@
             </div>
 
             <!-- API Key Info (for API users) -->
-            {% if user.role.value == 'api' %}
+            {% if user.role and user.role.value == 'api' %}
             <div class="card dashboard-widget mb-4">
                 <div class="card-header">
                     <h5 class="mb-0"><i class="fas fa-key me-2"></i>API Access</h5>
