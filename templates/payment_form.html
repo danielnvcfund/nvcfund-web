@@ -22,44 +22,33 @@
                 </div>
                 <div class="card-body">
                     <form id="payment-form" action="{{ url_for('new_payment') }}" method="POST">
+                        {{ form.hidden_tag() }}
+                        
                         <div class="mb-3">
-                            <label for="gateway_id" class="form-label">Select Payment Gateway</label>
-                            <select class="form-select" id="gateway_id" name="gateway_id" required>
-                                <option value="">Choose a payment gateway...</option>
-                                {% for gateway in gateways %}
-                                    <option value="{{ gateway.id }}">{{ gateway.name }} ({{ gateway.gateway_type.value }})</option>
-                                {% endfor %}
-                            </select>
+                            {{ form.gateway_id.label(class="form-label") }}
+                            {{ form.gateway_id(class="form-select", required=true) }}
                         </div>
                         
                         <div class="mb-3">
-                            <label for="amount" class="form-label">Amount</label>
+                            {{ form.amount.label(class="form-label") }}
                             <div class="input-group">
                                 <span class="input-group-text" id="currency-symbol">$</span>
-                                <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" required>
+                                {{ form.amount(class="form-control", step="0.01", min="0.01", required=true) }}
                             </div>
                         </div>
                         
                         <div class="mb-3">
-                            <label for="currency" class="form-label">Currency</label>
-                            <select class="form-select" id="currency" name="currency">
-                                <option value="USD">US Dollar (USD)</option>
-                                <option value="EUR">Euro (EUR)</option>
-                                <option value="GBP">British Pound (GBP)</option>
-                                <option value="ETH">Ethereum (ETH)</option>
-                                <option value="BTC">Bitcoin (BTC)</option>
-                            </select>
+                            {{ form.currency.label(class="form-label") }}
+                            {{ form.currency(class="form-select") }}
                         </div>
                         
                         <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="2" placeholder="Payment description...">Payment from nvcplatform.net</textarea>
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control", rows="2", placeholder="Payment description...", value="Payment from nvcplatform.net") }}
                         </div>
                         
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-credit-card me-1"></i> Process Payment
-                            </button>
+                            {{ form.submit(class="btn btn-primary") }}
                         </div>
                     </form>
                 </div>

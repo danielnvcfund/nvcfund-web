@@ -296,33 +296,25 @@ def new_payment():
     # Get available payment gateways
     gateways = PaymentGateway.query.filter_by(is_active=True).all()
     
-    if request.method == 'POST':
-        gateway_id = request.form.get('gateway_id')
-        amount = request.form.get('amount')
-        currency = request.form.get('currency', 'USD')
-        description = request.form.get('description', 'Payment from nvcplatform.net')
-        
-        # Validate input
-        if not gateway_id or not amount:
-            flash('Please provide gateway and amount', 'danger')
-            return render_template('payment_form.html', gateways=gateways, user=user)
-        
-        try:
-            gateway_id = int(gateway_id)
-            amount = float(amount)
-        except ValueError:
-            flash('Invalid gateway or amount', 'danger')
-            return render_template('payment_form.html', gateways=gateways, user=user)
-        
+    # Create form and populate gateway choices
+    form = PaymentForm()
+    form.gateway_id.choices = [(g.id, g.name) for g in gateways]
+    
+    if form.validate_on_submit():
         # Get gateway handler
         try:
-            gateway_handler = get_gateway_handler(gateway_id)
+            gateway_handler = get_gateway_handler(form.gateway_id.data)
         except ValueError as e:
             flash(str(e), 'danger')
-            return render_template('payment_form.html', gateways=gateways, user=user)
+            return render_template('payment_form.html', form=form, user=user)
         
         # Process payment
-        result = gateway_handler.process_payment(amount, currency, description, user_id)
+        result = gateway_handler.process_payment(
+            float(form.amount.data), 
+            form.currency.data, 
+            form.description.data or 'Payment from nvcplatform.net', 
+            user_id
+        )
         
         if result.get('success'):
             flash('Payment initiated successfully', 'success')
@@ -337,8 +329,8 @@ def new_payment():
                     'payment_confirm.html',
                     client_secret=result['client_secret'],
                     payment_intent_id=result['payment_intent_id'],
-                    amount=amount,
-                    currency=currency,
+                    amount=float(form.amount.data),
+                    currency=form.currency.data,
                     transaction_id=result['transaction_id']
                 )
             else:
@@ -346,10 +338,16 @@ def new_payment():
                 return redirect(url_for('transaction_details', transaction_id=result['transaction_id']))
         else:
             flash(f"Payment failed: {result.get('error', 'Unknown error')}", 'danger')
-            return render_template('payment_form.html', gateways=gateways, user=user)
+            return render_template('payment_form.html', form=form, user=user)
     
-    # GET request, show payment form
-    return render_template('payment_form.html', gateways=gateways, user=user)
+    # If there were form validation errors
+    if form.errors and request.method == 'POST':
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
+    
+    # GET request or form validation failed, show payment form
+    return render_template('payment_form.html', form=form, user=user)
 
 @app.route('/financial_institutions')
 @admin_required

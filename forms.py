@@ -1,7 +1,10 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, EmailField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
-from models import User
+from wtforms import (
+    StringField, PasswordField, SubmitField, EmailField, SelectField,
+    FloatField, TextAreaField, BooleanField, HiddenField, DecimalField
+)
+from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, NumberRange, Optional
+from models import User, PaymentGatewayType, FinancialInstitutionType, TransactionType
 
 class LoginForm(FlaskForm):
     """Form for user login"""
@@ -52,3 +55,51 @@ class ForgotUsernameForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if not user:
             raise ValidationError('There is no account with that email. Please register first.')
+
+class PaymentForm(FlaskForm):
+    """Form for payment processing"""
+    gateway_id = SelectField('Payment Gateway', validators=[DataRequired()], coerce=int)
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
+    currency = SelectField('Currency', validators=[DataRequired()], 
+                           choices=[('USD', 'USD'), ('EUR', 'EUR'), ('GBP', 'GBP'), ('JPY', 'JPY'), ('ETH', 'ETH')])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=256)])
+    submit = SubmitField('Process Payment')
+
+class TransferForm(FlaskForm):
+    """Form for transfers between accounts"""
+    institution_id = SelectField('Financial Institution', validators=[DataRequired()], coerce=int)
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
+    currency = SelectField('Currency', validators=[DataRequired()], 
+                          choices=[('USD', 'USD'), ('EUR', 'EUR'), ('GBP', 'GBP'), ('JPY', 'JPY'), ('ETH', 'ETH')])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=256)])
+    recipient_info = TextAreaField('Recipient Information', validators=[Optional(), Length(max=256)])
+    submit = SubmitField('Initiate Transfer')
+
+class BlockchainTransactionForm(FlaskForm):
+    """Form for blockchain transactions"""
+    amount = DecimalField('Amount (ETH)', validators=[DataRequired(), NumberRange(min=0.001)])
+    to_address = StringField('Recipient Ethereum Address', validators=[DataRequired(), Length(min=42, max=42)])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=256)])
+    use_contract = BooleanField('Use Settlement Contract', default=False)
+    submit = SubmitField('Send Transaction')
+
+class FinancialInstitutionForm(FlaskForm):
+    """Form for financial institution management"""
+    name = StringField('Institution Name', validators=[DataRequired(), Length(min=3, max=128)])
+    institution_type = SelectField('Institution Type', validators=[DataRequired()], 
+                                  choices=[(t.name, t.value) for t in FinancialInstitutionType])
+    api_endpoint = StringField('API Endpoint', validators=[Optional(), Length(max=256)])
+    api_key = StringField('API Key', validators=[Optional(), Length(max=256)])
+    is_active = BooleanField('Active', default=True)
+    submit = SubmitField('Save Institution')
+
+class PaymentGatewayForm(FlaskForm):
+    """Form for payment gateway management"""
+    name = StringField('Gateway Name', validators=[DataRequired(), Length(min=3, max=128)])
+    gateway_type = SelectField('Gateway Type', validators=[DataRequired()], 
+                              choices=[(t.name, t.value) for t in PaymentGatewayType])
+    api_endpoint = StringField('API Endpoint', validators=[Optional(), Length(max=256)])
+    api_key = StringField('API Key', validators=[Optional(), Length(max=256)])
+    webhook_secret = StringField('Webhook Secret', validators=[Optional(), Length(max=256)])
+    is_active = BooleanField('Active', default=True)
+    submit = SubmitField('Save Gateway')
