@@ -6,9 +6,11 @@ from datetime import datetime, timedelta
 from flask import render_template, request, redirect, url_for, flash, jsonify, session, abort
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import login_user, logout_user, current_user
 from forms import (
     LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, ForgotUsernameForm,
-    PaymentForm, TransferForm, BlockchainTransactionForm, FinancialInstitutionForm, PaymentGatewayForm
+    PaymentForm, TransferForm, BlockchainTransactionForm, FinancialInstitutionForm, PaymentGatewayForm,
+    InvitationForm, AcceptInvitationForm
 )
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -16,7 +18,8 @@ from app import app, db
 from models import (
     User, UserRole, Transaction, TransactionStatus, TransactionType,
     FinancialInstitution, FinancialInstitutionType,
-    PaymentGateway, PaymentGatewayType, SmartContract, BlockchainTransaction
+    PaymentGateway, PaymentGatewayType, SmartContract, BlockchainTransaction,
+    Invitation, InvitationType, InvitationStatus, AssetManager, BusinessPartner, PartnerType, Webhook
 )
 from auth import (
     login_required, admin_required, api_key_required, authenticate_user,
@@ -28,6 +31,11 @@ from blockchain import (
 )
 from payment_gateways import get_gateway_handler
 from financial_institutions import get_institution_handler
+from invitations import (
+    create_invitation, get_invitation_by_code, accept_invitation,
+    revoke_invitation as revoke_invite, resend_invitation as resend_invite,
+    get_invitation_url, send_invitation_email
+)
 from utils import (
     generate_transaction_id, generate_api_key, format_currency,
     calculate_transaction_fee, get_transaction_analytics,
@@ -643,6 +651,234 @@ def api_docs():
 def terms_of_service():
     """Terms of Service route"""
     return render_template('terms_of_service.html')
+
+@app.route('/invitations', methods=['GET'])
+@admin_required
+def invitations():
+    """Invitation management route"""
+    # Get filter parameters
+    status_filter = request.args.get('status')
+    type_filter = request.args.get('type')
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    
+    # Create invitation form for the modal
+    form = InvitationForm()
+    
+    # Get current time for template
+    now = datetime.utcnow()
+    
+    # Initialize pagination dictionaries
+    pending_pagination = {
+        'current_page': page,
+        'has_next': False,
+        'has_prev': False,
+        'pages': 1,
+        'next_page': None,
+        'prev_page': None
+    }
+    
+    accepted_pagination = pending_pagination.copy()
+    expired_pagination = pending_pagination.copy()
+    
+    # Get pending invitations
+    pending_query = Invitation.query.filter_by(status=InvitationStatus.PENDING)
+    if type_filter:
+        pending_query = pending_query.filter_by(invitation_type=InvitationType[type_filter])
+    pending_invitations = pending_query.order_by(Invitation.created_at.desc()).paginate(page=page, per_page=per_page)
+    
+    # Update pending pagination info
+    pending_pagination['current_page'] = pending_invitations.page
+    pending_pagination['has_next'] = pending_invitations.has_next
+    pending_pagination['has_prev'] = pending_invitations.has_prev
+    pending_pagination['pages'] = pending_invitations.pages
+    pending_pagination['next_page'] = pending_invitations.next_num if pending_invitations.has_next else None
+    pending_pagination['prev_page'] = pending_invitations.prev_num if pending_invitations.has_prev else None
+    
+    # Get accepted invitations
+    accepted_query = Invitation.query.filter_by(status=InvitationStatus.ACCEPTED)
+    if type_filter:
+        accepted_query = accepted_query.filter_by(invitation_type=InvitationType[type_filter])
+    accepted_invitations = accepted_query.order_by(Invitation.accepted_at.desc()).paginate(page=page, per_page=per_page)
+    
+    # Update accepted pagination info
+    accepted_pagination['current_page'] = accepted_invitations.page
+    accepted_pagination['has_next'] = accepted_invitations.has_next
+    accepted_pagination['has_prev'] = accepted_invitations.has_prev
+    accepted_pagination['pages'] = accepted_invitations.pages
+    accepted_pagination['next_page'] = accepted_invitations.next_num if accepted_invitations.has_next else None
+    accepted_pagination['prev_page'] = accepted_invitations.prev_num if accepted_invitations.has_prev else None
+    
+    # Get expired/revoked invitations
+    expired_query = Invitation.query.filter(Invitation.status.in_([InvitationStatus.EXPIRED, InvitationStatus.REVOKED]))
+    if type_filter:
+        expired_query = expired_query.filter_by(invitation_type=InvitationType[type_filter])
+    expired_invitations = expired_query.order_by(Invitation.updated_at.desc()).paginate(page=page, per_page=per_page)
+    
+    # Update expired pagination info
+    expired_pagination['current_page'] = expired_invitations.page
+    expired_pagination['has_next'] = expired_invitations.has_next
+    expired_pagination['has_prev'] = expired_invitations.has_prev
+    expired_pagination['pages'] = expired_invitations.pages
+    expired_pagination['next_page'] = expired_invitations.next_num if expired_invitations.has_next else None
+    expired_pagination['prev_page'] = expired_invitations.prev_num if expired_invitations.has_prev else None
+    
+    # Count pending invitations for badge
+    pending_count = Invitation.query.filter_by(status=InvitationStatus.PENDING).count()
+    
+    # Helper function for templates
+    def get_invitation_url(invitation):
+        return url_for('register_with_invitation', invite_code=invitation.invite_code, _external=True)
+    
+    return render_template(
+        'invitations.html',
+        form=form,
+        pending_invitations=pending_invitations.items,
+        accepted_invitations=accepted_invitations.items,
+        expired_invitations=expired_invitations.items,
+        pending_pagination=pending_pagination,
+        accepted_pagination=accepted_pagination,
+        expired_pagination=expired_pagination,
+        pending_count=pending_count,
+        invitation_types=list(InvitationType),
+        invitation_statuses=list(InvitationStatus),
+        now=now,
+        get_invitation_url=get_invitation_url
+    )
+
+@app.route('/invitations/create', methods=['POST'])
+@admin_required
+def create_invitation():
+    """Create a new invitation"""
+    form = InvitationForm()
+    
+    if form.validate_on_submit():
+        # Create the invitation
+        invitation, error = create_invitation(
+            email=form.email.data,
+            invitation_type=InvitationType[form.invitation_type.data],
+            invited_by=current_user.id,
+            organization_name=form.organization_name.data,
+            message=form.message.data,
+            expiration_days=form.expiration_days.data
+        )
+        
+        if error:
+            flash(f'Error creating invitation: {error}', 'danger')
+            return redirect(url_for('invitations'))
+        
+        # Send invitation email
+        email_sent = send_invitation_email(invitation)
+        
+        if email_sent:
+            flash(f'Invitation sent to {invitation.email}', 'success')
+        else:
+            flash(f'Invitation created but email could not be sent to {invitation.email}. Copy the invitation link to share manually.', 'warning')
+        
+        return redirect(url_for('invitations'))
+    
+    # If validation fails, show errors
+    for field, errors in form.errors.items():
+        for error in errors:
+            flash(f"{getattr(form, field).label.text}: {error}", 'danger')
+    
+    return redirect(url_for('invitations'))
+
+@app.route('/invitations/<int:invite_id>/revoke', methods=['POST'])
+@admin_required
+def revoke_invitation(invite_id):
+    """Revoke an invitation"""
+    success, error = revoke_invite(invite_id, current_user.id)
+    
+    if success:
+        flash(f'Invitation successfully revoked', 'success')
+    else:
+        flash(f'Error revoking invitation: {error}', 'danger')
+    
+    return redirect(url_for('invitations'))
+
+@app.route('/invitations/<int:invite_id>/resend', methods=['POST'])
+@admin_required
+def resend_invitation(invite_id):
+    """Resend an invitation"""
+    success, error, new_invitation = resend_invite(invite_id, current_user.id)
+    
+    if request.is_json:
+        if success:
+            # Send invitation email
+            email_sent = send_invitation_email(new_invitation)
+            
+            if email_sent:
+                return jsonify({'success': True})
+            else:
+                return jsonify({'success': False, 'error': 'Invitation created but email could not be sent'})
+        else:
+            return jsonify({'success': False, 'error': error})
+    
+    if success:
+        # Send invitation email
+        email_sent = send_invitation_email(new_invitation)
+        
+        if email_sent:
+            flash(f'Invitation resent to {new_invitation.email}', 'success')
+        else:
+            flash(f'New invitation created but email could not be sent to {new_invitation.email}. Copy the invitation link to share manually.', 'warning')
+    else:
+        flash(f'Error resending invitation: {error}', 'danger')
+    
+    return redirect(url_for('invitations'))
+
+@app.route('/register/<invite_code>', methods=['GET', 'POST'])
+def register_with_invitation(invite_code):
+    """Register using an invitation link"""
+    # Check if user is already logged in
+    if current_user.is_authenticated:
+        flash('You are already logged in. Please log out to accept a new invitation.', 'warning')
+        return redirect(url_for('dashboard'))
+    
+    # Get the invitation
+    invitation = get_invitation_by_code(invite_code)
+    
+    if not invitation:
+        flash('Invalid invitation code', 'danger')
+        return redirect(url_for('index'))
+    
+    # Get the inviter
+    inviter = User.query.get(invitation.invited_by)
+    
+    # Initialize the form
+    form = AcceptInvitationForm()
+    
+    # If valid form submitted
+    if form.validate_on_submit() and invitation.is_valid():
+        # Register the user
+        user, error = register_user(
+            username=form.username.data,
+            email=form.email.data,
+            password=form.password.data,
+            role=UserRole.USER  # Default role, can be updated based on invitation type
+        )
+        
+        if error:
+            flash(f'Error registering user: {error}', 'danger')
+            return render_template('accept_invitation.html', invitation=invitation, inviter=inviter, form=form)
+        
+        # Process the invitation acceptance
+        success, error = accept_invitation(invite_code, user)
+        
+        if error:
+            flash(f'Error accepting invitation: {error}', 'danger')
+            return render_template('accept_invitation.html', invitation=invitation, inviter=inviter, form=form)
+        
+        # Log in the user
+        login_user(user)
+        flash('Registration successful! Welcome to the NVC Banking Platform.', 'success')
+        
+        # Redirect to dashboard
+        return redirect(url_for('dashboard'))
+    
+    # For GET requests or invalid form submission
+    return render_template('accept_invitation.html', invitation=invitation, inviter=inviter, form=form)
 
 @app.route('/error')
 def error():

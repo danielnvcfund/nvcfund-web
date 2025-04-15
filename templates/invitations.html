@@ -1,0 +1,592 @@
+{% extends 'layout.html' %}
+
+{% block title %}Invitation Management - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Invitation Management</h2>
+            <p class="text-muted">Invite clients, financial institutions, and business partners to join the NVC Platform.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                <i class="bi bi-envelope-plus me-1"></i> Create New Invitation
+            </button>
+        </div>
+    </div>
+
+    <!-- Invitation Tabs -->
+    <ul class="nav nav-tabs mb-4" id="invitationTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true">
+                Pending
+                {% if pending_count %}
+                <span class="badge bg-primary ms-1">{{ pending_count }}</span>
+                {% endif %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="accepted-tab" data-bs-toggle="tab" data-bs-target="#accepted" type="button" role="tab" aria-controls="accepted" aria-selected="false">
+                Accepted
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="expired-tab" data-bs-toggle="tab" data-bs-target="#expired" type="button" role="tab" aria-controls="expired" aria-selected="false">
+                Expired/Revoked
+            </button>
+        </li>
+    </ul>
+
+    <!-- Filter Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('invitations') }}" id="filterForm" class="row g-3">
+                <div class="col-md-4">
+                    <label for="typeFilter" class="form-label">Invitation Type</label>
+                    <select class="form-select" id="typeFilter" name="type">
+                        <option value="">All Types</option>
+                        {% for type in invitation_types %}
+                            <option value="{{ type.name }}" {% if request.args.get('type') == type.name %}selected{% endif %}>
+                                {{ type.value | replace('_', ' ') | title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="statusFilter" class="form-label">Status</label>
+                    <select class="form-select" id="statusFilter" name="status">
+                        <option value="">All Statuses</option>
+                        {% for status in invitation_statuses %}
+                            <option value="{{ status.name }}" {% if request.args.get('status') == status.name %}selected{% endif %}>
+                                {{ status.value | title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary me-2">Apply Filters</button>
+                    <a href="{{ url_for('invitations') }}" class="btn btn-outline-secondary">Clear Filters</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="invitationTabsContent">
+        <!-- Pending Invitations Tab -->
+        <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+            {% if pending_invitations %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Email</th>
+                                <th>Organization</th>
+                                <th>Type</th>
+                                <th>Created</th>
+                                <th>Expires</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invitation in pending_invitations %}
+                                <tr>
+                                    <td>{{ invitation.email }}</td>
+                                    <td>{{ invitation.organization_name }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if invitation.invitation_type.name == 'CLIENT' %}bg-success
+                                            {% elif invitation.invitation_type.name == 'FINANCIAL_INSTITUTION' %}bg-primary
+                                            {% elif invitation.invitation_type.name == 'ASSET_MANAGER' %}bg-info
+                                            {% elif invitation.invitation_type.name == 'BUSINESS_PARTNER' %}bg-secondary
+                                            {% endif %}">
+                                            {{ invitation.invitation_type.value | replace('_', ' ') | title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ invitation.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        {% if invitation.is_expired() %}
+                                            <span class="text-danger">Expired</span>
+                                        {% else %}
+                                            {{ invitation.expires_at.strftime('%Y-%m-%d') }}
+                                            {% set days_left = (invitation.expires_at - now).days %}
+                                            {% if days_left <= 3 %}
+                                                <span class="badge bg-warning text-dark">{{ days_left }} days left</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="actionDropdown{{ invitation.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Actions
+                                            </button>
+                                            <ul class="dropdown-menu" aria-labelledby="actionDropdown{{ invitation.id }}">
+                                                <li>
+                                                    <a class="dropdown-item copy-link" href="#" data-link="{{ get_invitation_url(invitation) }}">
+                                                        <i class="bi bi-clipboard me-2"></i> Copy Invite Link
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item resend-invitation" href="#" data-id="{{ invitation.id }}">
+                                                        <i class="bi bi-envelope me-2"></i> Resend
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger revoke-invitation" href="#" data-id="{{ invitation.id }}">
+                                                        <i class="bi bi-x-circle me-2"></i> Revoke
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination for Pending -->
+                {% if pending_pagination.pages > 1 %}
+                <nav aria-label="Pending invitations pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if pending_pagination.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('invitations', status='PENDING', page=pending_pagination.prev_page) }}">Previous</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                        {% endif %}
+                        
+                        {% for page_num in range(1, pending_pagination.pages + 1) %}
+                            {% if page_num == pending_pagination.current_page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('invitations', status='PENDING', page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if pending_pagination.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('invitations', status='PENDING', page=pending_pagination.next_page) }}">Next</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Next</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> No pending invitations found.
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Accepted Invitations Tab -->
+        <div class="tab-pane fade" id="accepted" role="tabpanel" aria-labelledby="accepted-tab">
+            {% if accepted_invitations %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Email</th>
+                                <th>Organization</th>
+                                <th>Type</th>
+                                <th>Created</th>
+                                <th>Accepted</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invitation in accepted_invitations %}
+                                <tr>
+                                    <td>{{ invitation.email }}</td>
+                                    <td>{{ invitation.organization_name }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if invitation.invitation_type.name == 'CLIENT' %}bg-success
+                                            {% elif invitation.invitation_type.name == 'FINANCIAL_INSTITUTION' %}bg-primary
+                                            {% elif invitation.invitation_type.name == 'ASSET_MANAGER' %}bg-info
+                                            {% elif invitation.invitation_type.name == 'BUSINESS_PARTNER' %}bg-secondary
+                                            {% endif %}">
+                                            {{ invitation.invitation_type.value | replace('_', ' ') | title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ invitation.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ invitation.accepted_at.strftime('%Y-%m-%d') }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination for Accepted -->
+                {% if accepted_pagination.pages > 1 %}
+                <nav aria-label="Accepted invitations pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if accepted_pagination.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('invitations', status='ACCEPTED', page=accepted_pagination.prev_page) }}">Previous</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                        {% endif %}
+                        
+                        {% for page_num in range(1, accepted_pagination.pages + 1) %}
+                            {% if page_num == accepted_pagination.current_page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('invitations', status='ACCEPTED', page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if accepted_pagination.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('invitations', status='ACCEPTED', page=accepted_pagination.next_page) }}">Next</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Next</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> No accepted invitations found.
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Expired/Revoked Invitations Tab -->
+        <div class="tab-pane fade" id="expired" role="tabpanel" aria-labelledby="expired-tab">
+            {% if expired_invitations %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Email</th>
+                                <th>Organization</th>
+                                <th>Type</th>
+                                <th>Created</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invitation in expired_invitations %}
+                                <tr>
+                                    <td>{{ invitation.email }}</td>
+                                    <td>{{ invitation.organization_name }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if invitation.invitation_type.name == 'CLIENT' %}bg-success
+                                            {% elif invitation.invitation_type.name == 'FINANCIAL_INSTITUTION' %}bg-primary
+                                            {% elif invitation.invitation_type.name == 'ASSET_MANAGER' %}bg-info
+                                            {% elif invitation.invitation_type.name == 'BUSINESS_PARTNER' %}bg-secondary
+                                            {% endif %}">
+                                            {{ invitation.invitation_type.value | replace('_', ' ') | title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ invitation.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        {% if invitation.status.name == 'EXPIRED' %}
+                                            <span class="badge bg-warning text-dark">Expired</span>
+                                        {% elif invitation.status.name == 'REVOKED' %}
+                                            <span class="badge bg-danger">Revoked</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary resend-invitation" data-id="{{ invitation.id }}">
+                                            <i class="bi bi-arrow-repeat me-1"></i> Reinvite
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination for Expired -->
+                {% if expired_pagination.pages > 1 %}
+                <nav aria-label="Expired invitations pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if expired_pagination.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('invitations', status=['EXPIRED', 'REVOKED'], page=expired_pagination.prev_page) }}">Previous</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                        {% endif %}
+                        
+                        {% for page_num in range(1, expired_pagination.pages + 1) %}
+                            {% if page_num == expired_pagination.current_page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('invitations', status=['EXPIRED', 'REVOKED'], page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if expired_pagination.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('invitations', status=['EXPIRED', 'REVOKED'], page=expired_pagination.next_page) }}">Next</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Next</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> No expired or revoked invitations found.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Create Invitation Modal -->
+<div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="inviteModalLabel">Create New Invitation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('create_invitation') }}" id="invitationForm">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                        {% if form.email.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.email.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.organization_name.label(class="form-label") }}
+                        {{ form.organization_name(class="form-control" + (" is-invalid" if form.organization_name.errors else "")) }}
+                        {% if form.organization_name.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.organization_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.invitation_type.label(class="form-label") }}
+                        {{ form.invitation_type(class="form-select" + (" is-invalid" if form.invitation_type.errors else "")) }}
+                        {% if form.invitation_type.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.invitation_type.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Select the type of entity you are inviting to the NVC Platform.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.message.label(class="form-label") }}
+                        {{ form.message(class="form-control" + (" is-invalid" if form.message.errors else ""), rows=3) }}
+                        {% if form.message.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.message.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Add a personal message to include in the invitation email (optional).
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.expiration_days.label(class="form-label") }}
+                        {{ form.expiration_days(class="form-select" + (" is-invalid" if form.expiration_days.errors else "")) }}
+                        {% if form.expiration_days.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.expiration_days.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="invitationForm" class="btn btn-primary">Send Invitation</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Revoke Confirmation Modal -->
+<div class="modal fade" id="revokeModal" tabindex="-1" aria-labelledby="revokeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="revokeModalLabel">Confirm Revocation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to revoke this invitation? This action cannot be undone.</p>
+                <p>If needed, you can create a new invitation for this email later.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="revokeForm" method="POST" action="{{ url_for('revoke_invitation', invite_id=0) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">Revoke Invitation</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show the appropriate tab based on query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+        
+        if (status === 'ACCEPTED') {
+            document.getElementById('accepted-tab').click();
+        } else if (status === 'EXPIRED' || status === 'REVOKED') {
+            document.getElementById('expired-tab').click();
+        } else {
+            document.getElementById('pending-tab').click();
+        }
+        
+        // Copy invite link to clipboard
+        const copyLinks = document.querySelectorAll('.copy-link');
+        copyLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const inviteUrl = this.getAttribute('data-link');
+                
+                navigator.clipboard.writeText(inviteUrl).then(() => {
+                    // Change button text temporarily to indicate success
+                    const originalHtml = this.innerHTML;
+                    this.innerHTML = '<i class="bi bi-check-circle me-2"></i> Copied!';
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalHtml;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Could not copy text: ', err);
+                    alert('Failed to copy invitation link. Please try again.');
+                });
+            });
+        });
+        
+        // Handle revoke invitation
+        const revokeButtons = document.querySelectorAll('.revoke-invitation');
+        const revokeForm = document.getElementById('revokeForm');
+        
+        revokeButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const inviteId = this.getAttribute('data-id');
+                const formAction = "{{ url_for('revoke_invitation', invite_id=0) }}".replace('0', inviteId);
+                revokeForm.setAttribute('action', formAction);
+                
+                // Show confirmation modal
+                new bootstrap.Modal(document.getElementById('revokeModal')).show();
+            });
+        });
+        
+        // Handle resend invitation
+        const resendButtons = document.querySelectorAll('.resend-invitation');
+        
+        resendButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const inviteId = this.getAttribute('data-id');
+                
+                // Show loading state
+                const originalHtml = this.innerHTML;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...';
+                this.disabled = true;
+                
+                // Send AJAX request to resend invitation
+                fetch("{{ url_for('resend_invitation', invite_id=0) }}".replace('0', inviteId), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': "{{ csrf_token() }}"
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        this.innerHTML = '<i class="bi bi-check-circle me-2"></i> Sent!';
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        // Show error message
+                        this.innerHTML = '<i class="bi bi-x-circle me-2"></i> Failed';
+                        this.disabled = false;
+                        alert('Failed to resend invitation: ' + data.error);
+                        
+                        setTimeout(() => {
+                            this.innerHTML = originalHtml;
+                        }, 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error resending invitation:', error);
+                    this.innerHTML = '<i class="bi bi-x-circle me-2"></i> Failed';
+                    this.disabled = false;
+                    alert('An error occurred while resending the invitation. Please try again.');
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalHtml;
+                    }, 2000);
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}
