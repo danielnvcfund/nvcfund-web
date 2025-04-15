@@ -639,6 +639,11 @@ def api_docs():
     """API documentation route"""
     return render_template('api_docs.html')
 
+@app.route('/terms')
+def terms_of_service():
+    """Terms of Service route"""
+    return render_template('terms_of_service.html')
+
 @app.route('/error')
 def error():
     """Error page route"""
