@@ -13,91 +13,391 @@ logger = logging.getLogger(__name__)
 # Global Web3 instance
 w3 = None
 
-# Smart contract ABIs
+# Contract compilation would normally be done separately
+# These are placeholders that would be replaced with actual ABI and bytecode
+# from Solidity compiler or Truffle/Hardhat build artifacts
+
+# For now we'll use simplified placeholder ABIs that will be replaced
+# with the actual ABI from the compiled contract during deployment
+
 SETTLEMENT_CONTRACT_ABI = json.loads('''
 [
     {
-        "constant": false,
         "inputs": [
             {
-                "name": "recipient",
-                "type": "address"
-            },
-            {
-                "name": "amount",
+                "internalType": "uint256",
+                "name": "_feePercentage",
                 "type": "uint256"
             },
             {
+                "internalType": "address",
+                "name": "_feeCollector",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "string",
                 "name": "transactionId",
+                "type": "string"
+            },
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "internalType": "string",
+                "name": "metadata",
                 "type": "string"
             }
         ],
-        "name": "settlePayment",
+        "name": "createSettlement",
         "outputs": [
             {
-                "name": "success",
-                "type": "bool"
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
             }
         ],
-        "payable": true,
         "stateMutability": "payable",
         "type": "function"
     },
     {
-        "constant": true,
         "inputs": [
             {
-                "name": "transactionId",
-                "type": "string"
-            }
-        ],
-        "name": "getSettlementStatus",
-        "outputs": [
-            {
-                "name": "status",
-                "type": "string"
-            },
-            {
-                "name": "timestamp",
+                "internalType": "uint256",
+                "name": "settlementId",
                 "type": "uint256"
             }
         ],
-        "payable": false,
-        "stateMutability": "view",
+        "name": "completeSettlement",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
     },
     {
-        "anonymous": false,
         "inputs": [
             {
-                "indexed": true,
-                "name": "sender",
+                "internalType": "uint256",
+                "name": "settlementId",
+                "type": "uint256"
+            }
+        ],
+        "name": "cancelSettlement",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "settlementId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "string",
+                "name": "reason",
+                "type": "string"
+            }
+        ],
+        "name": "disputeSettlement",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "settlementId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bool",
+                "name": "completeSettlement",
+                "type": "bool"
+            }
+        ],
+        "name": "resolveDispute",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "settlementId",
+                "type": "uint256"
+            }
+        ],
+        "name": "getSettlement",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "id",
+                "type": "uint256"
+            },
+            {
+                "internalType": "string",
+                "name": "transactionId",
+                "type": "string"
+            },
+            {
+                "internalType": "address",
+                "name": "from",
                 "type": "address"
             },
             {
-                "indexed": true,
-                "name": "recipient",
+                "internalType": "address",
+                "name": "to",
                 "type": "address"
             },
             {
-                "indexed": false,
+                "internalType": "uint256",
                 "name": "amount",
                 "type": "uint256"
             },
             {
-                "indexed": false,
-                "name": "transactionId",
+                "internalType": "uint256",
+                "name": "fee",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "timestamp",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint8",
+                "name": "status",
+                "type": "uint8"
+            },
+            {
+                "internalType": "string",
+                "name": "metadata",
                 "type": "string"
             }
         ],
-        "name": "PaymentSettled",
-        "type": "event"
+        "stateMutability": "view",
+        "type": "function"
     }
 ]
 ''')
 
-# Smart contract bytecode - this would be the compiled bytecode for the settlement contract
-SETTLEMENT_CONTRACT_BYTECODE = "0x608060405234801561001057600080fd5b50610b4a806100206000396000f3006080604052600436106100325763ffffffff60e060020a6000350416637325731181146100375780638f86ffa914610092575b600080fd5b61007e6004803603606081101561004d57600080fd5b5073ffffffffffffffffffffffffffffffffffffffff81351690602081013590604001356100f7565b604080519115158252519081900360200190f35b6100d5600480360360208110156100a857600080fd5b8101906020810181356401000000008111156100c357600080fd5b8201836020820111156100d557600080fd5b50356100f7565b60408051918252519081900360200190f35b60008054600101905593925050505600a165627a7a72305820e8728975c8357a8ed8ab057382c149e69d208dce1383bd7fe0a54ffbf71b868c0029"
+MULTISIG_WALLET_ABI = json.loads('''
+[
+    {
+        "inputs": [
+            {
+                "internalType": "address[]",
+                "name": "_owners",
+                "type": "address[]"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_requiredConfirmations",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "destination",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+            }
+        ],
+        "name": "submitTransaction",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "transactionId",
+                "type": "uint256"
+            }
+        ],
+        "name": "confirmTransaction",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "transactionId",
+                "type": "uint256"
+            }
+        ],
+        "name": "revokeConfirmation",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "transactionId",
+                "type": "uint256"
+            }
+        ],
+        "name": "executeTransaction",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+]
+''')
+
+NVC_TOKEN_ABI = json.loads('''
+[
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "initialSupply",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "initialOwner",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [],
+        "name": "totalSupply",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "balanceOf",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "recipient",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "transfer",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "mint",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "from",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "burn",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+]
+''')
+
+# Smart contract bytecodes - would be replaced with actual compiled bytecode
+# For MVP purposes, these are placeholder values
+SETTLEMENT_CONTRACT_BYTECODE = "0x608060405234801561001057600080fd5b5060405161001e90610046565b604051809103906000f080158015610039573d6000803e3d6000fd5b50506100529050565b6071806100606000396000f3fe608060405260043610601c5760003560e01c80635c60da1b146021575b600080fd5b60273660046056565b602f565b604080519115158252519081900360200190f35b6000602052806000526040600020600091509056fea26469706673582212200e12794d1d4bc268b81d108eb5c28ff5ae52eccccc6513daa83af985e688c5c064736f6c634300080f0033"
+MULTISIG_WALLET_BYTECODE = "0x608060405234801561001057600080fd5b5060405161001e90610046565b604051809103906000f080158015610039573d6000803e3d6000fd5b50506100529050565b6071806100606000396000f3fe608060405260043610601c5760003560e01c80635c60da1b146021575b600080fd5b60273660046056565b602f565b604080519115158252519081900360200190f35b6000602052806000526040600020600091509056fea26469706673582212200e12794d1d4bc268b81d108eb5c28ff5ae52eccccc6513daa83af985e688c5c064736f6c634300080f0033"
+NVC_TOKEN_BYTECODE = "0x608060405234801561001057600080fd5b5060405161001e90610046565b604051809103906000f080158015610039573d6000803e3d6000fd5b50506100529050565b6071806100606000396000f3fe608060405260043610601c5760003560e01c80635c60da1b146021575b600080fd5b60273660046056565b602f565b604080519115158252519081900360200190f35b6000602052806000526040600020600091509056fea26469706673582212200e12794d1d4bc268b81d108eb5c28ff5ae52eccccc6513daa83af985e688c5c064736f6c634300080f0033"
 
 
 def init_web3():
@@ -132,9 +432,11 @@ def init_web3():
     if w3.is_connected():
         logger.info(f"Successfully connected to Ethereum node. Network version: {w3.net.version}")
         
-        # Initialize settlement contract if it doesn't exist
+        # Initialize contracts if they don't exist
         with app.app_context():
             initialize_settlement_contract()
+            initialize_multisig_wallet()
+            initialize_nvc_token()
     else:
         logger.error("Failed to connect to Ethereum node")
 
@@ -194,12 +496,158 @@ def initialize_settlement_contract():
         logger.info(f"Settlement contract already exists at address: {contract.address}")
 
 
+def initialize_multisig_wallet():
+    """Deploy the multi-signature wallet contract if it doesn't exist"""
+    contract = SmartContract.query.filter_by(name="MultiSigWallet").first()
+    
+    if not contract:
+        try:
+            # Get admin account for contract deployment
+            admin_private_key = os.environ.get("ADMIN_ETH_PRIVATE_KEY")
+            
+            if not admin_private_key:
+                logger.error("Admin private key not found. Cannot deploy MultiSigWallet contract.")
+                return
+            
+            admin_account = Account.from_key(admin_private_key)
+            
+            # For MultiSigWallet, we need initial owners (default to just admin for now)
+            # In a production system, this would likely include multiple administrators or partners
+            owner_addresses = [admin_account.address]
+            required_confirmations = 1  # Single confirmation for now, would be higher in production
+            
+            # Build contract
+            multisig_contract = w3.eth.contract(
+                abi=MULTISIG_WALLET_ABI,
+                bytecode=MULTISIG_WALLET_BYTECODE
+            )
+            
+            # Deploy contract with constructor arguments
+            construct_txn = multisig_contract.constructor(
+                owner_addresses, 
+                required_confirmations
+            ).build_transaction({
+                'from': admin_account.address,
+                'nonce': w3.eth.get_transaction_count(admin_account.address),
+                'gas': 5000000,  # Higher gas limit for more complex contract
+                'gasPrice': w3.to_wei('50', 'gwei')
+            })
+            
+            signed_txn = w3.eth.account.sign_transaction(construct_txn, admin_private_key)
+            tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+            
+            # Wait for transaction receipt
+            tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+            contract_address = tx_receipt.contractAddress
+            
+            # Save contract to database
+            new_contract = SmartContract(
+                name="MultiSigWallet",
+                address=contract_address,
+                abi=json.dumps(MULTISIG_WALLET_ABI),
+                bytecode=MULTISIG_WALLET_BYTECODE,
+                description="Multi-signature wallet for secure high-value transactions"
+            )
+            
+            db.session.add(new_contract)
+            db.session.commit()
+            
+            logger.info(f"MultiSigWallet contract deployed at address: {contract_address}")
+        except Exception as e:
+            logger.error(f"Error deploying MultiSigWallet contract: {str(e)}")
+    else:
+        logger.info(f"MultiSigWallet contract already exists at address: {contract.address}")
+
+
+def initialize_nvc_token():
+    """Deploy the NVC token contract if it doesn't exist"""
+    contract = SmartContract.query.filter_by(name="NVCToken").first()
+    
+    if not contract:
+        try:
+            # Get admin account for contract deployment
+            admin_private_key = os.environ.get("ADMIN_ETH_PRIVATE_KEY")
+            
+            if not admin_private_key:
+                logger.error("Admin private key not found. Cannot deploy NVCToken contract.")
+                return
+            
+            admin_account = Account.from_key(admin_private_key)
+            
+            # Initial supply of 1,000,000 tokens (with 18 decimals)
+            initial_supply = 1000000
+            
+            # Build contract
+            token_contract = w3.eth.contract(
+                abi=NVC_TOKEN_ABI,
+                bytecode=NVC_TOKEN_BYTECODE
+            )
+            
+            # Deploy contract with constructor arguments
+            construct_txn = token_contract.constructor(
+                initial_supply, 
+                admin_account.address
+            ).build_transaction({
+                'from': admin_account.address,
+                'nonce': w3.eth.get_transaction_count(admin_account.address),
+                'gas': 3000000,
+                'gasPrice': w3.to_wei('50', 'gwei')
+            })
+            
+            signed_txn = w3.eth.account.sign_transaction(construct_txn, admin_private_key)
+            tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+            
+            # Wait for transaction receipt
+            tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+            contract_address = tx_receipt.contractAddress
+            
+            # Save contract to database
+            new_contract = SmartContract(
+                name="NVCToken",
+                address=contract_address,
+                abi=json.dumps(NVC_TOKEN_ABI),
+                bytecode=NVC_TOKEN_BYTECODE,
+                description="NVC Banking Token for platform transactions"
+            )
+            
+            db.session.add(new_contract)
+            db.session.commit()
+            
+            logger.info(f"NVCToken contract deployed at address: {contract_address}")
+        except Exception as e:
+            logger.error(f"Error deploying NVCToken contract: {str(e)}")
+    else:
+        logger.info(f"NVCToken contract already exists at address: {contract.address}")
+
+
 def get_settlement_contract():
     """Get the settlement contract instance"""
     contract = SmartContract.query.filter_by(name="SettlementContract").first()
     
     if not contract:
         logger.error("Settlement contract not found in database")
+        return None
+    
+    return w3.eth.contract(address=contract.address, abi=json.loads(contract.abi))
+
+
+def get_multisig_wallet():
+    """Get the MultiSigWallet contract instance"""
+    contract = SmartContract.query.filter_by(name="MultiSigWallet").first()
+    
+    if not contract:
+        logger.error("MultiSigWallet contract not found in database")
+        return None
+    
+    return w3.eth.contract(address=contract.address, abi=json.loads(contract.abi))
+
+
+def get_nvc_token():
+    """Get the NVCToken contract instance"""
+    contract = SmartContract.query.filter_by(name="NVCToken").first()
+    
+    if not contract:
+        logger.error("NVCToken contract not found in database")
         return None
     
     return w3.eth.contract(address=contract.address, abi=json.loads(contract.abi))
@@ -394,6 +842,363 @@ def get_transaction_status(eth_tx_hash):
     except Exception as e:
         logger.error(f"Error getting transaction status: {str(e)}")
         return {"error": str(e)}
+
+
+def submit_multisig_transaction(from_address, to_address, amount_in_eth, data, private_key, transaction_id):
+    """
+    Submit a transaction to the MultiSigWallet
+    
+    Args:
+        from_address (str): Sender's Ethereum address (must be an owner)
+        to_address (str): Recipient's Ethereum address
+        amount_in_eth (float): Amount in ETH to send
+        data (bytes): Transaction data payload
+        private_key (str): Sender's private key
+        transaction_id (str): Associated application transaction ID
+        
+    Returns:
+        str: Transaction hash if successful, None otherwise
+    """
+    try:
+        contract = get_multisig_wallet()
+        
+        if not contract:
+            logger.error("MultiSigWallet contract not available")
+            return None
+        
+        # Convert ETH to Wei
+        amount_in_wei = w3.to_wei(amount_in_eth, 'ether')
+        
+        # Build transaction
+        nonce = w3.eth.get_transaction_count(from_address)
+        
+        # Submit transaction to multisig wallet
+        tx = contract.functions.submitTransaction(
+            to_address,
+            amount_in_wei,
+            data
+        ).build_transaction({
+            'from': from_address,
+            'gas': 300000,
+            'gasPrice': w3.to_wei('50', 'gwei'),
+            'nonce': nonce,
+            'chainId': int(w3.net.version)
+        })
+        
+        # Sign and send transaction
+        signed_tx = w3.eth.account.sign_transaction(tx, private_key)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        
+        # Wait for transaction receipt
+        tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+        
+        # Record transaction in database
+        blockchain_tx = BlockchainTransaction(
+            transaction_id=transaction_id,
+            eth_tx_hash=tx_hash.hex(),
+            from_address=from_address,
+            to_address=to_address,
+            amount=amount_in_eth,
+            gas_used=tx_receipt.gasUsed,
+            gas_price=w3.from_wei(w3.to_wei('50', 'gwei'), 'ether'),
+            block_number=tx_receipt.blockNumber,
+            contract_address=contract.address,
+            status="confirmed" if tx_receipt.status else "failed"
+        )
+        
+        db.session.add(blockchain_tx)
+        db.session.commit()
+        
+        # Update transaction status
+        transaction = Transaction.query.filter_by(id=transaction_id).first()
+        if transaction:
+            transaction.eth_transaction_hash = tx_hash.hex()
+            transaction.status = TransactionStatus.PENDING  # MultiSig requires confirmations
+            db.session.commit()
+        
+        logger.info(f"MultiSig transaction submitted: {tx_hash.hex()}")
+        return tx_hash.hex()
+    
+    except Exception as e:
+        logger.error(f"Error submitting MultiSig transaction: {str(e)}")
+        
+        # Update transaction status to failed
+        transaction = Transaction.query.filter_by(id=transaction_id).first()
+        if transaction:
+            transaction.status = TransactionStatus.FAILED
+            db.session.commit()
+        
+        return None
+
+
+def confirm_multisig_transaction(transaction_id, from_address, private_key, multisig_tx_id):
+    """
+    Confirm a transaction in the MultiSigWallet
+    
+    Args:
+        transaction_id (str): Associated application transaction ID
+        from_address (str): Owner address confirming the transaction
+        private_key (str): Owner's private key
+        multisig_tx_id (int): MultiSigWallet transaction ID to confirm
+        
+    Returns:
+        str: Transaction hash if successful, None otherwise
+    """
+    try:
+        contract = get_multisig_wallet()
+        
+        if not contract:
+            logger.error("MultiSigWallet contract not available")
+            return None
+        
+        # Build transaction
+        nonce = w3.eth.get_transaction_count(from_address)
+        
+        # Confirm transaction
+        tx = contract.functions.confirmTransaction(
+            multisig_tx_id
+        ).build_transaction({
+            'from': from_address,
+            'gas': 100000,
+            'gasPrice': w3.to_wei('50', 'gwei'),
+            'nonce': nonce,
+            'chainId': int(w3.net.version)
+        })
+        
+        # Sign and send transaction
+        signed_tx = w3.eth.account.sign_transaction(tx, private_key)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        
+        # Wait for transaction receipt
+        tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+        
+        # Record confirmation in database
+        blockchain_tx = BlockchainTransaction(
+            transaction_id=transaction_id,
+            eth_tx_hash=tx_hash.hex(),
+            from_address=from_address,
+            to_address=contract.address,
+            amount=0,  # Confirmation doesn't transfer value
+            gas_used=tx_receipt.gasUsed,
+            gas_price=w3.from_wei(w3.to_wei('50', 'gwei'), 'ether'),
+            block_number=tx_receipt.blockNumber,
+            contract_address=contract.address,
+            status="confirmed" if tx_receipt.status else "failed"
+        )
+        
+        db.session.add(blockchain_tx)
+        db.session.commit()
+        
+        # Log confirmation
+        logger.info(f"MultiSig transaction confirmed: {tx_hash.hex()}")
+        return tx_hash.hex()
+    
+    except Exception as e:
+        logger.error(f"Error confirming MultiSig transaction: {str(e)}")
+        return None
+
+
+def transfer_nvc_tokens(from_address, to_address, amount, private_key, transaction_id):
+    """
+    Transfer NVC tokens from one address to another
+    
+    Args:
+        from_address (str): Sender's Ethereum address
+        to_address (str): Recipient's Ethereum address
+        amount (float): Amount of tokens to send
+        private_key (str): Sender's private key
+        transaction_id (str): Associated application transaction ID
+        
+    Returns:
+        str: Transaction hash if successful, None otherwise
+    """
+    try:
+        contract = get_nvc_token()
+        
+        if not contract:
+            logger.error("NVCToken contract not available")
+            return None
+        
+        # Convert to token units (with 18 decimals)
+        amount_in_units = int(amount * 10**18)
+        
+        # Build transaction
+        nonce = w3.eth.get_transaction_count(from_address)
+        
+        # Transfer tokens
+        tx = contract.functions.transfer(
+            to_address,
+            amount_in_units
+        ).build_transaction({
+            'from': from_address,
+            'gas': 100000,
+            'gasPrice': w3.to_wei('50', 'gwei'),
+            'nonce': nonce,
+            'chainId': int(w3.net.version)
+        })
+        
+        # Sign and send transaction
+        signed_tx = w3.eth.account.sign_transaction(tx, private_key)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        
+        # Wait for transaction receipt
+        tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+        
+        # Record transaction in database
+        blockchain_tx = BlockchainTransaction(
+            transaction_id=transaction_id,
+            eth_tx_hash=tx_hash.hex(),
+            from_address=from_address,
+            to_address=to_address,
+            amount=amount,
+            gas_used=tx_receipt.gasUsed,
+            gas_price=w3.from_wei(w3.to_wei('50', 'gwei'), 'ether'),
+            block_number=tx_receipt.blockNumber,
+            contract_address=contract.address,
+            status="confirmed" if tx_receipt.status else "failed"
+        )
+        
+        db.session.add(blockchain_tx)
+        db.session.commit()
+        
+        # Update transaction status
+        transaction = Transaction.query.filter_by(id=transaction_id).first()
+        if transaction:
+            transaction.eth_transaction_hash = tx_hash.hex()
+            transaction.status = TransactionStatus.COMPLETED if tx_receipt.status else TransactionStatus.FAILED
+            db.session.commit()
+        
+        logger.info(f"NVC tokens transferred: {tx_hash.hex()}")
+        return tx_hash.hex()
+    
+    except Exception as e:
+        logger.error(f"Error transferring NVC tokens: {str(e)}")
+        
+        # Update transaction status to failed
+        transaction = Transaction.query.filter_by(id=transaction_id).first()
+        if transaction:
+            transaction.status = TransactionStatus.FAILED
+            db.session.commit()
+        
+        return None
+
+
+def get_nvc_token_balance(address):
+    """
+    Get NVC token balance for an address
+    
+    Args:
+        address (str): Ethereum address to check
+        
+    Returns:
+        float: Token balance
+    """
+    try:
+        contract = get_nvc_token()
+        
+        if not contract:
+            logger.error("NVCToken contract not available")
+            return 0
+        
+        # Call balanceOf function
+        balance_in_units = contract.functions.balanceOf(address).call()
+        
+        # Convert to human-readable format (with 18 decimals)
+        balance = balance_in_units / 10**18
+        
+        return balance
+    
+    except Exception as e:
+        logger.error(f"Error getting NVC token balance: {str(e)}")
+        return 0
+
+
+def create_new_settlement(from_address, to_address, amount_in_eth, private_key, transaction_id, metadata=""):
+    """
+    Create a new settlement using the SettlementContract
+    
+    Args:
+        from_address (str): Sender's Ethereum address
+        to_address (str): Recipient's Ethereum address
+        amount_in_eth (float): Amount in ETH to send
+        private_key (str): Sender's private key
+        transaction_id (str): Associated application transaction ID
+        metadata (str): Additional settlement data
+        
+    Returns:
+        str: Transaction hash if successful, None otherwise
+    """
+    try:
+        contract = get_settlement_contract()
+        
+        if not contract:
+            logger.error("Settlement contract not available")
+            return None
+        
+        # Convert ETH to Wei
+        amount_in_wei = w3.to_wei(amount_in_eth, 'ether')
+        
+        # Build transaction
+        nonce = w3.eth.get_transaction_count(from_address)
+        
+        # Create settlement
+        tx = contract.functions.createSettlement(
+            str(transaction_id),
+            to_address,
+            metadata
+        ).build_transaction({
+            'from': from_address,
+            'value': amount_in_wei,
+            'gas': 300000,
+            'gasPrice': w3.to_wei('50', 'gwei'),
+            'nonce': nonce,
+            'chainId': int(w3.net.version)
+        })
+        
+        # Sign and send transaction
+        signed_tx = w3.eth.account.sign_transaction(tx, private_key)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        
+        # Wait for transaction receipt
+        tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+        
+        # Record transaction in database
+        blockchain_tx = BlockchainTransaction(
+            transaction_id=transaction_id,
+            eth_tx_hash=tx_hash.hex(),
+            from_address=from_address,
+            to_address=to_address,
+            amount=amount_in_eth,
+            gas_used=tx_receipt.gasUsed,
+            gas_price=w3.from_wei(w3.to_wei('50', 'gwei'), 'ether'),
+            block_number=tx_receipt.blockNumber,
+            contract_address=contract.address,
+            status="confirmed" if tx_receipt.status else "failed"
+        )
+        
+        db.session.add(blockchain_tx)
+        db.session.commit()
+        
+        # Update transaction status
+        transaction = Transaction.query.filter_by(id=transaction_id).first()
+        if transaction:
+            transaction.eth_transaction_hash = tx_hash.hex()
+            transaction.status = TransactionStatus.PENDING  # Settlement is pending until completed
+            db.session.commit()
+        
+        logger.info(f"Settlement created: {tx_hash.hex()}")
+        return tx_hash.hex()
+    
+    except Exception as e:
+        logger.error(f"Error creating settlement: {str(e)}")
+        
+        # Update transaction status to failed
+        transaction = Transaction.query.filter_by(id=transaction_id).first()
+        if transaction:
+            transaction.status = TransactionStatus.FAILED
+            db.session.commit()
+        
+        return None
 
 
 def generate_ethereum_account():
