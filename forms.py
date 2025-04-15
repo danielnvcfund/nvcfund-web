@@ -4,7 +4,7 @@ from wtforms import (
     FloatField, TextAreaField, BooleanField, HiddenField, DecimalField
 )
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, NumberRange, Optional
-from models import User, PaymentGatewayType, FinancialInstitutionType, TransactionType
+from models import User, PaymentGatewayType, FinancialInstitutionType, TransactionType, InvitationType, InvitationStatus, Invitation
 
 class LoginForm(FlaskForm):
     """Form for user login"""
@@ -103,3 +103,41 @@ class PaymentGatewayForm(FlaskForm):
     webhook_secret = StringField('Webhook Secret', validators=[Optional(), Length(max=256)])
     is_active = BooleanField('Active', default=True)
     submit = SubmitField('Save Gateway')
+
+class InvitationForm(FlaskForm):
+    """Form for creating invitations"""
+    email = EmailField('Email', validators=[DataRequired(), Email()])
+    invitation_type = SelectField('Invitation Type', validators=[DataRequired()],
+                                choices=[(t.name, t.value) for t in InvitationType])
+    organization_name = StringField('Organization Name', validators=[DataRequired(), Length(min=2, max=128)])
+    message = TextAreaField('Personal Message', validators=[Optional(), Length(max=500)])
+    expiration_days = SelectField('Invitation Expires After', validators=[DataRequired()],
+                                choices=[(7, '7 Days'), (14, '14 Days'), (30, '30 Days')],
+                                coerce=int, default=14)
+    submit = SubmitField('Send Invitation')
+    
+    def validate_email(self, email):
+        """Validate that email is not already in use"""
+        user = User.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('This email is already registered. Please use a different email.')
+        
+        # Check if a pending invitation already exists
+        invitation = Invitation.query.filter_by(email=email.data, status=InvitationStatus.PENDING).first()
+        if invitation and invitation.is_valid():
+            raise ValidationError('A pending invitation already exists for this email.')
+
+class AcceptInvitationForm(FlaskForm):
+    """Form for accepting invitations"""
+    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=64)])
+    email = EmailField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    terms_agreement = BooleanField('I agree to the Terms of Service', validators=[DataRequired()])
+    submit = SubmitField('Complete Registration')
+    
+    def validate_username(self, username):
+        """Validate that username is not already taken"""
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('This username is already taken. Please choose a different one.')

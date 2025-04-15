@@ -168,3 +168,40 @@ class Webhook(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class InvitationStatus(enum.Enum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    EXPIRED = "expired"
+    REVOKED = "revoked"
+
+class InvitationType(enum.Enum):
+    CLIENT = "client"
+    FINANCIAL_INSTITUTION = "financial_institution"
+    ASSET_MANAGER = "asset_manager"
+    BUSINESS_PARTNER = "business_partner"
+
+class Invitation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    invite_code = db.Column(db.String(64), unique=True, nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    invitation_type = db.Column(db.Enum(InvitationType), nullable=False)
+    status = db.Column(db.Enum(InvitationStatus), default=InvitationStatus.PENDING)
+    invited_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    organization_name = db.Column(db.String(128))
+    message = db.Column(db.Text)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    accepted_at = db.Column(db.DateTime)
+    
+    # The user who created the invitation
+    inviter = db.relationship('User', foreign_keys=[invited_by], backref=db.backref('sent_invitations', lazy=True))
+    
+    def is_expired(self):
+        """Check if the invitation has expired"""
+        return datetime.utcnow() > self.expires_at
+    
+    def is_valid(self):
+        """Check if the invitation is valid (not expired, not accepted, not revoked)"""
+        return self.status == InvitationStatus.PENDING and not self.is_expired()
