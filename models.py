@@ -9,6 +9,16 @@ class UserRole(enum.Enum):
     USER = "user"
     API = "api"
 
+class PartnerType(enum.Enum):
+    FINANCIAL_INSTITUTION = "Financial Institution"
+    ASSET_MANAGER = "Asset Manager"
+    BUSINESS_PARTNER = "Business Partner"
+
+class IntegrationType(enum.Enum):
+    API = "API"
+    WEBHOOK = "Webhook"
+    FILE_TRANSFER = "File Transfer"
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
@@ -121,5 +131,40 @@ class SmartContract(db.Model):
     bytecode = db.Column(db.Text)
     is_active = db.Column(db.Boolean, default=True)
     description = db.Column(db.String(256))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class AssetManager(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), nullable=False)
+    integration_type = db.Column(db.Enum(IntegrationType), nullable=False)
+    api_endpoint = db.Column(db.String(256))
+    api_key = db.Column(db.String(256))
+    webhook_url = db.Column(db.String(256))
+    is_active = db.Column(db.Boolean, default=True)
+    description = db.Column(db.String(256))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class BusinessPartner(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), nullable=False)
+    integration_type = db.Column(db.Enum(IntegrationType), nullable=False)
+    api_endpoint = db.Column(db.String(256))
+    api_key = db.Column(db.String(256))
+    webhook_url = db.Column(db.String(256))
+    is_active = db.Column(db.Boolean, default=True)
+    description = db.Column(db.String(256))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class Webhook(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    event_type = db.Column(db.String(64), nullable=False)
+    destination_url = db.Column(db.String(256), nullable=False)
+    partner_id = db.Column(db.Integer)  # Can be from any partner type
+    partner_type = db.Column(db.Enum(PartnerType))  # Type of partner this webhook is for
+    secret = db.Column(db.String(256))
+    is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

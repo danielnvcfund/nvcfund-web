@@ -587,6 +587,19 @@ def user_management():
         roles=UserRole
     )
 
+@app.route('/partner_integration')
+@admin_required
+def partner_integration():
+    """Partner integration management route"""
+    api_users = User.query.filter_by(role=UserRole.API).all()
+    financial_institutions = FinancialInstitution.query.all()
+    
+    return render_template(
+        'partner_integration.html',
+        api_users=api_users,
+        financial_institutions=financial_institutions
+    )
+
 @app.route('/user/<int:user_id>/update_role', methods=['POST'])
 @admin_required
 def update_user_role(user_id):

@@ -1,0 +1,1006 @@
+{% extends 'layout.html' %}
+
+{% block title %}Partner Integration - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-handshake me-2"></i>Strategic Partner Integration</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle me-2"></i>Integration Guide</h5>
+                        <p>This portal allows you to integrate strategic partners, asset managers, and business partners with the NVC Platform. You can manage API access, webhook configurations, and integration settings for each partner.</p>
+                    </div>
+                    
+                    <ul class="nav nav-tabs" id="partnerTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="api-access-tab" data-bs-toggle="tab" data-bs-target="#api-access" type="button" role="tab">
+                                API Access
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="financial-tab" data-bs-toggle="tab" data-bs-target="#financial" type="button" role="tab">
+                                Financial Institutions
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="asset-managers-tab" data-bs-toggle="tab" data-bs-target="#asset-managers" type="button" role="tab">
+                                Asset Managers
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="business-partners-tab" data-bs-toggle="tab" data-bs-target="#business-partners" type="button" role="tab">
+                                Business Partners
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="webhooks-tab" data-bs-toggle="tab" data-bs-target="#webhooks" type="button" role="tab">
+                                Webhooks
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content p-3 border border-top-0 rounded-bottom" id="partnerTabsContent">
+                        <!-- API Access Tab -->
+                        <div class="tab-pane fade show active" id="api-access" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4>API User Accounts</h4>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createApiUserModal">
+                                    <i class="fas fa-plus me-1"></i> Create API User
+                                </button>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Username</th>
+                                            <th>Email</th>
+                                            <th>Partner Type</th>
+                                            <th>API Key</th>
+                                            <th>Created</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for user in api_users %}
+                                        <tr>
+                                            <td>{{ user.username }}</td>
+                                            <td>{{ user.email }}</td>
+                                            <td>{{ user.partner_type or 'Standard' }}</td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <input type="password" class="form-control form-control-sm" value="{{ user.api_key }}" id="apiKey{{ user.id }}" readonly>
+                                                    <button class="btn btn-outline-secondary btn-sm" type="button" onclick="toggleApiKeyVisibility('apiKey{{ user.id }}')">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('apiKey{{ user.id }}')">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                                            <td>
+                                                {% if user.is_active %}
+                                                <span class="badge bg-success">Active</span>
+                                                {% else %}
+                                                <span class="badge bg-danger">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="regenerateApiKey({{ user.id }})">
+                                                        <i class="fas fa-sync-alt"></i> Regenerate Key
+                                                    </button>
+                                                    <form method="POST" action="{{ url_for('toggle_user_status', user_id=user.id) }}" class="d-inline">
+                                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                        <button type="submit" class="btn btn-sm {% if user.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}">
+                                                            {% if user.is_active %}
+                                                                <i class="fas fa-ban"></i> Disable
+                                                            {% else %}
+                                                                <i class="fas fa-check"></i> Enable
+                                                            {% endif %}
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Financial Institutions Tab -->
+                        <div class="tab-pane fade" id="financial" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4>Financial Institution Integrations</h4>
+                                <a href="{{ url_for('new_financial_institution') }}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-1"></i> Add Institution
+                                </a>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>API Endpoint</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for institution in financial_institutions %}
+                                        <tr>
+                                            <td>{{ institution.name }}</td>
+                                            <td>{{ institution.institution_type.value }}</td>
+                                            <td>{{ institution.api_endpoint }}</td>
+                                            <td>
+                                                {% if institution.is_active %}
+                                                <span class="badge bg-success">Active</span>
+                                                {% else %}
+                                                <span class="badge bg-danger">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ url_for('edit_financial_institution', institution_id=institution.id) }}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="testConnection('financial', {{ institution.id }})">
+                                                        <i class="fas fa-plug"></i> Test Connection
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Asset Managers Tab -->
+                        <div class="tab-pane fade" id="asset-managers" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4>Asset Manager Integrations</h4>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAssetManagerModal">
+                                    <i class="fas fa-plus me-1"></i> Add Asset Manager
+                                </button>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Integration Type</th>
+                                            <th>API Endpoint</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="assetManagersList">
+                                        <!-- Asset managers will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Business Partners Tab -->
+                        <div class="tab-pane fade" id="business-partners" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4>Business Partner Integrations</h4>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createBusinessPartnerModal">
+                                    <i class="fas fa-plus me-1"></i> Add Business Partner
+                                </button>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Integration Type</th>
+                                            <th>API Endpoint</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="businessPartnersList">
+                                        <!-- Business partners will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Webhooks Tab -->
+                        <div class="tab-pane fade" id="webhooks" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4>Webhook Configurations</h4>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createWebhookModal">
+                                    <i class="fas fa-plus me-1"></i> Create Webhook
+                                </button>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Event Type</th>
+                                            <th>Destination URL</th>
+                                            <th>Partner</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="webhooksList">
+                                        <!-- Webhooks will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create API User Modal -->
+<div class="modal fade" id="createApiUserModal" tabindex="-1" aria-labelledby="createApiUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createApiUserModalLabel">Create API User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('create_api_user') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="partner_type" class="form-label">Partner Type</label>
+                        <select class="form-select" id="partner_type" name="partner_type">
+                            <option value="financial_institution">Financial Institution</option>
+                            <option value="asset_manager">Asset Manager</option>
+                            <option value="business_partner">Business Partner</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create API User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create Asset Manager Modal -->
+<div class="modal fade" id="createAssetManagerModal" tabindex="-1" aria-labelledby="createAssetManagerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createAssetManagerModalLabel">Add Asset Manager</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="assetManagerForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="assetManagerName" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="assetManagerName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="assetManagerType" class="form-label">Integration Type</label>
+                        <select class="form-select" id="assetManagerType">
+                            <option value="api">API</option>
+                            <option value="webhook">Webhook</option>
+                            <option value="file_transfer">File Transfer</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="assetManagerEndpoint" class="form-label">API Endpoint</label>
+                        <input type="text" class="form-control" id="assetManagerEndpoint">
+                    </div>
+                    <div class="mb-3">
+                        <label for="assetManagerApiKey" class="form-label">API Key/Secret</label>
+                        <input type="password" class="form-control" id="assetManagerApiKey">
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="assetManagerActive" checked>
+                        <label class="form-check-label" for="assetManagerActive">
+                            Active
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Asset Manager</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create Business Partner Modal -->
+<div class="modal fade" id="createBusinessPartnerModal" tabindex="-1" aria-labelledby="createBusinessPartnerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createBusinessPartnerModalLabel">Add Business Partner</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="businessPartnerForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="businessPartnerName" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="businessPartnerName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="businessPartnerType" class="form-label">Integration Type</label>
+                        <select class="form-select" id="businessPartnerType">
+                            <option value="api">API</option>
+                            <option value="webhook">Webhook</option>
+                            <option value="file_transfer">File Transfer</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="businessPartnerEndpoint" class="form-label">API Endpoint</label>
+                        <input type="text" class="form-control" id="businessPartnerEndpoint">
+                    </div>
+                    <div class="mb-3">
+                        <label for="businessPartnerApiKey" class="form-label">API Key/Secret</label>
+                        <input type="password" class="form-control" id="businessPartnerApiKey">
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="businessPartnerActive" checked>
+                        <label class="form-check-label" for="businessPartnerActive">
+                            Active
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Business Partner</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create Webhook Modal -->
+<div class="modal fade" id="createWebhookModal" tabindex="-1" aria-labelledby="createWebhookModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createWebhookModalLabel">Create Webhook</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="webhookForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="webhookEvent" class="form-label">Event Type</label>
+                        <select class="form-select" id="webhookEvent">
+                            <option value="transaction.created">Transaction Created</option>
+                            <option value="transaction.updated">Transaction Updated</option>
+                            <option value="transaction.completed">Transaction Completed</option>
+                            <option value="payment.received">Payment Received</option>
+                            <option value="payment.failed">Payment Failed</option>
+                            <option value="transfer.initiated">Transfer Initiated</option>
+                            <option value="transfer.completed">Transfer Completed</option>
+                            <option value="blockchain.transaction">Blockchain Transaction</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="webhookUrl" class="form-label">Destination URL</label>
+                        <input type="url" class="form-control" id="webhookUrl" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="webhookPartner" class="form-label">Partner</label>
+                        <select class="form-select" id="webhookPartner">
+                            <option value="">-- All Partners --</option>
+                            <!-- Partners will be loaded dynamically -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="webhookSecret" class="form-label">Webhook Secret</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="webhookSecret" readonly>
+                            <button class="btn btn-outline-secondary" type="button" id="generateWebhookSecret">
+                                Generate
+                            </button>
+                        </div>
+                        <small class="form-text text-muted">This secret will be used to sign webhook payloads.</small>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="webhookActive" checked>
+                        <label class="form-check-label" for="webhookActive">
+                            Active
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Webhook</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleApiKeyVisibility(elementId) {
+    const input = document.getElementById(elementId);
+    if (input.type === 'password') {
+        input.type = 'text';
+    } else {
+        input.type = 'password';
+    }
+}
+
+function copyToClipboard(elementId) {
+    const input = document.getElementById(elementId);
+    
+    // Change to text type to make copying possible
+    const wasPassword = input.type === 'password';
+    if (wasPassword) {
+        input.type = 'text';
+    }
+    
+    input.select();
+    document.execCommand('copy');
+    
+    // Revert back to password type if it was password
+    if (wasPassword) {
+        input.type = 'password';
+    }
+    
+    // Deselect
+    input.setSelectionRange(0, 0);
+    input.blur();
+    
+    // Show success message
+    const alertContainer = document.getElementById('alert-container');
+    alertContainer.innerHTML = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            API Key copied to clipboard.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+}
+
+function regenerateApiKey(userId) {
+    if (confirm('Are you sure you want to regenerate this API key? The old key will no longer work.')) {
+        fetch(`/api/users/${userId}/regenerate_key`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const apiKeyInput = document.getElementById(`apiKey${userId}`);
+                apiKeyInput.value = data.api_key;
+                
+                const alertContainer = document.getElementById('alert-container');
+                alertContainer.innerHTML = `
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        API Key regenerated successfully.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+            } else {
+                const alertContainer = document.getElementById('alert-container');
+                alertContainer.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        Error: ${data.error}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    An error occurred. Please try again.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        });
+    }
+}
+
+function testConnection(type, id) {
+    fetch(`/api/test_connection`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+        },
+        body: JSON.stringify({
+            connection_type: type,
+            connection_id: id
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const alertContainer = document.getElementById('alert-container');
+        if (data.success) {
+            alertContainer.innerHTML = `
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    ${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        } else {
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    Connection test failed: ${data.error}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        const alertContainer = document.getElementById('alert-container');
+        alertContainer.innerHTML = `
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                An error occurred during connection test. Please try again.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+    });
+}
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', function() {
+    // Generate webhook secret when button is clicked
+    document.getElementById('generateWebhookSecret').addEventListener('click', function() {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        const length = 32;
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        document.getElementById('webhookSecret').value = result;
+    });
+    
+    // Handle asset manager form submission
+    document.getElementById('assetManagerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const assetManager = {
+            name: document.getElementById('assetManagerName').value,
+            integration_type: document.getElementById('assetManagerType').value,
+            api_endpoint: document.getElementById('assetManagerEndpoint').value,
+            api_key: document.getElementById('assetManagerApiKey').value,
+            is_active: document.getElementById('assetManagerActive').checked
+        };
+        
+        fetch('/api/asset_managers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+            },
+            body: JSON.stringify(assetManager)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Close modal and refresh list
+                const modal = bootstrap.Modal.getInstance(document.getElementById('createAssetManagerModal'));
+                modal.hide();
+                
+                // Show success message
+                const alertContainer = document.getElementById('alert-container');
+                alertContainer.innerHTML = `
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        Asset manager added successfully.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                
+                // Reset form
+                document.getElementById('assetManagerForm').reset();
+                
+                // Reload asset managers list
+                loadAssetManagers();
+            } else {
+                const alertContainer = document.getElementById('alert-container');
+                alertContainer.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        Error: ${data.error}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    An error occurred. Please try again.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        });
+    });
+    
+    // Handle business partner form submission
+    document.getElementById('businessPartnerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const businessPartner = {
+            name: document.getElementById('businessPartnerName').value,
+            integration_type: document.getElementById('businessPartnerType').value,
+            api_endpoint: document.getElementById('businessPartnerEndpoint').value,
+            api_key: document.getElementById('businessPartnerApiKey').value,
+            is_active: document.getElementById('businessPartnerActive').checked
+        };
+        
+        fetch('/api/business_partners', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+            },
+            body: JSON.stringify(businessPartner)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Close modal and refresh list
+                const modal = bootstrap.Modal.getInstance(document.getElementById('createBusinessPartnerModal'));
+                modal.hide();
+                
+                // Show success message
+                const alertContainer = document.getElementById('alert-container');
+                alertContainer.innerHTML = `
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        Business partner added successfully.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                
+                // Reset form
+                document.getElementById('businessPartnerForm').reset();
+                
+                // Reload business partners list
+                loadBusinessPartners();
+            } else {
+                const alertContainer = document.getElementById('alert-container');
+                alertContainer.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        Error: ${data.error}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    An error occurred. Please try again.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        });
+    });
+    
+    // Handle webhook form submission
+    document.getElementById('webhookForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const webhook = {
+            event_type: document.getElementById('webhookEvent').value,
+            destination_url: document.getElementById('webhookUrl').value,
+            partner_id: document.getElementById('webhookPartner').value || null,
+            secret: document.getElementById('webhookSecret').value,
+            is_active: document.getElementById('webhookActive').checked
+        };
+        
+        fetch('/api/webhooks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+            },
+            body: JSON.stringify(webhook)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Close modal and refresh list
+                const modal = bootstrap.Modal.getInstance(document.getElementById('createWebhookModal'));
+                modal.hide();
+                
+                // Show success message
+                const alertContainer = document.getElementById('alert-container');
+                alertContainer.innerHTML = `
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        Webhook created successfully.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                
+                // Reset form
+                document.getElementById('webhookForm').reset();
+                
+                // Reload webhooks list
+                loadWebhooks();
+            } else {
+                const alertContainer = document.getElementById('alert-container');
+                alertContainer.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        Error: ${data.error}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    An error occurred. Please try again.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        });
+    });
+    
+    // Load initial data
+    loadAssetManagers();
+    loadBusinessPartners();
+    loadWebhooks();
+    loadPartnerOptions();
+});
+
+function loadAssetManagers() {
+    fetch('/api/asset_managers')
+        .then(response => response.json())
+        .then(data => {
+            const assetManagersList = document.getElementById('assetManagersList');
+            assetManagersList.innerHTML = '';
+            
+            if (data.asset_managers && data.asset_managers.length > 0) {
+                data.asset_managers.forEach(manager => {
+                    assetManagersList.innerHTML += `
+                        <tr>
+                            <td>${manager.name}</td>
+                            <td>${manager.integration_type}</td>
+                            <td>${manager.api_endpoint || 'N/A'}</td>
+                            <td>
+                                ${manager.is_active
+                                    ? '<span class="badge bg-success">Active</span>'
+                                    : '<span class="badge bg-danger">Inactive</span>'
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="editAssetManager(${manager.id})">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="testConnection('asset_manager', ${manager.id})">
+                                        <i class="fas fa-plug"></i> Test Connection
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                assetManagersList.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center">No asset managers configured.</td>
+                    </tr>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading asset managers:', error);
+        });
+}
+
+function loadBusinessPartners() {
+    fetch('/api/business_partners')
+        .then(response => response.json())
+        .then(data => {
+            const businessPartnersList = document.getElementById('businessPartnersList');
+            businessPartnersList.innerHTML = '';
+            
+            if (data.business_partners && data.business_partners.length > 0) {
+                data.business_partners.forEach(partner => {
+                    businessPartnersList.innerHTML += `
+                        <tr>
+                            <td>${partner.name}</td>
+                            <td>${partner.integration_type}</td>
+                            <td>${partner.api_endpoint || 'N/A'}</td>
+                            <td>
+                                ${partner.is_active
+                                    ? '<span class="badge bg-success">Active</span>'
+                                    : '<span class="badge bg-danger">Inactive</span>'
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="editBusinessPartner(${partner.id})">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="testConnection('business_partner', ${partner.id})">
+                                        <i class="fas fa-plug"></i> Test Connection
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                businessPartnersList.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center">No business partners configured.</td>
+                    </tr>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading business partners:', error);
+        });
+}
+
+function loadWebhooks() {
+    fetch('/api/webhooks')
+        .then(response => response.json())
+        .then(data => {
+            const webhooksList = document.getElementById('webhooksList');
+            webhooksList.innerHTML = '';
+            
+            if (data.webhooks && data.webhooks.length > 0) {
+                data.webhooks.forEach(webhook => {
+                    webhooksList.innerHTML += `
+                        <tr>
+                            <td>${webhook.event_type}</td>
+                            <td>${webhook.destination_url}</td>
+                            <td>${webhook.partner_name || 'All Partners'}</td>
+                            <td>
+                                ${webhook.is_active
+                                    ? '<span class="badge bg-success">Active</span>'
+                                    : '<span class="badge bg-danger">Inactive</span>'
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="editWebhook(${webhook.id})">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="testWebhook(${webhook.id})">
+                                        <i class="fas fa-paper-plane"></i> Test
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                webhooksList.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center">No webhooks configured.</td>
+                    </tr>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading webhooks:', error);
+        });
+}
+
+function loadPartnerOptions() {
+    // Load partners for webhook dropdown
+    fetch('/api/all_partners')
+        .then(response => response.json())
+        .then(data => {
+            const webhookPartnerSelect = document.getElementById('webhookPartner');
+            // Clear existing options except the first one
+            while (webhookPartnerSelect.options.length > 1) {
+                webhookPartnerSelect.remove(1);
+            }
+            
+            if (data.partners) {
+                data.partners.forEach(partner => {
+                    const option = document.createElement('option');
+                    option.value = partner.id;
+                    option.textContent = `${partner.name} (${partner.type})`;
+                    webhookPartnerSelect.appendChild(option);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error loading partners:', error);
+        });
+}
+
+function editAssetManager(id) {
+    // Implementation will be added in future updates
+    console.log('Edit asset manager', id);
+}
+
+function editBusinessPartner(id) {
+    // Implementation will be added in future updates
+    console.log('Edit business partner', id);
+}
+
+function editWebhook(id) {
+    // Implementation will be added in future updates
+    console.log('Edit webhook', id);
+}
+
+function testWebhook(id) {
+    fetch(`/api/webhooks/${id}/test`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const alertContainer = document.getElementById('alert-container');
+        if (data.success) {
+            alertContainer.innerHTML = `
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    Webhook test sent successfully. Status: ${data.status}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        } else {
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    Webhook test failed: ${data.error}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error testing webhook:', error);
+        const alertContainer = document.getElementById('alert-container');
+        alertContainer.innerHTML = `
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                An error occurred during webhook test. Please try again.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+    });
+}
+</script>
+{% endblock %}
