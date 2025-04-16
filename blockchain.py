@@ -474,8 +474,16 @@ def initialize_settlement_contract():
                 bytecode=SETTLEMENT_CONTRACT_BYTECODE
             )
             
-            # Deploy contract
-            construct_txn = settlement_contract.constructor().build_transaction({
+            # Deploy contract with constructor arguments
+            # Set fee percentage to 100 basis points (1%) and fee collector to admin account
+            fee_percentage = 100  # 1% fee in basis points
+            fee_collector = admin_account.address
+
+            # Deploy contract with constructor arguments
+            construct_txn = settlement_contract.constructor(
+                fee_percentage,
+                fee_collector
+            ).build_transaction({
                 'from': admin_account.address,
                 'nonce': w3.eth.get_transaction_count(admin_account.address),
                 'gas': 2000000,
