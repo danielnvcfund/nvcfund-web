@@ -114,8 +114,10 @@ class PaymentGateway(db.Model):
     api_key = db.Column(db.String(256))
     webhook_secret = db.Column(db.String(256))
     ethereum_address = db.Column(db.String(64))
-    xrp_address = db.Column(db.String(64))
-    xrp_seed = db.Column(db.String(256))
+    # These columns might not exist in legacy databases
+    # They are handled in payment_gateways.py
+    # xrp_address = db.Column(db.String(64))
+    # xrp_seed = db.Column(db.String(256))
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
