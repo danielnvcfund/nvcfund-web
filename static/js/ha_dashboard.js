@@ -367,11 +367,22 @@ function refreshMetrics() {
             
             if (data.app_metrics && Object.keys(data.app_metrics).length > 0) {
                 Object.entries(data.app_metrics).forEach(([key, value]) => {
+                    if (key === 'message') return; // Skip message entries
+                    
                     const row = document.createElement('tr');
                     const keyCell = document.createElement('td');
                     keyCell.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                     const valueCell = document.createElement('td');
-                    valueCell.textContent = value;
+                    
+                    // Format special values
+                    if (key === 'uptime' && typeof value === 'number') {
+                        valueCell.textContent = formatUptime(value);
+                    } else if (key.includes('timestamp') && value) {
+                        valueCell.textContent = formatDateTime(value);
+                    } else {
+                        valueCell.textContent = value;
+                    }
+                    
                     row.appendChild(keyCell);
                     row.appendChild(valueCell);
                     appMetricsTable.appendChild(row);
@@ -381,7 +392,7 @@ function refreshMetrics() {
                 const emptyCell = document.createElement('td');
                 emptyCell.colSpan = 2;
                 emptyCell.className = 'text-center';
-                emptyCell.textContent = 'No metrics available';
+                emptyCell.textContent = data.app_metrics && data.app_metrics.message || 'No metrics available';
                 row.appendChild(emptyCell);
                 appMetricsTable.appendChild(row);
             }
@@ -391,22 +402,52 @@ function refreshMetrics() {
             dbMetricsTable.innerHTML = '';
             
             if (data.db_metrics && Object.keys(data.db_metrics).length > 0) {
+                let hasMessage = false;
+                
                 Object.entries(data.db_metrics).forEach(([key, value]) => {
+                    if (key === 'message') {
+                        hasMessage = true;
+                        return;
+                    }
+                    
                     const row = document.createElement('tr');
                     const keyCell = document.createElement('td');
                     keyCell.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                     const valueCell = document.createElement('td');
-                    valueCell.textContent = value;
+                    
+                    // Format special values
+                    if (key.includes('latency') && typeof value === 'number') {
+                        valueCell.textContent = `${value} ms`;
+                    } else if (key.includes('lag') && typeof value === 'number') {
+                        valueCell.textContent = `${value} sec`;
+                    } else {
+                        valueCell.textContent = value;
+                    }
+                    
                     row.appendChild(keyCell);
                     row.appendChild(valueCell);
                     dbMetricsTable.appendChild(row);
                 });
+                
+                if (hasMessage) {
+                    // If there's a message, it might be for disabled HA
+                    if (Object.keys(data.db_metrics).length === 1) {
+                        const row = document.createElement('tr');
+                        const messageCell = document.createElement('td');
+                        messageCell.colSpan = 2;
+                        messageCell.className = 'text-center';
+                        messageCell.textContent = data.db_metrics.message;
+                        row.appendChild(messageCell);
+                        dbMetricsTable.innerHTML = '';
+                        dbMetricsTable.appendChild(row);
+                    }
+                }
             } else {
                 const row = document.createElement('tr');
                 const emptyCell = document.createElement('td');
                 emptyCell.colSpan = 2;
                 emptyCell.className = 'text-center';
-                emptyCell.textContent = 'No metrics available';
+                emptyCell.textContent = data.db_metrics && data.db_metrics.message || 'No metrics available';
                 row.appendChild(emptyCell);
                 dbMetricsTable.appendChild(row);
             }
@@ -416,22 +457,50 @@ function refreshMetrics() {
             clusterMetricsTable.innerHTML = '';
             
             if (data.cluster_metrics && Object.keys(data.cluster_metrics).length > 0) {
+                let hasMessage = false;
+                
                 Object.entries(data.cluster_metrics).forEach(([key, value]) => {
+                    if (key === 'message') {
+                        hasMessage = true;
+                        return;
+                    }
+                    
                     const row = document.createElement('tr');
                     const keyCell = document.createElement('td');
                     keyCell.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                     const valueCell = document.createElement('td');
-                    valueCell.textContent = value;
+                    
+                    // Format special values for cluster metrics
+                    if (key === 'is_leader') {
+                        valueCell.textContent = value ? 'Yes' : 'No';
+                    } else {
+                        valueCell.textContent = value;
+                    }
+                    
                     row.appendChild(keyCell);
                     row.appendChild(valueCell);
                     clusterMetricsTable.appendChild(row);
                 });
+                
+                if (hasMessage) {
+                    // If there's a message, it might be for disabled HA
+                    if (Object.keys(data.cluster_metrics).length === 1) {
+                        const row = document.createElement('tr');
+                        const messageCell = document.createElement('td');
+                        messageCell.colSpan = 2;
+                        messageCell.className = 'text-center';
+                        messageCell.textContent = data.cluster_metrics.message;
+                        row.appendChild(messageCell);
+                        clusterMetricsTable.innerHTML = '';
+                        clusterMetricsTable.appendChild(row);
+                    }
+                }
             } else {
                 const row = document.createElement('tr');
                 const emptyCell = document.createElement('td');
                 emptyCell.colSpan = 2;
                 emptyCell.className = 'text-center';
-                emptyCell.textContent = 'No metrics available';
+                emptyCell.textContent = data.cluster_metrics && data.cluster_metrics.message || 'No metrics available';
                 row.appendChild(emptyCell);
                 clusterMetricsTable.appendChild(row);
             }
