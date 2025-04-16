@@ -778,11 +778,61 @@
             clearInterval(autoRefreshInterval);
         }
         
+        // Apply initial status data if available
+        if (initialStatus) {
+            applyInitialStatus(initialStatus);
+        }
+        
         // Refresh immediately
         refreshAll();
         
         // Set interval to refresh every 30 seconds
         autoRefreshInterval = setInterval(refreshAll, 30000);
+    }
+    
+    function applyInitialStatus(status) {
+        // Update basic status
+        const statusColor = getStatusColor(status.status);
+        const statusAlert = document.getElementById('ha-status-alert');
+        if (statusAlert) {
+            statusAlert.className = `alert alert-${statusColor}`;
+            
+            document.getElementById('ha-status').innerHTML = `
+                <strong>Status:</strong> ${status.status.toUpperCase()}<br>
+                <strong>Uptime:</strong> ${formatUptime(status.uptime)}<br>
+                <strong>Started:</strong> ${formatDateTime(status.startup_time)}
+            `;
+        }
+        
+        // Update database status if available
+        if (status.components && status.components.database) {
+            const dbStatusColor = getStatusColor(status.components.database.status);
+            const dbStatusAlert = document.getElementById('database-status-alert');
+            if (dbStatusAlert) {
+                dbStatusAlert.className = `alert alert-${dbStatusColor}`;
+                
+                document.getElementById('database-status').innerHTML = `
+                    <strong>Status:</strong> ${status.components.database.status.toUpperCase()}<br>
+                    <strong>Last Checked:</strong> ${formatTimeSince(status.components.database.last_checked)}<br>
+                    <strong>Primary:</strong> ${status.components.database.details?.primary_id || 'Unknown'}
+                `;
+            }
+        }
+        
+        // Update cluster status if available
+        if (status.components && status.components.cluster) {
+            const clusterStatusColor = getStatusColor(status.components.cluster.status);
+            const clusterStatusAlert = document.getElementById('cluster-status-alert');
+            if (clusterStatusAlert) {
+                clusterStatusAlert.className = `alert alert-${clusterStatusColor}`;
+                
+                document.getElementById('cluster-status').innerHTML = `
+                    <strong>Status:</strong> ${status.components.cluster.status.toUpperCase()}<br>
+                    <strong>State:</strong> ${status.components.cluster.details?.state || 'Unknown'}<br>
+                    <strong>Nodes:</strong> ${status.components.cluster.details?.nodes || 0}
+                `;
+            }
+        }
     }
     
     function refreshAll() {
@@ -791,6 +841,134 @@
         refreshClusterStatus();
         refreshDatabaseServers();
         refreshMetrics();
+    }
+    
+    // Admin functions
+    function initiateManualFailover() {
+        const statusMessage = document.getElementById('failover-status');
+        statusMessage.className = 'alert alert-info';
+        statusMessage.innerText = 'Initiating failover...';
+        statusMessage.style.display = 'block';
+        
+        fetch('/api/v1/ha/database/failover', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                statusMessage.className = 'alert alert-success';
+                statusMessage.innerText = `Failover successful! New primary: ${data.new_primary}`;
+                // Refresh database servers
+                refreshDatabaseServers();
+            } else {
+                statusMessage.className = 'alert alert-danger';
+                statusMessage.innerText = `Failover failed: ${data.message || data.error}`;
+            }
+        })
+        .catch(error => {
+            console.error('Error during failover:', error);
+            statusMessage.className = 'alert alert-danger';
+            statusMessage.innerText = `Error during failover: ${error.message}`;
+        });
+    }
+    
+    function updateRoutingPolicy(policy) {
+        const statusMessage = document.getElementById('routing-policy-status');
+        statusMessage.className = 'alert alert-info';
+        statusMessage.innerText = 'Updating routing policy...';
+        statusMessage.style.display = 'block';
+        
+        fetch('/api/v1/ha/database/routing-policy', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ policy: policy })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                statusMessage.className = 'alert alert-success';
+                statusMessage.innerText = `Routing policy updated to ${data.policy}`;
+                // Refresh database information
+                refreshDatabaseServers();
+            } else {
+                statusMessage.className = 'alert alert-danger';
+                statusMessage.innerText = `Failed to update routing policy: ${data.message || data.error}`;
+            }
+        })
+        .catch(error => {
+            console.error('Error updating routing policy:', error);
+            statusMessage.className = 'alert alert-danger';
+            statusMessage.innerText = `Error updating routing policy: ${error.message}`;
+        });
+    }
+    
+    function initiateBackup() {
+        const statusMessage = document.getElementById('backup-status');
+        statusMessage.className = 'alert alert-info';
+        statusMessage.innerText = 'Initiating database backup...';
+        statusMessage.style.display = 'block';
+        
+        fetch('/api/v1/ha/backup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                statusMessage.className = 'alert alert-success';
+                statusMessage.innerText = `Backup initiated successfully at ${formatDateTime(data.timestamp)}`;
+            } else {
+                statusMessage.className = 'alert alert-danger';
+                statusMessage.innerText = `Backup failed: ${data.message || data.error}`;
+            }
+        })
+        .catch(error => {
+            console.error('Error during backup:', error);
+            statusMessage.className = 'alert alert-danger';
+            statusMessage.innerText = `Error during backup: ${error.message}`;
+        });
+    }
+    
+    function resetHAInfrastructure() {
+        const statusMessage = document.getElementById('reset-status');
+        statusMessage.className = 'alert alert-info';
+        statusMessage.innerText = 'Resetting high-availability infrastructure...';
+        statusMessage.style.display = 'block';
+        
+        fetch('/api/v1/ha/reset', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                statusMessage.className = 'alert alert-success';
+                statusMessage.innerText = `High-availability infrastructure reset successfully`;
+                // Refresh all data
+                refreshAll();
+            } else {
+                statusMessage.className = 'alert alert-danger';
+                statusMessage.innerText = `Reset failed: ${data.message || data.error}`;
+            }
+        })
+        .catch(error => {
+            console.error('Error during reset:', error);
+            statusMessage.className = 'alert alert-danger';
+            statusMessage.innerText = `Error during reset: ${error.message}`;
+        });
     }
     
     // Event listeners
