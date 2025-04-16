@@ -6,7 +6,10 @@ from datetime import datetime, timedelta
 from flask import render_template, request, redirect, url_for, flash, jsonify, session, abort
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, current_user
+from flask_login import login_user, logout_user, current_user, login_required
+
+import auth
+import high_availability
 from forms import (
     LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, ForgotUsernameForm,
     PaymentForm, TransferForm, BlockchainTransactionForm, FinancialInstitutionForm, PaymentGatewayForm,
@@ -31,7 +34,6 @@ from blockchain import (
     get_transaction_status, generate_ethereum_account,
     init_web3, get_settlement_contract, get_multisig_wallet, get_nvc_token
 )
-import high_availability
 from payment_gateways import get_gateway_handler
 from financial_institutions import get_institution_handler
 from invitations import (
@@ -1703,3 +1705,32 @@ def forbidden(e):
 def bad_request(e):
     """400 error handler"""
     return render_template('error.html', error_code=400, error_message="Bad request"), 400
+
+# High Availability Dashboard route
+@app.route('/ha_dashboard')
+@login_required
+@auth.admin_required
+def ha_dashboard():
+    """High-availability status and management dashboard"""
+    try:
+        user = current_user
+        
+        # Initialize the HA infrastructure if not already done
+        if not high_availability._ha_initialized:
+            high_availability.init_high_availability()
+        
+        # Get HA status
+        ha_status = high_availability.get_ha_status()
+        
+        return render_template(
+            'ha_dashboard.html',
+            user=user,
+            ha_status=ha_status
+        )
+    except Exception as e:
+        logger.error(f"Error rendering HA dashboard: {str(e)}")
+        return render_template(
+            'error.html', 
+            error_code=500, 
+            error_message=f"Error loading HA dashboard: {str(e)}"
+        ), 500
