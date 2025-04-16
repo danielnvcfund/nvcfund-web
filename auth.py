@@ -174,10 +174,16 @@ def generate_reset_token(user):
         from flask import current_app
         
         serializer = URLSafeTimedSerializer(current_app.secret_key)
-        return serializer.dumps(
+        token = serializer.dumps(
             {'user_id': user.id},
             salt='reset-password'
         )
+        
+        # Send password reset email
+        from email_service import send_password_reset_email
+        send_password_reset_email(user, token)
+        
+        return token
     
     except Exception as e:
         logger.error(f"Error generating reset token: {str(e)}")
