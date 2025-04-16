@@ -59,3 +59,10 @@ with app.app_context():
         logger.warning("Application will run without blockchain functionality")
     
     logger.info("Application initialized successfully")
+
+# Import routes at the end to avoid circular imports
+import routes
+
+# Import and register blueprints
+from routes.api.blockchain_routes import blockchain_api
+app.register_blueprint(blockchain_api, url_prefix='/api/blockchain')

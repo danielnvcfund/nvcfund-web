@@ -2,4 +2,5 @@
 API Routes package for NVC Banking Platform
 """
 
-from routes.api.blockchain_routes import blockchain_api
+# This file intentionally left mostly empty.
+# The routes are imported directly in app.py
