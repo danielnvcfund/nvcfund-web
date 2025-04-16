@@ -5,10 +5,10 @@ This module handles transaction processing, status updates, and notifications
 import logging
 import uuid
 from datetime import datetime
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, Union
 
 from app import db
-from models import User, Transaction, TransactionStatus
+from models import User, Transaction, TransactionStatus, TransactionType
 from email_service import send_transaction_confirmation_email
 
 logger = logging.getLogger(__name__)
@@ -17,10 +17,10 @@ def create_transaction(
     user_id: int,
     amount: float,
     currency: str,
-    transaction_type: str,
+    transaction_type: Union[str, TransactionType],
     description: Optional[str] = None,
     send_email: bool = True
-) -> Tuple[Transaction, Optional[str]]:
+) -> Tuple[Optional[Transaction], Optional[str]]:
     """
     Create a new transaction record
     
@@ -79,7 +79,7 @@ def update_transaction_status(
     status: TransactionStatus,
     eth_transaction_hash: Optional[str] = None,
     send_email: bool = True
-) -> Tuple[Transaction, Optional[str]]:
+) -> Tuple[Optional[Transaction], Optional[str]]:
     """
     Update a transaction's status
     
@@ -108,7 +108,7 @@ def update_transaction_status(
         db.session.commit()
         
         # Send email notification if requested and status is final
-        if send_email and status in [TransactionStatus.COMPLETED, TransactionStatus.FAILED, TransactionStatus.CANCELLED]:
+        if send_email and status in [TransactionStatus.COMPLETED, TransactionStatus.FAILED, TransactionStatus.REFUNDED]:
             user = User.query.get(transaction.user_id)
             if user:
                 try:
@@ -125,7 +125,7 @@ def update_transaction_status(
         logger.error(f"Error updating transaction status: {str(e)}")
         return None, f"Failed to update transaction: {str(e)}"
 
-def get_transaction(transaction_id: str) -> Tuple[Transaction, Optional[str]]:
+def get_transaction(transaction_id: str) -> Tuple[Optional[Transaction], Optional[str]]:
     """
     Get a transaction by ID
     

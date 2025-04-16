@@ -34,24 +34,69 @@ class PaymentGatewayInterface:
     
     def _create_transaction_record(self, amount, currency, user_id, description, status=TransactionStatus.PENDING):
         """Create a transaction record in the database"""
-        transaction_id = str(uuid.uuid4())
-        
-        transaction = Transaction(
-            transaction_id=transaction_id,
-            user_id=user_id,
-            amount=amount,
-            currency=currency,
-            transaction_type=TransactionType.PAYMENT,
-            status=status,
-            description=description,
-            gateway_id=self.gateway.id,
-            created_at=datetime.utcnow()
-        )
-        
-        db.session.add(transaction)
-        db.session.commit()
-        
-        return transaction
+        try:
+            # Using the transaction service to create a transaction
+            from transaction_service import create_transaction
+            
+            extended_description = f"{description} (via {self.gateway.name})"
+            
+            transaction, error = create_transaction(
+                user_id=user_id,
+                amount=amount,
+                currency=currency,
+                transaction_type=TransactionType.PAYMENT,  # This is an enum value
+                description=extended_description,
+                send_email=True  # Send email notification
+            )
+            
+            if error:
+                logger.error(f"Error creating transaction: {error}")
+                # Fallback to direct creation if transaction service fails
+                transaction_id = f"TXN-{uuid.uuid4().hex[:8].upper()}-{int(datetime.utcnow().timestamp())}"
+                
+                transaction = Transaction(
+                    transaction_id=transaction_id,
+                    user_id=user_id,
+                    amount=amount,
+                    currency=currency,
+                    transaction_type=TransactionType.PAYMENT,
+                    status=status,
+                    description=extended_description,
+                    gateway_id=self.gateway.id,
+                    created_at=datetime.utcnow()
+                )
+                
+                db.session.add(transaction)
+                db.session.commit()
+            
+            # Update the gateway ID explicitly since transaction_service doesn't set it
+            transaction.gateway_id = self.gateway.id
+            transaction.status = status  # Use the specified status
+            db.session.commit()
+            
+            return transaction
+            
+        except Exception as e:
+            logger.error(f"Error in _create_transaction_record: {str(e)}")
+            # Fallback to direct creation
+            transaction_id = f"TXN-{uuid.uuid4().hex[:8].upper()}-{int(datetime.utcnow().timestamp())}"
+            
+            transaction = Transaction(
+                transaction_id=transaction_id,
+                user_id=user_id,
+                amount=amount,
+                currency=currency,
+                transaction_type=TransactionType.PAYMENT,
+                status=status,
+                description=description,
+                gateway_id=self.gateway.id,
+                created_at=datetime.utcnow()
+            )
+            
+            db.session.add(transaction)
+            db.session.commit()
+            
+            return transaction
 
 
 class StripeGateway(PaymentGatewayInterface):
