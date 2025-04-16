@@ -487,51 +487,9 @@ def test_payment():
     ).order_by(Transaction.created_at.desc()).limit(10).all()
     
     if form.validate_on_submit():
-        # Get gateway handler
-        try:
-            gateway_handler = get_gateway_handler(form.gateway_id.data)
-        except ValueError as e:
-            flash(str(e), 'danger')
-            return render_template('payment_test.html', form=form, user=user, test_transactions=test_transactions)
-        
-        # Create a description that identifies this as a test
-        description = f"Test payment: {form.test_scenario.data} - {form.description.data or 'from nvcplatform.net'}"
-        
-        # Add test parameters based on scenario
-        test_metadata = {"test": True, "scenario": form.test_scenario.data}
-        
-        # Process payment
-        result = gateway_handler.process_payment(
-            float(form.amount.data), 
-            form.currency.data, 
-            description, 
-            user_id,
-            metadata=test_metadata
-        )
-        
-        if result.get('success'):
-            flash('Test payment initiated successfully', 'success')
-            
-            # Different gateways return different data
-            if 'hosted_url' in result:  # Coinbase
-                return redirect(result['hosted_url'])
-            elif 'approval_url' in result:  # PayPal
-                return redirect(result['approval_url'])
-            elif 'client_secret' in result:  # Stripe
-                return render_template(
-                    'payment_confirm.html',
-                    client_secret=result['client_secret'],
-                    payment_intent_id=result['payment_intent_id'],
-                    amount=float(form.amount.data),
-                    currency=form.currency.data,
-                    transaction_id=result['transaction_id']
-                )
-            else:
-                # Generic success
-                return redirect(url_for('main.transaction_details', transaction_id=result['transaction_id']))
-        else:
-            flash(f"Test payment failed: {result.get('error', 'Unknown error')}", 'danger')
-            return render_template('payment_test.html', form=form, user=user, test_transactions=test_transactions)
+        # Import the test payment handler to process the test payment
+        from test_payment_handler import process_test_payment
+        return process_test_payment(form, user_id)
     
     # If there were form validation errors
     if form.errors and request.method == 'POST':
