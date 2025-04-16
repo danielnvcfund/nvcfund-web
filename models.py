@@ -54,6 +54,14 @@ class TransactionType(enum.Enum):
     PAYMENT = "payment"
     SETTLEMENT = "settlement"
 
+class GatewayType(enum.Enum):
+    STRIPE = "stripe"
+    PAYPAL = "paypal"
+    BLOCKCHAIN = "blockchain"
+    BANK_TRANSFER = "bank_transfer"
+    XRP = "xrp"
+    CUSTOM = "custom"
+
 class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     transaction_id = db.Column(db.String(64), unique=True, nullable=False)

@@ -1249,6 +1249,7 @@ dependencies = [
     { name = "routes" },
     { name = "sendgrid" },
     { name = "sqlalchemy" },
+    { name = "stripe" },
     { name = "web3" },
     { name = "werkzeug" },
     { name = "wtforms" },
@@ -1270,6 +1271,7 @@ requires-dist = [
     { name = "routes", specifier = ">=2.5.1" },
     { name = "sendgrid", specifier = ">=6.11.0" },
     { name = "sqlalchemy", specifier = ">=2.0.40" },
+    { name = "stripe", specifier = ">=12.0.0" },
     { name = "web3", specifier = ">=7.10.0" },
     { name = "werkzeug", specifier = ">=3.1.3" },
     { name = "wtforms", specifier = ">=3.2.1" },
@@ -1398,6 +1400,19 @@ name = "starkbank-ecdsa"
 version = "2.2.0"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a3/f8/a6091be6a60ed4df9ac806c89fbc5fe1a3416d0284f3ba70aa09a3419428/starkbank-ecdsa-2.2.0.tar.gz", hash = "sha256:9399c3371b899d4a235b68a1ed7919d202fbf024bd2c863ae8ebdad343c2a63a", size = 14690 }
+
+[[package]]
+name = "stripe"
+version = "12.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a0/d6/7d20b2431106c68004924fc9d437c346c447f2ef045f6cc83b52d6c22db1/stripe-12.0.0.tar.gz", hash = "sha256:1bc64192b6bd853fa75e2246ad553baa28e27e348eb2c3336b4d8b021d27aae5", size = 1369861 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e2/c0/09ae7c4d31fc325d8c70da888a08e40bfddd52b5bce92b86d7902e391466/stripe-12.0.0-py2.py3-none-any.whl", hash = "sha256:1105bbceca8c0aead941c7c3ec676727610cb6437b6e8905379f2ccc370eeafd", size = 1613508 },
+]
 
 [[package]]
 name = "toolz"

@@ -3,11 +3,79 @@ import json
 import uuid
 import logging
 import requests
+import stripe
 from datetime import datetime
 from app import db
-from models import PaymentGateway, Transaction, TransactionStatus, TransactionType
+from models import PaymentGateway, Transaction, TransactionStatus, TransactionType, PaymentGatewayType
 
 logger = logging.getLogger(__name__)
+
+# Set up Stripe with API key from environment
+stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+
+def init_payment_gateways():
+    """Initialize payment gateways in the database if they don't exist"""
+    try:
+        # Check if Stripe gateway exists
+        stripe_gateway = PaymentGateway.query.filter_by(gateway_type=PaymentGatewayType.STRIPE).first()
+        
+        if not stripe_gateway:
+            # Create Stripe gateway
+            stripe_gateway = PaymentGateway(
+                name="Stripe",
+                gateway_type=PaymentGatewayType.STRIPE,
+                api_endpoint="https://api.stripe.com",
+                api_key=os.environ.get('STRIPE_SECRET_KEY'),
+                webhook_secret=os.environ.get('STRIPE_WEBHOOK_SECRET', ''),
+                is_active=True
+            )
+            db.session.add(stripe_gateway)
+            db.session.commit()
+            logger.info("Stripe payment gateway initialized")
+        
+        # Initialize other gateways as needed...
+        
+        return True
+    
+    except Exception as e:
+        logger.error(f"Error initializing payment gateways: {str(e)}")
+        return False
+
+def get_gateway_handler(gateway_id=None, gateway_type=None):
+    """Get a payment gateway handler based on ID or type"""
+    try:
+        gateway = None
+        
+        if gateway_id:
+            gateway = PaymentGateway.query.get(gateway_id)
+        elif gateway_type:
+            gateway = PaymentGateway.query.filter_by(
+                gateway_type=gateway_type,
+                is_active=True
+            ).first()
+        
+        if not gateway:
+            logger.error(f"Payment gateway not found: id={gateway_id}, type={gateway_type}")
+            return None
+        
+        # Map gateway types to handler classes
+        handlers = {
+            PaymentGatewayType.STRIPE: StripeGateway,
+            PaymentGatewayType.PAYPAL: PayPalGateway,
+            # Add more handlers as needed
+        }
+        
+        handler_class = handlers.get(gateway.gateway_type)
+        
+        if not handler_class:
+            logger.error(f"No handler available for gateway type: {gateway.gateway_type}")
+            return None
+        
+        return handler_class(gateway.id)
+    
+    except Exception as e:
+        logger.error(f"Error getting gateway handler: {str(e)}")
+        return None
 
 class PaymentGatewayInterface:
     """Base interface for payment gateway interactions"""
@@ -100,76 +168,88 @@ class PaymentGatewayInterface:
 
 
 class StripeGateway(PaymentGatewayInterface):
-    """Stripe payment gateway implementation"""
+    """Stripe payment gateway implementation using the Stripe Python library"""
     
     def process_payment(self, amount, currency, description, user_id, metadata=None):
-        """Process a payment through Stripe"""
+        """
+        Process a payment through Stripe
+        
+        Creates a PaymentIntent that can be used with Stripe's checkout page or Elements
+        """
         try:
             # Create transaction record
             transaction = self._create_transaction_record(
                 amount, currency, user_id, description
             )
             
-            # Prepare API request to Stripe
-            headers = {
-                "Authorization": f"Bearer {self.gateway.api_key}",
-                "Content-Type": "application/json"
-            }
-            
-            payload = {
-                "amount": int(amount * 100),  # Convert to cents
-                "currency": currency.lower(),
-                "description": description,
-                "metadata": {
-                    "transaction_id": transaction.transaction_id,
-                    "user_id": user_id
-                }
+            # Prepare metadata
+            stripe_metadata = {
+                "transaction_id": transaction.transaction_id,
+                "user_id": str(user_id)
             }
             
             if metadata:
-                payload["metadata"].update(metadata)
+                stripe_metadata.update(metadata)
             
-            # Make API request to Stripe
-            response = requests.post(
-                f"{self.gateway.api_endpoint}/v1/payment_intents",
-                headers=headers,
-                json=payload
+            # Create a PaymentIntent using the Stripe Python library
+            payment_intent = stripe.PaymentIntent.create(
+                amount=int(amount * 100),  # Convert to cents
+                currency=currency.lower(),
+                description=description,
+                metadata=stripe_metadata,
+                payment_method_types=["card"],
+                # You can add specific options like automatic_payment_methods={"enabled": True}
             )
             
-            data = response.json()
+            # Update transaction with Stripe payment intent ID
+            transaction.status = TransactionStatus.PROCESSING
+            transaction.description = f"{description} (Stripe Payment Intent: {payment_intent.id})"
+            db.session.commit()
             
-            if response.status_code == 200:
-                # Update transaction with Stripe payment intent ID
-                transaction.status = TransactionStatus.PROCESSING
-                transaction.description = f"{description} (Stripe Payment Intent: {data['id']})"
-                db.session.commit()
+            # Send email notification about the pending payment
+            try:
+                from email_service import send_payment_initiated_email
+                from models import User
                 
-                return {
-                    "success": True,
-                    "transaction_id": transaction.transaction_id,
-                    "payment_intent_id": data["id"],
-                    "client_secret": data["client_secret"],
-                    "amount": amount,
-                    "currency": currency
-                }
-            else:
-                # Handle error
-                transaction.status = TransactionStatus.FAILED
-                transaction.description = f"{description} (Error: {data.get('error', {}).get('message', 'Unknown error')})"
-                db.session.commit()
-                
-                return {
-                    "success": False,
-                    "transaction_id": transaction.transaction_id,
-                    "error": data.get("error", {}).get("message", "Unknown error")
-                }
+                user = User.query.get(user_id)
+                if user:
+                    send_payment_initiated_email(user, transaction)
+            except Exception as email_error:
+                logger.warning(f"Failed to send payment initiated email: {str(email_error)}")
+            
+            return {
+                "success": True,
+                "transaction_id": transaction.transaction_id,
+                "payment_intent_id": payment_intent.id,
+                "client_secret": payment_intent.client_secret,
+                "amount": amount,
+                "currency": currency
+            }
         
+        except stripe.error.StripeError as se:
+            # Handle Stripe-specific errors
+            error_message = str(se)
+            logger.error(f"Stripe error: {error_message}")
+            
+            # Update transaction status
+            try:
+                transaction.status = TransactionStatus.FAILED
+                transaction.description = f"{description} (Error: {error_message})"
+                db.session.commit()
+            except Exception:
+                pass  # Ignore secondary errors in error handling
+            
+            return {
+                "success": False,
+                "transaction_id": transaction.transaction_id if transaction else None,
+                "error": error_message
+            }
         except Exception as e:
             logger.error(f"Error processing Stripe payment: {str(e)}")
             return {"success": False, "error": str(e)}
     
     def check_payment_status(self, payment_id):
-        """Check the status of a Stripe payment"""
+        """Check the status of a Stripe payment using the Stripe Python library"""
         try:
             # Find transaction by ID
             transaction = Transaction.query.filter_by(transaction_id=payment_id).first()
@@ -186,55 +266,58 @@ class StripeGateway(PaymentGatewayInterface):
             
             stripe_payment_id = match.group(1)
             
-            # Prepare API request
-            headers = {
-                "Authorization": f"Bearer {self.gateway.api_key}",
-                "Content-Type": "application/json"
+            # Retrieve payment intent using Stripe library
+            payment_intent = stripe.PaymentIntent.retrieve(stripe_payment_id)
+            
+            # Map Stripe status to our status
+            status_mapping = {
+                "succeeded": TransactionStatus.COMPLETED,
+                "processing": TransactionStatus.PROCESSING,
+                "requires_payment_method": TransactionStatus.PENDING,
+                "requires_confirmation": TransactionStatus.PENDING,
+                "requires_action": TransactionStatus.PENDING,
+                "canceled": TransactionStatus.FAILED
             }
             
-            # Make API request to Stripe
-            response = requests.get(
-                f"{self.gateway.api_endpoint}/v1/payment_intents/{stripe_payment_id}",
-                headers=headers
-            )
+            stripe_status = payment_intent.status
+            internal_status = status_mapping.get(stripe_status, transaction.status)
             
-            data = response.json()
+            # Update transaction status if changed
+            if transaction.status != internal_status:
+                transaction.status = internal_status
+                db.session.commit()
+                
+                # Send email if status changed to completed or failed
+                if internal_status in [TransactionStatus.COMPLETED, TransactionStatus.FAILED]:
+                    try:
+                        from email_service import send_transaction_confirmation_email
+                        from models import User
+                        
+                        user = User.query.get(transaction.user_id)
+                        if user:
+                            send_transaction_confirmation_email(user, transaction)
+                    except Exception as email_error:
+                        logger.warning(f"Failed to send status update email: {str(email_error)}")
             
-            if response.status_code == 200:
-                # Map Stripe status to our status
-                status_mapping = {
-                    "succeeded": TransactionStatus.COMPLETED,
-                    "processing": TransactionStatus.PROCESSING,
-                    "requires_payment_method": TransactionStatus.PENDING,
-                    "requires_confirmation": TransactionStatus.PENDING,
-                    "requires_action": TransactionStatus.PENDING,
-                    "canceled": TransactionStatus.FAILED
-                }
-                
-                stripe_status = data["status"]
-                internal_status = status_mapping.get(stripe_status, transaction.status)
-                
-                # Update transaction status if changed
-                if transaction.status != internal_status:
-                    transaction.status = internal_status
-                    db.session.commit()
-                
-                return {
-                    "success": True,
-                    "transaction_id": transaction.transaction_id,
-                    "payment_intent_id": stripe_payment_id,
-                    "status": stripe_status,
-                    "internal_status": internal_status.value,
-                    "amount": transaction.amount,
-                    "currency": transaction.currency
-                }
-            else:
-                return {
-                    "success": False,
-                    "transaction_id": transaction.transaction_id,
-                    "error": data.get("error", {}).get("message", "Unknown error")
-                }
+            return {
+                "success": True,
+                "transaction_id": transaction.transaction_id,
+                "payment_intent_id": stripe_payment_id,
+                "status": stripe_status,
+                "internal_status": internal_status.value,
+                "amount": transaction.amount,
+                "currency": transaction.currency
+            }
         
+        except stripe.error.StripeError as se:
+            # Handle Stripe-specific errors
+            error_message = str(se)
+            logger.error(f"Stripe error: {error_message}")
+            return {
+                "success": False,
+                "transaction_id": transaction.transaction_id if transaction else None,
+                "error": error_message
+            }
         except Exception as e:
             logger.error(f"Error checking Stripe payment status: {str(e)}")
             return {"success": False, "error": str(e)}
@@ -260,49 +343,50 @@ class StripeGateway(PaymentGatewayInterface):
             
             stripe_payment_id = match.group(1)
             
-            # Prepare API request
-            headers = {
-                "Authorization": f"Bearer {self.gateway.api_key}",
-                "Content-Type": "application/json"
-            }
-            
-            payload = {
-                "payment_intent": stripe_payment_id
+            # Create refund using Stripe library
+            refund_params = {
+                "payment_intent": stripe_payment_id,
             }
             
             if amount:
-                payload["amount"] = int(amount * 100)  # Convert to cents
+                refund_params["amount"] = int(amount * 100)  # Convert to cents
             
-            # Make API request to Stripe
-            response = requests.post(
-                f"{self.gateway.api_endpoint}/v1/refunds",
-                headers=headers,
-                json=payload
-            )
+            refund = stripe.Refund.create(**refund_params)
             
-            data = response.json()
+            # Update transaction status
+            transaction.status = TransactionStatus.REFUNDED
+            transaction.description = f"{transaction.description} (Refunded: {refund.id})"
+            db.session.commit()
             
-            if response.status_code == 200:
-                # Update transaction status
-                transaction.status = TransactionStatus.REFUNDED
-                transaction.description = f"{transaction.description} (Refunded: {data['id']})"
-                db.session.commit()
+            # Send refund notification email
+            try:
+                from email_service import send_refund_notification_email
+                from models import User
                 
-                return {
-                    "success": True,
-                    "transaction_id": transaction.transaction_id,
-                    "refund_id": data["id"],
-                    "status": data["status"],
-                    "amount": amount or transaction.amount,
-                    "currency": transaction.currency
-                }
-            else:
-                return {
-                    "success": False,
-                    "transaction_id": transaction.transaction_id,
-                    "error": data.get("error", {}).get("message", "Unknown error")
-                }
+                user = User.query.get(transaction.user_id)
+                if user:
+                    send_refund_notification_email(user, transaction, amount or transaction.amount)
+            except Exception as email_error:
+                logger.warning(f"Failed to send refund notification email: {str(email_error)}")
+            
+            return {
+                "success": True,
+                "transaction_id": transaction.transaction_id,
+                "refund_id": refund.id,
+                "status": refund.status,
+                "amount": amount or transaction.amount,
+                "currency": transaction.currency
+            }
         
+        except stripe.error.StripeError as se:
+            # Handle Stripe-specific errors
+            error_message = str(se)
+            logger.error(f"Stripe error: {error_message}")
+            return {
+                "success": False,
+                "transaction_id": transaction.transaction_id,
+                "error": error_message
+            }
         except Exception as e:
             logger.error(f"Error refunding Stripe payment: {str(e)}")
             return {"success": False, "error": str(e)}
