@@ -15,6 +15,6 @@ api_blueprint = Blueprint('api', __name__, url_prefix='/api')
 # Register API route blueprints
 api_blueprint.register_blueprint(blockchain_api, url_prefix='/blockchain')
 api_blueprint.register_blueprint(xrp_api, url_prefix='/xrp')
-api_blueprint.register_blueprint(ha_api, url_prefix='/ha')
+api_blueprint.register_blueprint(ha_api)
 
 # The main routes are imported directly in app.py
