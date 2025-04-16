@@ -24,7 +24,7 @@
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
+            <a class="navbar-brand" href="{{ url_for('web.main.index') }}">
                 <i class="fas fa-university me-2"></i>
                 NVC Banking Platform
             </a>
@@ -35,22 +35,27 @@
                 <ul class="navbar-nav me-auto">
                     {% if session.get('user_id') %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/dashboard' %}active{% endif %}" href="#dashboard">
+                        <a class="nav-link {% if request.path == '/dashboard' %}active{% endif %}" href="{{ url_for('web.main.dashboard') }}">
                             <i class="fas fa-tachometer-alt me-1"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/transactions' %}active{% endif %}" href="#transactions">
+                        <a class="nav-link {% if request.path == '/transactions' %}active{% endif %}" href="{{ url_for('web.main.transactions') }}">
                             <i class="fas fa-exchange-alt me-1"></i> Transactions
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/payment/new' %}active{% endif %}" href="#payment">
+                        <a class="nav-link {% if request.path == '/payment/new' %}active{% endif %}" href="{{ url_for('web.main.new_payment') }}">
                             <i class="fas fa-credit-card me-1"></i> Make Payment
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/blockchain' %}active{% endif %}" href="#blockchain">
+                        <a class="nav-link {% if request.path == '/payment/test' %}active{% endif %}" href="{{ url_for('web.main.test_payment') }}">
+                            <i class="fas fa-flask me-1"></i> Test Payment
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/blockchain' %}active{% endif %}" href="{{ url_for('web.main.blockchain_status') }}">
                             <i class="fas fa-link me-1"></i> Blockchain
                         </a>
                     </li>
@@ -61,22 +66,22 @@
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="adminDropdown">
                             <li>
-                                <a class="dropdown-item" href="#user-management">
+                                <a class="dropdown-item" href="{{ url_for('web.main.user_management') }}">
                                     <i class="fas fa-users me-1"></i> User Management
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="#financial-institutions">
+                                <a class="dropdown-item" href="{{ url_for('web.main.financial_institutions') }}">
                                     <i class="fas fa-landmark me-1"></i> Financial Institutions
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="#payment-gateways">
+                                <a class="dropdown-item" href="{{ url_for('web.main.payment_gateways') }}">
                                     <i class="fas fa-money-bill-wave me-1"></i> Payment Gateways
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="#invitations">
+                                <a class="dropdown-item" href="{{ url_for('web.main.invitations') }}">
                                     <i class="fas fa-envelope-open-text me-1"></i> Invitations
                                 </a>
                             </li>
@@ -96,7 +101,7 @@
                     {% endif %}
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/api_docs' %}active{% endif %}" href="#api-docs">
+                        <a class="nav-link {% if request.path == '/api_docs' %}active{% endif %}" href="{{ url_for('web.main.index') }}">
                             <i class="fas fa-book me-1"></i> API Docs
                         </a>
                     </li>
@@ -111,17 +116,17 @@
                             <li><h6 class="dropdown-header">Signed in as</h6></li>
                             <li><a class="dropdown-item" href="#">{{ session.get('username') }}</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#logout">Sign out</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('web.main.logout') }}">Sign out</a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/login' %}active{% endif %}" href="#login">
+                        <a class="nav-link {% if request.path == '/login' %}active{% endif %}" href="{{ url_for('web.main.login') }}">
                             <i class="fas fa-sign-in-alt me-1"></i> Sign In
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/register' %}active{% endif %}" href="#register">
+                        <a class="nav-link {% if request.path == '/register' %}active{% endif %}" href="{{ url_for('web.main.register') }}">
                             <i class="fas fa-user-plus me-1"></i> Register
                         </a>
                     </li>
@@ -162,9 +167,9 @@
                     <p class="text-muted small">Ethereum-powered banking platform for secure digital settlements</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <a href="#api-docs" class="text-muted me-3">API Documentation</a>
-                    <a href="#terms" class="text-muted me-3">Terms of Service</a>
-                    <a href="#privacy" class="text-muted">Privacy Policy</a>
+                    <a href="#" class="text-muted me-3">API Documentation</a>
+                    <a href="#" class="text-muted me-3">Terms of Service</a>
+                    <a href="#" class="text-muted">Privacy Policy</a>
                 </div>
             </div>
         </div>
