@@ -17,7 +17,7 @@ import high_availability
 from forms import (
     LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, ForgotUsernameForm,
     PaymentForm, TransferForm, BlockchainTransactionForm, FinancialInstitutionForm, PaymentGatewayForm,
-    InvitationForm, AcceptInvitationForm
+    InvitationForm, AcceptInvitationForm, TestPaymentForm
 )
 from sqlalchemy.exc import SQLAlchemyError
 

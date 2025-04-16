@@ -141,3 +141,26 @@ class AcceptInvitationForm(FlaskForm):
         user = User.query.filter_by(username=username.data).first()
         if user:
             raise ValidationError('This username is already taken. Please choose a different one.')
+
+class TestPaymentForm(FlaskForm):
+    """Form for testing payment gateway integrations"""
+    gateway_id = SelectField('Payment Gateway', validators=[DataRequired()], coerce=int)
+    test_scenario = SelectField('Test Scenario', validators=[DataRequired()], 
+                             choices=[
+                                 ('success', 'Successful Payment'),
+                                 ('failure', 'Failed Payment'),
+                                 ('3ds', '3D Secure Authentication'),
+                                 ('webhook', 'Webhook Processing')
+                             ])
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=10.00)
+    currency = SelectField('Currency', validators=[DataRequired()],
+                        choices=[
+                            ('USD', 'US Dollar (USD)'),
+                            ('EUR', 'Euro (EUR)'),
+                            ('GBP', 'British Pound (GBP)'),
+                            ('JPY', 'Japanese Yen (JPY)'),
+                            ('ETH', 'Ethereum (ETH)'),
+                            ('BTC', 'Bitcoin (BTC)')
+                        ], default='USD')
+    description = TextAreaField('Description', validators=[Optional(), Length(max=255)])
+    submit = SubmitField('Start Test Payment')
