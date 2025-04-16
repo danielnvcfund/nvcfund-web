@@ -37,7 +37,13 @@
                         <div class="mb-3">
                             {{ form.test_scenario.label(class="form-label") }}
                             {{ form.test_scenario(class="form-select", required=true) }}
-                            <div class="form-text">Select a test scenario to simulate different payment outcomes</div>
+                            <div class="form-text">
+                                <strong>Test scenarios explained:</strong><br>
+                                • <strong>Success:</strong> Simulate a successful payment<br>
+                                • <strong>Failed:</strong> Simulate a declined payment (card declined, insufficient funds)<br>
+                                • <strong>3D Secure:</strong> Simulate a payment requiring additional authentication<br>
+                                • <strong>Webhook:</strong> Simulate receiving a webhook notification
+                            </div>
                         </div>
                         
                         <div class="mb-3">

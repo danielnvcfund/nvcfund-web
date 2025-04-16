@@ -1,0 +1,121 @@
+{% extends 'layout.html' %}
+
+{% block title %}Test Payment Confirmation - NVC Banking Platform{% endblock %}
+
+{% block head_scripts %}
+<!-- Stripe JS -->
+<script src="https://js.stripe.com/v3/"></script>
+<input type="hidden" id="stripe-public-key" value="pk_test_sample">
+<input type="hidden" id="client-secret" value="{{ client_secret }}">
+<input type="hidden" id="transaction-id" value="{{ transaction_id }}">
+<input type="hidden" id="test-scenario" value="{{ test_scenario }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-flask me-2"></i>Test Payment Confirmation</h1>
+        <div>
+            <a href="{{ url_for('test_payment') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Test Console
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Test Information -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Test Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-flask me-2"></i> Running <strong>{{ test_scenario }}</strong> test scenario with <strong>{{ amount }} {{ currency }}</strong>
+                    </div>
+
+                    <div class="table-responsive mb-3">
+                        <table class="table table-bordered table-sm">
+                            <tr>
+                                <th class="bg-light" width="35%">Test Scenario</th>
+                                <td>{{ test_scenario }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">Amount</th>
+                                <td>{{ currency }} {{ "%.2f"|format(amount) }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">Transaction ID</th>
+                                <td><code>{{ transaction_id }}</code></td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">Test Card to Use</th>
+                                <td>
+                                    {% if test_scenario == 'success' %}
+                                    <code>4242 4242 4242 4242</code>
+                                    {% elif test_scenario == 'failure' %}
+                                    <code>4000 0000 0000 0002</code>
+                                    {% elif test_scenario == '3ds' %}
+                                    <code>4000 0000 0000 3220</code>
+                                    {% else %}
+                                    <code>4242 4242 4242 4242</code>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i> This is a test transaction and will not result in an actual charge. Use the appropriate test card number for this scenario.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Confirmation Form -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Payment Information</h5>
+                </div>
+                <div class="card-body">
+                    <form id="stripe-payment-form">
+                        <div class="mb-3">
+                            <label for="cardholder-name" class="form-label">Cardholder Name</label>
+                            <input type="text" class="form-control" id="cardholder-name" required value="Test User">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="card-element" class="form-label">Credit or Debit Card</label>
+                            <div id="card-element" class="form-control p-3">
+                                <!-- Stripe Card Element will be inserted here -->
+                            </div>
+                            <div id="card-errors" role="alert" class="text-danger mt-2"></div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-flask me-1"></i> Test Payment ({{ amount }} {{ currency }})
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-shield-alt text-primary me-3 fa-2x"></i>
+                        <div>
+                            <h5 class="mb-1">Safe Test Environment</h5>
+                            <p class="mb-0">All test payments use Stripe's test environment. No real money will be charged regardless of the test outcome.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/payment_form.js') }}"></script>
+{% endblock %}
