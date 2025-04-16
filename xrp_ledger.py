@@ -20,13 +20,11 @@ from xrpl.models.transactions import (
     CheckCreate, 
     CheckCash
 )
-from xrpl.models.requests import AccountInfo, AccountTransactions, TxRequest
+from xrpl.models.requests import AccountInfo, AccountTx
+from xrpl.models.requests.tx import Tx as TxRequest
 from xrpl.models.response import Response
-from xrpl.transaction import (
-    submit_transaction, 
-    send_reliable_submission, 
-    get_transaction_from_hash
-)
+from xrpl.transaction import submit
+# Use submit as send_reliable_submission for compatibility
 from xrpl.utils import drops_to_xrp, xrp_to_drops
 from xrpl.constants import CryptoAlgorithm
 
@@ -214,7 +212,7 @@ def send_xrp_payment(
         
         # Submit payment reliably (with retry logic)
         try:
-            response = send_reliable_submission(payment, wallet, client)
+            response = submit(payment, wallet, client)
         except Exception as submit_error:
             logger.error(f"Payment submission error: {str(submit_error)}")
             return {'error': str(submit_error)}
@@ -314,7 +312,7 @@ def get_account_transactions(address: str, limit: int = 10) -> List[Dict[str, An
     client = init_xrpl_client()
     
     try:
-        request = AccountTransactions(account=address, limit=limit)
+        request = AccountTx(account=address, limit=limit)
         response = client.request(request)
         
         if response.is_successful():
@@ -408,7 +406,7 @@ def create_escrow_payment(
         
         # Submit transaction
         try:
-            response = send_reliable_submission(escrow_tx, wallet, client)
+            response = submit(escrow_tx, wallet, client)
         except Exception as submit_error:
             logger.error(f"Escrow submission error: {str(submit_error)}")
             return {'error': str(submit_error)}
@@ -489,7 +487,7 @@ def finish_escrow_payment(
         
         # Submit transaction
         try:
-            response = send_reliable_submission(escrow_finish, wallet, client)
+            response = submit(escrow_finish, wallet, client)
         except Exception as submit_error:
             logger.error(f"Escrow finish submission error: {str(submit_error)}")
             return {'error': str(submit_error)}
@@ -555,7 +553,7 @@ def cancel_escrow_payment(
         
         # Submit transaction
         try:
-            response = send_reliable_submission(escrow_cancel, wallet, client)
+            response = submit(escrow_cancel, wallet, client)
         except Exception as submit_error:
             logger.error(f"Escrow cancel submission error: {str(submit_error)}")
             return {'error': str(submit_error)}

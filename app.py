@@ -73,8 +73,8 @@ with app.app_context():
     logger.info("Application initialized successfully")
 
 # Import and register blueprints
-from routes.api.blockchain_routes import blockchain_api
-app.register_blueprint(blockchain_api, url_prefix='/api/blockchain')
+from routes import api_blueprint
+app.register_blueprint(api_blueprint)
 
 # Add a direct route to index for testing
 @app.route('/')
