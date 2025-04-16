@@ -20,9 +20,9 @@ from blockchain import (
     submit_multisig_transaction,
     confirm_multisig_transaction,
     transfer_nvc_tokens,
-    get_nvc_token_balance,
-    generate_ethereum_account
+    get_nvc_token_balance
 )
+from blockchain_utils import generate_ethereum_account
 from models import BlockchainTransaction, BlockchainAccount, db
 
 # Configure logging

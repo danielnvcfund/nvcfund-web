@@ -31,9 +31,10 @@ from auth import (
 )
 from blockchain import (
     send_ethereum_transaction, settle_payment_via_contract,
-    get_transaction_status, generate_ethereum_account,
-    init_web3, get_settlement_contract, get_multisig_wallet, get_nvc_token
+    get_transaction_status, init_web3, get_settlement_contract, 
+    get_multisig_wallet, get_nvc_token
 )
+from blockchain_utils import generate_ethereum_account
 from payment_gateways import get_gateway_handler
 from financial_institutions import get_institution_handler
 from invitations import (

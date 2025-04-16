@@ -9,7 +9,7 @@ from flask_jwt_extended import create_access_token, verify_jwt_in_request, get_j
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import app, db
 from models import User, UserRole
-from blockchain import generate_ethereum_account
+from blockchain_utils import generate_ethereum_account
 
 logger = logging.getLogger(__name__)
 

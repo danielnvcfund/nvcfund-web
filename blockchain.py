@@ -5,7 +5,6 @@ from web3 import Web3, HTTPProvider
 # Use the appropriate middleware for Web3.py v7+
 from web3 import middleware
 from eth_account import Account
-from app import app, db
 from models import BlockchainTransaction, SmartContract, Transaction, TransactionStatus
 
 logger = logging.getLogger(__name__)
@@ -490,8 +489,15 @@ def initialize_settlement_contract():
                 'gasPrice': w3.to_wei('50', 'gwei')
             })
             
-            signed_txn = w3.eth.account.sign_transaction(construct_txn, admin_private_key)
-            tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+            # Sign transaction with the updated Web3.py API (v7+)
+            account = Account.from_key(admin_private_key)
+            signed_txn = account.sign_transaction(construct_txn)
+            
+            # Get raw transaction bytes from the signed transaction
+            raw_txn = signed_txn.raw_transaction
+            
+            # Send the raw transaction
+            tx_hash = w3.eth.send_raw_transaction(raw_txn)
             
             # Wait for transaction receipt
             tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -553,8 +559,15 @@ def initialize_multisig_wallet():
                 'gasPrice': w3.to_wei('50', 'gwei')
             })
             
-            signed_txn = w3.eth.account.sign_transaction(construct_txn, admin_private_key)
-            tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+            # Sign transaction with the updated Web3.py API (v7+)
+            account = Account.from_key(admin_private_key)
+            signed_txn = account.sign_transaction(construct_txn)
+            
+            # Get raw transaction bytes from the signed transaction
+            raw_txn = signed_txn.raw_transaction
+            
+            # Send the raw transaction
+            tx_hash = w3.eth.send_raw_transaction(raw_txn)
             
             # Wait for transaction receipt
             tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -614,8 +627,15 @@ def initialize_nvc_token():
                 'gasPrice': w3.to_wei('50', 'gwei')
             })
             
-            signed_txn = w3.eth.account.sign_transaction(construct_txn, admin_private_key)
-            tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+            # Sign transaction with the updated Web3.py API (v7+)
+            account = Account.from_key(admin_private_key)
+            signed_txn = account.sign_transaction(construct_txn)
+            
+            # Get raw transaction bytes from the signed transaction
+            raw_txn = signed_txn.raw_transaction
+            
+            # Send the raw transaction
+            tx_hash = w3.eth.send_raw_transaction(raw_txn)
             
             # Wait for transaction receipt
             tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -702,9 +722,15 @@ def send_ethereum_transaction(from_address, to_address, amount_in_eth, private_k
             'chainId': int(w3.net.version)
         }
         
-        # Sign and send transaction
-        signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        # Sign transaction with the updated Web3.py API (v7+)
+        account = Account.from_key(private_key)
+        signed_tx = account.sign_transaction(tx)
+        
+        # Get raw transaction bytes from the signed transaction
+        raw_txn = signed_tx.raw_transaction
+        
+        # Send the raw transaction
+        tx_hash = w3.eth.send_raw_transaction(raw_txn)
         
         # Wait for transaction receipt
         tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -788,9 +814,15 @@ def settle_payment_via_contract(from_address, to_address, amount_in_eth, private
             'chainId': int(w3.net.version)
         })
         
-        # Sign and send transaction
-        signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        # Sign transaction with the updated Web3.py API (v7+)
+        account = Account.from_key(private_key)
+        signed_tx = account.sign_transaction(tx)
+        
+        # Get raw transaction bytes from the signed transaction
+        raw_txn = signed_tx.raw_transaction
+        
+        # Send the raw transaction
+        tx_hash = w3.eth.send_raw_transaction(raw_txn)
         
         # Wait for transaction receipt
         tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -905,9 +937,15 @@ def submit_multisig_transaction(from_address, to_address, amount_in_eth, data, p
             'chainId': int(w3.net.version)
         })
         
-        # Sign and send transaction
-        signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        # Sign transaction with the updated Web3.py API (v7+)
+        account = Account.from_key(private_key)
+        signed_tx = account.sign_transaction(tx)
+        
+        # Get raw transaction bytes from the signed transaction
+        raw_txn = signed_tx.raw_transaction
+        
+        # Send the raw transaction
+        tx_hash = w3.eth.send_raw_transaction(raw_txn)
         
         # Wait for transaction receipt
         tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -985,9 +1023,15 @@ def confirm_multisig_transaction(transaction_id, from_address, private_key, mult
             'chainId': int(w3.net.version)
         })
         
-        # Sign and send transaction
-        signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        # Sign transaction with the updated Web3.py API (v7+)
+        account = Account.from_key(private_key)
+        signed_tx = account.sign_transaction(tx)
+        
+        # Get raw transaction bytes from the signed transaction
+        raw_txn = signed_tx.raw_transaction
+        
+        # Send the raw transaction
+        tx_hash = w3.eth.send_raw_transaction(raw_txn)
         
         # Wait for transaction receipt
         tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -1057,9 +1101,15 @@ def transfer_nvc_tokens(from_address, to_address, amount, private_key, transacti
             'chainId': int(w3.net.version)
         })
         
-        # Sign and send transaction
-        signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        # Sign transaction with the updated Web3.py API (v7+)
+        account = Account.from_key(private_key)
+        signed_tx = account.sign_transaction(tx)
+        
+        # Get raw transaction bytes from the signed transaction
+        raw_txn = signed_tx.raw_transaction
+        
+        # Send the raw transaction
+        tx_hash = w3.eth.send_raw_transaction(raw_txn)
         
         # Wait for transaction receipt
         tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -1175,9 +1225,15 @@ def create_new_settlement(from_address, to_address, amount_in_eth, private_key, 
             'chainId': int(w3.net.version)
         })
         
-        # Sign and send transaction
-        signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        # Sign transaction with the updated Web3.py API (v7+)
+        account = Account.from_key(private_key)
+        signed_tx = account.sign_transaction(tx)
+        
+        # Get raw transaction bytes from the signed transaction
+        raw_txn = signed_tx.raw_transaction
+        
+        # Send the raw transaction
+        tx_hash = w3.eth.send_raw_transaction(raw_txn)
         
         # Wait for transaction receipt
         tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -1221,17 +1277,4 @@ def create_new_settlement(from_address, to_address, amount_in_eth, private_key, 
         return None
 
 
-def generate_ethereum_account():
-    """
-    Generate a new Ethereum account
-    
-    Returns:
-        tuple: (address, private_key)
-    """
-    try:
-        account = Account.create()
-        return account.address, account.key.hex()
-    
-    except Exception as e:
-        logger.error(f"Error generating Ethereum account: {str(e)}")
-        return None, None
+# This function has been moved to blockchain_utils.py to prevent circular imports
