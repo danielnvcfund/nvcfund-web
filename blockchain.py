@@ -603,6 +603,8 @@ def initialize_multisig_wallet():
 
 def initialize_nvc_token():
     """Deploy the NVC token contract if it doesn't exist"""
+    db = get_db()
+    BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
     contract = SmartContract.query.filter_by(name="NVCToken").first()
     
     if not contract:
@@ -671,6 +673,8 @@ def initialize_nvc_token():
 
 def get_settlement_contract():
     """Get the settlement contract instance"""
+    db = get_db()
+    BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
     contract = SmartContract.query.filter_by(name="SettlementContract").first()
     
     if not contract:
@@ -682,6 +686,8 @@ def get_settlement_contract():
 
 def get_multisig_wallet():
     """Get the MultiSigWallet contract instance"""
+    db = get_db()
+    BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
     contract = SmartContract.query.filter_by(name="MultiSigWallet").first()
     
     if not contract:
@@ -693,6 +699,8 @@ def get_multisig_wallet():
 
 def get_nvc_token():
     """Get the NVCToken contract instance"""
+    db = get_db()
+    BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
     contract = SmartContract.query.filter_by(name="NVCToken").first()
     
     if not contract:
@@ -717,6 +725,9 @@ def send_ethereum_transaction(from_address, to_address, amount_in_eth, private_k
         str: Transaction hash if successful, None otherwise
     """
     try:
+        db = get_db()
+        BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
+        
         # Convert ETH to Wei
         amount_in_wei = w3.to_wei(amount_in_eth, 'ether')
         
@@ -773,6 +784,9 @@ def send_ethereum_transaction(from_address, to_address, amount_in_eth, private_k
     except Exception as e:
         logger.error(f"Error sending Ethereum transaction: {str(e)}")
         
+        db = get_db()
+        BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
+        
         # Update transaction status to failed
         transaction = Transaction.query.filter_by(id=transaction_id).first()
         if transaction:
@@ -797,6 +811,9 @@ def settle_payment_via_contract(from_address, to_address, amount_in_eth, private
         str: Transaction hash if successful, None otherwise
     """
     try:
+        db = get_db()
+        BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
+        
         contract = get_settlement_contract()
         
         if not contract:
@@ -865,6 +882,9 @@ def settle_payment_via_contract(from_address, to_address, amount_in_eth, private
     except Exception as e:
         logger.error(f"Error settling payment via contract: {str(e)}")
         
+        db = get_db()
+        BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
+        
         # Update transaction status to failed
         transaction = Transaction.query.filter_by(id=transaction_id).first()
         if transaction:
@@ -921,6 +941,9 @@ def submit_multisig_transaction(from_address, to_address, amount_in_eth, data, p
         str: Transaction hash if successful, None otherwise
     """
     try:
+        db = get_db()
+        BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
+        
         contract = get_multisig_wallet()
         
         if not contract:
@@ -989,6 +1012,9 @@ def submit_multisig_transaction(from_address, to_address, amount_in_eth, data, p
     except Exception as e:
         logger.error(f"Error submitting MultiSig transaction: {str(e)}")
         
+        db = get_db()
+        BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
+        
         # Update transaction status to failed
         transaction = Transaction.query.filter_by(id=transaction_id).first()
         if transaction:
@@ -1012,6 +1038,9 @@ def confirm_multisig_transaction(transaction_id, from_address, private_key, mult
         str: Transaction hash if successful, None otherwise
     """
     try:
+        db = get_db()
+        BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
+        
         contract = get_multisig_wallet()
         
         if not contract:
@@ -1086,6 +1115,9 @@ def transfer_nvc_tokens(from_address, to_address, amount, private_key, transacti
         str: Transaction hash if successful, None otherwise
     """
     try:
+        db = get_db()
+        BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
+        
         contract = get_nvc_token()
         
         if not contract:
@@ -1152,6 +1184,9 @@ def transfer_nvc_tokens(from_address, to_address, amount, private_key, transacti
     
     except Exception as e:
         logger.error(f"Error transferring NVC tokens: {str(e)}")
+        
+        db = get_db()
+        BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
         
         # Update transaction status to failed
         transaction = Transaction.query.filter_by(id=transaction_id).first()
