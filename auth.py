@@ -7,7 +7,7 @@ from functools import wraps
 from flask import request, jsonify, session, redirect, url_for, flash
 from flask_jwt_extended import create_access_token, verify_jwt_in_request, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import app, db
+from app import db
 from models import User, UserRole
 from blockchain_utils import generate_ethereum_account
 
@@ -20,7 +20,7 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             flash('Please log in to access this page', 'warning')
-            return redirect(url_for('login', next=request.url))
+            return redirect(url_for('web.main.login', next=request.url))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -30,12 +30,12 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             flash('Please log in to access this page', 'warning')
-            return redirect(url_for('login', next=request.url))
+            return redirect(url_for('web.main.login', next=request.url))
         
         user = User.query.get(session['user_id'])
         if not user or user.role != UserRole.ADMIN:
             flash('You do not have permission to access this page', 'danger')
-            return redirect(url_for('index'))
+            return redirect(url_for('web.main.index'))
         
         return f(*args, **kwargs)
     return decorated_function
@@ -144,8 +144,9 @@ def verify_reset_token(token):
     """Verify a password reset token"""
     try:
         from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+        from flask import current_app
         
-        serializer = URLSafeTimedSerializer(app.secret_key)
+        serializer = URLSafeTimedSerializer(current_app.secret_key)
         data = serializer.loads(
             token,
             max_age=3600,  # 1 hour
@@ -170,8 +171,9 @@ def generate_reset_token(user):
     """Generate a password reset token for a user"""
     try:
         from itsdangerous import URLSafeTimedSerializer
+        from flask import current_app
         
-        serializer = URLSafeTimedSerializer(app.secret_key)
+        serializer = URLSafeTimedSerializer(current_app.secret_key)
         return serializer.dumps(
             {'user_id': user.id},
             salt='reset-password'
