@@ -107,6 +107,17 @@ def create_app():
             logger.error(f"Error initializing high-availability infrastructure: {str(e)}")
             logger.warning("Application will run without high-availability functionality")
         
+        # Initialize payment gateways
+        try:
+            from payment_gateways import init_payment_gateways
+            if init_payment_gateways():
+                logger.info("Payment gateways initialized successfully")
+            else:
+                logger.warning("Failed to initialize payment gateways")
+        except Exception as e:
+            logger.error(f"Error initializing payment gateways: {str(e)}")
+            logger.warning("Application will run without payment gateway functionality")
+        
         # Import routes module to register Flask route decorators
         import routes
         

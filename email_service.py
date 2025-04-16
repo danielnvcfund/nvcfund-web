@@ -323,3 +323,134 @@ def send_transaction_confirmation_email(user, transaction):
         subject=subject,
         html_content=html_content
     )
+
+def send_payment_initiated_email(user, transaction):
+    """
+    Send payment initiated email for Stripe or other payment gateways
+    
+    Args:
+        user: User object with email and username
+        transaction: Transaction object with details
+        
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    transaction_url = url_for('web.main.transaction_details', transaction_id=transaction.transaction_id, _external=True)
+    
+    subject = f"Payment Initiated #{transaction.transaction_id}"
+    
+    # Format amount with currency symbol
+    if transaction.currency == 'USD':
+        formatted_amount = f"${transaction.amount:.2f}"
+    elif transaction.currency == 'EUR':
+        formatted_amount = f"€{transaction.amount:.2f}"
+    elif transaction.currency == 'GBP':
+        formatted_amount = f"£{transaction.amount:.2f}"
+    else:
+        formatted_amount = f"{transaction.amount:.2f} {transaction.currency}"
+    
+    html_content = f"""
+    <html>
+        <body>
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+                <h2 style="color: #4A6FFF;">Payment Initiated</h2>
+                <p>Hello {user.username},</p>
+                <p>Your payment has been initiated and is awaiting processing:</p>
+                
+                <div style="background-color: #f8f9fa; border-radius: 5px; padding: 15px; margin: 20px 0;">
+                    <p><strong>Transaction ID:</strong> {transaction.transaction_id}</p>
+                    <p><strong>Amount:</strong> {formatted_amount}</p>
+                    <p><strong>Date:</strong> {transaction.created_at.strftime('%Y-%m-%d %H:%M:%S')}</p>
+                    <p><strong>Status:</strong> {transaction.status.name.replace('_', ' ').title()}</p>
+                    
+                    {f"<p><strong>Description:</strong> {transaction.description}</p>" if transaction.description else ""}
+                </div>
+                
+                <p>You will receive a confirmation email once the payment is completed.</p>
+                
+                <div style="text-align: center; margin: 25px 0;">
+                    <a href="{transaction_url}" style="background-color: #4A6FFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View Transaction Details</a>
+                </div>
+                
+                <p>If you did not authorize this transaction, please contact our support team immediately.</p>
+                <p>Regards,<br>The NVC Banking Platform Team</p>
+            </div>
+        </body>
+    </html>
+    """
+    
+    return send_email(
+        to_email=user.email,
+        subject=subject,
+        html_content=html_content
+    )
+
+def send_refund_notification_email(user, transaction, refund_amount):
+    """
+    Send refund notification email
+    
+    Args:
+        user: User object with email and username
+        transaction: Transaction object with details
+        refund_amount: Amount refunded (may be partial)
+        
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    transaction_url = url_for('web.main.transaction_details', transaction_id=transaction.transaction_id, _external=True)
+    
+    subject = f"Refund Notification #{transaction.transaction_id}"
+    
+    # Format amount with currency symbol
+    if transaction.currency == 'USD':
+        formatted_amount = f"${refund_amount:.2f}"
+        original_amount = f"${transaction.amount:.2f}"
+    elif transaction.currency == 'EUR':
+        formatted_amount = f"€{refund_amount:.2f}"
+        original_amount = f"€{transaction.amount:.2f}"
+    elif transaction.currency == 'GBP':
+        formatted_amount = f"£{refund_amount:.2f}"
+        original_amount = f"£{transaction.amount:.2f}"
+    else:
+        formatted_amount = f"{refund_amount:.2f} {transaction.currency}"
+        original_amount = f"{transaction.amount:.2f} {transaction.currency}"
+    
+    # Check if it's a partial or full refund
+    is_partial = refund_amount < transaction.amount
+    refund_type = "Partial Refund" if is_partial else "Full Refund"
+    
+    html_content = f"""
+    <html>
+        <body>
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+                <h2 style="color: #4A6FFF;">{refund_type} Issued</h2>
+                <p>Hello {user.username},</p>
+                <p>We've processed a refund for your recent transaction:</p>
+                
+                <div style="background-color: #f8f9fa; border-radius: 5px; padding: 15px; margin: 20px 0;">
+                    <p><strong>Transaction ID:</strong> {transaction.transaction_id}</p>
+                    <p><strong>Original Amount:</strong> {original_amount}</p>
+                    <p><strong>Refund Amount:</strong> {formatted_amount}</p>
+                    <p><strong>Date:</strong> {transaction.updated_at.strftime('%Y-%m-%d %H:%M:%S')}</p>
+                    
+                    {f"<p><strong>Description:</strong> {transaction.description}</p>" if transaction.description else ""}
+                </div>
+                
+                <p>The refunded amount should be credited back to your original payment method within 5-10 business days, depending on your payment provider.</p>
+                
+                <div style="text-align: center; margin: 25px 0;">
+                    <a href="{transaction_url}" style="background-color: #4A6FFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View Transaction Details</a>
+                </div>
+                
+                <p>If you have any questions about this refund, please contact our support team.</p>
+                <p>Regards,<br>The NVC Banking Platform Team</p>
+            </div>
+        </body>
+    </html>
+    """
+    
+    return send_email(
+        to_email=user.email,
+        subject=subject,
+        html_content=html_content
+    )

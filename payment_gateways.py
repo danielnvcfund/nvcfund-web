@@ -16,19 +16,102 @@ stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 def init_payment_gateways():
     """Initialize payment gateways in the database if they don't exist"""
     try:
+        # Check if database schema is updated - this is to handle legacy databases
+        # that might not have all the columns in the PaymentGateway model
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        payment_gateway_columns = [column['name'] for column in inspector.get_columns('payment_gateway')]
+        
+        # Update database schema if needed
+        missing_columns = []
+        if 'xrp_address' not in payment_gateway_columns:
+            missing_columns.append('xrp_address')
+        if 'xrp_seed' not in payment_gateway_columns:
+            missing_columns.append('xrp_seed')
+        
+        # Let's create a custom query to check for Stripe gateways and handle missing columns
+        try:
+            # Instead of modifying the schema, let's create a workaround
+            # Use raw SQL to check for Stripe gateways without the problematic columns
+            with db.engine.connect() as connection:
+                # Get column list first
+                columns_query = "SELECT column_name FROM information_schema.columns WHERE table_name = 'payment_gateway'"
+                result = connection.execute(columns_query)
+                db_columns = [row[0] for row in result.fetchall()]
+                
+                # Construct a query that only selects existing columns
+                select_columns = []
+                for col in ['id', 'name', 'gateway_type', 'api_endpoint', 'api_key', 
+                           'webhook_secret', 'is_active', 'created_at', 'updated_at']:
+                    if col in db_columns:
+                        select_columns.append(col)
+                
+                # Add ethereum_address if it exists
+                if 'ethereum_address' in db_columns:
+                    select_columns.append('ethereum_address')
+                
+                # Check for existing gateway
+                select_query = f"SELECT {', '.join(select_columns)} FROM payment_gateway WHERE gateway_type = 'STRIPE' LIMIT 1"
+                result = connection.execute(select_query)
+                stripe_gateway_row = result.fetchone()
+                
+                # If no row exists, create one with only the fields we know exist
+                if not stripe_gateway_row:
+                    logger.info("Creating new Stripe gateway with available columns")
+                    
+                    # Build an INSERT statement with only the existing columns
+                    insert_columns = ['name', 'gateway_type', 'api_endpoint', 'api_key', 'webhook_secret', 'is_active']
+                    insert_values = ['Stripe', 'STRIPE', 'https://api.stripe.com', 
+                                    os.environ.get('STRIPE_SECRET_KEY'), 
+                                    os.environ.get('STRIPE_WEBHOOK_SECRET', ''), 
+                                    True]
+                    
+                    # Add ethereum_address if it exists
+                    if 'ethereum_address' in db_columns:
+                        insert_columns.append('ethereum_address')
+                        insert_values.append(None)
+                    
+                    # Format placeholders
+                    placeholders = ', '.join(['%s'] * len(insert_columns))
+                    
+                    # Execute INSERT
+                    insert_query = f"INSERT INTO payment_gateway ({', '.join(insert_columns)}) VALUES ({placeholders})"
+                    connection.execute(insert_query, insert_values)
+                    connection.commit()
+                    logger.info("Stripe payment gateway initialized using raw SQL")
+            
+            # Skip trying to add columns since it's causing issues
+            for column_name in missing_columns:
+                logger.info(f"Column '{column_name}' is missing but we'll work around it")
+        
+        except Exception as col_error:
+            logger.warning(f"Could not initialize payment gateways with raw SQL: {str(col_error)}")
+        
         # Check if Stripe gateway exists
         stripe_gateway = PaymentGateway.query.filter_by(gateway_type=PaymentGatewayType.STRIPE).first()
         
         if not stripe_gateway:
-            # Create Stripe gateway
-            stripe_gateway = PaymentGateway(
-                name="Stripe",
-                gateway_type=PaymentGatewayType.STRIPE,
-                api_endpoint="https://api.stripe.com",
-                api_key=os.environ.get('STRIPE_SECRET_KEY'),
-                webhook_secret=os.environ.get('STRIPE_WEBHOOK_SECRET', ''),
-                is_active=True
-            )
+            # Create Stripe gateway with minimal required fields
+            gateway_data = {
+                "name": "Stripe",
+                "gateway_type": PaymentGatewayType.STRIPE,
+                "api_endpoint": "https://api.stripe.com",
+                "api_key": os.environ.get('STRIPE_SECRET_KEY'),
+                "webhook_secret": os.environ.get('STRIPE_WEBHOOK_SECRET', ''),
+                "is_active": True
+            }
+            
+            # Add ethereum_address only if the field exists to avoid errors
+            if 'ethereum_address' in payment_gateway_columns:
+                gateway_data["ethereum_address"] = None
+            
+            # Add xrp fields only if the fields exist to avoid errors
+            if 'xrp_address' in payment_gateway_columns:
+                gateway_data["xrp_address"] = None
+            if 'xrp_seed' in payment_gateway_columns:
+                gateway_data["xrp_seed"] = None
+            
+            stripe_gateway = PaymentGateway(**gateway_data)
             db.session.add(stripe_gateway)
             db.session.commit()
             logger.info("Stripe payment gateway initialized")
