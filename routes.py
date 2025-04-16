@@ -31,6 +31,7 @@ from blockchain import (
     get_transaction_status, generate_ethereum_account,
     init_web3, get_settlement_contract, get_multisig_wallet, get_nvc_token
 )
+import high_availability
 from payment_gateways import get_gateway_handler
 from financial_institutions import get_institution_handler
 from invitations import (
@@ -1671,6 +1672,27 @@ def blockchain_status():
         settlements=[],
         multisig_transactions=[],
         token_transfers=[]
+    )
+
+
+@app.route('/ha/dashboard')
+@admin_required
+def ha_dashboard():
+    """High-availability status and management dashboard"""
+    user_id = session.get('user_id')
+    user = User.query.get(user_id)
+    
+    # Initialize the HA infrastructure if not already done
+    if not high_availability._ha_initialized:
+        high_availability.init_high_availability()
+    
+    # Get HA status
+    ha_status = high_availability.get_ha_status()
+    
+    return render_template(
+        'ha_dashboard.html',
+        user=user,
+        ha_status=ha_status
     )
 
 # Import our API routes
