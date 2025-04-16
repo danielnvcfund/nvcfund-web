@@ -28,6 +28,8 @@ class User(UserMixin, db.Model):
     api_key = db.Column(db.String(64), unique=True)
     ethereum_address = db.Column(db.String(64))
     ethereum_private_key = db.Column(db.String(256))
+    xrp_address = db.Column(db.String(64))
+    xrp_seed = db.Column(db.String(256))
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -93,6 +95,7 @@ class PaymentGatewayType(enum.Enum):
     PAYPAL = "paypal"
     SQUARE = "square"
     COINBASE = "coinbase"
+    XRP_LEDGER = "xrp_ledger"
     CUSTOM = "custom"
 
 class PaymentGateway(db.Model):
@@ -103,6 +106,8 @@ class PaymentGateway(db.Model):
     api_key = db.Column(db.String(256))
     webhook_secret = db.Column(db.String(256))
     ethereum_address = db.Column(db.String(64))
+    xrp_address = db.Column(db.String(64))
+    xrp_seed = db.Column(db.String(256))
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -140,6 +145,28 @@ class BlockchainTransaction(db.Model):
     # Optional link to a main application transaction
     transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
     transaction = db.relationship('Transaction', backref=db.backref('blockchain_transactions', lazy=True))
+
+class XRPLedgerTransaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    xrp_tx_hash = db.Column(db.String(128), unique=True, nullable=False)
+    from_address = db.Column(db.String(64), nullable=False)
+    to_address = db.Column(db.String(64), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    transaction_type = db.Column(db.String(64), nullable=False)  # Payment, EscrowCreate, EscrowFinish, etc.
+    ledger_index = db.Column(db.Integer)
+    fee = db.Column(db.Float)
+    destination_tag = db.Column(db.Integer)
+    status = db.Column(db.String(64), default="pending")
+    tx_metadata = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = db.relationship('User', backref=db.backref('xrp_transactions', lazy=True))
+    
+    # Optional link to a main application transaction
+    transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
+    transaction = db.relationship('Transaction', backref=db.backref('xrp_transactions', lazy=True))
 
 class SmartContract(db.Model):
     id = db.Column(db.Integer, primary_key=True)
