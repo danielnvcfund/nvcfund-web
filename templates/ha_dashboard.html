@@ -51,8 +51,8 @@
     </div>
     
     <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card">
+        <div class="col-md-6 col-sm-12 mb-3">
+            <div class="card h-100">
                 <div class="card-header">
                     <h5 class="mb-0">This Node</h5>
                 </div>
@@ -85,8 +85,8 @@
             </div>
         </div>
         
-        <div class="col-md-6">
-            <div class="card">
+        <div class="col-md-6 col-sm-12 mb-3">
+            <div class="card h-100">
                 <div class="card-header">
                     <h5 class="mb-0">Leader Information</h5>
                 </div>
@@ -117,81 +117,93 @@
     </div>
     
     <div class="row mb-4">
-        <div class="col-md-12">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Database Servers</h5>
                     <div>
-                        <button class="btn btn-sm btn-primary" id="refresh-db-servers">Refresh</button>
+                        <button class="btn btn-sm btn-primary" id="refresh-db-servers">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
                         {% if current_user.is_admin %}
-                        <button class="btn btn-sm btn-warning" id="manual-failover">Manual Failover</button>
+                        <button class="btn btn-sm btn-warning" id="manual-failover">
+                            <i class="fas fa-exchange-alt"></i> Manual Failover
+                        </button>
                         {% endif %}
                     </div>
                 </div>
                 <div class="card-body">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Server ID</th>
-                                <th>Role</th>
-                                <th>Host</th>
-                                <th>Region</th>
-                                <th>Status</th>
-                                <th>Connections</th>
-                                <th>Latency (ms)</th>
-                                <th>Replication Lag</th>
-                            </tr>
-                        </thead>
-                        <tbody id="db-servers-table">
-                            <tr>
-                                <td colspan="8" class="text-center">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Server ID</th>
+                                    <th>Role</th>
+                                    <th>Host</th>
+                                    <th>Region</th>
+                                    <th>Status</th>
+                                    <th>Connections</th>
+                                    <th>Latency (ms)</th>
+                                    <th>Replication Lag</th>
+                                </tr>
+                            </thead>
+                            <tbody id="db-servers-table">
+                                <tr>
+                                    <td colspan="8" class="text-center">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     
     <div class="row mb-4">
-        <div class="col-md-12">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Cluster Nodes</h5>
-                    <button class="btn btn-sm btn-primary" id="refresh-cluster-nodes">Refresh</button>
+                    <button class="btn btn-sm btn-primary" id="refresh-cluster-nodes">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
                 </div>
                 <div class="card-body">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Node ID</th>
-                                <th>Address</th>
-                                <th>Health</th>
-                                <th>Last Seen</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cluster-nodes-table">
-                            <tr>
-                                <td colspan="4" class="text-center">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Node ID</th>
+                                    <th>Address</th>
+                                    <th>Health</th>
+                                    <th>Last Seen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cluster-nodes-table">
+                                <tr>
+                                    <td colspan="4" class="text-center">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     
     <div class="row mb-4">
-        <div class="col-md-12">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Metrics</h5>
-                    <button class="btn btn-sm btn-primary" id="refresh-metrics">Refresh</button>
+                    <button class="btn btn-sm btn-primary" id="refresh-metrics">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-4">
-                            <div class="card">
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                            <div class="card h-100">
                                 <div class="card-header">
                                     <h6 class="mb-0">Application Metrics</h6>
                                 </div>
@@ -207,8 +219,8 @@
                             </div>
                         </div>
                         
-                        <div class="col-md-4">
-                            <div class="card">
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                            <div class="card h-100">
                                 <div class="card-header">
                                     <h6 class="mb-0">Database Metrics</h6>
                                 </div>
@@ -224,8 +236,8 @@
                             </div>
                         </div>
                         
-                        <div class="col-md-4">
-                            <div class="card">
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                            <div class="card h-100">
                                 <div class="card-header">
                                     <h6 class="mb-0">Cluster Metrics</h6>
                                 </div>
@@ -248,15 +260,15 @@
     
     {% if current_user.is_admin %}
     <div class="row mb-4">
-        <div class="col-md-12">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">Administration</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-4">
-                            <div class="card">
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                            <div class="card h-100">
                                 <div class="card-header">
                                     <h6 class="mb-0">Database Routing</h6>
                                 </div>
@@ -278,25 +290,29 @@
                             </div>
                         </div>
                         
-                        <div class="col-md-4">
-                            <div class="card">
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                            <div class="card h-100">
                                 <div class="card-header">
                                     <h6 class="mb-0">Database Backup</h6>
                                 </div>
                                 <div class="card-body">
-                                    <button class="btn btn-primary" id="initiate-backup">Initiate Backup</button>
+                                    <button class="btn btn-primary" id="initiate-backup">
+                                        <i class="fas fa-database"></i> Initiate Backup
+                                    </button>
                                     <div id="backup-status" class="mt-3"></div>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="col-md-4">
-                            <div class="card">
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                            <div class="card h-100">
                                 <div class="card-header">
                                     <h6 class="mb-0">HA Infrastructure</h6>
                                 </div>
                                 <div class="card-body">
-                                    <button class="btn btn-danger" id="reset-ha">Reset HA Infrastructure</button>
+                                    <button class="btn btn-danger" id="reset-ha">
+                                        <i class="fas fa-redo-alt"></i> Reset HA Infrastructure
+                                    </button>
                                     <div id="reset-status" class="mt-3"></div>
                                 </div>
                             </div>
@@ -340,14 +356,15 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure you want to reset the high-availability infrastructure?</p>
+                    <p>Are you sure you want to reset the HA infrastructure?</p>
+                    <p>This will restart all HA components and may cause temporary service disruption.</p>
                     <div class="alert alert-danger">
-                        <strong>Warning:</strong> This operation will restart all HA components and may cause service disruption.
+                        <strong>Warning:</strong> This is a disruptive operation that should only be performed when necessary.
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirm-reset">Reset Infrastructure</button>
+                    <button type="button" class="btn btn-danger" id="confirm-reset">Proceed with Reset</button>
                 </div>
             </div>
         </div>
@@ -356,709 +373,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-    // Initial status data from the server
-    const initialStatus = {{ ha_status|tojson|safe }};
-    
-    // Utility functions
-    function formatUptime(seconds) {
-        const days = Math.floor(seconds / 86400);
-        const hours = Math.floor((seconds % 86400) / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const remainingSeconds = Math.floor(seconds % 60);
-        
-        let result = '';
-        if (days > 0) result += `${days}d `;
-        if (hours > 0 || days > 0) result += `${hours}h `;
-        if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m `;
-        result += `${remainingSeconds}s`;
-        
-        return result;
-    }
-    
-    function formatDateTime(isoString) {
-        if (!isoString) return 'Never';
-        const date = new Date(isoString);
-        return date.toLocaleString();
-    }
-    
-    function formatTimeSince(isoString) {
-        if (!isoString) return 'Unknown';
-        
-        const date = new Date(isoString);
-        const now = new Date();
-        const seconds = Math.floor((now - date) / 1000);
-        
-        if (seconds < 60) return `${seconds}s ago`;
-        if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-        if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-        return `${Math.floor(seconds / 86400)}d ago`;
-    }
-    
-    function formatReplicationLag(seconds) {
-        if (seconds === undefined || seconds === null) return 'N/A';
-        if (seconds < 1) return '<1s';
-        if (seconds < 60) return `${Math.floor(seconds)}s`;
-        if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${Math.floor(seconds % 60)}s`;
-        return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
-    }
-    
-    // Status color mapping
-    function getStatusColor(status) {
-        switch(status.toLowerCase()) {
-            case 'active':
-            case 'online':
-            case 'healthy':
-                return 'success';
-            case 'degraded':
-                return 'warning';
-            case 'inactive':
-            case 'offline':
-            case 'unhealthy':
-                return 'danger';
-            default:
-                return 'secondary';
-        }
-    }
-    
-    // Data refresh functions
-    function refreshHAStatus() {
-        fetch('/api/v1/ha/status')
-            .then(response => response.json())
-            .then(data => {
-                const statusColor = getStatusColor(data.status);
-                const statusAlert = document.getElementById('ha-status-alert');
-                statusAlert.className = `alert alert-${statusColor}`;
-                
-                document.getElementById('ha-status').innerHTML = `
-                    <strong>Status:</strong> ${data.status.toUpperCase()}<br>
-                    <strong>Uptime:</strong> ${formatUptime(data.uptime)}<br>
-                    <strong>Started:</strong> ${formatDateTime(data.startup_time)}
-                `;
-                
-                // Update database status
-                if (data.components && data.components.database) {
-                    const dbStatusColor = getStatusColor(data.components.database.status);
-                    const dbStatusAlert = document.getElementById('database-status-alert');
-                    dbStatusAlert.className = `alert alert-${dbStatusColor}`;
-                    
-                    document.getElementById('database-status').innerHTML = `
-                        <strong>Status:</strong> ${data.components.database.status.toUpperCase()}<br>
-                        <strong>Last Checked:</strong> ${formatTimeSince(data.components.database.last_checked)}<br>
-                        <strong>Primary:</strong> ${data.components.database.details?.primary_id || 'Unknown'}
-                    `;
-                }
-                
-                // Update cluster status
-                if (data.components && data.components.cluster) {
-                    const clusterStatusColor = getStatusColor(data.components.cluster.status);
-                    const clusterStatusAlert = document.getElementById('cluster-status-alert');
-                    clusterStatusAlert.className = `alert alert-${clusterStatusColor}`;
-                    
-                    document.getElementById('cluster-status').innerHTML = `
-                        <strong>Status:</strong> ${data.components.cluster.status.toUpperCase()}<br>
-                        <strong>State:</strong> ${data.components.cluster.details?.state || 'Unknown'}<br>
-                        <strong>Nodes:</strong> ${data.components.cluster.details?.nodes || 0}
-                    `;
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching HA status:', error);
-                document.getElementById('ha-status').innerHTML = 'Error loading status';
-            });
-    }
-    
-    function refreshNodeStatus() {
-        fetch('/api/v1/ha/node')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('node-id').textContent = data.node_id;
-                document.getElementById('node-hostname').textContent = data.hostname;
-                document.getElementById('node-region').textContent = data.region;
-                document.getElementById('node-uptime').textContent = formatUptime(data.uptime);
-                
-                // Role info with leader badge if applicable
-                let roleText = 'Application Node';
-                if (data.is_cluster_leader) {
-                    roleText = `${roleText} <span class="badge bg-success">Leader</span>`;
-                }
-                document.getElementById('node-role').innerHTML = roleText;
-                
-                // Leader info
-                if (data.cluster_leader) {
-                    document.getElementById('leader-id').textContent = data.cluster_leader.id;
-                    document.getElementById('leader-address').textContent = data.cluster_leader.address;
-                } else {
-                    document.getElementById('leader-id').textContent = 'Unknown';
-                    document.getElementById('leader-address').textContent = 'Unknown';
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching node status:', error);
-            });
-    }
-    
-    function refreshClusterStatus() {
-        fetch('/api/v1/ha/cluster')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('leader-id').textContent = data.leader_id || 'None';
-                document.getElementById('leader-term').textContent = data.term;
-                document.getElementById('leader-commit-index').textContent = data.commit_index;
-                
-                // Update cluster nodes table
-                const nodesTableBody = document.getElementById('cluster-nodes-table');
-                if (data.nodes && Object.keys(data.nodes).length > 0) {
-                    let tableHtml = '';
-                    
-                    Object.entries(data.nodes).forEach(([nodeId, nodeInfo]) => {
-                        const healthClass = getStatusColor(nodeInfo.health);
-                        tableHtml += `
-                            <tr>
-                                <td>${nodeId}</td>
-                                <td>${nodeInfo.address}</td>
-                                <td><span class="badge bg-${healthClass}">${nodeInfo.health}</span></td>
-                                <td>${formatTimeSince(nodeInfo.last_seen)}</td>
-                            </tr>
-                        `;
-                    });
-                    
-                    nodesTableBody.innerHTML = tableHtml;
-                } else {
-                    nodesTableBody.innerHTML = '<tr><td colspan="4" class="text-center">No nodes found</td></tr>';
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching cluster status:', error);
-                document.getElementById('cluster-nodes-table').innerHTML = '<tr><td colspan="4" class="text-center">Error loading nodes</td></tr>';
-            });
-    }
-    
-    function refreshDatabaseServers() {
-        fetch('/api/v1/ha/database/servers')
-            .then(response => response.json())
-            .then(data => {
-                const serversTableBody = document.getElementById('db-servers-table');
-                
-                if (data.servers && Object.keys(data.servers).length > 0) {
-                    let tableHtml = '';
-                    
-                    Object.entries(data.servers).forEach(([serverId, serverInfo]) => {
-                        const isPrimary = serverId === data.primary_id;
-                        const statusClass = getStatusColor(serverInfo.status);
-                        
-                        tableHtml += `
-                            <tr>
-                                <td>${serverId} ${isPrimary ? '<span class="badge bg-primary">Primary</span>' : ''}</td>
-                                <td>${serverInfo.role}</td>
-                                <td>${serverInfo.host}:${serverInfo.port}</td>
-                                <td>${serverInfo.region}</td>
-                                <td><span class="badge bg-${statusClass}">${serverInfo.status}</span></td>
-                                <td>${serverInfo.current_connections} / ${serverInfo.max_connections}</td>
-                                <td>${serverInfo.latency_ms.toFixed(2)}</td>
-                                <td>${formatReplicationLag(serverInfo.replication_lag)}</td>
-                            </tr>
-                        `;
-                    });
-                    
-                    serversTableBody.innerHTML = tableHtml;
-                } else {
-                    serversTableBody.innerHTML = '<tr><td colspan="8" class="text-center">No database servers found</td></tr>';
-                }
-                
-                // Update routing policy dropdown
-                if (data.routing_policy) {
-                    const policySelect = document.getElementById('routing-policy');
-                    if (policySelect) {
-                        policySelect.value = data.routing_policy;
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching database servers:', error);
-                document.getElementById('db-servers-table').innerHTML = '<tr><td colspan="8" class="text-center">Error loading servers</td></tr>';
-            });
-    }
-    
-    function refreshMetrics() {
-        fetch('/api/v1/ha/metrics')
-            .then(response => response.json())
-            .then(data => {
-                // Application metrics
-                const appMetricsTable = document.getElementById('app-metrics');
-                if (data.application) {
-                    appMetricsTable.innerHTML = `
-                        <tr>
-                            <th>Node ID</th>
-                            <td>${data.application.node_id}</td>
-                        </tr>
-                        <tr>
-                            <th>Uptime</th>
-                            <td>${formatUptime(data.application.uptime)}</td>
-                        </tr>
-                        <tr>
-                            <th>HA Status</th>
-                            <td><span class="badge bg-${getStatusColor(data.application.ha_status)}">${data.application.ha_status}</span></td>
-                        </tr>
-                    `;
-                } else {
-                    appMetricsTable.innerHTML = '<tr><td colspan="2" class="text-center">No application metrics available</td></tr>';
-                }
-                
-                // Database metrics
-                const dbMetricsTable = document.getElementById('db-metrics');
-                if (data.database) {
-                    dbMetricsTable.innerHTML = `
-                        <tr>
-                            <th>Online Servers</th>
-                            <td>${data.database.online_servers}</td>
-                        </tr>
-                        <tr>
-                            <th>Primary Connections</th>
-                            <td>${data.database.primary_connections}</td>
-                        </tr>
-                        <tr>
-                            <th>Primary Latency</th>
-                            <td>${data.database.primary_latency.toFixed(2)} ms</td>
-                        </tr>
-                        <tr>
-                            <th>Replica Connections</th>
-                            <td>${data.database.replica_connections}</td>
-                        </tr>
-                        <tr>
-                            <th>Avg Replica Latency</th>
-                            <td>${data.database.avg_replica_latency.toFixed(2)} ms</td>
-                        </tr>
-                        <tr>
-                            <th>Avg Replication Lag</th>
-                            <td>${formatReplicationLag(data.database.avg_replication_lag)}</td>
-                        </tr>
-                    `;
-                } else {
-                    dbMetricsTable.innerHTML = '<tr><td colspan="2" class="text-center">No database metrics available</td></tr>';
-                }
-                
-                // Cluster metrics
-                const clusterMetricsTable = document.getElementById('cluster-metrics');
-                if (data.cluster) {
-                    clusterMetricsTable.innerHTML = `
-                        <tr>
-                            <th>Total Nodes</th>
-                            <td>${data.cluster.total_nodes}</td>
-                        </tr>
-                        <tr>
-                            <th>Healthy Nodes</th>
-                            <td>${data.cluster.healthy_nodes}</td>
-                        </tr>
-                        <tr>
-                            <th>Current Term</th>
-                            <td>${data.cluster.term}</td>
-                        </tr>
-                        <tr>
-                            <th>Is Leader</th>
-                            <td>${data.cluster.is_leader ? 'Yes' : 'No'}</td>
-                        </tr>
-                        <tr>
-                            <th>Commit Index</th>
-                            <td>${data.cluster.commit_index}</td>
-                        </tr>
-                        <tr>
-                            <th>Log Size</th>
-                            <td>${data.cluster.log_size}</td>
-                        </tr>
-                    `;
-                } else {
-                    clusterMetricsTable.innerHTML = '<tr><td colspan="2" class="text-center">No cluster metrics available</td></tr>';
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching metrics:', error);
-                document.getElementById('app-metrics').innerHTML = '<tr><td colspan="2" class="text-center">Error loading metrics</td></tr>';
-                document.getElementById('db-metrics').innerHTML = '<tr><td colspan="2" class="text-center">Error loading metrics</td></tr>';
-                document.getElementById('cluster-metrics').innerHTML = '<tr><td colspan="2" class="text-center">Error loading metrics</td></tr>';
-            });
-    }
-    
-    // Admin functions
-    function initiateManualFailover() {
-        fetch('/api/v1/ha/database/failover', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(`Failover successful! New primary: ${data.new_primary}`);
-                // Refresh database servers
-                refreshDatabaseServers();
-            } else {
-                alert(`Failover failed: ${data.message}`);
-            }
-        })
-        .catch(error => {
-            console.error('Error initiating failover:', error);
-            alert('Error initiating failover. See console for details.');
-        });
-    }
-    
-    function updateRoutingPolicy(policy) {
-        fetch('/api/v1/ha/database/routing-policy', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ policy: policy })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(`Routing policy updated to ${data.policy}`);
-            } else {
-                alert(`Failed to update routing policy: ${data.message}`);
-            }
-        })
-        .catch(error => {
-            console.error('Error updating routing policy:', error);
-            alert('Error updating routing policy. See console for details.');
-        });
-    }
-    
-    function initiateBackup() {
-        const statusElement = document.getElementById('backup-status');
-        statusElement.innerHTML = '<div class="alert alert-info">Initiating backup...</div>';
-        
-        fetch('/api/v1/ha/backup', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                statusElement.innerHTML = `<div class="alert alert-success">Backup initiated successfully at ${formatDateTime(data.timestamp)}</div>`;
-            } else {
-                statusElement.innerHTML = `<div class="alert alert-danger">Backup failed: ${data.message}</div>`;
-            }
-        })
-        .catch(error => {
-            console.error('Error initiating backup:', error);
-            statusElement.innerHTML = '<div class="alert alert-danger">Error initiating backup. See console for details.</div>';
-        });
-    }
-    
-    function resetHAInfrastructure() {
-        const statusElement = document.getElementById('reset-status');
-        statusElement.innerHTML = '<div class="alert alert-info">Resetting HA infrastructure...</div>';
-        
-        fetch('/api/v1/ha/reset', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                statusElement.innerHTML = `<div class="alert alert-success">HA infrastructure reset successfully</div>`;
-                // Refresh all data
-                setTimeout(() => {
-                    refreshHAStatus();
-                    refreshNodeStatus();
-                    refreshClusterStatus();
-                    refreshDatabaseServers();
-                    refreshMetrics();
-                }, 2000);
-            } else {
-                statusElement.innerHTML = `<div class="alert alert-danger">Reset failed: ${data.message}</div>`;
-            }
-        })
-        .catch(error => {
-            console.error('Error resetting HA infrastructure:', error);
-            statusElement.innerHTML = '<div class="alert alert-danger">Error resetting HA infrastructure. See console for details.</div>';
-        });
-    }
-    
-    // Auto-refresh timer
-    let autoRefreshInterval;
-    
-    function startAutoRefresh() {
-        // Stop any existing interval
-        if (autoRefreshInterval) {
-            clearInterval(autoRefreshInterval);
-        }
-        
-        // Apply initial status data if available
-        if (initialStatus) {
-            applyInitialStatus(initialStatus);
-        }
-        
-        // Refresh immediately
-        refreshAll();
-        
-        // Set interval to refresh every 30 seconds
-        autoRefreshInterval = setInterval(refreshAll, 30000);
-    }
-    
-    function applyInitialStatus(status) {
-        // Update basic status
-        const statusColor = getStatusColor(status.status);
-        const statusAlert = document.getElementById('ha-status-alert');
-        if (statusAlert) {
-            statusAlert.className = `alert alert-${statusColor}`;
-            
-            document.getElementById('ha-status').innerHTML = `
-                <strong>Status:</strong> ${status.status.toUpperCase()}<br>
-                <strong>Uptime:</strong> ${formatUptime(status.uptime)}<br>
-                <strong>Started:</strong> ${formatDateTime(status.startup_time)}
-            `;
-        }
-        
-        // Update database status if available
-        if (status.components && status.components.database) {
-            const dbStatusColor = getStatusColor(status.components.database.status);
-            const dbStatusAlert = document.getElementById('database-status-alert');
-            if (dbStatusAlert) {
-                dbStatusAlert.className = `alert alert-${dbStatusColor}`;
-                
-                document.getElementById('database-status').innerHTML = `
-                    <strong>Status:</strong> ${status.components.database.status.toUpperCase()}<br>
-                    <strong>Last Checked:</strong> ${formatTimeSince(status.components.database.last_checked)}<br>
-                    <strong>Primary:</strong> ${status.components.database.details?.primary_id || 'Unknown'}
-                `;
-            }
-        }
-        
-        // Update cluster status if available
-        if (status.components && status.components.cluster) {
-            const clusterStatusColor = getStatusColor(status.components.cluster.status);
-            const clusterStatusAlert = document.getElementById('cluster-status-alert');
-            if (clusterStatusAlert) {
-                clusterStatusAlert.className = `alert alert-${clusterStatusColor}`;
-                
-                document.getElementById('cluster-status').innerHTML = `
-                    <strong>Status:</strong> ${status.components.cluster.status.toUpperCase()}<br>
-                    <strong>State:</strong> ${status.components.cluster.details?.state || 'Unknown'}<br>
-                    <strong>Nodes:</strong> ${status.components.cluster.details?.nodes || 0}
-                `;
-            }
-        }
-    }
-    
-    function refreshAll() {
-        refreshHAStatus();
-        refreshNodeStatus();
-        refreshClusterStatus();
-        refreshDatabaseServers();
-        refreshMetrics();
-    }
-    
-    // Admin functions
-    function initiateManualFailover() {
-        const statusMessage = document.getElementById('failover-status');
-        statusMessage.className = 'alert alert-info';
-        statusMessage.innerText = 'Initiating failover...';
-        statusMessage.style.display = 'block';
-        
-        fetch('/api/v1/ha/database/failover', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                statusMessage.className = 'alert alert-success';
-                statusMessage.innerText = `Failover successful! New primary: ${data.new_primary}`;
-                // Refresh database servers
-                refreshDatabaseServers();
-            } else {
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerText = `Failover failed: ${data.message || data.error}`;
-            }
-        })
-        .catch(error => {
-            console.error('Error during failover:', error);
-            statusMessage.className = 'alert alert-danger';
-            statusMessage.innerText = `Error during failover: ${error.message}`;
-        });
-    }
-    
-    function updateRoutingPolicy(policy) {
-        const statusMessage = document.getElementById('routing-policy-status');
-        statusMessage.className = 'alert alert-info';
-        statusMessage.innerText = 'Updating routing policy...';
-        statusMessage.style.display = 'block';
-        
-        fetch('/api/v1/ha/database/routing-policy', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({ policy: policy })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                statusMessage.className = 'alert alert-success';
-                statusMessage.innerText = `Routing policy updated to ${data.policy}`;
-                // Refresh database information
-                refreshDatabaseServers();
-            } else {
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerText = `Failed to update routing policy: ${data.message || data.error}`;
-            }
-        })
-        .catch(error => {
-            console.error('Error updating routing policy:', error);
-            statusMessage.className = 'alert alert-danger';
-            statusMessage.innerText = `Error updating routing policy: ${error.message}`;
-        });
-    }
-    
-    function initiateBackup() {
-        const statusMessage = document.getElementById('backup-status');
-        statusMessage.className = 'alert alert-info';
-        statusMessage.innerText = 'Initiating database backup...';
-        statusMessage.style.display = 'block';
-        
-        fetch('/api/v1/ha/backup', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                statusMessage.className = 'alert alert-success';
-                statusMessage.innerText = `Backup initiated successfully at ${formatDateTime(data.timestamp)}`;
-            } else {
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerText = `Backup failed: ${data.message || data.error}`;
-            }
-        })
-        .catch(error => {
-            console.error('Error during backup:', error);
-            statusMessage.className = 'alert alert-danger';
-            statusMessage.innerText = `Error during backup: ${error.message}`;
-        });
-    }
-    
-    function resetHAInfrastructure() {
-        const statusMessage = document.getElementById('reset-status');
-        statusMessage.className = 'alert alert-info';
-        statusMessage.innerText = 'Resetting high-availability infrastructure...';
-        statusMessage.style.display = 'block';
-        
-        fetch('/api/v1/ha/reset', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                statusMessage.className = 'alert alert-success';
-                statusMessage.innerText = `High-availability infrastructure reset successfully`;
-                // Refresh all data
-                refreshAll();
-            } else {
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerText = `Reset failed: ${data.message || data.error}`;
-            }
-        })
-        .catch(error => {
-            console.error('Error during reset:', error);
-            statusMessage.className = 'alert alert-danger';
-            statusMessage.innerText = `Error during reset: ${error.message}`;
-        });
-    }
-    
-    // Event listeners
-    document.addEventListener('DOMContentLoaded', function() {
-        // Start auto-refresh
-        startAutoRefresh();
-        
-        // Manual refresh buttons
-        document.getElementById('refresh-db-servers').addEventListener('click', refreshDatabaseServers);
-        document.getElementById('refresh-cluster-nodes').addEventListener('click', refreshClusterStatus);
-        document.getElementById('refresh-metrics').addEventListener('click', refreshMetrics);
-        
-        // Failover button
-        const failoverButton = document.getElementById('manual-failover');
-        if (failoverButton) {
-            failoverButton.addEventListener('click', function() {
-                const failoverModal = new bootstrap.Modal(document.getElementById('failoverModal'));
-                failoverModal.show();
-            });
-        }
-        
-        // Confirm failover button
-        const confirmFailoverButton = document.getElementById('confirm-failover');
-        if (confirmFailoverButton) {
-            confirmFailoverButton.addEventListener('click', function() {
-                // Hide modal
-                const failoverModal = bootstrap.Modal.getInstance(document.getElementById('failoverModal'));
-                failoverModal.hide();
-                
-                // Initiate failover
-                initiateManualFailover();
-            });
-        }
-        
-        // Routing policy form
-        const routingPolicyForm = document.getElementById('routing-policy-form');
-        if (routingPolicyForm) {
-            routingPolicyForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const policySelect = document.getElementById('routing-policy');
-                updateRoutingPolicy(policySelect.value);
-            });
-        }
-        
-        // Backup button
-        const backupButton = document.getElementById('initiate-backup');
-        if (backupButton) {
-            backupButton.addEventListener('click', initiateBackup);
-        }
-        
-        // Reset HA button
-        const resetButton = document.getElementById('reset-ha');
-        if (resetButton) {
-            resetButton.addEventListener('click', function() {
-                const resetModal = new bootstrap.Modal(document.getElementById('resetModal'));
-                resetModal.show();
-            });
-        }
-        
-        // Confirm reset button
-        const confirmResetButton = document.getElementById('confirm-reset');
-        if (confirmResetButton) {
-            confirmResetButton.addEventListener('click', function() {
-                // Hide modal
-                const resetModal = bootstrap.Modal.getInstance(document.getElementById('resetModal'));
-                resetModal.hide();
-                
-                // Reset HA infrastructure
-                resetHAInfrastructure();
-            });
-        }
-    });
-    
-    // Clean up on page unload
-    window.addEventListener('beforeunload', function() {
-        if (autoRefreshInterval) {
-            clearInterval(autoRefreshInterval);
-        }
-    });
-</script>
+<script src="{{ url_for('static', filename='js/ha_dashboard.js') }}"></script>
 {% endblock %}
