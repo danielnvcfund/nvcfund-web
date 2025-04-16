@@ -123,6 +123,14 @@ def register_user(username, email, password, role=UserRole.USER):
         db.session.add(user)
         db.session.commit()
         
+        # Send welcome email to the new user
+        try:
+            from email_service import send_welcome_email
+            send_welcome_email(user)
+        except Exception as email_error:
+            logger.error(f"Failed to send welcome email: {str(email_error)}")
+            # Continue even if email fails - user is registered
+        
         return user, None
     
     except Exception as e:

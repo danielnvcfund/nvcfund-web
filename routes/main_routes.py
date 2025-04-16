@@ -153,14 +153,18 @@ def reset_request():
         # Find user by email
         user = User.query.filter_by(email=form.email.data).first()
         
-        # Generate reset token
-        token = generate_reset_token(user)
-        
-        # Here you would typically send an email with the reset token
-        # For now, we'll just display it in a flash message for testing
-        reset_url = url_for('main.reset_password', token=token, _external=True)
-        
-        flash(f'A password reset link has been sent to your email. For testing, use this link: {reset_url}', 'info')
+        if user:
+            # Generate reset token and send email (email sent inside generate_reset_token)
+            token = generate_reset_token(user)
+            
+            if token:
+                flash('A password reset link has been sent to your email address', 'success')
+            else:
+                flash('There was an issue sending the reset email. Please try again later.', 'danger')
+        else:
+            # Don't reveal whether the email exists for security
+            flash('If an account with that email exists, a password reset link will be sent', 'info')
+            
         return redirect(url_for('main.login'))
     
     return render_template('reset_request.html', form=form)
@@ -205,11 +209,17 @@ def forgot_username():
         user = User.query.filter_by(email=form.email.data).first()
         
         if user:
-            # Here you would typically send an email with the username
-            # For now, we'll just display it in a flash message for testing
-            flash(f'Your username is: {user.username}', 'info')
+            # Send email with username reminder
+            from email_service import send_username_reminder_email
+            success = send_username_reminder_email(user)
+            
+            if success:
+                flash('Your username has been sent to your email address', 'success')
+            else:
+                flash('There was an issue sending the email. Please try again later.', 'danger')
         else:
-            flash('No user found with that email address', 'danger')
+            # Don't reveal whether the email exists for security
+            flash('If an account with that email exists, a username reminder will be sent', 'info')
         
         return redirect(url_for('main.login'))
     
