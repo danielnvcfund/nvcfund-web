@@ -1710,7 +1710,7 @@ def bad_request(e):
 @app.route('/ha_dashboard')
 def ha_dashboard_redirect():
     """Redirect to high-availability dashboard"""
-    return redirect(url_for('web.ha_web.dashboard'))
+    return redirect('/ha/dashboard')
 
 # Direct access to HA dashboard for compatibility
 @app.route('/ha/dashboard')
