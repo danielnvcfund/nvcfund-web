@@ -34,22 +34,22 @@
                 <ul class="navbar-nav me-auto">
                     {% if session.get('user_id') %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                        <a class="nav-link {% if request.path == '/dashboard' %}active{% endif %}" href="#dashboard">
                             <i class="fas fa-tachometer-alt me-1"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/transactions' %}active{% endif %}" href="{{ url_for('transactions') }}">
+                        <a class="nav-link {% if request.path == '/transactions' %}active{% endif %}" href="#transactions">
                             <i class="fas fa-exchange-alt me-1"></i> Transactions
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/payment/new' %}active{% endif %}" href="{{ url_for('new_payment') }}">
+                        <a class="nav-link {% if request.path == '/payment/new' %}active{% endif %}" href="#payment">
                             <i class="fas fa-credit-card me-1"></i> Make Payment
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/blockchain' %}active{% endif %}" href="{{ url_for('blockchain_status') }}">
+                        <a class="nav-link {% if request.path == '/blockchain' %}active{% endif %}" href="#blockchain">
                             <i class="fas fa-link me-1"></i> Blockchain
                         </a>
                     </li>
@@ -60,27 +60,27 @@
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="adminDropdown">
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('user_management') }}">
+                                <a class="dropdown-item" href="#user-management">
                                     <i class="fas fa-users me-1"></i> User Management
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('financial_institutions') }}">
+                                <a class="dropdown-item" href="#financial-institutions">
                                     <i class="fas fa-landmark me-1"></i> Financial Institutions
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('payment_gateways') }}">
+                                <a class="dropdown-item" href="#payment-gateways">
                                     <i class="fas fa-money-bill-wave me-1"></i> Payment Gateways
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('invitations') }}">
+                                <a class="dropdown-item" href="#invitations">
                                     <i class="fas fa-envelope-open-text me-1"></i> Invitations
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('partner_integration') }}">
+                                <a class="dropdown-item" href="#partner-integration">
                                     <i class="fas fa-handshake me-1"></i> Partner Integration
                                 </a>
                             </li>
@@ -89,7 +89,7 @@
                     {% endif %}
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/api_docs' %}active{% endif %}" href="{{ url_for('api_docs') }}">
+                        <a class="nav-link {% if request.path == '/api_docs' %}active{% endif %}" href="#api-docs">
                             <i class="fas fa-book me-1"></i> API Docs
                         </a>
                     </li>
@@ -104,17 +104,17 @@
                             <li><h6 class="dropdown-header">Signed in as</h6></li>
                             <li><a class="dropdown-item" href="#">{{ session.get('username') }}</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Sign out</a></li>
+                            <li><a class="dropdown-item" href="#logout">Sign out</a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/login' %}active{% endif %}" href="{{ url_for('login') }}">
+                        <a class="nav-link {% if request.path == '/login' %}active{% endif %}" href="#login">
                             <i class="fas fa-sign-in-alt me-1"></i> Sign In
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/register' %}active{% endif %}" href="{{ url_for('register') }}">
+                        <a class="nav-link {% if request.path == '/register' %}active{% endif %}" href="#register">
                             <i class="fas fa-user-plus me-1"></i> Register
                         </a>
                     </li>
@@ -155,9 +155,9 @@
                     <p class="text-muted small">Ethereum-powered banking platform for secure digital settlements</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <a href="{{ url_for('api_docs') }}" class="text-muted me-3">API Documentation</a>
-                    <a href="{{ url_for('terms_of_service') }}" class="text-muted me-3">Terms of Service</a>
-                    <a href="#" class="text-muted">Privacy Policy</a>
+                    <a href="#api-docs" class="text-muted me-3">API Documentation</a>
+                    <a href="#terms" class="text-muted me-3">Terms of Service</a>
+                    <a href="#privacy" class="text-muted">Privacy Policy</a>
                 </div>
             </div>
         </div>

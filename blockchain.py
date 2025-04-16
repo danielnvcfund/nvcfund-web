@@ -406,7 +406,7 @@ def init_web3():
     
     # Get Ethereum node URL from environment variable or use Sepolia testnet as default
     # Note: Ropsten is deprecated, using Sepolia instead
-    infura_project_id = os.environ.get("INFURA_PROJECT_ID", "9aa3d95b3bc440fa88ea12eaa4456161") # Default public key, limited usage
+    infura_project_id = os.environ.get("INFURA_PROJECT_ID", "e1159d2eed8f4c4fafa3f2053b612f9b") # Updated project ID
     
     # Remove '0x' prefix if present in the project ID as Infura doesn't expect it
     if infura_project_id and infura_project_id.startswith('0x'):

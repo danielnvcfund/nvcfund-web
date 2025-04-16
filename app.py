@@ -1,12 +1,13 @@
 import os
 import logging
 
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_jwt_extended import JWTManager
 from flask_wtf.csrf import CSRFProtect
+from flask_login import LoginManager
 
 
 # Configure logging
@@ -42,6 +43,17 @@ csrf = CSRFProtect(app)
 jwt = JWTManager(app)
 db.init_app(app)
 
+# Setup Flask-Login
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Please log in to access this page.'
+login_manager.login_message_category = 'info'
+
+@login_manager.user_loader
+def load_user(user_id):
+    from models import User
+    return User.query.get(int(user_id))
+
 with app.app_context():
     # Import models to ensure tables are created
     import models  # noqa: F401
@@ -60,9 +72,16 @@ with app.app_context():
     
     logger.info("Application initialized successfully")
 
-# Import routes at the end to avoid circular imports
-import routes
-
 # Import and register blueprints
 from routes.api.blockchain_routes import blockchain_api
 app.register_blueprint(blockchain_api, url_prefix='/api/blockchain')
+
+# Add a direct route to index for testing
+@app.route('/')
+def index():
+    """Homepage route"""
+    return render_template('index.html')
+
+# Import routes at the end to avoid circular imports
+# This is where Flask route decorators are processed
+import routes
