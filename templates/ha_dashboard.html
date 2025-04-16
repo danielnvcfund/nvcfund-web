@@ -345,6 +345,9 @@
 
 {% block scripts %}
 <script>
+    // Initial status data from the server
+    const initialStatus = {{ ha_status|tojson|safe }};
+    
     // Utility functions
     function formatUptime(seconds) {
         const days = Math.floor(seconds / 86400);
