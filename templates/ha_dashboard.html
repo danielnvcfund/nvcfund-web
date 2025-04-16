@@ -7,29 +7,41 @@
     <h1 class="mb-4">High-Availability Dashboard</h1>
     
     <div class="row mb-4">
-        <div class="col-md-12">
+        <div class="col-12">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">System Status</h5>
+                    <button id="refresh-all" class="btn btn-primary btn-sm">
+                        <i class="fas fa-sync-alt"></i> Refresh All
+                    </button>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-4 col-sm-12 mb-3">
                             <div class="alert" id="ha-status-alert">
-                                <h3 class="h5">High-Availability Status</h3>
-                                <div id="ha-status">Loading...</div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h3 class="h5">High-Availability Status</h3>
+                                    <span class="badge bg-secondary" id="ha-status-badge">Unknown</span>
+                                </div>
+                                <div id="ha-status" class="mt-2">Loading...</div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-4 col-sm-12 mb-3">
                             <div class="alert" id="database-status-alert">
-                                <h3 class="h5">Database Cluster Status</h3>
-                                <div id="database-status">Loading...</div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h3 class="h5">Database Cluster Status</h3>
+                                    <span class="badge bg-secondary" id="db-status-badge">Unknown</span>
+                                </div>
+                                <div id="database-status" class="mt-2">Loading...</div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-4 col-sm-12 mb-3">
                             <div class="alert" id="cluster-status-alert">
-                                <h3 class="h5">Cluster Status</h3>
-                                <div id="cluster-status">Loading...</div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h3 class="h5">Cluster Status</h3>
+                                    <span class="badge bg-secondary" id="cluster-status-badge">Unknown</span>
+                                </div>
+                                <div id="cluster-status" class="mt-2">Loading...</div>
                             </div>
                         </div>
                     </div>
