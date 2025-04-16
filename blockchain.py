@@ -5,9 +5,17 @@ from web3 import Web3, HTTPProvider
 # Use the appropriate middleware for Web3.py v7+
 from web3 import middleware
 from eth_account import Account
-from models import BlockchainTransaction, SmartContract, Transaction, TransactionStatus
 
 logger = logging.getLogger(__name__)
+
+# Import db from app within functions to avoid circular imports
+def get_db():
+    from app import db
+    return db
+
+def get_models():
+    from models import BlockchainTransaction, SmartContract, Transaction, TransactionStatus
+    return BlockchainTransaction, SmartContract, Transaction, TransactionStatus
 
 # Global Web3 instance
 w3 = None
@@ -436,11 +444,8 @@ def init_web3():
     if w3 and w3.is_connected():
         logger.info(f"Successfully connected to Ethereum node. Network version: {w3.net.version}")
         
-        # Initialize contracts if they don't exist
-        with app.app_context():
-            initialize_settlement_contract()
-            initialize_multisig_wallet()
-            initialize_nvc_token()
+        # Initialize contracts if they don't exist - will be done later in the app context
+        # Moved contract initialization to outside this function to avoid circular imports
         
         return w3
     else:
@@ -454,6 +459,8 @@ def init_web3():
 
 def initialize_settlement_contract():
     """Deploy the settlement contract if it doesn't exist"""
+    db = get_db()
+    BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
     contract = SmartContract.query.filter_by(name="SettlementContract").first()
     
     if not contract:
@@ -524,6 +531,8 @@ def initialize_settlement_contract():
 
 def initialize_multisig_wallet():
     """Deploy the multi-signature wallet contract if it doesn't exist"""
+    db = get_db()
+    BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
     contract = SmartContract.query.filter_by(name="MultiSigWallet").first()
     
     if not contract:
