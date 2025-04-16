@@ -93,9 +93,47 @@ def list_nodes():
     
     status = cluster_manager.get_cluster_status()
     return jsonify({
+        'success': True,
         'node_id': status['node_id'],
         'leader_id': status['leader_id'],
         'nodes': status['nodes']
+    })
+
+@ha_api.route('/cluster/nodes', methods=['GET'])
+def get_cluster_nodes():
+    """Get all nodes in the cluster (for dashboard)"""
+    cluster_manager = cluster.get_cluster_manager()
+    
+    if not cluster_manager:
+        ha_status = high_availability.get_ha_status()
+        if not ha_status.get('initialized', False):
+            # Return a simulated response for demo purposes when HA is disabled
+            return jsonify({
+                'success': True,
+                'nodes': [],
+                'message': 'High-availability infrastructure is not enabled'
+            })
+        return jsonify({
+            'success': False,
+            'error': 'Cluster not initialized',
+            'message': 'Cluster manager is not available'
+        })
+    
+    status = cluster_manager.get_cluster_status()
+    # Format the node data for the UI
+    nodes = []
+    for node_id, node_data in status['nodes'].items():
+        nodes.append({
+            'id': node_id,
+            'address': node_data.get('address', 'N/A'),
+            'health': node_data.get('health', 'unknown'),
+            'last_seen': node_data.get('last_seen', None)
+        })
+
+    return jsonify({
+        'success': True,
+        'nodes': nodes,
+        'leader_id': status['leader_id']
     })
 
 @ha_api.route('/leader', methods=['GET'])
@@ -392,19 +430,19 @@ def list_regions():
     })
 
 @ha_api.route('/metrics', methods=['GET'])
-@api_key_required
 def get_metrics():
     """Get metrics for high-availability infrastructure"""
     metrics = {
+        'success': True,
         'timestamp': datetime.now().isoformat(),
-        'application': {},
-        'database': {},
-        'cluster': {}
+        'app_metrics': {},
+        'db_metrics': {},
+        'cluster_metrics': {}
     }
     
     # Application metrics
     app_status = high_availability.get_app_node_status()
-    metrics['application'] = {
+    metrics['app_metrics'] = {
         'node_id': app_status['node_id'],
         'uptime': app_status['uptime'],
         'ha_status': app_status['ha_status']
@@ -414,7 +452,7 @@ def get_metrics():
     db_cluster = ha_database.get_db_cluster()
     if db_cluster:
         db_status = db_cluster.get_cluster_status()
-        metrics['database'] = {
+        metrics['db_metrics'] = {
             'online_servers': db_status['online_servers'],
             'degraded_servers': db_status['degraded_servers'],
             'offline_servers': db_status['offline_servers'],
@@ -443,6 +481,15 @@ def get_metrics():
                           if server_id != db_status['primary_id'] and 'replication_lag' in server))
             )
         }
+    else:
+        # Add some placeholder metrics for when HA is disabled
+        metrics['db_metrics'] = {
+            'online_servers': 0,
+            'degraded_servers': 0,
+            'offline_servers': 0,
+            'primary_id': None,
+            'message': 'High-availability infrastructure is not enabled'
+        }
     
     # Cluster metrics
     cluster_manager = cluster.get_cluster_manager()
@@ -450,7 +497,7 @@ def get_metrics():
         status = cluster_manager.get_cluster_status()
         healthy_nodes = sum(1 for node_id, node in status['nodes'].items()
                           if node['health'] == 'healthy')
-        metrics['cluster'] = {
+        metrics['cluster_metrics'] = {
             'total_nodes': len(status['nodes']),
             'healthy_nodes': healthy_nodes,
             'leader_id': status['leader_id'],
@@ -458,6 +505,14 @@ def get_metrics():
             'is_leader': status['role'] == 'leader',
             'commit_index': status['commit_index'],
             'log_size': status['log_size']
+        }
+    else:
+        # Add some placeholder metrics for when HA is disabled
+        metrics['cluster_metrics'] = {
+            'total_nodes': 0,
+            'healthy_nodes': 0,
+            'leader_id': None,
+            'message': 'High-availability infrastructure is not enabled'
         }
     
     return jsonify(metrics)

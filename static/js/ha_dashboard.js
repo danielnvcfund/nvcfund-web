@@ -56,6 +56,15 @@ function refreshHAStatus() {
     document.getElementById('database-status').innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Loading...';
     document.getElementById('cluster-status').innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Loading...';
     
+    // Clear existing status
+    document.getElementById('ha-status-badge').textContent = 'Unknown';
+    document.getElementById('db-status-badge').textContent = 'Unknown';
+    document.getElementById('cluster-status-badge').textContent = 'Unknown';
+    
+    document.getElementById('ha-status-alert').className = 'alert alert-secondary';
+    document.getElementById('database-status-alert').className = 'alert alert-secondary';
+    document.getElementById('cluster-status-alert').className = 'alert alert-secondary';
+    
     fetch('/api/v1/ha/status')
     .then(response => {
         if (!response.ok) {
