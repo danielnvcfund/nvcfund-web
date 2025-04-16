@@ -1706,8 +1706,14 @@ def bad_request(e):
     """400 error handler"""
     return render_template('error.html', error_code=400, error_message="Bad request"), 400
 
-# High Availability Dashboard route
+# High Availability Dashboard route - redirect to the proper blueprint route
 @app.route('/ha_dashboard')
+def ha_dashboard_redirect():
+    """Redirect to high-availability dashboard"""
+    return redirect(url_for('web.ha_web.dashboard'))
+
+# Direct access to HA dashboard for compatibility
+@app.route('/ha/dashboard')
 @login_required
 @auth.admin_required
 def ha_dashboard():
