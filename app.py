@@ -84,11 +84,6 @@ with app.app_context():
     
     logger.info("Application initialized successfully")
 
-# Import and register blueprints
-from routes import api_blueprint, web_blueprint
-app.register_blueprint(api_blueprint)
-app.register_blueprint(web_blueprint)
-
 # Add a direct route to index for testing
 @app.route('/')
 def index():
@@ -98,3 +93,8 @@ def index():
 # Import routes at the end to avoid circular imports
 # This is where Flask route decorators are processed
 import routes
+
+# Import and register blueprints
+from routes import api_blueprint, web_blueprint
+app.register_blueprint(api_blueprint)
+app.register_blueprint(web_blueprint)
