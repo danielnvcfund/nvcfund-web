@@ -8,13 +8,20 @@ from flask import Blueprint
 from routes.api.blockchain_routes import blockchain_api
 from routes.api.xrp_routes import xrp_api
 from routes.api.ha_routes import ha_api
+from routes.high_availability_routes import ha_web
 
 # Create API blueprint
 api_blueprint = Blueprint('api', __name__, url_prefix='/api')
+
+# Create Web blueprint (for pages that should be under a prefix)
+web_blueprint = Blueprint('web', __name__)
 
 # Register API route blueprints
 api_blueprint.register_blueprint(blockchain_api, url_prefix='/blockchain')
 api_blueprint.register_blueprint(xrp_api, url_prefix='/xrp')
 api_blueprint.register_blueprint(ha_api)
+
+# Register Web route blueprints
+web_blueprint.register_blueprint(ha_web)
 
 # The main routes are imported directly in app.py

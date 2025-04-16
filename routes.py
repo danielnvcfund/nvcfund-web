@@ -1675,26 +1675,7 @@ def blockchain_status():
     )
 
 
-@app.route('/ha-dashboard')
-@login_required
-@admin_required
-def ha_dashboard():
-    """High-availability status and management dashboard"""
-    user_id = session.get('user_id')
-    user = User.query.get(user_id)
-    
-    # Initialize the HA infrastructure if not already done
-    if not high_availability._ha_initialized:
-        high_availability.init_high_availability()
-    
-    # Get HA status
-    ha_status = high_availability.get_ha_status()
-    
-    return render_template(
-        'ha_dashboard.html',
-        user=user,
-        ha_status=ha_status
-    )
+# The HA dashboard route has been moved to routes/high_availability_routes.py
 
 # Import our API routes
 from routes.api.blockchain_routes import blockchain_api

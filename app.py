@@ -45,7 +45,7 @@ db.init_app(app)
 
 # Setup Flask-Login
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'
+login_manager.login_view = '/login'  # Use absolute URL since routes are defined in routes.py
 login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'info'
 
@@ -85,8 +85,9 @@ with app.app_context():
     logger.info("Application initialized successfully")
 
 # Import and register blueprints
-from routes import api_blueprint
+from routes import api_blueprint, web_blueprint
 app.register_blueprint(api_blueprint)
+app.register_blueprint(web_blueprint)
 
 # Add a direct route to index for testing
 @app.route('/')
