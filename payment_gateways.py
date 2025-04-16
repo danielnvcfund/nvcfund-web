@@ -192,15 +192,35 @@ class StripeGateway(PaymentGatewayInterface):
             if metadata:
                 stripe_metadata.update(metadata)
             
+            # Check if this is a test payment with specific scenarios
+            is_test = metadata and metadata.get('test', False)
+            test_scenario = metadata and metadata.get('scenario')
+            
+            # Base payment intent parameters
+            payment_intent_params = {
+                "amount": int(amount * 100),  # Convert to cents
+                "currency": currency.lower(),
+                "description": description,
+                "metadata": stripe_metadata,
+                "payment_method_types": ["card"],
+            }
+            
+            # For test scenarios, modify parameters as needed
+            if is_test and test_scenario:
+                logger.info(f"Processing test payment with scenario: {test_scenario}")
+                
+                if test_scenario == 'failure':
+                    # For simulating failures in the test UI
+                    payment_intent_params["metadata"]["test_failure"] = "true"
+                elif test_scenario == '3ds':
+                    # For simulating 3D Secure in the test UI
+                    payment_intent_params["metadata"]["test_3ds"] = "true"
+                elif test_scenario == 'webhook':
+                    # For simulating webhook processing
+                    payment_intent_params["metadata"]["test_webhook"] = "true"
+            
             # Create a PaymentIntent using the Stripe Python library
-            payment_intent = stripe.PaymentIntent.create(
-                amount=int(amount * 100),  # Convert to cents
-                currency=currency.lower(),
-                description=description,
-                metadata=stripe_metadata,
-                payment_method_types=["card"],
-                # You can add specific options like automatic_payment_methods={"enabled": True}
-            )
+            payment_intent = stripe.PaymentIntent.create(**payment_intent_params)
             
             # Update transaction with Stripe payment intent ID
             transaction.status = TransactionStatus.PROCESSING

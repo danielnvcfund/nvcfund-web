@@ -86,7 +86,22 @@ function initStripeElements() {
         const elements = stripe.elements();
         
         // Create card element
-        const cardElement = elements.create('card');
+        const cardElement = elements.create('card', {
+            hidePostalCode: false, // Enable postal code for AVS checks
+            style: {
+                base: {
+                    fontSize: '16px',
+                    color: '#495057',
+                    '::placeholder': {
+                        color: '#6c757d',
+                    },
+                },
+                invalid: {
+                    color: '#dc3545',
+                    iconColor: '#dc3545',
+                },
+            },
+        });
         cardElement.mount('#card-element');
         
         // Handle form submission
@@ -96,11 +111,36 @@ function initStripeElements() {
             paymentForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
+                // Get scenario from hidden field if it exists (for test page)
+                const testScenarioField = document.getElementById('test-scenario');
+                const isTestMode = testScenarioField !== null;
+                const testScenario = isTestMode ? testScenarioField.value : null;
+                
                 // Disable the submit button to prevent repeated clicks
                 const submitButton = this.querySelector('button[type="submit"]');
                 submitButton.disabled = true;
                 submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
                 
+                // Add test card numbers based on scenario if in test mode
+                let testCardNumber = null;
+                if (isTestMode && testScenario) {
+                    switch (testScenario) {
+                        case 'failure':
+                            testCardNumber = '4000000000000002'; // Always declined
+                            break;
+                        case '3ds':
+                            testCardNumber = '4000000000003220'; // Requires 3D Secure
+                            break;
+                        case 'success':
+                        default:
+                            testCardNumber = '4242424242424242'; // Always succeeds
+                    }
+                    
+                    // Log for testing
+                    console.log(`Test mode active with scenario: ${testScenario}, using card: ${testCardNumber}`);
+                }
+                
+                // Start the payment flow with Stripe
                 const { error, paymentIntent } = await stripe.confirmCardPayment(
                     clientSecret.value,
                     {
@@ -118,12 +158,42 @@ function initStripeElements() {
                     const errorElement = document.getElementById('card-errors');
                     errorElement.textContent = error.message;
                     
+                    // For test mode, show additional context
+                    if (isTestMode) {
+                        errorElement.innerHTML += `<div class="mt-2 small text-muted">Test Error: ${error.code || 'unknown'}</div>`;
+                    }
+                    
                     // Reset button
                     submitButton.disabled = false;
                     submitButton.textContent = 'Pay';
                 } else if (paymentIntent.status === 'succeeded') {
                     // Payment succeeded, redirect to success page
                     window.location.href = `/transaction/${document.getElementById('transaction-id').value}`;
+                } else if (paymentIntent.status === 'requires_action') {
+                    // Handle 3D Secure authentication
+                    const { error, paymentIntent: updatedIntent } = 
+                        await stripe.confirmCardPayment(clientSecret.value);
+                    
+                    if (error) {
+                        // Show error message for 3DS failure
+                        const errorElement = document.getElementById('card-errors');
+                        errorElement.textContent = '3D Secure authentication failed: ' + error.message;
+                        
+                        // Reset button
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Try Again';
+                    } else if (updatedIntent.status === 'succeeded') {
+                        // 3DS successful
+                        window.location.href = `/transaction/${document.getElementById('transaction-id').value}`;
+                    } else {
+                        // Unexpected status
+                        const errorElement = document.getElementById('card-errors');
+                        errorElement.textContent = `Unexpected payment status: ${updatedIntent.status}`;
+                        
+                        // Reset button
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Try Again';
+                    }
                 }
             });
         }

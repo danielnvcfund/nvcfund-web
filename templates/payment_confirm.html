@@ -8,6 +8,9 @@
 <input type="hidden" id="stripe-public-key" value="pk_test_sample">
 <input type="hidden" id="client-secret" value="{{ client_secret }}">
 <input type="hidden" id="transaction-id" value="{{ transaction_id }}">
+{% if test_scenario %}
+<input type="hidden" id="test-scenario" value="{{ test_scenario }}">
+{% endif %}
 {% endblock %}
 
 {% block content %}
