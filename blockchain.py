@@ -1243,6 +1243,9 @@ def create_new_settlement(from_address, to_address, amount_in_eth, private_key, 
         str: Transaction hash if successful, None otherwise
     """
     try:
+        db = get_db()
+        BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
+        
         contract = get_settlement_contract()
         
         if not contract:
@@ -1311,6 +1314,9 @@ def create_new_settlement(from_address, to_address, amount_in_eth, private_key, 
     
     except Exception as e:
         logger.error(f"Error creating settlement: {str(e)}")
+        
+        db = get_db()
+        BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
         
         # Update transaction status to failed
         transaction = Transaction.query.filter_by(id=transaction_id).first()
