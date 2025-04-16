@@ -45,7 +45,7 @@ db.init_app(app)
 
 # Setup Flask-Login
 login_manager = LoginManager(app)
-login_manager.login_view = '/login'  # Use absolute URL since routes are defined in routes.py
+login_manager.login_view = 'login'  # Use route name
 login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'info'
 
