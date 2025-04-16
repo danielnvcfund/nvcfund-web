@@ -1675,7 +1675,8 @@ def blockchain_status():
     )
 
 
-@app.route('/ha/dashboard')
+@app.route('/ha-dashboard')
+@login_required
 @admin_required
 def ha_dashboard():
     """High-availability status and management dashboard"""
