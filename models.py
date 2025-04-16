@@ -107,20 +107,38 @@ class PaymentGateway(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+class BlockchainAccount(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    eth_address = db.Column(db.String(64), nullable=False)
+    eth_private_key = db.Column(db.String(256), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = db.relationship('User', backref=db.backref('blockchain_accounts', lazy=True))
+
 class BlockchainTransaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     eth_tx_hash = db.Column(db.String(128), unique=True, nullable=False)
     from_address = db.Column(db.String(64), nullable=False)
     to_address = db.Column(db.String(64), nullable=False)
     amount = db.Column(db.Float, nullable=False)
+    contract_address = db.Column(db.String(64))
+    transaction_type = db.Column(db.String(64), nullable=False)
     gas_used = db.Column(db.Integer)
     gas_price = db.Column(db.Float)
     block_number = db.Column(db.Integer)
     status = db.Column(db.String(64), default="pending")
+    tx_metadata = db.Column(db.Text)  # Changed from 'metadata' which is reserved in SQLAlchemy
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    user = db.relationship('User', backref=db.backref('blockchain_transactions', lazy=True))
+    
+    # Optional link to a main application transaction
+    transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
     transaction = db.relationship('Transaction', backref=db.backref('blockchain_transactions', lazy=True))
 
 class SmartContract(db.Model):

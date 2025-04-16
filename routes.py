@@ -19,7 +19,8 @@ from models import (
     User, UserRole, Transaction, TransactionStatus, TransactionType,
     FinancialInstitution, FinancialInstitutionType,
     PaymentGateway, PaymentGatewayType, SmartContract, BlockchainTransaction,
-    Invitation, InvitationType, InvitationStatus, AssetManager, BusinessPartner, PartnerType, Webhook
+    BlockchainAccount, Invitation, InvitationType, InvitationStatus, 
+    AssetManager, BusinessPartner, PartnerType, Webhook
 )
 from auth import (
     login_required, admin_required, api_key_required, authenticate_user,
@@ -27,7 +28,8 @@ from auth import (
 )
 from blockchain import (
     send_ethereum_transaction, settle_payment_via_contract,
-    get_transaction_status, generate_ethereum_account
+    get_transaction_status, generate_ethereum_account,
+    init_web3, get_settlement_contract, get_multisig_wallet, get_nvc_token
 )
 from payment_gateways import get_gateway_handler
 from financial_institutions import get_institution_handler
@@ -551,38 +553,7 @@ def edit_payment_gateway(gateway_id):
     # GET request or validation failed, show form
     return render_template('payment_gateway_form.html', form=form, is_new=False)
 
-@app.route('/blockchain')
-@login_required
-def blockchain_status():
-    """Blockchain status route"""
-    user_id = session.get('user_id')
-    user = User.query.get(user_id)
-    
-    # Get smart contracts
-    contracts = SmartContract.query.filter_by(is_active=True).all()
-    
-    # Get recent blockchain transactions
-    if session.get('role') == UserRole.ADMIN.value:
-        # Admin sees all transactions
-        recent_blockchain_txs = BlockchainTransaction.query\
-            .order_by(BlockchainTransaction.created_at.desc())\
-            .limit(10).all()
-    else:
-        # Regular users see only their transactions
-        user_transactions = Transaction.query.filter_by(user_id=user_id).all()
-        transaction_ids = [tx.id for tx in user_transactions]
-        
-        recent_blockchain_txs = BlockchainTransaction.query\
-            .filter(BlockchainTransaction.transaction_id.in_(transaction_ids))\
-            .order_by(BlockchainTransaction.created_at.desc())\
-            .limit(10).all()
-    
-    return render_template(
-        'blockchain_status.html',
-        user=user,
-        contracts=contracts,
-        recent_blockchain_txs=recent_blockchain_txs
-    )
+# First blockchain_status route now removed, using the more complete version below
 
 @app.route('/user_management')
 @admin_required
@@ -1554,6 +1525,159 @@ def coinbase_webhook():
                 logger.info(f"Coinbase payment failed for transaction {transaction_id}")
     
     return jsonify({'success': True}), 200
+
+@app.route('/blockchain')
+@login_required
+def blockchain_status():
+    """Blockchain status and management page"""
+    user_id = session.get('user_id')
+    user = User.query.get(user_id)
+    
+    # Initialize connection status
+    try:
+        web3 = init_web3()
+        connected = web3 is not None and web3.is_connected()
+    except Exception as e:
+        logger.error(f"Error initializing web3: {str(e)}")
+        web3 = None
+        connected = False
+    
+    if connected:
+        try:
+            # Get current block
+            current_block = web3.eth.block_number
+            
+            # Get network name
+            chain_id = web3.eth.chain_id
+            network_map = {
+                1: "Ethereum Mainnet",
+                3: "Ropsten Testnet",
+                4: "Rinkeby Testnet",
+                5: "Goerli Testnet",
+                42: "Kovan Testnet",
+                11155111: "Sepolia Testnet"
+            }
+            network_name = network_map.get(chain_id, f"Unknown Network (Chain ID: {chain_id})")
+            
+            # Get etherscan URL based on network
+            etherscan_url_map = {
+                1: "https://etherscan.io",
+                3: "https://ropsten.etherscan.io",
+                4: "https://rinkeby.etherscan.io",
+                5: "https://goerli.etherscan.io",
+                42: "https://kovan.etherscan.io",
+                11155111: "https://sepolia.etherscan.io"
+            }
+            etherscan_url = etherscan_url_map.get(chain_id, "https://etherscan.io")
+            
+            connection_status = "Connected"
+            connection_status_color = "success"
+            connection_status_icon = "fa-check-circle"
+        except Exception as e:
+            # Web3 said it's connected but something went wrong
+            connected = False
+            current_block = "Unknown"
+            network_name = "Unknown"
+            etherscan_url = "https://etherscan.io"
+            connection_status = f"Error: {str(e)}"
+            connection_status_color = "danger"
+            connection_status_icon = "fa-exclamation-circle"
+    else:
+        # Not connected - use fallback mode
+        current_block = "Unknown"
+        network_name = "Fallback Mode"
+        etherscan_url = "https://etherscan.io"
+        connection_status = "Disconnected - Using Offline Mode"
+        connection_status_color = "warning"
+        connection_status_icon = "fa-exclamation-triangle"
+        
+        # Create a fallback notice for the UI
+        fallback_notice = {
+            'type': 'warning',
+            'title': 'Blockchain Connection Issue',
+            'message': 'The application could not connect to the Ethereum network. You are currently in offline mode. ' + 
+                       'Some blockchain features are limited but you can still view existing data. ' +
+                       'Please contact your administrator to provide a valid Infura Project ID.'
+        }
+    
+    # Get contracts
+    settlement_contract = get_settlement_contract()
+    multisig_contract = get_multisig_wallet()
+    token_contract = get_nvc_token()
+    
+    # Get blockchain transactions for the user
+    blockchain_transactions = BlockchainTransaction.query.filter_by(user_id=user_id).order_by(BlockchainTransaction.created_at.desc()).limit(10).all()
+    
+    # Get user's Ethereum address and balance
+    blockchain_account = BlockchainAccount.query.filter_by(user_id=user_id).first()
+    user_eth_address = None
+    user_token_balance = 0
+    
+    if blockchain_account:
+        user_eth_address = blockchain_account.eth_address
+        if connected and token_contract and user_eth_address:
+            try:
+                user_token_balance = get_nvc_token_balance(user_eth_address)
+            except Exception as e:
+                logger.error(f"Error getting token balance: {str(e)}")
+                user_token_balance = 0
+    
+    # Check if user is a multisig owner
+    is_owner = False
+    if multisig_contract and user_eth_address and connected:
+        # In a real implementation, we would check if the user's address is in the owners list
+        is_owner = False  # Placeholder
+    
+    # For admin users, get more data
+    is_admin = session.get('role') == UserRole.ADMIN.value
+    
+    # Use notice for fallback/offline mode if not already defined
+    if not connected and 'fallback_notice' not in locals():
+        fallback_notice = {
+            "title": "Blockchain Offline Mode",
+            "message": "The system is currently unable to connect to the Ethereum network. Basic platform functionality is still available, but blockchain operations are limited. Transactions will be queued and processed when connectivity is restored. Please contact your administrator to provide a valid Infura Project ID.",
+            "type": "warning"
+        }
+    
+    # Render the blockchain status page
+    return render_template(
+        'blockchain_status.html',
+        user=user,
+        connected=connected,
+        connection_status=connection_status,
+        connection_status_color=connection_status_color,
+        connection_status_icon=connection_status_icon,
+        network_name=network_name,
+        current_block=current_block,
+        etherscan_url=etherscan_url,
+        settlement_contract=settlement_contract,
+        multisig_contract=multisig_contract,
+        token_contract=token_contract,
+        blockchain_transactions=blockchain_transactions,
+        user_eth_address=user_eth_address,
+        user_token_balance=user_token_balance,
+        is_admin=is_admin,
+        is_owner=is_owner,
+        fallback_notice=fallback_notice,
+        # These would come from the blockchain in a real implementation
+        token_name="NVC Banking Token",
+        token_symbol="NVC",
+        token_total_supply=1000000,
+        settlement_fee_percentage=1.0,
+        settlement_contract_balance=0.0,
+        multisig_required_confirmations=2,
+        multisig_contract_balance=0.0,
+        multisig_owners=[],
+        settlements=[],
+        multisig_transactions=[],
+        token_transfers=[]
+    )
+
+# Import our API routes
+from routes.api.blockchain_routes import blockchain_api
+
+# Register API blueprint
+app.register_blueprint(blockchain_api, url_prefix='/api/blockchain')
 
 # Error handlers
 @app.errorhandler(404)

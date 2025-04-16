@@ -407,6 +407,11 @@ def init_web3():
     # Get Ethereum node URL from environment variable or use Sepolia testnet as default
     # Note: Ropsten is deprecated, using Sepolia instead
     infura_project_id = os.environ.get("INFURA_PROJECT_ID", "9aa3d95b3bc440fa88ea12eaa4456161") # Default public key, limited usage
+    
+    # Remove '0x' prefix if present in the project ID as Infura doesn't expect it
+    if infura_project_id and infura_project_id.startswith('0x'):
+        infura_project_id = infura_project_id[2:]
+        
     eth_node_url = os.environ.get("ETHEREUM_NODE_URL", f"https://sepolia.infura.io/v3/{infura_project_id}")
     
     logger.info(f"Connecting to Ethereum node: {eth_node_url}")
@@ -429,7 +434,7 @@ def init_web3():
         logger.error(f"Error setting up PoA middleware: {str(e)}")
         logger.warning("Web3 functionality may be limited")
     
-    if w3.is_connected():
+    if w3 and w3.is_connected():
         logger.info(f"Successfully connected to Ethereum node. Network version: {w3.net.version}")
         
         # Initialize contracts if they don't exist
@@ -437,8 +442,15 @@ def init_web3():
             initialize_settlement_contract()
             initialize_multisig_wallet()
             initialize_nvc_token()
+        
+        return w3
     else:
         logger.error("Failed to connect to Ethereum node")
+        
+        # Return None to indicate connection failure
+        # This will allow the application to handle the error gracefully
+        # and implement fallback behavior
+        return None
 
 
 def initialize_settlement_contract():
@@ -1113,7 +1125,7 @@ def get_nvc_token_balance(address):
         return 0
 
 
-def create_new_settlement(from_address, to_address, amount_in_eth, private_key, transaction_id, metadata=""):
+def create_new_settlement(from_address, to_address, amount_in_eth, private_key, transaction_id, tx_metadata=""):
     """
     Create a new settlement using the SettlementContract
     
@@ -1145,7 +1157,7 @@ def create_new_settlement(from_address, to_address, amount_in_eth, private_key, 
         tx = contract.functions.createSettlement(
             str(transaction_id),
             to_address,
-            metadata
+            tx_metadata
         ).build_transaction({
             'from': from_address,
             'value': amount_in_wei,

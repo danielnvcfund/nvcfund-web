@@ -1,232 +1,491 @@
-{% extends 'layout.html' %}
+{% extends "layout.html" %}
 
-{% block title %}Blockchain Status - NVC Banking Platform{% endblock %}
+{% block title %}Blockchain Status | NVC Banking Platform{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><i class="fas fa-link me-2"></i>Blockchain Status</h1>
-        <div>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#settlementModal">
-                <i class="fas fa-money-bill-wave me-1"></i> New Settlement
-            </button>
+{% if fallback_notice %}
+<div class="alert alert-{{ fallback_notice.type }} alert-dismissible fade show mb-4" role="alert">
+    <h4 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>{{ fallback_notice.title }}</h4>
+    <p>{{ fallback_notice.message }}</p>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-5 mb-4"><i class="fas fa-cubes me-2"></i>Blockchain Status</h1>
+        <p class="lead">
+            Monitor the status of blockchain contracts and interactions.
+        </p>
+    </div>
+</div>
+
+<!-- Connection Status -->
+<div class="card mb-4 border-{{ connection_status_color }}">
+    <div class="card-header bg-{{ connection_status_color }} text-white">
+        <h5 class="mb-0">
+            <i class="fas {{ connection_status_icon }} me-2"></i> Connection Status
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <p><strong>Status:</strong> {{ connection_status }}</p>
+                <p><strong>Network:</strong> {{ network_name }}</p>
+                <p><strong>Current Block:</strong> {{ current_block }}</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <button id="refresh-status" class="btn btn-primary">
+                    <i class="fas fa-sync-alt me-2"></i> Refresh Status
+                </button>
+            </div>
         </div>
     </div>
+</div>
 
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Blockchain Transaction History -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Blockchain Transactions</h5>
-                </div>
-                <div class="card-body">
-                    {% if recent_blockchain_txs %}
-                        {% for tx in recent_blockchain_txs %}
-                        <div class="blockchain-transaction">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-2">
-                                        <strong>TX Hash:</strong> 
-                                        <a href="https://sepolia.etherscan.io/tx/{{ tx.eth_tx_hash }}" target="_blank" class="transaction-hash">
-                                            {{ tx.eth_tx_hash[:10] }}...{{ tx.eth_tx_hash[-8:] }}
-                                        </a>
-                                    </div>
-                                    <div class="mb-2">
-                                        <strong>From:</strong> 
-                                        <span class="ethereum-address">{{ tx.from_address[:10] }}...{{ tx.from_address[-8:] }}</span>
-                                    </div>
-                                    <div class="mb-2">
-                                        <strong>To:</strong> 
-                                        <span class="ethereum-address">{{ tx.to_address[:10] }}...{{ tx.to_address[-8:] }}</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-2">
-                                        <strong>Amount:</strong> {{ tx.amount }} ETH
-                                    </div>
-                                    <div class="mb-2">
-                                        <strong>Block:</strong> {{ tx.block_number or 'Pending' }}
-                                    </div>
-                                    <div>
-                                        <strong>Status:</strong> 
-                                        <span class="badge {% if tx.status == 'confirmed' %}bg-success{% elif tx.status == 'pending' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
-                                            {{ tx.status }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-2 text-end">
-                                <small class="text-muted">{{ tx.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small>
-                            </div>
+<!-- Smart Contracts -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-file-contract me-2"></i> Smart Contracts
+        </h5>
+    </div>
+    <div class="card-body">
+        <ul class="nav nav-tabs" id="contractTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="settlement-tab" data-bs-toggle="tab" data-bs-target="#settlement" type="button" role="tab" aria-controls="settlement" aria-selected="true">Settlement Contract</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="multisig-tab" data-bs-toggle="tab" data-bs-target="#multisig" type="button" role="tab" aria-controls="multisig" aria-selected="false">MultiSig Wallet</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="token-tab" data-bs-toggle="tab" data-bs-target="#token" type="button" role="tab" aria-controls="token" aria-selected="false">NVC Token</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="contractTabsContent">
+            <!-- Settlement Contract Tab -->
+            <div class="tab-pane fade show active p-3" id="settlement" role="tabpanel" aria-labelledby="settlement-tab">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Settlement Contract Details</h5>
+                        {% if settlement_contract %}
+                        <p><strong>Address:</strong> <a href="{{ etherscan_url }}/address/{{ settlement_contract.address }}" target="_blank" class="text-break">{{ settlement_contract.address }}</a></p>
+                        <p><strong>Status:</strong> <span class="badge bg-success">Deployed</span></p>
+                        <p><strong>Fee Percentage:</strong> {{ settlement_fee_percentage|default('Loading...') }}%</p>
+                        <p><strong>Contract Balance:</strong> {{ settlement_contract_balance|default('Loading...') }} ETH</p>
+                        {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i> Settlement contract not deployed yet.
                         </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="text-center py-4">
-                            <i class="fas fa-info-circle fa-3x mb-3 text-muted"></i>
-                            <p>No blockchain transactions found</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Blockchain Transaction Lookup -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-search me-2"></i>Transaction Lookup</h5>
-                </div>
-                <div class="card-body">
-                    <form id="blockchain-lookup-form">
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" id="tx_hash" placeholder="Enter Ethereum transaction hash" required>
-                            <button class="btn btn-primary" type="submit">Lookup</button>
-                        </div>
-                    </form>
-                    <div id="blockchain-lookup-result" class="mt-3">
-                        <!-- Lookup results will be displayed here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-4">
-            <!-- Account Ethereum Info -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-wallet me-2"></i>Your Ethereum Account</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <strong>Address:</strong>
-                        <div class="d-flex align-items-center mt-1">
-                            <span class="ethereum-address">{{ user.ethereum_address }}</span>
-                            <a href="https://sepolia.etherscan.io/address/{{ user.ethereum_address }}" target="_blank" class="btn btn-sm btn-outline-info ms-2">
-                                <i class="fas fa-external-link-alt"></i>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <strong>Balance:</strong>
-                        <div class="mt-1" id="blockchainBalance" data-address="{{ user.ethereum_address }}">Loading...</div>
-                        <button class="btn btn-sm btn-outline-primary mt-2 btn-refresh" data-target="blockchainBalance">
-                            <i class="fas fa-sync-alt"></i> Refresh
+                        <button class="btn btn-primary" id="deploy-settlement">
+                            <i class="fas fa-rocket me-2"></i> Deploy Contract
                         </button>
+                        {% endif %}
                     </div>
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i> All settlement transactions use this Ethereum address
-                    </div>
-                </div>
-            </div>
 
-            <!-- Smart Contracts -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-file-contract me-2"></i>Smart Contracts</h5>
-                </div>
-                <div class="card-body">
-                    {% if contracts %}
-                        {% for contract in contracts %}
-                        <div class="mb-3">
-                            <strong>{{ contract.name }}</strong>
-                            <div class="ethereum-address mt-1">{{ contract.address }}</div>
-                            <div class="mt-2">
-                                <a href="https://sepolia.etherscan.io/address/{{ contract.address }}" target="_blank" class="btn btn-sm btn-outline-info me-1">
-                                    <i class="fas fa-external-link-alt me-1"></i> View
-                                </a>
-                                <button class="btn btn-sm btn-outline-primary contract-function" data-contract-address="{{ contract.address }}" data-function-name="settlePayment">
-                                    settlePayment()
-                                </button>
-                                <button class="btn btn-sm btn-outline-primary contract-function mt-1" data-contract-address="{{ contract.address }}" data-function-name="getSettlementStatus">
-                                    getSettlementStatus()
-                                </button>
+                    {% if settlement_contract %}
+                    <div class="col-md-6">
+                        <h5>Create New Settlement</h5>
+                        <form id="create-settlement-form">
+                            <div class="mb-3">
+                                <label for="settlement-recipient" class="form-label">Recipient Address</label>
+                                <input type="text" class="form-control" id="settlement-recipient" placeholder="0x..." required>
                             </div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-center">No smart contracts found</p>
+                            <div class="mb-3">
+                                <label for="settlement-amount" class="form-label">Amount (ETH)</label>
+                                <input type="number" step="0.000001" min="0.000001" class="form-control" id="settlement-amount" placeholder="0.01" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="settlement-metadata" class="form-label">Metadata (Optional)</label>
+                                <textarea class="form-control" id="settlement-metadata" rows="2" placeholder="Additional information..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-handshake me-2"></i> Create Settlement
+                            </button>
+                        </form>
+                    </div>
                     {% endif %}
                 </div>
+
+                {% if settlements %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h5>Recent Settlements</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for settlement in settlements %}
+                                    <tr>
+                                        <td>{{ settlement.id }}</td>
+                                        <td class="text-truncate" style="max-width: 150px;" title="{{ settlement.from_address }}">
+                                            {{ settlement.from_address }}
+                                        </td>
+                                        <td class="text-truncate" style="max-width: 150px;" title="{{ settlement.to_address }}">
+                                            {{ settlement.to_address }}
+                                        </td>
+                                        <td>{{ settlement.amount }} ETH</td>
+                                        <td>
+                                            {% if settlement.status == 0 %}
+                                            <span class="badge bg-warning">Pending</span>
+                                            {% elif settlement.status == 1 %}
+                                            <span class="badge bg-success">Completed</span>
+                                            {% elif settlement.status == 2 %}
+                                            <span class="badge bg-danger">Cancelled</span>
+                                            {% elif settlement.status == 3 %}
+                                            <span class="badge bg-info">Disputed</span>
+                                            {% elif settlement.status == 4 %}
+                                            <span class="badge bg-secondary">Resolved</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-primary view-settlement" data-id="{{ settlement.id }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                {% if settlement.status == 0 and is_admin %}
+                                                <button class="btn btn-outline-success complete-settlement" data-id="{{ settlement.id }}">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button class="btn btn-outline-danger cancel-settlement" data-id="{{ settlement.id }}">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
 
-            <!-- Blockchain Information -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Network Information</h5>
+            <!-- MultiSig Wallet Tab -->
+            <div class="tab-pane fade p-3" id="multisig" role="tabpanel" aria-labelledby="multisig-tab">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>MultiSig Wallet Details</h5>
+                        {% if multisig_contract %}
+                        <p><strong>Address:</strong> <a href="{{ etherscan_url }}/address/{{ multisig_contract.address }}" target="_blank" class="text-break">{{ multisig_contract.address }}</a></p>
+                        <p><strong>Status:</strong> <span class="badge bg-success">Deployed</span></p>
+                        <p><strong>Required Confirmations:</strong> {{ multisig_required_confirmations|default('Loading...') }}</p>
+                        <p><strong>Wallet Balance:</strong> {{ multisig_contract_balance|default('Loading...') }} ETH</p>
+                        
+                        <h6 class="mt-4">Wallet Owners</h6>
+                        <ul class="list-group">
+                            {% for owner in multisig_owners %}
+                            <li class="list-group-item text-break">{{ owner }}</li>
+                            {% else %}
+                            <li class="list-group-item">Loading owners...</li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i> MultiSig wallet not deployed yet.
+                        </div>
+                        <button class="btn btn-primary" id="deploy-multisig">
+                            <i class="fas fa-rocket me-2"></i> Deploy Wallet
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    {% if multisig_contract %}
+                    <div class="col-md-6">
+                        <h5>Submit Transaction</h5>
+                        <form id="submit-multisig-form">
+                            <div class="mb-3">
+                                <label for="multisig-destination" class="form-label">Destination Address</label>
+                                <input type="text" class="form-control" id="multisig-destination" placeholder="0x..." required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="multisig-amount" class="form-label">Amount (ETH)</label>
+                                <input type="number" step="0.000001" min="0.000001" class="form-control" id="multisig-amount" placeholder="0.01" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="multisig-data" class="form-label">Data (Optional, Hex)</label>
+                                <input type="text" class="form-control" id="multisig-data" placeholder="0x">
+                                <small class="form-text text-muted">Leave empty for a simple ETH transfer.</small>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-paper-plane me-2"></i> Submit Transaction
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
                 </div>
-                <div class="card-body">
-                    <div class="mb-2">
-                        <strong>Network:</strong> Sepolia Testnet
-                    </div>
-                    <div class="mb-2">
-                        <strong>Blockchain:</strong> Ethereum
-                    </div>
-                    <div>
-                        <strong>Block Explorer:</strong>
-                        <a href="https://sepolia.etherscan.io/" target="_blank" class="ms-1">Etherscan</a>
+
+                {% if multisig_transactions %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h5>MultiSig Transactions</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Destination</th>
+                                        <th>Amount</th>
+                                        <th>Confirmations</th>
+                                        <th>Executed</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for tx in multisig_transactions %}
+                                    <tr>
+                                        <td>{{ tx.id }}</td>
+                                        <td class="text-truncate" style="max-width: 150px;" title="{{ tx.destination }}">
+                                            {{ tx.destination }}
+                                        </td>
+                                        <td>{{ tx.value }} ETH</td>
+                                        <td>{{ tx.confirmations }} / {{ multisig_required_confirmations }}</td>
+                                        <td>
+                                            {% if tx.executed %}
+                                            <span class="badge bg-success">Yes</span>
+                                            {% else %}
+                                            <span class="badge bg-warning">No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-primary view-multisig-tx" data-id="{{ tx.id }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                {% if not tx.executed and not tx.confirmed_by_current_user %}
+                                                <button class="btn btn-outline-success confirm-multisig-tx" data-id="{{ tx.id }}">
+                                                    <i class="fas fa-signature"></i> Confirm
+                                                </button>
+                                                {% endif %}
+                                                {% if tx.confirmations >= multisig_required_confirmations and not tx.executed and is_owner %}
+                                                <button class="btn btn-outline-primary execute-multisig-tx" data-id="{{ tx.id }}">
+                                                    <i class="fas fa-play"></i> Execute
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
+                {% endif %}
+            </div>
+
+            <!-- NVC Token Tab -->
+            <div class="tab-pane fade p-3" id="token" role="tabpanel" aria-labelledby="token-tab">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>NVC Token Details</h5>
+                        {% if token_contract %}
+                        <p><strong>Address:</strong> <a href="{{ etherscan_url }}/address/{{ token_contract.address }}" target="_blank" class="text-break">{{ token_contract.address }}</a></p>
+                        <p><strong>Status:</strong> <span class="badge bg-success">Deployed</span></p>
+                        <p><strong>Token Name:</strong> {{ token_name|default('NVC Banking Token') }}</p>
+                        <p><strong>Token Symbol:</strong> {{ token_symbol|default('NVC') }}</p>
+                        <p><strong>Total Supply:</strong> {{ token_total_supply|default('Loading...') }} {{ token_symbol|default('NVC') }}</p>
+                        
+                        {% if user_eth_address %}
+                        <div class="card mt-3">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0">Your Token Balance</h6>
+                            </div>
+                            <div class="card-body">
+                                <h4 class="mb-0">{{ user_token_balance|default('Loading...') }} {{ token_symbol|default('NVC') }}</h4>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i> NVC Token contract not deployed yet.
+                        </div>
+                        <button class="btn btn-primary" id="deploy-token">
+                            <i class="fas fa-rocket me-2"></i> Deploy Token
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    {% if token_contract %}
+                    <div class="col-md-6">
+                        <h5>Transfer Tokens</h5>
+                        <form id="transfer-token-form">
+                            <div class="mb-3">
+                                <label for="token-recipient" class="form-label">Recipient Address</label>
+                                <input type="text" class="form-control" id="token-recipient" placeholder="0x..." required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="token-amount" class="form-label">Amount</label>
+                                <input type="number" step="0.01" min="0.01" class="form-control" id="token-amount" placeholder="100" required>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-exchange-alt me-2"></i> Transfer Tokens
+                            </button>
+                        </form>
+
+                        {% if is_admin %}
+                        <hr>
+                        <h5>Admin Functions</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <form id="mint-token-form">
+                                    <div class="mb-3">
+                                        <label for="mint-recipient" class="form-label">Recipient Address</label>
+                                        <input type="text" class="form-control" id="mint-recipient" placeholder="0x..." required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="mint-amount" class="form-label">Amount to Mint</label>
+                                        <input type="number" step="1" min="1" class="form-control" id="mint-amount" placeholder="1000" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-coins me-2"></i> Mint Tokens
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="col-md-6">
+                                <form id="burn-token-form">
+                                    <div class="mb-3">
+                                        <label for="burn-address" class="form-label">From Address</label>
+                                        <input type="text" class="form-control" id="burn-address" placeholder="0x..." required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="burn-amount" class="form-label">Amount to Burn</label>
+                                        <input type="number" step="1" min="1" class="form-control" id="burn-amount" placeholder="1000" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-fire me-2"></i> Burn Tokens
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if token_transfers %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h5>Recent Token Transfers</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Transaction Hash</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transfer in token_transfers %}
+                                    <tr>
+                                        <td class="text-truncate" style="max-width: 100px;">
+                                            <a href="{{ etherscan_url }}/tx/{{ transfer.transaction_hash }}" target="_blank" title="{{ transfer.transaction_hash }}">
+                                                {{ transfer.transaction_hash }}
+                                            </a>
+                                        </td>
+                                        <td class="text-truncate" style="max-width: 100px;" title="{{ transfer.from_address }}">
+                                            {{ transfer.from_address }}
+                                        </td>
+                                        <td class="text-truncate" style="max-width: 100px;" title="{{ transfer.to_address }}">
+                                            {{ transfer.to_address }}
+                                        </td>
+                                        <td>{{ transfer.amount }} {{ token_symbol|default('NVC') }}</td>
+                                        <td>
+                                            {% if transfer.status == 'confirmed' %}
+                                            <span class="badge bg-success">Confirmed</span>
+                                            {% else %}
+                                            <span class="badge bg-danger">Failed</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<!-- New Settlement Modal -->
-<div class="modal fade" id="settlementModal" tabindex="-1" aria-labelledby="settlementModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="settlementModalLabel"><i class="fas fa-money-bill-wave me-2"></i>New Settlement Transaction</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="settlement-form">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="recipient_address" class="form-label">Recipient Ethereum Address</label>
-                        <input type="text" class="form-control" id="recipient_address" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="amount" class="form-label">Amount (ETH)</label>
-                        <input type="number" class="form-control" id="amount" step="0.000001" min="0.000001" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" rows="2">Settlement payment</textarea>
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="use_contract">
-                        <label class="form-check-label" for="use_contract">Use Settlement Contract</label>
-                        <div class="form-text">Using the smart contract provides additional security and tracking features</div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Send Settlement</button>
-                </div>
-            </form>
-        </div>
+<!-- Transaction History -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-history me-2"></i> Blockchain Transaction History
+        </h5>
     </div>
-</div>
-
-<!-- Contract Function Modal -->
-<div class="modal fade" id="contractFunctionModal" tabindex="-1" aria-labelledby="contractFunctionModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="contractFunctionModalLabel">Execute Contract Function</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="contractFunctionModalBody">
-                <!-- Contract function form will be inserted here -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Transaction Hash</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Contract</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Block</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in blockchain_transactions %}
+                    <tr>
+                        <td class="text-truncate" style="max-width: 100px;">
+                            <a href="{{ etherscan_url }}/tx/{{ tx.eth_tx_hash }}" target="_blank" title="{{ tx.eth_tx_hash }}">
+                                {{ tx.eth_tx_hash }}
+                            </a>
+                        </td>
+                        <td class="text-truncate" style="max-width: 100px;" title="{{ tx.from_address }}">
+                            {{ tx.from_address }}
+                        </td>
+                        <td class="text-truncate" style="max-width: 100px;" title="{{ tx.to_address }}">
+                            {{ tx.to_address }}
+                        </td>
+                        <td class="text-truncate" style="max-width: 100px;" title="{{ tx.contract_address }}">
+                            {% if tx.contract_address %}
+                            <a href="{{ etherscan_url }}/address/{{ tx.contract_address }}" target="_blank">
+                                {{ tx.contract_address[:10] }}...
+                            </a>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>{{ tx.amount }} ETH</td>
+                        <td>
+                            {% if tx.status == 'confirmed' %}
+                            <span class="badge bg-success">Confirmed</span>
+                            {% else %}
+                            <span class="badge bg-danger">Failed</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ tx.block_number }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/blockchain.js') }}"></script>
-<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="/static/js/blockchain.js"></script>
 {% endblock %}

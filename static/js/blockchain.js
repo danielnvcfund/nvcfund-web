@@ -1,436 +1,601 @@
-// Blockchain JavaScript for blockchain interactions
+/**
+ * NVC Banking Platform - Blockchain Interaction JavaScript
+ * This file contains functions for interacting with the blockchain interface
+ */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize transaction hash links
-    initTransactionHashLinks();
-    
-    // Initialize blockchain transaction lookups
-    initBlockchainLookup();
-    
-    // Initialize contract interactions
-    initContractInteractions();
-    
-    // Initialize settlement form if it exists
-    initSettlementForm();
+    // Initialize refresh button
+    const refreshButton = document.getElementById('refresh-status');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', refreshBlockchainStatus);
+    }
+
+    // Initialize Settlement Contract interactions
+    const deploySettlementButton = document.getElementById('deploy-settlement');
+    if (deploySettlementButton) {
+        deploySettlementButton.addEventListener('click', deploySettlementContract);
+    }
+
+    const createSettlementForm = document.getElementById('create-settlement-form');
+    if (createSettlementForm) {
+        createSettlementForm.addEventListener('submit', createNewSettlement);
+    }
+
+    // Initialize MultiSig Wallet interactions
+    const deployMultisigButton = document.getElementById('deploy-multisig');
+    if (deployMultisigButton) {
+        deployMultisigButton.addEventListener('click', deployMultiSigWallet);
+    }
+
+    const submitMultisigForm = document.getElementById('submit-multisig-form');
+    if (submitMultisigForm) {
+        submitMultisigForm.addEventListener('submit', submitMultisigTransaction);
+    }
+
+    // Initialize Token interactions
+    const deployTokenButton = document.getElementById('deploy-token');
+    if (deployTokenButton) {
+        deployTokenButton.addEventListener('click', deployNVCToken);
+    }
+
+    const transferTokenForm = document.getElementById('transfer-token-form');
+    if (transferTokenForm) {
+        transferTokenForm.addEventListener('submit', transferTokens);
+    }
+
+    const mintTokenForm = document.getElementById('mint-token-form');
+    if (mintTokenForm) {
+        mintTokenForm.addEventListener('submit', mintTokens);
+    }
+
+    const burnTokenForm = document.getElementById('burn-token-form');
+    if (burnTokenForm) {
+        burnTokenForm.addEventListener('submit', burnTokens);
+    }
+
+    // Initialize action buttons
+    initializeActionButtons();
 });
 
-// Initialize transaction hash links to external blockchain explorers
-function initTransactionHashLinks() {
-    const txLinks = document.querySelectorAll('.eth-tx-link');
-    
-    txLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            const txHash = this.getAttribute('data-tx-hash');
-            
-            if (!txHash) {
-                return;
-            }
-            
-            // Open in new tab
-            window.open(`https://ropsten.etherscan.io/tx/${txHash}`, '_blank');
+/**
+ * Initialize dynamic action buttons
+ */
+function initializeActionButtons() {
+    // Settlement actions
+    document.querySelectorAll('.view-settlement').forEach(button => {
+        button.addEventListener('click', function() {
+            const settlementId = this.getAttribute('data-id');
+            viewSettlementDetails(settlementId);
+        });
+    });
+
+    document.querySelectorAll('.complete-settlement').forEach(button => {
+        button.addEventListener('click', function() {
+            const settlementId = this.getAttribute('data-id');
+            completeSettlement(settlementId);
+        });
+    });
+
+    document.querySelectorAll('.cancel-settlement').forEach(button => {
+        button.addEventListener('click', function() {
+            const settlementId = this.getAttribute('data-id');
+            cancelSettlement(settlementId);
+        });
+    });
+
+    // MultiSig actions
+    document.querySelectorAll('.view-multisig-tx').forEach(button => {
+        button.addEventListener('click', function() {
+            const txId = this.getAttribute('data-id');
+            viewMultisigTransaction(txId);
+        });
+    });
+
+    document.querySelectorAll('.confirm-multisig-tx').forEach(button => {
+        button.addEventListener('click', function() {
+            const txId = this.getAttribute('data-id');
+            confirmMultisigTransaction(txId);
+        });
+    });
+
+    document.querySelectorAll('.execute-multisig-tx').forEach(button => {
+        button.addEventListener('click', function() {
+            const txId = this.getAttribute('data-id');
+            executeMultisigTransaction(txId);
         });
     });
 }
 
-// Initialize blockchain transaction lookup form
-function initBlockchainLookup() {
-    const lookupForm = document.getElementById('blockchain-lookup-form');
-    
-    if (lookupForm) {
-        lookupForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const txHash = document.getElementById('tx_hash').value.trim();
-            
-            if (!txHash) {
-                showAlert('Error', 'Please enter a transaction hash', 'danger');
-                return;
-            }
-            
-            lookupBlockchainTransaction(txHash);
+/**
+ * Refresh blockchain connection status
+ */
+function refreshBlockchainStatus() {
+    fetch('/api/blockchain/status')
+        .then(response => response.json())
+        .then(data => {
+            window.location.reload();
+        })
+        .catch(error => {
+            showAlert('Error refreshing blockchain status: ' + error.message, 'danger');
         });
-    }
 }
 
-// Lookup blockchain transaction
-function lookupBlockchainTransaction(txHash) {
-    // Show loading state
-    const resultContainer = document.getElementById('blockchain-lookup-result');
-    
-    if (!resultContainer) {
+// Settlement Contract Functions
+
+function deploySettlementContract() {
+    if (!confirm('Are you sure you want to deploy the Settlement Contract? This will cost ETH for gas fees.')) {
         return;
     }
+
+    showAlert('Deploying Settlement Contract... This may take a minute.', 'info');
     
-    resultContainer.innerHTML = '<div class="text-center p-3"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Looking up transaction...</p></div>';
-    
-    // Make API request to get transaction details
-    fetch(`/api/blockchain/transaction/${txHash}`, {
-        method: 'GET',
+    fetch('/api/blockchain/deploy/settlement', {
+        method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getJwtToken()}`
+            'Content-Type': 'application/json'
         }
     })
     .then(response => response.json())
     .then(data => {
-        if (data.error) {
-            resultContainer.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
-            return;
+        if (data.success) {
+            showAlert('Settlement Contract deployed successfully! Contract address: ' + data.address, 'success');
+            setTimeout(() => window.location.reload(), 2000);
+        } else {
+            showAlert('Error deploying Settlement Contract: ' + data.message, 'danger');
         }
-        
-        // Format and display transaction details
-        resultContainer.innerHTML = `
-            <div class="card">
-                <div class="card-header">
-                    Transaction Details
-                </div>
-                <div class="card-body">
-                    <div class="row mb-2">
-                        <div class="col-md-4 fw-bold">Transaction Hash:</div>
-                        <div class="col-md-8">
-                            <a href="https://ropsten.etherscan.io/tx/${data.hash}" target="_blank">${data.hash}</a>
-                        </div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-md-4 fw-bold">From:</div>
-                        <div class="col-md-8">
-                            <a href="https://ropsten.etherscan.io/address/${data.from}" target="_blank">${data.from}</a>
-                        </div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-md-4 fw-bold">To:</div>
-                        <div class="col-md-8">
-                            <a href="https://ropsten.etherscan.io/address/${data.to}" target="_blank">${data.to}</a>
-                        </div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-md-4 fw-bold">Value:</div>
-                        <div class="col-md-8">${data.value} ETH</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-md-4 fw-bold">Block Number:</div>
-                        <div class="col-md-8">${data.block_number}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-md-4 fw-bold">Gas Used:</div>
-                        <div class="col-md-8">${data.gas_used}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-md-4 fw-bold">Status:</div>
-                        <div class="col-md-8">
-                            <span class="badge ${data.status === 'confirmed' ? 'bg-success' : 'bg-danger'}">${data.status}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
     })
     .catch(error => {
-        console.error('Error looking up blockchain transaction:', error);
-        resultContainer.innerHTML = '<div class="alert alert-danger">Failed to look up transaction. Please try again.</div>';
+        showAlert('Error deploying Settlement Contract: ' + error.message, 'danger');
     });
 }
 
-// Initialize contract interactions
-function initContractInteractions() {
-    const contractFunctions = document.querySelectorAll('.contract-function');
+function createNewSettlement(event) {
+    event.preventDefault();
     
-    contractFunctions.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const contractAddress = this.getAttribute('data-contract-address');
-            const functionName = this.getAttribute('data-function-name');
-            
-            if (!contractAddress || !functionName) {
-                return;
-            }
-            
-            // Show function form in modal
-            showContractFunctionForm(contractAddress, functionName);
-        });
-    });
-}
-
-// Show contract function form in modal
-function showContractFunctionForm(contractAddress, functionName) {
-    const modalTitle = document.getElementById('contractFunctionModalLabel');
-    const modalBody = document.getElementById('contractFunctionModalBody');
-    const modal = new bootstrap.Modal(document.getElementById('contractFunctionModal'));
+    const recipient = document.getElementById('settlement-recipient').value;
+    const amount = document.getElementById('settlement-amount').value;
+    const metadata = document.getElementById('settlement-metadata').value;
     
-    if (!modalTitle || !modalBody) {
-        return;
-    }
+    showAlert('Creating new settlement... This may take a minute.', 'info');
     
-    modalTitle.textContent = `Execute ${functionName}`;
-    
-    // Generate form based on function name
-    if (functionName === 'settlePayment') {
-        modalBody.innerHTML = `
-            <form id="settle-payment-form">
-                <div class="mb-3">
-                    <label for="recipient" class="form-label">Recipient Address</label>
-                    <input type="text" class="form-control" id="recipient" required>
-                </div>
-                <div class="mb-3">
-                    <label for="amount" class="form-label">Amount (ETH)</label>
-                    <input type="number" class="form-control" id="amount" step="0.000001" min="0" required>
-                </div>
-                <div class="mb-3">
-                    <label for="transaction-id" class="form-label">Transaction ID</label>
-                    <input type="text" class="form-control" id="transaction-id" required>
-                </div>
-                <input type="hidden" id="contract-address" value="${contractAddress}">
-                <button type="submit" class="btn btn-primary">Execute</button>
-            </form>
-            <div id="function-result" class="mt-3"></div>
-        `;
-        
-        // Setup form submission
-        const form = document.getElementById('settle-payment-form');
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const recipient = document.getElementById('recipient').value;
-            const amount = document.getElementById('amount').value;
-            const transactionId = document.getElementById('transaction-id').value;
-            
-            // Call contract function
-            callSettlePayment(contractAddress, recipient, amount, transactionId);
-        });
-    } else if (functionName === 'getSettlementStatus') {
-        modalBody.innerHTML = `
-            <form id="get-settlement-status-form">
-                <div class="mb-3">
-                    <label for="transaction-id" class="form-label">Transaction ID</label>
-                    <input type="text" class="form-control" id="transaction-id" required>
-                </div>
-                <input type="hidden" id="contract-address" value="${contractAddress}">
-                <button type="submit" class="btn btn-primary">Execute</button>
-            </form>
-            <div id="function-result" class="mt-3"></div>
-        `;
-        
-        // Setup form submission
-        const form = document.getElementById('get-settlement-status-form');
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const transactionId = document.getElementById('transaction-id').value;
-            
-            // Call contract function
-            callGetSettlementStatus(contractAddress, transactionId);
-        });
-    } else {
-        modalBody.innerHTML = '<div class="alert alert-warning">Function not supported in the interface.</div>';
-    }
-    
-    modal.show();
-}
-
-// Call settlePayment function
-function callSettlePayment(contractAddress, recipient, amount, transactionId) {
-    const resultContainer = document.getElementById('function-result');
-    
-    if (!resultContainer) {
-        return;
-    }
-    
-    // Show loading state
-    resultContainer.innerHTML = '<div class="text-center p-3"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Executing transaction...</p></div>';
-    
-    // Make API request to call contract function
-    fetch('/api/blockchain/transactions', {
+    fetch('/api/blockchain/settlement/create', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getJwtToken()}`
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({
             to_address: recipient,
-            amount: parseFloat(amount),
-            description: `Settlement for ${transactionId}`,
-            use_contract: true
+            amount: amount,
+            metadata: metadata
         })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            resultContainer.innerHTML = `
-                <div class="alert alert-success">
-                    <h5>Transaction submitted successfully!</h5>
-                    <p>Transaction ID: ${data.transaction_id}</p>
-                    <p>Ethereum Transaction Hash: <a href="https://ropsten.etherscan.io/tx/${data.eth_transaction_hash}" target="_blank">${data.eth_transaction_hash}</a></p>
-                </div>
-            `;
+            showAlert('Settlement created successfully! Transaction hash: ' + data.tx_hash, 'success');
+            setTimeout(() => window.location.reload(), 2000);
         } else {
-            resultContainer.innerHTML = `<div class="alert alert-danger">${data.error || 'Transaction failed'}</div>`;
+            showAlert('Error creating settlement: ' + data.message, 'danger');
         }
     })
     .catch(error => {
-        console.error('Error calling contract function:', error);
-        resultContainer.innerHTML = '<div class="alert alert-danger">Failed to execute function. Please try again.</div>';
+        showAlert('Error creating settlement: ' + error.message, 'danger');
     });
 }
 
-// Call getSettlementStatus function
-function callGetSettlementStatus(contractAddress, transactionId) {
-    const resultContainer = document.getElementById('function-result');
-    
-    if (!resultContainer) {
+function viewSettlementDetails(settlementId) {
+    fetch(`/api/blockchain/settlement/${settlementId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const settlement = data.settlement;
+                
+                let detailsHTML = `
+                    <h4>Settlement #${settlement.id}</h4>
+                    <p><strong>Transaction ID:</strong> ${settlement.transactionId}</p>
+                    <p><strong>From:</strong> ${settlement.from}</p>
+                    <p><strong>To:</strong> ${settlement.to}</p>
+                    <p><strong>Amount:</strong> ${settlement.amount} ETH</p>
+                    <p><strong>Fee:</strong> ${settlement.fee} ETH</p>
+                    <p><strong>Status:</strong> ${getStatusText(settlement.status)}</p>
+                    <p><strong>Timestamp:</strong> ${new Date(settlement.timestamp * 1000).toLocaleString()}</p>
+                    <p><strong>Metadata:</strong> ${settlement.metadata || 'None'}</p>
+                `;
+                
+                showModal('Settlement Details', detailsHTML);
+            } else {
+                showAlert('Error fetching settlement details: ' + data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            showAlert('Error fetching settlement details: ' + error.message, 'danger');
+        });
+}
+
+function completeSettlement(settlementId) {
+    if (!confirm('Are you sure you want to complete this settlement? This will transfer funds to the recipient.')) {
         return;
     }
     
-    // Show loading state
-    resultContainer.innerHTML = '<div class="text-center p-3"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Getting status...</p></div>';
+    showAlert('Completing settlement... This may take a minute.', 'info');
     
-    // Make API request to call contract function
-    fetch(`/api/blockchain/settlement_status/${transactionId}`, {
-        method: 'GET',
+    fetch(`/api/blockchain/settlement/${settlementId}/complete`, {
+        method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getJwtToken()}`
+            'Content-Type': 'application/json'
         }
     })
     .then(response => response.json())
     .then(data => {
-        if (data.error) {
-            resultContainer.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
-            return;
+        if (data.success) {
+            showAlert('Settlement completed successfully! Transaction hash: ' + data.tx_hash, 'success');
+            setTimeout(() => window.location.reload(), 2000);
+        } else {
+            showAlert('Error completing settlement: ' + data.message, 'danger');
         }
+    })
+    .catch(error => {
+        showAlert('Error completing settlement: ' + error.message, 'danger');
+    });
+}
+
+function cancelSettlement(settlementId) {
+    if (!confirm('Are you sure you want to cancel this settlement? This will return funds to the sender.')) {
+        return;
+    }
+    
+    showAlert('Cancelling settlement... This may take a minute.', 'info');
+    
+    fetch(`/api/blockchain/settlement/${settlementId}/cancel`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Settlement cancelled successfully! Transaction hash: ' + data.tx_hash, 'success');
+            setTimeout(() => window.location.reload(), 2000);
+        } else {
+            showAlert('Error cancelling settlement: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Error cancelling settlement: ' + error.message, 'danger');
+    });
+}
+
+// MultiSig Wallet Functions
+
+function deployMultiSigWallet() {
+    if (!confirm('Are you sure you want to deploy the MultiSig Wallet? This will cost ETH for gas fees.')) {
+        return;
+    }
+    
+    showAlert('Deploying MultiSig Wallet... This may take a minute.', 'info');
+    
+    fetch('/api/blockchain/deploy/multisig', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('MultiSig Wallet deployed successfully! Contract address: ' + data.address, 'success');
+            setTimeout(() => window.location.reload(), 2000);
+        } else {
+            showAlert('Error deploying MultiSig Wallet: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Error deploying MultiSig Wallet: ' + error.message, 'danger');
+    });
+}
+
+function submitMultisigTransaction(event) {
+    event.preventDefault();
+    
+    const destination = document.getElementById('multisig-destination').value;
+    const amount = document.getElementById('multisig-amount').value;
+    const data = document.getElementById('multisig-data').value || '0x';
+    
+    showAlert('Submitting transaction to MultiSig Wallet... This may take a minute.', 'info');
+    
+    fetch('/api/blockchain/multisig/submit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            destination: destination,
+            amount: amount,
+            data: data
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Transaction submitted successfully! Transaction hash: ' + data.tx_hash, 'success');
+            setTimeout(() => window.location.reload(), 2000);
+        } else {
+            showAlert('Error submitting transaction: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Error submitting transaction: ' + error.message, 'danger');
+    });
+}
+
+function viewMultisigTransaction(txId) {
+    fetch(`/api/blockchain/multisig/transaction/${txId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const tx = data.transaction;
+                
+                let detailsHTML = `
+                    <h4>MultiSig Transaction #${tx.id}</h4>
+                    <p><strong>Destination:</strong> ${tx.destination}</p>
+                    <p><strong>Value:</strong> ${tx.value} ETH</p>
+                    <p><strong>Data:</strong> ${tx.data || '0x'}</p>
+                    <p><strong>Confirmations:</strong> ${tx.confirmations} / ${data.required_confirmations}</p>
+                    <p><strong>Executed:</strong> ${tx.executed ? 'Yes' : 'No'}</p>
+                    <h5 class="mt-3">Confirmations</h5>
+                    <ul>
+                        ${tx.confirmedBy.map(owner => `<li>${owner}</li>`).join('')}
+                    </ul>
+                `;
+                
+                showModal('MultiSig Transaction Details', detailsHTML);
+            } else {
+                showAlert('Error fetching transaction details: ' + data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            showAlert('Error fetching transaction details: ' + error.message, 'danger');
+        });
+}
+
+function confirmMultisigTransaction(txId) {
+    showAlert('Confirming transaction... This may take a minute.', 'info');
+    
+    fetch(`/api/blockchain/multisig/confirm/${txId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Transaction confirmed successfully! Transaction hash: ' + data.tx_hash, 'success');
+            setTimeout(() => window.location.reload(), 2000);
+        } else {
+            showAlert('Error confirming transaction: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Error confirming transaction: ' + error.message, 'danger');
+    });
+}
+
+function executeMultisigTransaction(txId) {
+    showAlert('Executing transaction... This may take a minute.', 'info');
+    
+    fetch(`/api/blockchain/multisig/execute/${txId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Transaction executed successfully! Transaction hash: ' + data.tx_hash, 'success');
+            setTimeout(() => window.location.reload(), 2000);
+        } else {
+            showAlert('Error executing transaction: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Error executing transaction: ' + error.message, 'danger');
+    });
+}
+
+// NVC Token Functions
+
+function deployNVCToken() {
+    if (!confirm('Are you sure you want to deploy the NVC Token? This will cost ETH for gas fees.')) {
+        return;
+    }
+    
+    showAlert('Deploying NVC Token... This may take a minute.', 'info');
+    
+    fetch('/api/blockchain/deploy/token', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('NVC Token deployed successfully! Contract address: ' + data.address, 'success');
+            setTimeout(() => window.location.reload(), 2000);
+        } else {
+            showAlert('Error deploying NVC Token: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Error deploying NVC Token: ' + error.message, 'danger');
+    });
+}
+
+function transferTokens(event) {
+    event.preventDefault();
+    
+    const recipient = document.getElementById('token-recipient').value;
+    const amount = document.getElementById('token-amount').value;
+    
+    showAlert('Transferring tokens... This may take a minute.', 'info');
+    
+    fetch('/api/blockchain/token/transfer', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            to_address: recipient,
+            amount: amount
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Tokens transferred successfully! Transaction hash: ' + data.tx_hash, 'success');
+            setTimeout(() => window.location.reload(), 2000);
+        } else {
+            showAlert('Error transferring tokens: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Error transferring tokens: ' + error.message, 'danger');
+    });
+}
+
+function mintTokens(event) {
+    event.preventDefault();
+    
+    const recipient = document.getElementById('mint-recipient').value;
+    const amount = document.getElementById('mint-amount').value;
+    
+    showAlert('Minting tokens... This may take a minute.', 'info');
+    
+    fetch('/api/blockchain/token/mint', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            to_address: recipient,
+            amount: amount
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Tokens minted successfully! Transaction hash: ' + data.tx_hash, 'success');
+            setTimeout(() => window.location.reload(), 2000);
+        } else {
+            showAlert('Error minting tokens: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Error minting tokens: ' + error.message, 'danger');
+    });
+}
+
+function burnTokens(event) {
+    event.preventDefault();
+    
+    const fromAddress = document.getElementById('burn-address').value;
+    const amount = document.getElementById('burn-amount').value;
+    
+    showAlert('Burning tokens... This may take a minute.', 'info');
+    
+    fetch('/api/blockchain/token/burn', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            from_address: fromAddress,
+            amount: amount
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Tokens burned successfully! Transaction hash: ' + data.tx_hash, 'success');
+            setTimeout(() => window.location.reload(), 2000);
+        } else {
+            showAlert('Error burning tokens: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Error burning tokens: ' + error.message, 'danger');
+    });
+}
+
+// Helper Functions
+
+function getStatusText(status) {
+    const statusMap = {
+        0: 'Pending',
+        1: 'Completed',
+        2: 'Cancelled',
+        3: 'Disputed',
+        4: 'Resolved'
+    };
+    return statusMap[status] || 'Unknown';
+}
+
+function showAlert(message, type) {
+    const alertContainer = document.getElementById('alert-container');
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    alertContainer.appendChild(alertDiv);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        const bsAlert = new bootstrap.Alert(alertDiv);
+        bsAlert.close();
+    }, 5000);
+}
+
+function showModal(title, content) {
+    // Check if modal already exists
+    let modalElement = document.getElementById('dynamicModal');
+    
+    // If it doesn't exist, create it
+    if (!modalElement) {
+        modalElement = document.createElement('div');
+        modalElement.className = 'modal fade';
+        modalElement.id = 'dynamicModal';
+        modalElement.setAttribute('tabindex', '-1');
+        modalElement.setAttribute('aria-labelledby', 'dynamicModalLabel');
+        modalElement.setAttribute('aria-hidden', 'true');
         
-        // Format and display result
-        resultContainer.innerHTML = `
-            <div class="card">
-                <div class="card-header">Settlement Status</div>
-                <div class="card-body">
-                    <div class="row mb-2">
-                        <div class="col-md-4 fw-bold">Status:</div>
-                        <div class="col-md-8">${data.status}</div>
+        modalElement.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="dynamicModalLabel"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="row mb-2">
-                        <div class="col-md-4 fw-bold">Timestamp:</div>
-                        <div class="col-md-8">${new Date(data.timestamp * 1000).toLocaleString()}</div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
         `;
-    })
-    .catch(error => {
-        console.error('Error calling contract function:', error);
-        resultContainer.innerHTML = '<div class="alert alert-danger">Failed to get status. Please try again.</div>';
-    });
-}
-
-// Initialize settlement form
-function initSettlementForm() {
-    const settlementForm = document.getElementById('settlement-form');
-    
-    if (settlementForm) {
-        settlementForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const recipientAddress = document.getElementById('recipient_address').value;
-            const amount = document.getElementById('amount').value;
-            const description = document.getElementById('description').value;
-            const useContract = document.getElementById('use_contract').checked;
-            
-            // Validate inputs
-            if (!recipientAddress || !amount) {
-                showAlert('Error', 'Please fill in all required fields', 'danger');
-                return;
-            }
-            
-            // Validate Ethereum address format
-            if (!recipientAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
-                showAlert('Error', 'Invalid Ethereum address format', 'danger');
-                return;
-            }
-            
-            // Submit settlement transaction
-            submitSettlementTransaction(recipientAddress, amount, description, useContract);
-        });
-    }
-}
-
-// Submit settlement transaction
-function submitSettlementTransaction(recipientAddress, amount, description, useContract) {
-    // Show loading state
-    const submitButton = document.querySelector('#settlement-form button[type="submit"]');
-    const originalText = submitButton.innerHTML;
-    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
-    submitButton.disabled = true;
-    
-    // Make API request to create blockchain transaction
-    fetch('/api/blockchain/transactions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getJwtToken()}`
-        },
-        body: JSON.stringify({
-            to_address: recipientAddress,
-            amount: parseFloat(amount),
-            description: description || 'Settlement payment',
-            use_contract: useContract
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showAlert('Success', 'Settlement transaction initiated successfully', 'success');
-            
-            // Redirect to transaction details page
-            window.location.href = `/transaction/${data.transaction_id}`;
-        } else {
-            showAlert('Error', data.error || 'Failed to initiate settlement', 'danger');
-            
-            // Reset button
-            submitButton.innerHTML = originalText;
-            submitButton.disabled = false;
-        }
-    })
-    .catch(error => {
-        console.error('Error submitting settlement transaction:', error);
-        showAlert('Error', 'Failed to initiate settlement', 'danger');
         
-        // Reset button
-        submitButton.innerHTML = originalText;
-        submitButton.disabled = false;
-    });
-}
-
-// Show alert message
-function showAlert(title, message, type) {
-    const alertContainer = document.getElementById('alert-container');
-    
-    if (!alertContainer) {
-        return;
+        document.body.appendChild(modalElement);
     }
     
-    // Create alert element
-    const alertElement = document.createElement('div');
-    alertElement.className = `alert alert-${type} alert-dismissible fade show`;
-    alertElement.role = 'alert';
+    // Set the content
+    modalElement.querySelector('.modal-title').textContent = title;
+    modalElement.querySelector('.modal-body').innerHTML = content;
     
-    alertElement.innerHTML = `
-        <strong>${title}</strong> ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    `;
-    
-    // Add to container
-    alertContainer.appendChild(alertElement);
-    
-    // Auto-dismiss after 5 seconds
-    setTimeout(() => {
-        alertElement.classList.remove('show');
-        setTimeout(() => {
-            alertElement.remove();
-        }, 150);
-    }, 5000);
-}
-
-// Get JWT token from localStorage
-function getJwtToken() {
-    return localStorage.getItem('jwt_token') || '';
+    // Show the modal
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
 }
