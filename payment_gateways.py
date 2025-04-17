@@ -131,6 +131,24 @@ def init_payment_gateways():
             db.session.commit()
             logger.info("PayPal payment gateway initialized")
         
+        # Initialize NVC Global gateway
+        nvc_global_gateway = PaymentGateway.query.filter_by(gateway_type=PaymentGatewayType.NVC_GLOBAL).first()
+        
+        if not nvc_global_gateway:
+            # Create NVC Global gateway
+            nvc_global_gateway = PaymentGateway(
+                name="NVC Global",
+                gateway_type=PaymentGatewayType.NVC_GLOBAL,
+                api_endpoint="https://api.nvcplatform.net",  # Default endpoint
+                api_key=os.environ.get('NVC_GLOBAL_API_KEY', ''),
+                webhook_secret=os.environ.get('NVC_GLOBAL_WEBHOOK_SECRET', ''),
+                ethereum_address=os.environ.get('NVC_GLOBAL_ETH_ADDRESS', None),
+                is_active=True
+            )
+            db.session.add(nvc_global_gateway)
+            db.session.commit()
+            logger.info("NVC Global payment gateway initialized")
+        
         return True
     
     except Exception as e:
@@ -159,6 +177,7 @@ def get_gateway_handler(gateway_id=None, gateway_type=None):
             PaymentGatewayType.STRIPE: StripeGateway,
             PaymentGatewayType.PAYPAL: PayPalGateway,
             PaymentGatewayType.COINBASE: CoinbaseGateway,
+            PaymentGatewayType.NVC_GLOBAL: NVCGlobalGateway,
             # Add more handlers as needed
         }
         

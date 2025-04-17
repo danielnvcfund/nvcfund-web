@@ -102,6 +102,7 @@ class PaymentGatewayType(enum.Enum):
     SQUARE = "square"
     COINBASE = "coinbase"
     XRP_LEDGER = "xrp_ledger"
+    NVC_GLOBAL = "nvc_global"
     CUSTOM = "custom"
 
 class PaymentGateway(db.Model):
