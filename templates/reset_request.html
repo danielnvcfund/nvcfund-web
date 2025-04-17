@@ -15,7 +15,7 @@
                         Please enter your email address. You will receive a link to create a new password.
                     </p>
                     
-                    <form method="POST" action="{{ url_for('reset_request') }}">
+                    <form method="POST" action="{{ url_for('web.main.reset_request') }}">
                         {{ form.hidden_tag() }}
                         
                         <div class="mb-3">
@@ -39,8 +39,8 @@
                 </div>
                 <div class="card-footer">
                     <div class="text-center">
-                        <a href="{{ url_for('login') }}">Back to Login</a> | 
-                        <a href="{{ url_for('forgot_username') }}">Forgot Username?</a>
+                        <a href="{{ url_for('web.main.login') }}">Back to Login</a> | 
+                        <a href="{{ url_for('web.main.forgot_username') }}">Forgot Username?</a>
                     </div>
                 </div>
             </div>

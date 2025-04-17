@@ -15,7 +15,7 @@
                         Please enter your email address. We will send you your username.
                     </p>
                     
-                    <form method="POST" action="{{ url_for('forgot_username') }}">
+                    <form method="POST" action="{{ url_for('web.main.forgot_username') }}">
                         {{ form.hidden_tag() }}
                         
                         <div class="mb-3">
@@ -39,8 +39,8 @@
                 </div>
                 <div class="card-footer">
                     <div class="text-center">
-                        <a href="{{ url_for('login') }}">Back to Login</a> | 
-                        <a href="{{ url_for('reset_request') }}">Forgot Password?</a>
+                        <a href="{{ url_for('web.main.login') }}">Back to Login</a> | 
+                        <a href="{{ url_for('web.main.reset_request') }}">Forgot Password?</a>
                     </div>
                 </div>
             </div>
