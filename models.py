@@ -28,8 +28,6 @@ class User(UserMixin, db.Model):
     api_key = db.Column(db.String(64), unique=True)
     ethereum_address = db.Column(db.String(64))
     ethereum_private_key = db.Column(db.String(256))
-    xrp_address = db.Column(db.String(64))
-    xrp_seed = db.Column(db.String(256))
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

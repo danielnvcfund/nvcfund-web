@@ -95,17 +95,8 @@ def create_app():
             logger.error(f"Error initializing blockchain: {str(e)}")
             logger.warning("Application will run without blockchain functionality")
         
-        # Initialize high-availability infrastructure (make it optional to allow app to start without HA)
-        try:
-            from high_availability import init_high_availability
-            if os.environ.get('HA_ENABLED', 'false').lower() == 'true':
-                init_high_availability()
-                logger.info("High-availability infrastructure initialized successfully")
-            else:
-                logger.info("High-availability infrastructure is disabled")
-        except Exception as e:
-            logger.error(f"Error initializing high-availability infrastructure: {str(e)}")
-            logger.warning("Application will run without high-availability functionality")
+        # High-availability infrastructure has been removed as requested
+        logger.info("High-availability infrastructure is disabled")
         
         # Initialize payment gateways
         try:
