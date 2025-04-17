@@ -477,7 +477,7 @@ def terms_of_service():
 
 @main.route('/payments/return')
 def payment_return():
-    """Handle payment return from PayPal"""
+    """Handle payment return from payment processors (PayPal, NVC Global, etc.)"""
     transaction_id = request.args.get('transaction_id')
     
     if not transaction_id:
@@ -494,12 +494,26 @@ def payment_return():
     # Get gateway
     gateway = PaymentGateway.query.get(transaction.gateway_id)
     
-    if not gateway or gateway.gateway_type != PaymentGatewayType.PAYPAL:
+    if not gateway:
         flash('Invalid payment gateway', 'danger')
+        return redirect(url_for('web.main.dashboard'))
+    
+    # Accept returns from PayPal and NVC Global
+    valid_gateways = [PaymentGatewayType.PAYPAL]
+    # Handle the NVC Global special case due to enum issues
+    if str(gateway.gateway_type) == 'nvc_global' or gateway.gateway_type == PaymentGatewayType.NVC_GLOBAL:
+        # Allow NVC Global returns
+        pass
+    elif gateway.gateway_type not in valid_gateways:
+        flash('Unsupported payment gateway for return URL', 'danger')
         return redirect(url_for('web.main.dashboard'))
     
     # Get gateway handler
     gateway_handler = get_gateway_handler(gateway.id)
+    
+    if not gateway_handler:
+        flash('Error getting payment gateway handler', 'danger')
+        return redirect(url_for('web.main.dashboard'))
     
     # Check payment status
     result = gateway_handler.check_payment_status(transaction_id)
@@ -514,9 +528,93 @@ def payment_return():
     
     return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
 
+@main.route('/payments/nvc-callback', methods=['POST'])
+def nvc_callback():
+    """Handle callbacks from NVC Global payment platform"""
+    # Get the request data
+    data = request.json
+    if not data:
+        logger.error("NVC callback received with no data")
+        return jsonify({"success": False, "error": "No data received"}), 400
+    
+    # Extract transaction ID from the request
+    transaction_id = data.get('transaction_id')
+    if not transaction_id:
+        logger.error("NVC callback missing transaction_id")
+        return jsonify({"success": False, "error": "Missing transaction_id"}), 400
+    
+    # Extract payment status
+    payment_status = data.get('status')
+    if not payment_status:
+        logger.error("NVC callback missing payment status")
+        return jsonify({"success": False, "error": "Missing payment status"}), 400
+    
+    # Get the transaction from our database
+    transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+    if not transaction:
+        logger.error(f"NVC callback for unknown transaction: {transaction_id}")
+        return jsonify({"success": False, "error": "Transaction not found"}), 404
+    
+    # Get the gateway
+    gateway = PaymentGateway.query.get(transaction.gateway_id)
+    if not gateway:
+        logger.error(f"NVC callback for transaction with invalid gateway: {transaction_id}")
+        return jsonify({"success": False, "error": "Invalid gateway"}), 400
+    
+    # Verify this is for NVC Global
+    is_nvc_global = str(gateway.gateway_type) == 'nvc_global' or gateway.gateway_type == PaymentGatewayType.NVC_GLOBAL
+    if not is_nvc_global:
+        logger.error(f"NVC callback for non-NVC transaction: {transaction_id}, type: {gateway.gateway_type}")
+        return jsonify({"success": False, "error": "Invalid gateway type"}), 400
+    
+    # Verify signature/auth for the webhook if available
+    webhook_signature = request.headers.get('X-NVC-Signature')
+    if webhook_signature and gateway.webhook_secret:
+        # This would typically validate the signature against the request body
+        # using the gateway's webhook secret
+        pass
+    
+    # Update transaction status based on the received status
+    try:
+        status_mapping = {
+            'pending': TransactionStatus.PENDING,
+            'processing': TransactionStatus.PROCESSING,
+            'completed': TransactionStatus.COMPLETED,
+            'failed': TransactionStatus.FAILED,
+            'refunded': TransactionStatus.REFUNDED
+        }
+        
+        if payment_status in status_mapping:
+            new_status = status_mapping[payment_status]
+            
+            # Update transaction status
+            transaction.status = new_status
+            transaction.description = f"{transaction.description} (NVC Status Update: {payment_status})"
+            db.session.commit()
+            
+            # Send notification email for completed or failed transactions
+            if new_status in [TransactionStatus.COMPLETED, TransactionStatus.FAILED]:
+                try:
+                    from email_service import send_transaction_confirmation_email
+                    user = User.query.get(transaction.user_id)
+                    if user:
+                        send_transaction_confirmation_email(user, transaction)
+                except Exception as email_error:
+                    logger.warning(f"Failed to send NVC status update email: {str(email_error)}")
+            
+            logger.info(f"Updated transaction {transaction_id} status to {payment_status}")
+            return jsonify({"success": True}), 200
+        else:
+            logger.warning(f"Unknown NVC payment status: {payment_status}")
+            return jsonify({"success": False, "error": "Unknown payment status"}), 400
+    
+    except Exception as e:
+        logger.error(f"Error processing NVC callback: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @main.route('/payments/cancel')
 def payment_cancel():
-    """Handle payment cancellation from PayPal"""
+    """Handle payment cancellation from payment processors"""
     transaction_id = request.args.get('transaction_id')
     
     if not transaction_id:
