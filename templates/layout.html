@@ -12,9 +12,6 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/connectivity_status.css') }}">
-    
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
     
@@ -69,7 +66,7 @@
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="adminDropdown">
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('web.main.user_management') }}">
+                                <a class="dropdown-item" href="{{ url_for('web.main.index') }}">
                                     <i class="fas fa-users me-1"></i> User Management
                                 </a>
                             </li>
@@ -89,7 +86,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('web.ha_web.dashboard') }}">
+                                <a class="dropdown-item" href="{{ url_for('web.main.index') }}">
                                     <i class="fas fa-server me-1"></i> HA Dashboard
                                 </a>
                             </li>
@@ -161,83 +158,7 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Smart Connectivity Status Sidebar -->
-    <div id="connectivity-sidebar" class="connectivity-sidebar">
-        <div class="connectivity-header">
-            <h5 class="mb-0"><i class="fas fa-signal me-2"></i> System Connectivity</h5>
-        </div>
-        <div class="connectivity-content">
-            <!-- Blockchain Status -->
-            <div class="status-item">
-                <div class="status-title">
-                    <span>Blockchain Network</span>
-                    <div id="blockchain-status" class="status-indicator">
-                        <i class="fas fa-circle-notch fa-spin"></i> Checking...
-                    </div>
-                </div>
-                <div id="blockchain-details" class="status-details">
-                    <p class="text-muted small">Checking blockchain connectivity...</p>
-                </div>
-            </div>
-            
-            <!-- XRP Ledger Status -->
-            <div class="status-item">
-                <div class="status-title">
-                    <span>XRP Ledger</span>
-                    <div id="xrp-status" class="status-indicator">
-                        <i class="fas fa-circle-notch fa-spin"></i> Checking...
-                    </div>
-                </div>
-                <div id="xrp-details" class="status-details">
-                    <p class="text-muted small">Checking XRP Ledger connectivity...</p>
-                </div>
-            </div>
-
-            <!-- Payment Gateway Status -->
-            <div class="status-item">
-                <div class="status-title">
-                    <span>Payment Gateways</span>
-                    <div id="payment-status" class="status-indicator">
-                        <i class="fas fa-circle-notch fa-spin"></i> Checking...
-                    </div>
-                </div>
-                <div id="payment-details" class="status-details">
-                    <p class="text-muted small">Checking payment gateway status...</p>
-                </div>
-            </div>
-
-            <!-- API Status -->
-            <div class="status-item">
-                <div class="status-title">
-                    <span>API Services</span>
-                    <div id="api-status" class="status-indicator">
-                        <i class="fas fa-circle-notch fa-spin"></i> Checking...
-                    </div>
-                </div>
-                <div id="api-details" class="status-details">
-                    <p class="text-muted small">Checking API connectivity...</p>
-                </div>
-            </div>
-
-            <!-- Database Status -->
-            <div class="status-item">
-                <div class="status-title">
-                    <span>Database</span>
-                    <div id="database-status" class="status-indicator">
-                        <i class="fas fa-circle-notch fa-spin"></i> Checking...
-                    </div>
-                </div>
-                <div id="database-details" class="status-details">
-                    <p class="text-muted small">Checking database connection...</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Connectivity Toggle Button -->
-    <button id="connectivity-toggle" class="btn btn-dark connectivity-toggle" aria-expanded="false">
-        <i class="fas fa-chevron-left"></i>
-    </button>
+    <!-- Smart Connectivity Status Sidebar was removed as requested -->
 
     <!-- Footer -->
     <footer class="footer mt-auto py-3 bg-dark">
@@ -258,9 +179,6 @@
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Connectivity Status Script -->
-    <script src="{{ url_for('static', filename='js/connectivity_status.js') }}"></script>
     
     <!-- Common Scripts -->
     {% block scripts %}{% endblock %}
