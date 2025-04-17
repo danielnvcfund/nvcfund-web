@@ -10,6 +10,79 @@ from models import PaymentGateway, Transaction, TransactionStatus, TransactionTy
 
 logger = logging.getLogger(__name__)
 
+def check_gateway_status(gateway):
+    """
+    Check the status of a payment gateway
+    
+    Args:
+        gateway: PaymentGateway instance to check
+        
+    Returns:
+        tuple: (status, message) where status is 'ok', 'warning', or 'error'
+    """
+    if not gateway.is_active:
+        return ('warning', 'Gateway is disabled')
+    
+    # Stripe gateway check
+    if gateway.gateway_type == PaymentGatewayType.STRIPE:
+        if not stripe.api_key:
+            return ('error', 'Stripe API key not configured')
+        
+        try:
+            # Simple API call to check Stripe connectivity
+            stripe.Balance.retrieve()
+            return ('ok', 'Connected to Stripe API')
+        except stripe.error.AuthenticationError:
+            return ('error', 'Invalid Stripe API key')
+        except Exception as e:
+            return ('error', f'Stripe API error: {str(e)}')
+    
+    # XRP Ledger gateway check
+    elif gateway.gateway_type == PaymentGatewayType.XRP_LEDGER:
+        try:
+            # Import here to avoid circular imports
+            from xrp_ledger import test_connection
+            status = test_connection()
+            if status:
+                return ('ok', 'Connected to XRP Ledger')
+            else:
+                return ('error', 'Failed to connect to XRP Ledger')
+        except Exception as e:
+            return ('error', f'XRP Ledger error: {str(e)}')
+    
+    # Blockchain gateway check
+    elif gateway.gateway_type == PaymentGatewayType.COINBASE:
+        try:
+            response = requests.get('https://api.coinbase.com/v2/time')
+            if response.status_code == 200:
+                return ('ok', 'Connected to Coinbase API')
+            else:
+                return ('warning', f'Coinbase API responded with status {response.status_code}')
+        except Exception as e:
+            return ('error', f'Coinbase API error: {str(e)}')
+    
+    # PayPal gateway check
+    elif gateway.gateway_type == PaymentGatewayType.PAYPAL:
+        # For now just return a simple status based on configuration
+        if gateway.api_key and gateway.api_endpoint:
+            return ('ok', 'PayPal configuration present')
+        else:
+            return ('warning', 'PayPal configuration incomplete')
+    
+    # Default for other gateway types
+    elif gateway.api_endpoint:
+        try:
+            # Simple connectivity check to the API endpoint
+            response = requests.get(gateway.api_endpoint, timeout=5)
+            if response.status_code < 400:
+                return ('ok', f'API endpoint responding with status {response.status_code}')
+            else:
+                return ('warning', f'API endpoint responded with status {response.status_code}')
+        except Exception as e:
+            return ('error', f'API endpoint error: {str(e)}')
+    
+    return ('warning', 'Gateway status unknown')
+
 # Set up Stripe with API key from environment
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 

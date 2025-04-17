@@ -20,6 +20,17 @@ def get_models():
 # Global Web3 instance
 w3 = None
 
+def get_web3():
+    """Get the Web3 instance, initializing it if necessary"""
+    global w3
+    if w3 is None:
+        try:
+            init_web3()
+        except Exception as e:
+            logger.error(f"Error initializing Web3: {str(e)}")
+            return None
+    return w3
+
 # Contract compilation would normally be done separately
 # These are placeholders that would be replaced with actual ABI and bytecode
 # from Solidity compiler or Truffle/Hardhat build artifacts
