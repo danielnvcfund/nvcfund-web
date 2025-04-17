@@ -133,58 +133,43 @@ def init_payment_gateways():
             logger.info("PayPal payment gateway initialized")
         
         # Initialize NVC Global gateway
-        # Try to get NVC Global gateway by type first, handling the enum conversion safely
-        nvc_global_gateway = None
-        try:
-            # Try direct access with enum
-            nvc_global_gateway = PaymentGateway.query.filter_by(gateway_type=PaymentGatewayType.NVC_GLOBAL).first()
-        except Exception as enum_error:
-            logger.warning(f"Error using enum for NVC_GLOBAL query: {str(enum_error)}")
+        # Direct access to ID 3 which we know from database query is the NVC Global gateway
+        nvc_global_gateway = PaymentGateway.query.get(3)
         
-        # If direct access failed, use a direct SQL query
-        if not nvc_global_gateway:
+        # If we have the NVC Global gateway, update its keys if needed
+        if nvc_global_gateway:
+            logger.info("Found existing NVC Global gateway (ID: 3)")
+        else:
+            # If the gateway doesn't exist at ID 3, create it using raw SQL
+            # We use raw SQL because the PaymentGatewayType enum is causing issues
+            logger.info("NVC Global gateway not found, creating it")
             try:
-                # Execute raw SQL to find NVC Global gateway
+                # Make sure we're in a clean transaction state
+                db.session.rollback()
+                
+                # Check if there are any existing gateways with nvc_global type
                 result = db.session.execute(text("SELECT id FROM payment_gateway WHERE gateway_type::text = 'nvc_global' LIMIT 1"))
                 gateway_id = result.scalar()
                 
                 if gateway_id:
                     nvc_global_gateway = PaymentGateway.query.get(gateway_id)
-                    logger.info(f"Found NVC Global gateway with ID {gateway_id} using SQL query")
-            except Exception as sql_error:
-                logger.warning(f"Error executing SQL for NVC Global gateway lookup: {str(sql_error)}")
-        
-        # If NVC Global gateway still doesn't exist, create it
-        if not nvc_global_gateway:
-            try:
-                # Try creating using SQLAlchemy ORM first
-                try:
-                    nvc_global_gateway = PaymentGateway(
-                        name="NVC Global",
-                        gateway_type=PaymentGatewayType.NVC_GLOBAL,
-                        api_endpoint="https://api.nvcplatform.net",
-                        api_key=os.environ.get('NVC_GLOBAL_API_KEY', ''),
-                        webhook_secret=os.environ.get('NVC_GLOBAL_WEBHOOK_SECRET', ''),
-                        ethereum_address=os.environ.get('NVC_GLOBAL_ETH_ADDRESS', None),
-                        is_active=True
-                    )
-                    db.session.add(nvc_global_gateway)
-                    db.session.commit()
-                    logger.info("NVC Global payment gateway created using ORM")
-                except Exception as orm_error:
-                    logger.warning(f"Error creating NVC Global gateway with ORM: {str(orm_error)}")
-                    db.session.rollback()
-                    
-                    # Fall back to raw SQL if ORM approach failed
+                    logger.info(f"Found existing NVC Global gateway with ID {gateway_id}")
+                else:
+                    # Create the gateway with raw SQL
                     stmt = text("""
                         INSERT INTO payment_gateway (
-                            name, gateway_type, api_endpoint, api_key, webhook_secret, 
+                            id, name, gateway_type, api_endpoint, api_key, webhook_secret, 
                             ethereum_address, is_active, created_at, updated_at
                         )
                         VALUES (
-                            'NVC Global', 'nvc_global', 'https://api.nvcplatform.net', 
+                            3, 'NVC Global', 'nvc_global', 'https://api.nvcplatform.net', 
                             :api_key, :webhook_secret, :eth_address, true, now(), now()
                         )
+                        ON CONFLICT (id) DO UPDATE 
+                        SET api_key = :api_key,
+                            webhook_secret = :webhook_secret,
+                            api_endpoint = 'https://api.nvcplatform.net',
+                            updated_at = now()
                         RETURNING id
                     """)
                     
@@ -194,13 +179,17 @@ def init_payment_gateways():
                         'eth_address': os.environ.get('NVC_GLOBAL_ETH_ADDRESS', None)
                     })
                     
-                    # Get the newly created gateway
-                    gateway_id = result.fetchone()[0]
-                    nvc_global_gateway = PaymentGateway.query.get(gateway_id)
+                    # Get the newly created/updated gateway
+                    returned_id = result.scalar()
+                    db.session.commit()
                     
-                    logger.info(f"NVC Global payment gateway created using SQL, ID: {gateway_id}")
-            except Exception as create_error:
-                logger.warning(f"Error creating NVC Global gateway: {str(create_error)}")
+                    if returned_id:
+                        nvc_global_gateway = PaymentGateway.query.get(returned_id)
+                        logger.info(f"NVC Global payment gateway created or updated with ID {returned_id}")
+                    else:
+                        logger.warning("Failed to create NVC Global gateway with SQL")
+            except Exception as sql_error:
+                logger.warning(f"Error creating NVC Global gateway with SQL: {str(sql_error)}")
                 db.session.rollback()
         
         # Update NVC Global gateway keys if needed
@@ -226,36 +215,63 @@ def init_payment_gateways():
 def get_gateway_handler(gateway_id=None, gateway_type=None):
     """Get a payment gateway handler based on ID or type"""
     try:
+        # Special case for NVC Global - we know it's ID 3 from direct database check
+        if gateway_type == PaymentGatewayType.NVC_GLOBAL or (isinstance(gateway_type, str) and gateway_type.lower() == 'nvc_global'):
+            try:
+                # Direct lookup by ID 3 for NVC Global
+                nvc_gateway = PaymentGateway.query.get(3)
+                if nvc_gateway and nvc_gateway.is_active:
+                    logger.info("Found NVC Global gateway using direct ID lookup (ID 3)")
+                    return NVCGlobalGateway(nvc_gateway.id)
+            except Exception as e:
+                logger.error(f"Error getting NVC Global gateway by ID: {str(e)}")
+        
         gateway = None
         
         if gateway_id:
+            # Special case for NVC Global by ID
+            if gateway_id == 3:
+                try:
+                    nvc_gateway = PaymentGateway.query.get(3)
+                    if nvc_gateway:
+                        logger.info("Found NVC Global gateway by direct ID 3")
+                        return NVCGlobalGateway(3)
+                except Exception as e:
+                    logger.error(f"Error getting NVC Global gateway by ID 3: {str(e)}")
+            
             gateway = PaymentGateway.query.get(gateway_id)
         elif gateway_type:
-            # Handle special case for NVC_GLOBAL
-            if gateway_type == PaymentGatewayType.NVC_GLOBAL:
-                try:
-                    # Try direct ORM access first
-                    gateway = PaymentGateway.query.filter_by(
-                        gateway_type=gateway_type,
-                        is_active=True
-                    ).first()
-                    
-                    # If that fails, use SQL
-                    if not gateway:
+            # Normal case for other gateway types
+            try:
+                gateway = PaymentGateway.query.filter_by(
+                    gateway_type=gateway_type,
+                    is_active=True
+                ).first()
+            except Exception as e:
+                logger.error(f"Error getting gateway by type {gateway_type}: {str(e)}")
+                
+                # Fallback for NVC_GLOBAL using SQL
+                if gateway_type == PaymentGatewayType.NVC_GLOBAL or str(gateway_type).lower() == 'nvc_global':
+                    try:
+                        db.session.rollback()  # Clear transaction
                         result = db.session.execute(
                             text("SELECT id FROM payment_gateway WHERE gateway_type::text = 'nvc_global' AND is_active = true LIMIT 1")
                         )
                         gateway_id = result.scalar()
                         if gateway_id:
                             gateway = PaymentGateway.query.get(gateway_id)
-                except Exception as e:
-                    logger.error(f"Error getting NVC_GLOBAL gateway by type: {str(e)}")
-            else:
-                # Normal case for other gateway types
-                gateway = PaymentGateway.query.filter_by(
-                    gateway_type=gateway_type,
-                    is_active=True
-                ).first()
+                    except Exception as sql_e:
+                        logger.error(f"Fallback SQL query for NVC Global also failed: {str(sql_e)}")
+                        # Last resort direct ID lookup for NVC Global
+                        try:
+                            db.session.rollback()
+                            nvc_gateway = PaymentGateway.query.get(3)
+                            if nvc_gateway:
+                                logger.info("Found NVC Global gateway using final fallback to ID 3")
+                                return NVCGlobalGateway(3)
+                        except Exception as final_e:
+                            logger.error(f"Final fallback for NVC Global also failed: {str(final_e)}")
+                            return None
         
         if not gateway:
             logger.error(f"Payment gateway not found: id={gateway_id}, type={gateway_type}")
