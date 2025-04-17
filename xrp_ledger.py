@@ -28,8 +28,41 @@ from xrpl.transaction import submit
 from xrpl.utils import drops_to_xrp, xrp_to_drops
 from xrpl.constants import CryptoAlgorithm
 
-# Configure logger
 logger = logging.getLogger(__name__)
+
+def test_connection() -> bool:
+    """
+    Test connection to XRP Ledger network
+    
+    Returns:
+        bool: True if connection is successful, False otherwise
+    """
+    try:
+        # Get XRP Ledger node URL from environment or use testnet as default
+        xrp_node_url = os.environ.get("XRP_NODE_URL", "https://s.altnet.rippletest.net:51234")
+        
+        # Create JsonRpcClient
+        client = JsonRpcClient(xrp_node_url)
+        
+        # Try to get server info to check connection
+        response = client.request(
+            {
+                "method": "server_info",
+                "params": [{}]
+            }
+        )
+        
+        if response and response.get("result") and response["result"].get("info"):
+            logger.info(f"Connected to XRP Ledger. Server info: {response['result']['info'].get('build_version', 'unknown')}")
+            return True
+        else:
+            logger.warning(f"Received invalid response from XRP Ledger: {response}")
+            return False
+    except Exception as e:
+        logger.error(f"Error testing XRP Ledger connection: {str(e)}")
+        return False
+
+# Logger is already configured above
 
 # XRP Ledger network options
 XRPL_NETWORKS = {

@@ -8,6 +8,7 @@ from sqlalchemy import text
 
 from app import db
 from blockchain import init_web3, get_web3
+from xrp_ledger import test_connection as xrp_test_connection
 
 # Create a Blueprint for status routes
 status_bp = Blueprint('status', __name__, url_prefix='/api')
@@ -159,6 +160,36 @@ def api_status():
         },
         'lastChecked': datetime.utcnow().isoformat()
     })
+
+# XRP Ledger status endpoint
+@status_bp.route('/xrp/status', methods=['GET'])
+def xrp_status():
+    """Get the status of the XRP Ledger connection"""
+    try:
+        is_connected = xrp_test_connection()
+        
+        if is_connected:
+            return jsonify({
+                'status': 'ok',
+                'message': 'XRP Ledger connection established',
+                'details': {
+                    'network': os.environ.get('XRPL_NETWORK', 'testnet'),
+                },
+                'lastChecked': datetime.utcnow().isoformat()
+            })
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Unable to connect to XRP Ledger',
+                'lastChecked': datetime.utcnow().isoformat()
+            })
+    except Exception as e:
+        logger.error(f"Error checking XRP Ledger status: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f'Error checking XRP Ledger status: {str(e)}',
+            'lastChecked': datetime.utcnow().isoformat()
+        })
 
 # Database status endpoint
 @status_bp.route('/database/status', methods=['GET'])

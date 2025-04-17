@@ -43,6 +43,9 @@ function checkConnectivityStatus() {
     // Check blockchain connectivity
     checkBlockchainStatus();
     
+    // Check XRP Ledger connectivity
+    checkXRPLedgerStatus();
+    
     // Check payment gateway status
     checkPaymentGatewayStatus();
     
@@ -64,6 +67,20 @@ function checkBlockchainStatus() {
         .catch(error => {
             console.error('Error checking blockchain status:', error);
             updateStatusIndicator('blockchain-status', 'error');
+        });
+}
+
+// Check XRP Ledger connectivity
+function checkXRPLedgerStatus() {
+    fetch('/api/xrp/status')
+        .then(response => response.json())
+        .then(data => {
+            updateStatusIndicator('xrp-status', data.status);
+            updateStatusDetails('xrp-details', data);
+        })
+        .catch(error => {
+            console.error('Error checking XRP Ledger status:', error);
+            updateStatusIndicator('xrp-status', 'error');
         });
 }
 
