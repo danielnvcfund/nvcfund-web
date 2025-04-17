@@ -32,8 +32,6 @@ def check_gateway_status(gateway):
             # Simple API call to check Stripe connectivity
             stripe.Balance.retrieve()
             return ('ok', 'Connected to Stripe API')
-        except stripe.error.AuthenticationError:
-            return ('error', 'Invalid Stripe API key')
         except Exception as e:
             return ('error', f'Stripe API error: {str(e)}')
     
@@ -160,6 +158,7 @@ def get_gateway_handler(gateway_id=None, gateway_type=None):
         handlers = {
             PaymentGatewayType.STRIPE: StripeGateway,
             PaymentGatewayType.PAYPAL: PayPalGateway,
+            PaymentGatewayType.COINBASE: CoinbaseGateway,
             # Add more handlers as needed
         }
         
@@ -344,27 +343,25 @@ class StripeGateway(PaymentGatewayInterface):
                 "currency": currency
             }
         
-        except stripe.error.StripeError as se:
+        except Exception as se:
             # Handle Stripe-specific errors
             error_message = str(se)
             logger.error(f"Stripe error: {error_message}")
             
-            # Update transaction status
-            try:
-                transaction.status = TransactionStatus.FAILED
-                transaction.description = f"{description} (Error: {error_message})"
-                db.session.commit()
-            except Exception:
-                pass  # Ignore secondary errors in error handling
+            # Update transaction status if transaction was created
+            if 'transaction' in locals():
+                try:
+                    transaction.status = TransactionStatus.FAILED
+                    transaction.description = f"{description} (Error: {error_message})"
+                    db.session.commit()
+                except Exception:
+                    pass  # Ignore secondary errors in error handling
             
             return {
                 "success": False,
-                "transaction_id": transaction.transaction_id if transaction else None,
+                "transaction_id": transaction.transaction_id if 'transaction' in locals() else None,
                 "error": error_message
             }
-        except Exception as e:
-            logger.error(f"Error processing Stripe payment: {str(e)}")
-            return {"success": False, "error": str(e)}
     
     def check_payment_status(self, payment_id):
         """Check the status of a Stripe payment using the Stripe Python library"""
@@ -427,18 +424,15 @@ class StripeGateway(PaymentGatewayInterface):
                 "currency": transaction.currency
             }
         
-        except stripe.error.StripeError as se:
+        except Exception as e:
             # Handle Stripe-specific errors
-            error_message = str(se)
+            error_message = str(e)
             logger.error(f"Stripe error: {error_message}")
             return {
                 "success": False,
-                "transaction_id": transaction.transaction_id if transaction else None,
+                "transaction_id": transaction.transaction_id if 'transaction' in locals() else None,
                 "error": error_message
             }
-        except Exception as e:
-            logger.error(f"Error checking Stripe payment status: {str(e)}")
-            return {"success": False, "error": str(e)}
     
     def refund_payment(self, payment_id, amount=None):
         """Refund a Stripe payment"""
@@ -476,17 +470,6 @@ class StripeGateway(PaymentGatewayInterface):
             transaction.description = f"{transaction.description} (Refunded: {refund.id})"
             db.session.commit()
             
-            # Send refund notification email
-            try:
-                from email_service import send_refund_notification_email
-                from models import User
-                
-                user = User.query.get(transaction.user_id)
-                if user:
-                    send_refund_notification_email(user, transaction, amount or transaction.amount)
-            except Exception as email_error:
-                logger.warning(f"Failed to send refund notification email: {str(email_error)}")
-            
             return {
                 "success": True,
                 "transaction_id": transaction.transaction_id,
@@ -496,22 +479,13 @@ class StripeGateway(PaymentGatewayInterface):
                 "currency": transaction.currency
             }
         
-        except stripe.error.StripeError as se:
-            # Handle Stripe-specific errors
-            error_message = str(se)
-            logger.error(f"Stripe error: {error_message}")
-            return {
-                "success": False,
-                "transaction_id": transaction.transaction_id,
-                "error": error_message
-            }
         except Exception as e:
             logger.error(f"Error refunding Stripe payment: {str(e)}")
             return {"success": False, "error": str(e)}
 
 
 class PayPalGateway(PaymentGatewayInterface):
-    """PayPal payment gateway implementation"""
+    """PayPal payment gateway implementation using the PayPal Python SDK"""
     
     def process_payment(self, amount, currency, description, user_id, metadata=None):
         """Process a payment through PayPal"""
@@ -521,98 +495,111 @@ class PayPalGateway(PaymentGatewayInterface):
                 amount, currency, user_id, description
             )
             
-            # Get access token
-            auth_response = requests.post(
-                f"{self.gateway.api_endpoint}/v1/oauth2/token",
-                auth=(self.gateway.api_key, self.gateway.webhook_secret),  # Using webhook_secret as PayPal secret
-                data={"grant_type": "client_credentials"}
-            )
+            # Get domain for return URLs
+            current_domain = self._get_current_domain()
             
-            auth_data = auth_response.json()
+            # Create PayPal payment using the SDK
+            payment = paypalrestsdk.Payment({
+                "intent": "sale",
+                "payer": {
+                    "payment_method": "paypal"
+                },
+                "redirect_urls": {
+                    "return_url": f"{current_domain}/payments/return?transaction_id={transaction.transaction_id}",
+                    "cancel_url": f"{current_domain}/payments/cancel?transaction_id={transaction.transaction_id}"
+                },
+                "transactions": [{
+                    "amount": {
+                        "total": str(amount),
+                        "currency": currency.upper()
+                    },
+                    "description": description,
+                    "custom": transaction.transaction_id,
+                    "invoice_number": transaction.transaction_id
+                }]
+            })
             
-            if auth_response.status_code != 200:
-                transaction.status = TransactionStatus.FAILED
-                transaction.description = f"{description} (Error: Failed to authenticate with PayPal)"
-                db.session.commit()
+            # Create the payment in PayPal
+            if payment.create():
+                logger.info(f"Payment {payment.id} created successfully")
                 
-                return {
-                    "success": False,
-                    "transaction_id": transaction.transaction_id,
-                    "error": "Failed to authenticate with PayPal"
-                }
-            
-            access_token = auth_data["access_token"]
-            
-            # Prepare API request to PayPal
-            headers = {
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json"
-            }
-            
-            payload = {
-                "intent": "CAPTURE",
-                "purchase_units": [
-                    {
-                        "amount": {
-                            "currency_code": currency.upper(),
-                            "value": str(amount)
-                        },
-                        "description": description,
-                        "custom_id": transaction.transaction_id
-                    }
-                ],
-                "application_context": {
-                    "return_url": f"https://nvcplatform.net/payments/return?transaction_id={transaction.transaction_id}",
-                    "cancel_url": f"https://nvcplatform.net/payments/cancel?transaction_id={transaction.transaction_id}"
-                }
-            }
-            
-            # Make API request to PayPal
-            response = requests.post(
-                f"{self.gateway.api_endpoint}/v2/checkout/orders",
-                headers=headers,
-                json=payload
-            )
-            
-            data = response.json()
-            
-            if response.status_code == 201:
-                # Update transaction with PayPal order ID
+                # Find the approval URL
+                approval_url = next(link.href for link in payment.links if link.rel == 'approval_url')
+                
+                # Update transaction with PayPal payment ID
                 transaction.status = TransactionStatus.PROCESSING
-                transaction.description = f"{description} (PayPal Order ID: {data['id']})"
+                transaction.description = f"{description} (PayPal Payment ID: {payment.id})"
                 db.session.commit()
                 
-                # Find approval URL
-                approval_url = next(
-                    link["href"] for link in data["links"] if link["rel"] == "approve"
-                )
+                # Send email notification about the pending payment
+                try:
+                    from email_service import send_payment_initiated_email
+                    from models import User
+                    
+                    user = User.query.get(user_id)
+                    if user:
+                        send_payment_initiated_email(user, transaction)
+                except Exception as email_error:
+                    logger.warning(f"Failed to send payment initiated email: {str(email_error)}")
                 
                 return {
                     "success": True,
                     "transaction_id": transaction.transaction_id,
-                    "paypal_order_id": data["id"],
+                    "paypal_payment_id": payment.id,
                     "approval_url": approval_url,
                     "amount": amount,
                     "currency": currency
                 }
             else:
-                # Handle error
+                error_message = payment.error.get('message', 'Unknown error') if hasattr(payment, 'error') else 'Unknown error'
+                logger.error(f"Failed to create PayPal payment: {error_message}")
+                
+                # Update transaction status
                 transaction.status = TransactionStatus.FAILED
-                transaction.description = f"{description} (Error: {data.get('message', 'Unknown error')})"
+                transaction.description = f"{description} (Error: {error_message})"
                 db.session.commit()
                 
                 return {
                     "success": False,
                     "transaction_id": transaction.transaction_id,
-                    "error": data.get("message", "Unknown error")
+                    "error": error_message
                 }
-        
+                
         except Exception as e:
             logger.error(f"Error processing PayPal payment: {str(e)}")
+            
+            # If transaction was created, update its status
+            if 'transaction' in locals():
+                try:
+                    transaction.status = TransactionStatus.FAILED
+                    transaction.description = f"{description} (Error: {str(e)})"
+                    db.session.commit()
+                except Exception:
+                    pass  # Ignore secondary errors
+                
+                return {
+                    "success": False,
+                    "transaction_id": transaction.transaction_id,
+                    "error": str(e)
+                }
+            
             return {"success": False, "error": str(e)}
+            
+    def _get_current_domain(self):
+        """Get the current domain for the application"""
+        # In production, you'd want to use the actual domain
+        # For now, use Replit domain
+        replit_domain = os.environ.get('REPLIT_DEPLOYMENT', '') 
+        if replit_domain:
+            return f"https://{os.environ.get('REPLIT_DEV_DOMAIN')}"
+        else:
+            domains = os.environ.get('REPLIT_DOMAINS', '').split(',')
+            if domains and domains[0]:
+                return f"https://{domains[0]}"
+            return "http://localhost:5000"
     
     def check_payment_status(self, payment_id):
-        """Check the status of a PayPal payment"""
+        """Check the status of a PayPal payment using the SDK"""
         try:
             # Find transaction by ID
             transaction = Transaction.query.filter_by(transaction_id=payment_id).first()
@@ -620,88 +607,68 @@ class PayPalGateway(PaymentGatewayInterface):
             if not transaction:
                 return {"success": False, "error": "Transaction not found"}
             
-            # Extract PayPal order ID from description
+            # Extract PayPal payment ID from description
             import re
-            match = re.search(r"PayPal Order ID: ([A-Z0-9]+)", transaction.description)
+            match = re.search(r"PayPal Payment ID: ([A-Z0-9-]+)", transaction.description)
             
             if not match:
-                return {"success": False, "error": "PayPal Order ID not found"}
+                return {"success": False, "error": "PayPal Payment ID not found"}
             
-            paypal_order_id = match.group(1)
+            paypal_payment_id = match.group(1)
             
-            # Get access token
-            auth_response = requests.post(
-                f"{self.gateway.api_endpoint}/v1/oauth2/token",
-                auth=(self.gateway.api_key, self.gateway.webhook_secret),
-                data={"grant_type": "client_credentials"}
-            )
+            # Retrieve payment from PayPal
+            payment = paypalrestsdk.Payment.find(paypal_payment_id)
             
-            auth_data = auth_response.json()
+            if not payment:
+                return {"success": False, "error": "Payment not found in PayPal"}
             
-            if auth_response.status_code != 200:
-                return {
-                    "success": False,
-                    "transaction_id": transaction.transaction_id,
-                    "error": "Failed to authenticate with PayPal"
-                }
-            
-            access_token = auth_data["access_token"]
-            
-            # Prepare API request
-            headers = {
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json"
+            # Map PayPal status to our status
+            status_mapping = {
+                "created": TransactionStatus.PENDING,
+                "approved": TransactionStatus.PROCESSING,
+                "canceled": TransactionStatus.FAILED,
+                "failed": TransactionStatus.FAILED,
+                "completed": TransactionStatus.COMPLETED,
+                "pending": TransactionStatus.PENDING
             }
             
-            # Make API request to PayPal
-            response = requests.get(
-                f"{self.gateway.api_endpoint}/v2/checkout/orders/{paypal_order_id}",
-                headers=headers
-            )
+            # Get payment state
+            paypal_state = payment.state.lower()
+            internal_status = status_mapping.get(paypal_state, transaction.status)
             
-            data = response.json()
+            # Update transaction status if changed
+            if transaction.status != internal_status:
+                transaction.status = internal_status
+                db.session.commit()
+                
+                # Send email if status changed to completed or failed
+                if internal_status in [TransactionStatus.COMPLETED, TransactionStatus.FAILED]:
+                    try:
+                        from email_service import send_transaction_confirmation_email
+                        from models import User
+                        
+                        user = User.query.get(transaction.user_id)
+                        if user:
+                            send_transaction_confirmation_email(user, transaction)
+                    except Exception as email_error:
+                        logger.warning(f"Failed to send status update email: {str(email_error)}")
             
-            if response.status_code == 200:
-                # Map PayPal status to our status
-                status_mapping = {
-                    "CREATED": TransactionStatus.PENDING,
-                    "SAVED": TransactionStatus.PENDING,
-                    "APPROVED": TransactionStatus.PROCESSING,
-                    "VOIDED": TransactionStatus.FAILED,
-                    "COMPLETED": TransactionStatus.COMPLETED,
-                    "PAYER_ACTION_REQUIRED": TransactionStatus.PENDING
-                }
-                
-                paypal_status = data["status"]
-                internal_status = status_mapping.get(paypal_status, transaction.status)
-                
-                # Update transaction status if changed
-                if transaction.status != internal_status:
-                    transaction.status = internal_status
-                    db.session.commit()
-                
-                return {
-                    "success": True,
-                    "transaction_id": transaction.transaction_id,
-                    "paypal_order_id": paypal_order_id,
-                    "status": paypal_status,
-                    "internal_status": internal_status.value,
-                    "amount": transaction.amount,
-                    "currency": transaction.currency
-                }
-            else:
-                return {
-                    "success": False,
-                    "transaction_id": transaction.transaction_id,
-                    "error": data.get("message", "Unknown error")
-                }
+            return {
+                "success": True,
+                "transaction_id": transaction.transaction_id,
+                "paypal_payment_id": paypal_payment_id,
+                "status": paypal_state,
+                "internal_status": internal_status.value,
+                "amount": transaction.amount,
+                "currency": transaction.currency
+            }
         
         except Exception as e:
             logger.error(f"Error checking PayPal payment status: {str(e)}")
             return {"success": False, "error": str(e)}
     
     def refund_payment(self, payment_id, amount=None):
-        """Refund a PayPal payment"""
+        """Refund a PayPal payment using the SDK"""
         try:
             # Find transaction by ID
             transaction = Transaction.query.filter_by(transaction_id=payment_id).first()
@@ -712,93 +679,59 @@ class PayPalGateway(PaymentGatewayInterface):
             if transaction.status != TransactionStatus.COMPLETED:
                 return {"success": False, "error": "Transaction not completed, cannot refund"}
             
-            # Extract PayPal order ID from description
+            # Extract PayPal payment ID from description
             import re
-            match = re.search(r"PayPal Order ID: ([A-Z0-9]+)", transaction.description)
+            match = re.search(r"PayPal Payment ID: ([A-Z0-9-]+)", transaction.description)
             
             if not match:
-                return {"success": False, "error": "PayPal Order ID not found"}
+                return {"success": False, "error": "PayPal Payment ID not found"}
             
-            paypal_order_id = match.group(1)
+            paypal_payment_id = match.group(1)
             
-            # Get access token
-            auth_response = requests.post(
-                f"{self.gateway.api_endpoint}/v1/oauth2/token",
-                auth=(self.gateway.api_key, self.gateway.webhook_secret),
-                data={"grant_type": "client_credentials"}
-            )
+            # Retrieve payment from PayPal
+            payment = paypalrestsdk.Payment.find(paypal_payment_id)
             
-            auth_data = auth_response.json()
+            if not payment:
+                return {"success": False, "error": "Payment not found in PayPal"}
             
-            if auth_response.status_code != 200:
-                return {
-                    "success": False,
-                    "transaction_id": transaction.transaction_id,
-                    "error": "Failed to authenticate with PayPal"
-                }
+            # Get the sale ID from the payment
+            sale_id = payment.transactions[0].related_resources[0].sale.id
             
-            access_token = auth_data["access_token"]
+            # Create refund
+            sale = paypalrestsdk.Sale.find(sale_id)
             
-            # Get capture ID from order
-            headers = {
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json"
-            }
-            
-            order_response = requests.get(
-                f"{self.gateway.api_endpoint}/v2/checkout/orders/{paypal_order_id}",
-                headers=headers
-            )
-            
-            order_data = order_response.json()
-            
-            if order_response.status_code != 200:
-                return {
-                    "success": False,
-                    "transaction_id": transaction.transaction_id,
-                    "error": order_data.get("message", "Failed to get order details")
-                }
-            
-            # Get capture ID
-            capture_id = order_data["purchase_units"][0]["payments"]["captures"][0]["id"]
-            
-            # Prepare refund payload
-            refund_payload = {}
-            
+            refund_data = {}
             if amount:
-                refund_payload["amount"] = {
-                    "value": str(amount),
-                    "currency_code": transaction.currency.upper()
+                refund_data = {
+                    "amount": {
+                        "total": str(amount),
+                        "currency": transaction.currency.upper()
+                    }
                 }
+                
+            # Process refund
+            refund = sale.refund(refund_data)
             
-            # Make refund request
-            refund_response = requests.post(
-                f"{self.gateway.api_endpoint}/v2/payments/captures/{capture_id}/refund",
-                headers=headers,
-                json=refund_payload
-            )
-            
-            refund_data = refund_response.json()
-            
-            if refund_response.status_code == 201:
+            if refund.success():
                 # Update transaction status
                 transaction.status = TransactionStatus.REFUNDED
-                transaction.description = f"{transaction.description} (Refunded: {refund_data['id']})"
+                transaction.description = f"{transaction.description} (Refunded: {refund.id})"
                 db.session.commit()
                 
                 return {
                     "success": True,
                     "transaction_id": transaction.transaction_id,
-                    "refund_id": refund_data["id"],
-                    "status": refund_data["status"],
+                    "refund_id": refund.id,
+                    "status": refund.state,
                     "amount": amount or transaction.amount,
                     "currency": transaction.currency
                 }
             else:
+                error_message = refund.error.get('message', 'Unknown error') if hasattr(refund, 'error') else 'Unknown error'
                 return {
                     "success": False,
                     "transaction_id": transaction.transaction_id,
-                    "error": refund_data.get("message", "Unknown error")
+                    "error": error_message
                 }
         
         except Exception as e:
@@ -833,8 +766,11 @@ class CoinbaseGateway(PaymentGatewayInterface):
                 # Add pricing in ETH as fallback
                 pricing["ETH"] = "RESOLVE"
             
+            # Get domain for return URLs
+            current_domain = self._get_current_domain()
+            
             payload = {
-                "name": "nvcplatform.net Payment",
+                "name": "NVC Platform Payment",
                 "description": description,
                 "pricing_type": "fixed_price",
                 "local_price": {
@@ -845,8 +781,8 @@ class CoinbaseGateway(PaymentGatewayInterface):
                     "transaction_id": transaction.transaction_id,
                     "user_id": str(user_id)
                 },
-                "redirect_url": f"https://nvcplatform.net/payments/return?transaction_id={transaction.transaction_id}",
-                "cancel_url": f"https://nvcplatform.net/payments/cancel?transaction_id={transaction.transaction_id}"
+                "redirect_url": f"{current_domain}/payments/return?transaction_id={transaction.transaction_id}",
+                "cancel_url": f"{current_domain}/payments/cancel?transaction_id={transaction.transaction_id}"
             }
             
             if metadata:
@@ -877,19 +813,49 @@ class CoinbaseGateway(PaymentGatewayInterface):
                 }
             else:
                 # Handle error
+                error_message = data.get("error", {}).get("message", "Unknown error")
                 transaction.status = TransactionStatus.FAILED
-                transaction.description = f"{description} (Error: {data.get('error', {}).get('message', 'Unknown error')})"
+                transaction.description = f"{description} (Error: {error_message})"
                 db.session.commit()
                 
                 return {
                     "success": False,
                     "transaction_id": transaction.transaction_id,
-                    "error": data.get("error", {}).get("message", "Unknown error")
+                    "error": error_message
                 }
         
         except Exception as e:
             logger.error(f"Error processing Coinbase payment: {str(e)}")
+            
+            # If transaction was created, update its status
+            if 'transaction' in locals():
+                try:
+                    transaction.status = TransactionStatus.FAILED
+                    transaction.description = f"{description} (Error: {str(e)})"
+                    db.session.commit()
+                except Exception:
+                    pass  # Ignore secondary errors
+                
+                return {
+                    "success": False,
+                    "transaction_id": transaction.transaction_id,
+                    "error": str(e)
+                }
+            
             return {"success": False, "error": str(e)}
+    
+    def _get_current_domain(self):
+        """Get the current domain for the application"""
+        # In production, you'd want to use the actual domain
+        # For now, use Replit domain
+        replit_domain = os.environ.get('REPLIT_DEPLOYMENT', '') 
+        if replit_domain:
+            return f"https://{os.environ.get('REPLIT_DEV_DOMAIN')}"
+        else:
+            domains = os.environ.get('REPLIT_DOMAINS', '').split(',')
+            if domains and domains[0]:
+                return f"https://{domains[0]}"
+            return "http://localhost:5000"
     
     def check_payment_status(self, payment_id):
         """Check the status of a Coinbase payment"""
@@ -907,9 +873,9 @@ class CoinbaseGateway(PaymentGatewayInterface):
             if not match:
                 return {"success": False, "error": "Coinbase Charge ID not found"}
             
-            coinbase_charge_id = match.group(1)
+            charge_id = match.group(1)
             
-            # Prepare API request
+            # Prepare API request to Coinbase
             headers = {
                 "X-CC-Api-Key": self.gateway.api_key,
                 "X-CC-Version": "2018-03-22",
@@ -918,7 +884,7 @@ class CoinbaseGateway(PaymentGatewayInterface):
             
             # Make API request to Coinbase
             response = requests.get(
-                f"{self.gateway.api_endpoint}/charges/{coinbase_charge_id}",
+                f"{self.gateway.api_endpoint}/charges/{charge_id}",
                 headers=headers
             )
             
@@ -926,18 +892,17 @@ class CoinbaseGateway(PaymentGatewayInterface):
             
             if response.status_code == 200:
                 # Map Coinbase status to our status
-                charge_data = data["data"]
-                coinbase_status = charge_data["timeline"][-1]["status"]
+                coinbase_status = data["data"]["timeline"][-1]["status"]
                 
                 status_mapping = {
                     "NEW": TransactionStatus.PENDING,
-                    "PENDING": TransactionStatus.PROCESSING,
+                    "PENDING": TransactionStatus.PENDING,
                     "COMPLETED": TransactionStatus.COMPLETED,
                     "EXPIRED": TransactionStatus.FAILED,
                     "CANCELED": TransactionStatus.FAILED,
                     "UNRESOLVED": TransactionStatus.PROCESSING,
                     "RESOLVED": TransactionStatus.COMPLETED,
-                    "RESOLVED_MANUALLY": TransactionStatus.COMPLETED
+                    "DELAYED": TransactionStatus.PROCESSING
                 }
                 
                 internal_status = status_mapping.get(coinbase_status, transaction.status)
@@ -947,31 +912,21 @@ class CoinbaseGateway(PaymentGatewayInterface):
                     transaction.status = internal_status
                     db.session.commit()
                 
-                # For completed transactions, check if we should store the blockchain hash
-                if internal_status == TransactionStatus.COMPLETED and not transaction.eth_transaction_hash:
-                    # Try to extract transaction hash from payments
-                    if "payments" in charge_data and charge_data["payments"]:
-                        for payment in charge_data["payments"]:
-                            if payment["network"] == "ethereum":
-                                transaction.eth_transaction_hash = payment["transaction_id"]
-                                db.session.commit()
-                                break
-                
                 return {
                     "success": True,
                     "transaction_id": transaction.transaction_id,
-                    "charge_id": coinbase_charge_id,
+                    "charge_id": charge_id,
                     "status": coinbase_status,
                     "internal_status": internal_status.value,
                     "amount": transaction.amount,
-                    "currency": transaction.currency,
-                    "blockchain_tx": transaction.eth_transaction_hash
+                    "currency": transaction.currency
                 }
             else:
+                error_message = data.get("error", {}).get("message", "Unknown error")
                 return {
                     "success": False,
                     "transaction_id": transaction.transaction_id,
-                    "error": data.get("error", {}).get("message", "Unknown error")
+                    "error": error_message
                 }
         
         except Exception as e:
@@ -980,44 +935,10 @@ class CoinbaseGateway(PaymentGatewayInterface):
     
     def refund_payment(self, payment_id, amount=None):
         """
-        Refund a Coinbase payment - Note: Coinbase Commerce doesn't support refunds through API
-        This would typically be handled manually in the Coinbase Commerce dashboard
+        Coinbase Commerce does not directly support refunds for crypto payments.
+        This should be handled manually for crypto payments.
         """
         return {
-            "success": False, 
-            "error": "Automatic refunds are not supported for Coinbase payments. Please process manually."
+            "success": False,
+            "error": "Automatic refunds are not supported for Coinbase crypto payments. Please process manually."
         }
-
-
-def get_gateway_handler(gateway_id):
-    """
-    Factory function to get the appropriate payment gateway handler
-    
-    Args:
-        gateway_id (int): ID of the payment gateway in the database
-    
-    Returns:
-        PaymentGatewayInterface: The appropriate payment gateway handler
-    """
-    try:
-        gateway = PaymentGateway.query.get(gateway_id)
-        
-        if not gateway:
-            raise ValueError(f"Payment gateway with ID {gateway_id} not found")
-        
-        if not gateway.is_active:
-            raise ValueError(f"Payment gateway {gateway.name} is not active")
-        
-        # Select the appropriate handler based on gateway type
-        if gateway.gateway_type.value == "stripe":
-            return StripeGateway(gateway_id)
-        elif gateway.gateway_type.value == "paypal":
-            return PayPalGateway(gateway_id)
-        elif gateway.gateway_type.value == "coinbase":
-            return CoinbaseGateway(gateway_id)
-        else:
-            raise ValueError(f"Unsupported payment gateway type: {gateway.gateway_type.value}")
-    
-    except Exception as e:
-        logger.error(f"Error getting gateway handler: {str(e)}")
-        raise
