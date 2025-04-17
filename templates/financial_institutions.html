@@ -80,7 +80,7 @@
                 <h5 class="modal-title" id="addInstitutionModalLabel"><i class="fas fa-plus-circle me-2"></i>Add Financial Institution</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ url_for('new_financial_institution') }}" method="POST">
+            <form action="{{ url_for('web.main.new_financial_institution') }}" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="name" class="form-label">Institution Name</label>
@@ -171,7 +171,7 @@
                 const form = document.getElementById('edit-institution-form');
                 
                 // Set the form action URL
-                form.action = `/financial_institution/${institutionId}/edit`;
+                form.action = `/main/financial_institution/${institutionId}/edit`;
                 
                 // Get the institution data from the table row
                 const row = this.closest('tr');

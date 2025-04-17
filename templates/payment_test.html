@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1><i class="fas fa-flask me-2"></i>Test Payment Integration</h1>
         <div>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+            <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-outline-primary">
                 <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
             </a>
         </div>
@@ -25,7 +25,7 @@
                         <i class="fas fa-info-circle me-2"></i> Use this page to test different payment gateway integrations. All transactions will be in test mode.
                     </div>
 
-                    <form id="test-payment-form" action="{{ url_for('test_payment') }}" method="POST">
+                    <form id="test-payment-form" action="{{ url_for('web.main.test_payment') }}" method="POST">
                         {{ form.hidden_tag() }}
                         
                         <div class="mb-3">
