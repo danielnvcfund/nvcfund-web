@@ -474,6 +474,11 @@ def api_docs():
 def terms_of_service():
     """Terms of service route"""
     return render_template('terms_of_service.html')
+    
+@main.route('/privacy_policy')
+def privacy_policy():
+    """Privacy policy route"""
+    return render_template('privacy_policy.html')
 
 @main.route('/payment/test', methods=['GET', 'POST'])
 @login_required
