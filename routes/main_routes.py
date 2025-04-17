@@ -465,6 +465,16 @@ def new_payment():
     # GET request or form validation failed, show payment form
     return render_template('payment_form.html', form=form, user=user, gateways=gateways)
 
+@main.route('/api_docs')
+def api_docs():
+    """API documentation route"""
+    return render_template('api_docs.html')
+    
+@main.route('/terms_of_service')
+def terms_of_service():
+    """Terms of service route"""
+    return render_template('terms_of_service.html')
+
 @main.route('/payment/test', methods=['GET', 'POST'])
 @login_required
 @admin_required
