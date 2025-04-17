@@ -107,6 +107,7 @@ class PaymentGatewayType(enum.Enum):
     SQUARE = "square"
     COINBASE = "coinbase"
     XRP_LEDGER = "xrp_ledger"
+    # Very important: Using lowercase 'nvc_global' to match the database enum value exactly
     NVC_GLOBAL = "nvc_global"
     CUSTOM = "custom"
     
@@ -117,7 +118,7 @@ class PaymentGatewayType(enum.Enum):
             # Try direct conversion first
             return cls(value)
         except ValueError:
-            # Handle specific cases
+            # Handle specific cases - this shouldn't be needed now but kept for safety
             if value == 'nvc_global':
                 return cls.NVC_GLOBAL
             # Add other special cases here if needed in the future

@@ -133,13 +133,16 @@ def init_payment_gateways():
             logger.info("PayPal payment gateway initialized")
         
         # Initialize NVC Global gateway
-        # Directly get the NVC Global gateway by ID (we know the ID is 3 from our SQL query)
-        nvc_global_gateway = PaymentGateway.query.get(3)
+        # Try to get NVC Global gateway by type first, handling the enum conversion safely
+        nvc_global_gateway = None
+        try:
+            # Try direct access with enum
+            nvc_global_gateway = PaymentGateway.query.filter_by(gateway_type=PaymentGatewayType.NVC_GLOBAL).first()
+        except Exception as enum_error:
+            logger.warning(f"Error using enum for NVC_GLOBAL query: {str(enum_error)}")
         
+        # If direct access failed, use a direct SQL query
         if not nvc_global_gateway:
-            # If the gateway somehow doesn't exist with ID 3, try using raw SQL
-            db.session.rollback()  # Make sure we're in a clean state
-            
             try:
                 # Execute raw SQL to find NVC Global gateway
                 result = db.session.execute(text("SELECT id FROM payment_gateway WHERE gateway_type::text = 'nvc_global' LIMIT 1"))
@@ -147,8 +150,32 @@ def init_payment_gateways():
                 
                 if gateway_id:
                     nvc_global_gateway = PaymentGateway.query.get(gateway_id)
-                else:
-                    # If it really doesn't exist, create it with raw SQL
+                    logger.info(f"Found NVC Global gateway with ID {gateway_id} using SQL query")
+            except Exception as sql_error:
+                logger.warning(f"Error executing SQL for NVC Global gateway lookup: {str(sql_error)}")
+        
+        # If NVC Global gateway still doesn't exist, create it
+        if not nvc_global_gateway:
+            try:
+                # Try creating using SQLAlchemy ORM first
+                try:
+                    nvc_global_gateway = PaymentGateway(
+                        name="NVC Global",
+                        gateway_type=PaymentGatewayType.NVC_GLOBAL,
+                        api_endpoint="https://api.nvcplatform.net",
+                        api_key=os.environ.get('NVC_GLOBAL_API_KEY', ''),
+                        webhook_secret=os.environ.get('NVC_GLOBAL_WEBHOOK_SECRET', ''),
+                        ethereum_address=os.environ.get('NVC_GLOBAL_ETH_ADDRESS', None),
+                        is_active=True
+                    )
+                    db.session.add(nvc_global_gateway)
+                    db.session.commit()
+                    logger.info("NVC Global payment gateway created using ORM")
+                except Exception as orm_error:
+                    logger.warning(f"Error creating NVC Global gateway with ORM: {str(orm_error)}")
+                    db.session.rollback()
+                    
+                    # Fall back to raw SQL if ORM approach failed
                     stmt = text("""
                         INSERT INTO payment_gateway (
                             name, gateway_type, api_endpoint, api_key, webhook_secret, 
@@ -171,9 +198,9 @@ def init_payment_gateways():
                     gateway_id = result.fetchone()[0]
                     nvc_global_gateway = PaymentGateway.query.get(gateway_id)
                     
-                    logger.info("NVC Global payment gateway created")
-            except Exception as sql_error:
-                logger.warning(f"Error executing SQL for NVC Global gateway: {str(sql_error)}")
+                    logger.info(f"NVC Global payment gateway created using SQL, ID: {gateway_id}")
+            except Exception as create_error:
+                logger.warning(f"Error creating NVC Global gateway: {str(create_error)}")
                 db.session.rollback()
         
         # Update NVC Global gateway keys if needed
@@ -204,10 +231,31 @@ def get_gateway_handler(gateway_id=None, gateway_type=None):
         if gateway_id:
             gateway = PaymentGateway.query.get(gateway_id)
         elif gateway_type:
-            gateway = PaymentGateway.query.filter_by(
-                gateway_type=gateway_type,
-                is_active=True
-            ).first()
+            # Handle special case for NVC_GLOBAL
+            if gateway_type == PaymentGatewayType.NVC_GLOBAL:
+                try:
+                    # Try direct ORM access first
+                    gateway = PaymentGateway.query.filter_by(
+                        gateway_type=gateway_type,
+                        is_active=True
+                    ).first()
+                    
+                    # If that fails, use SQL
+                    if not gateway:
+                        result = db.session.execute(
+                            text("SELECT id FROM payment_gateway WHERE gateway_type::text = 'nvc_global' AND is_active = true LIMIT 1")
+                        )
+                        gateway_id = result.scalar()
+                        if gateway_id:
+                            gateway = PaymentGateway.query.get(gateway_id)
+                except Exception as e:
+                    logger.error(f"Error getting NVC_GLOBAL gateway by type: {str(e)}")
+            else:
+                # Normal case for other gateway types
+                gateway = PaymentGateway.query.filter_by(
+                    gateway_type=gateway_type,
+                    is_active=True
+                ).first()
         
         if not gateway:
             logger.error(f"Payment gateway not found: id={gateway_id}, type={gateway_type}")
@@ -218,16 +266,22 @@ def get_gateway_handler(gateway_id=None, gateway_type=None):
             PaymentGatewayType.STRIPE: StripeGateway,
             PaymentGatewayType.PAYPAL: PayPalGateway,
             PaymentGatewayType.COINBASE: CoinbaseGateway,
+            PaymentGatewayType.NVC_GLOBAL: NVCGlobalGateway,
             # Add more handlers as needed
         }
         
         # Special handling for NVC Global since there might be enum case sensitivity issues
-        if gateway.gateway_type == PaymentGatewayType.NVC_GLOBAL or str(gateway.gateway_type) == 'nvc_global':
+        if str(gateway.gateway_type).lower() == 'nvc_global':
             return NVCGlobalGateway(gateway.id)
         
+        # Get the handler class for the gateway type
         handler_class = handlers.get(gateway.gateway_type)
         
         if not handler_class:
+            # Check if we have a string representation that matches NVC_GLOBAL
+            if str(gateway.gateway_type).lower() == 'nvc_global':
+                return NVCGlobalGateway(gateway.id)
+            
             logger.error(f"No handler available for gateway type: {gateway.gateway_type}")
             return None
         
