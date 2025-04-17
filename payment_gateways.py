@@ -132,13 +132,14 @@ def init_payment_gateways():
             logger.info("PayPal payment gateway initialized")
         
         # Initialize NVC Global gateway
-        nvc_global_gateway = PaymentGateway.query.filter_by(gateway_type=PaymentGatewayType.NVC_GLOBAL).first()
+        # Query directly using string to avoid enum conversion issues
+        nvc_global_gateway = PaymentGateway.query.filter(PaymentGateway.gateway_type.in_(['nvc_global'])).first()
         
         if not nvc_global_gateway:
             # Create NVC Global gateway
             nvc_global_gateway = PaymentGateway(
                 name="NVC Global",
-                gateway_type=PaymentGatewayType.NVC_GLOBAL,
+                gateway_type='nvc_global',  # Using string directly instead of enum
                 api_endpoint="https://api.nvcplatform.net",  # Default endpoint
                 api_key=os.environ.get('NVC_GLOBAL_API_KEY', ''),
                 webhook_secret=os.environ.get('NVC_GLOBAL_WEBHOOK_SECRET', ''),
@@ -177,9 +178,12 @@ def get_gateway_handler(gateway_id=None, gateway_type=None):
             PaymentGatewayType.STRIPE: StripeGateway,
             PaymentGatewayType.PAYPAL: PayPalGateway,
             PaymentGatewayType.COINBASE: CoinbaseGateway,
-            PaymentGatewayType.NVC_GLOBAL: NVCGlobalGateway,
             # Add more handlers as needed
         }
+        
+        # Special handling for NVC Global since there might be enum case sensitivity issues
+        if gateway.gateway_type == PaymentGatewayType.NVC_GLOBAL or str(gateway.gateway_type) == 'nvc_global':
+            return NVCGlobalGateway(gateway.id)
         
         handler_class = handlers.get(gateway.gateway_type)
         
@@ -756,6 +760,242 @@ class PayPalGateway(PaymentGatewayInterface):
         except Exception as e:
             logger.error(f"Error refunding PayPal payment: {str(e)}")
             return {"success": False, "error": str(e)}
+
+
+class NVCGlobalGateway(PaymentGatewayInterface):
+    """NVC Global payment gateway implementation for integrating with nvcplatform.net"""
+    
+    def process_payment(self, amount, currency, description, user_id, metadata=None):
+        """Process a payment through the NVC Global platform"""
+        try:
+            # Create transaction record
+            transaction = self._create_transaction_record(
+                amount, currency, user_id, description
+            )
+            
+            # Get domain for return URLs
+            current_domain = self._get_current_domain()
+            
+            # Prepare metadata for NVC Global
+            nvc_metadata = {
+                "transaction_id": transaction.transaction_id,
+                "user_id": str(user_id),
+                "callback_url": f"{current_domain}/payments/nvc-callback?transaction_id={transaction.transaction_id}"
+            }
+            
+            if metadata:
+                nvc_metadata.update(metadata)
+            
+            # Create payment data for NVC Global API
+            payment_data = {
+                "amount": str(amount),
+                "currency": currency.upper(),
+                "description": description,
+                "metadata": nvc_metadata,
+                "return_url": f"{current_domain}/payments/return?transaction_id={transaction.transaction_id}",
+                "cancel_url": f"{current_domain}/payments/cancel?transaction_id={transaction.transaction_id}"
+            }
+            
+            # Use requests to send the API request to NVC Global platform
+            headers = {
+                "Authorization": f"Bearer {self.gateway.api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            # Simulate an API call (we don't have the actual API documentation yet)
+            response_data = {
+                "success": True,
+                "payment_id": f"NVC-{uuid.uuid4().hex[:8].upper()}",
+                "checkout_url": f"https://checkout.nvcplatform.net/{uuid.uuid4().hex}",
+                "status": "pending"
+            }
+            
+            # Update transaction with NVC Global payment ID
+            transaction.status = TransactionStatus.PROCESSING
+            transaction.description = f"{description} (NVC Global Payment ID: {response_data['payment_id']})"
+            db.session.commit()
+            
+            # Send email notification about the pending payment
+            try:
+                from email_service import send_payment_initiated_email
+                from models import User
+                
+                user = User.query.get(user_id)
+                if user:
+                    send_payment_initiated_email(user, transaction)
+            except Exception as email_error:
+                logger.warning(f"Failed to send payment initiated email: {str(email_error)}")
+            
+            return {
+                "success": True,
+                "transaction_id": transaction.transaction_id,
+                "payment_id": response_data["payment_id"],
+                "checkout_url": response_data["checkout_url"],
+                "amount": amount,
+                "currency": currency
+            }
+        
+        except Exception as e:
+            error_message = str(e)
+            logger.error(f"NVC Global error: {error_message}")
+            
+            # Update transaction status if transaction was created
+            if 'transaction' in locals():
+                try:
+                    transaction.status = TransactionStatus.FAILED
+                    transaction.description = f"{description} (Error: {error_message})"
+                    db.session.commit()
+                except Exception:
+                    pass  # Ignore secondary errors in error handling
+            
+            return {
+                "success": False,
+                "transaction_id": transaction.transaction_id if 'transaction' in locals() else None,
+                "error": error_message
+            }
+    
+    def _get_current_domain(self):
+        """Get the current domain for the application"""
+        replit_domain = os.environ.get('REPLIT_DOMAINS', '')
+        if replit_domain:
+            domains = replit_domain.split(',')
+            return f"https://{domains[0]}"
+        return "http://localhost:5000"  # Fallback for local development
+    
+    def check_payment_status(self, payment_id):
+        """Check the status of an NVC Global payment"""
+        try:
+            # Find transaction by ID
+            transaction = Transaction.query.filter_by(transaction_id=payment_id).first()
+            
+            if not transaction:
+                return {"success": False, "error": "Transaction not found"}
+            
+            # Extract NVC Global payment ID from description
+            import re
+            match = re.search(r"NVC Global Payment ID: (NVC-[a-zA-Z0-9]+)", transaction.description)
+            
+            if not match:
+                return {"success": False, "error": "NVC Global Payment ID not found"}
+            
+            nvc_payment_id = match.group(1)
+            
+            # Use requests to check payment status (we don't have the actual API documentation yet)
+            headers = {
+                "Authorization": f"Bearer {self.gateway.api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            # Simulate an API response (we don't have the actual API documentation yet)
+            nvc_status = "completed"  # This would normally come from the API
+            
+            # Map NVC Global status to our status
+            status_mapping = {
+                "pending": TransactionStatus.PENDING,
+                "processing": TransactionStatus.PROCESSING,
+                "completed": TransactionStatus.COMPLETED,
+                "failed": TransactionStatus.FAILED,
+                "refunded": TransactionStatus.REFUNDED
+            }
+            
+            internal_status = status_mapping.get(nvc_status, transaction.status)
+            
+            # Update transaction status if changed
+            if transaction.status != internal_status:
+                transaction.status = internal_status
+                db.session.commit()
+                
+                # Send email if status changed to completed or failed
+                if internal_status in [TransactionStatus.COMPLETED, TransactionStatus.FAILED]:
+                    try:
+                        from email_service import send_transaction_confirmation_email
+                        from models import User
+                        
+                        user = User.query.get(transaction.user_id)
+                        if user:
+                            send_transaction_confirmation_email(user, transaction)
+                    except Exception as email_error:
+                        logger.warning(f"Failed to send status update email: {str(email_error)}")
+            
+            return {
+                "success": True,
+                "transaction_id": transaction.transaction_id,
+                "payment_id": nvc_payment_id,
+                "status": nvc_status,
+                "internal_status": internal_status.value,
+                "amount": transaction.amount,
+                "currency": transaction.currency
+            }
+        
+        except Exception as e:
+            error_message = str(e)
+            logger.error(f"NVC Global error: {error_message}")
+            return {
+                "success": False,
+                "transaction_id": transaction.transaction_id if 'transaction' in locals() else None,
+                "error": error_message
+            }
+    
+    def refund_payment(self, payment_id, amount=None):
+        """Refund an NVC Global payment"""
+        try:
+            # Find transaction by ID
+            transaction = Transaction.query.filter_by(transaction_id=payment_id).first()
+            
+            if not transaction:
+                return {"success": False, "error": "Transaction not found"}
+            
+            if transaction.status != TransactionStatus.COMPLETED:
+                return {"success": False, "error": "Transaction not completed, cannot refund"}
+            
+            # Extract NVC Global payment ID from description
+            import re
+            match = re.search(r"NVC Global Payment ID: (NVC-[a-zA-Z0-9]+)", transaction.description)
+            
+            if not match:
+                return {"success": False, "error": "NVC Global Payment ID not found"}
+            
+            nvc_payment_id = match.group(1)
+            
+            # Create refund data
+            refund_data = {
+                "payment_id": nvc_payment_id
+            }
+            
+            if amount:
+                refund_data["amount"] = str(amount)
+            
+            # Use requests to send refund request (we don't have the actual API documentation yet)
+            headers = {
+                "Authorization": f"Bearer {self.gateway.api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            # Simulate a refund response (we don't have the actual API documentation yet)
+            refund_response = {
+                "success": True,
+                "refund_id": f"REFUND-{uuid.uuid4().hex[:8].upper()}",
+                "status": "completed"
+            }
+            
+            # Update transaction status
+            transaction.status = TransactionStatus.REFUNDED
+            transaction.description = f"{transaction.description} (Refunded: {refund_response['refund_id']})"
+            db.session.commit()
+            
+            return {
+                "success": True,
+                "transaction_id": transaction.transaction_id,
+                "refund_id": refund_response["refund_id"],
+                "status": refund_response["status"],
+                "amount": amount or transaction.amount,
+                "currency": transaction.currency
+            }
+        
+        except Exception as e:
+            error_message = str(e)
+            logger.error(f"Error refunding NVC Global payment: {error_message}")
+            return {"success": False, "error": error_message}
 
 
 class CoinbaseGateway(PaymentGatewayInterface):

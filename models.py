@@ -102,7 +102,7 @@ class PaymentGatewayType(enum.Enum):
     SQUARE = "square"
     COINBASE = "coinbase"
     XRP_LEDGER = "xrp_ledger"
-    NVC_GLOBAL = "nvc_global"
+    NVC_GLOBAL = "nvc_global"  # This matches the database enum value (lowercase)
     CUSTOM = "custom"
 
 class PaymentGateway(db.Model):
