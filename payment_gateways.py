@@ -133,66 +133,62 @@ def init_payment_gateways():
             logger.info("PayPal payment gateway initialized")
         
         # Initialize NVC Global gateway
-        # First try using the enum value
-        nvc_global_gateway = None
-        try:
-            nvc_global_gateway = PaymentGateway.query.filter_by(gateway_type=PaymentGatewayType.NVC_GLOBAL).first()
-        except Exception as e:
-            logger.warning(f"Error querying with enum value: {str(e)}")
-            # Rollback the transaction to recover from the error
-            db.session.rollback()
+        # Directly get the NVC Global gateway by ID (we know the ID is 3 from our SQL query)
+        nvc_global_gateway = PaymentGateway.query.get(3)
+        
+        if not nvc_global_gateway:
+            # If the gateway somehow doesn't exist with ID 3, try using raw SQL
+            db.session.rollback()  # Make sure we're in a clean state
             
-            # Try a direct check using a raw SQL query
             try:
-                # Execute raw SQL to get NVC Global gateway
-                result = db.session.execute(text("SELECT id FROM payment_gateway WHERE gateway_type = 'nvc_global' LIMIT 1"))
+                # Execute raw SQL to find NVC Global gateway
+                result = db.session.execute(text("SELECT id FROM payment_gateway WHERE gateway_type::text = 'nvc_global' LIMIT 1"))
                 gateway_id = result.scalar()
                 
                 if gateway_id:
                     nvc_global_gateway = PaymentGateway.query.get(gateway_id)
+                else:
+                    # If it really doesn't exist, create it with raw SQL
+                    stmt = text("""
+                        INSERT INTO payment_gateway (
+                            name, gateway_type, api_endpoint, api_key, webhook_secret, 
+                            ethereum_address, is_active, created_at, updated_at
+                        )
+                        VALUES (
+                            'NVC Global', 'nvc_global', 'https://api.nvcplatform.net', 
+                            :api_key, :webhook_secret, :eth_address, true, now(), now()
+                        )
+                        RETURNING id
+                    """)
+                    
+                    result = db.session.execute(stmt, {
+                        'api_key': os.environ.get('NVC_GLOBAL_API_KEY', ''),
+                        'webhook_secret': os.environ.get('NVC_GLOBAL_WEBHOOK_SECRET', ''),
+                        'eth_address': os.environ.get('NVC_GLOBAL_ETH_ADDRESS', None)
+                    })
+                    
+                    # Get the newly created gateway
+                    gateway_id = result.fetchone()[0]
+                    nvc_global_gateway = PaymentGateway.query.get(gateway_id)
+                    
+                    logger.info("NVC Global payment gateway created")
             except Exception as sql_error:
-                logger.warning(f"Error executing raw SQL: {str(sql_error)}")
+                logger.warning(f"Error executing SQL for NVC Global gateway: {str(sql_error)}")
                 db.session.rollback()
         
-        if not nvc_global_gateway:
-            # Create NVC Global gateway
+        # Update NVC Global gateway keys if needed
+        if nvc_global_gateway and (
+            not nvc_global_gateway.api_key or 
+            nvc_global_gateway.api_key != os.environ.get('NVC_GLOBAL_API_KEY', '')
+        ):
             try:
-                nvc_global_gateway = PaymentGateway(
-                    name="NVC Global",
-                    gateway_type=PaymentGatewayType.NVC_GLOBAL,
-                    api_endpoint="https://api.nvcplatform.net",  # Default endpoint
-                    api_key=os.environ.get('NVC_GLOBAL_API_KEY', ''),
-                    webhook_secret=os.environ.get('NVC_GLOBAL_WEBHOOK_SECRET', ''),
-                    ethereum_address=os.environ.get('NVC_GLOBAL_ETH_ADDRESS', None),
-                    is_active=True
-                )
+                nvc_global_gateway.api_key = os.environ.get('NVC_GLOBAL_API_KEY', '')
+                nvc_global_gateway.webhook_secret = os.environ.get('NVC_GLOBAL_WEBHOOK_SECRET', '')
+                db.session.commit()
+                logger.info("NVC Global payment gateway API keys updated")
             except Exception as e:
-                logger.warning(f"Error creating with enum value: {str(e)}")
-                # Fall back to creating with direct SQL
-                stmt = text("""
-                    INSERT INTO payment_gateway (
-                        name, gateway_type, api_endpoint, api_key, webhook_secret, 
-                        ethereum_address, is_active, created_at, updated_at
-                    )
-                    VALUES (
-                        'NVC Global', 'nvc_global', 'https://api.nvcplatform.net', 
-                        :api_key, :webhook_secret, :eth_address, true, now(), now()
-                    )
-                    RETURNING id
-                """)
-                
-                result = db.session.execute(stmt, {
-                    'api_key': os.environ.get('NVC_GLOBAL_API_KEY', ''),
-                    'webhook_secret': os.environ.get('NVC_GLOBAL_WEBHOOK_SECRET', ''),
-                    'eth_address': os.environ.get('NVC_GLOBAL_ETH_ADDRESS', None)
-                })
-                
-                # Get the newly created gateway
-                gateway_id = result.fetchone()[0]
-                nvc_global_gateway = PaymentGateway.query.get(gateway_id)
-            db.session.add(nvc_global_gateway)
-            db.session.commit()
-            logger.info("NVC Global payment gateway initialized")
+                logger.warning(f"Error updating NVC Global gateway keys: {str(e)}")
+                db.session.rollback()
         
         return True
     
