@@ -474,6 +474,69 @@ def api_docs():
 def terms_of_service():
     """Terms of service route"""
     return render_template('terms_of_service.html')
+
+@main.route('/payments/return')
+def payment_return():
+    """Handle payment return from PayPal"""
+    transaction_id = request.args.get('transaction_id')
+    
+    if not transaction_id:
+        flash('Missing transaction ID', 'danger')
+        return redirect(url_for('web.main.dashboard'))
+    
+    # Get transaction
+    transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+    
+    if not transaction:
+        flash('Transaction not found', 'danger')
+        return redirect(url_for('web.main.dashboard'))
+    
+    # Get gateway
+    gateway = PaymentGateway.query.get(transaction.gateway_id)
+    
+    if not gateway or gateway.gateway_type != PaymentGatewayType.PAYPAL:
+        flash('Invalid payment gateway', 'danger')
+        return redirect(url_for('web.main.dashboard'))
+    
+    # Get gateway handler
+    gateway_handler = get_gateway_handler(gateway.id)
+    
+    # Check payment status
+    result = gateway_handler.check_payment_status(transaction_id)
+    
+    if result.get('success'):
+        if result.get('internal_status') == TransactionStatus.COMPLETED.value:
+            flash('Payment completed successfully', 'success')
+        else:
+            flash(f'Payment in progress: {result.get("status")}', 'info')
+    else:
+        flash(f'Error checking payment status: {result.get("error")}', 'warning')
+    
+    return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
+
+@main.route('/payments/cancel')
+def payment_cancel():
+    """Handle payment cancellation from PayPal"""
+    transaction_id = request.args.get('transaction_id')
+    
+    if not transaction_id:
+        flash('Missing transaction ID', 'danger')
+        return redirect(url_for('web.main.dashboard'))
+    
+    # Get transaction
+    transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+    
+    if not transaction:
+        flash('Transaction not found', 'danger')
+        return redirect(url_for('web.main.dashboard'))
+    
+    # Update transaction status to canceled
+    transaction.status = TransactionStatus.FAILED
+    transaction.description = f"{transaction.description} (Canceled by user)"
+    db.session.commit()
+    
+    flash('Payment was canceled', 'warning')
+    return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
     
 @main.route('/privacy_policy')
 def privacy_policy():

@@ -86,10 +86,18 @@ def check_gateway_status(gateway):
 # Set up Stripe with API key from environment
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 
+# Set up PayPal SDK
+import paypalrestsdk
+paypalrestsdk.configure({
+    "mode": "sandbox",  # Change to "live" for production
+    "client_id": os.environ.get('PAYPAL_CLIENT_ID'),
+    "client_secret": os.environ.get('PAYPAL_SECRET')
+})
+
 def init_payment_gateways():
     """Initialize payment gateways in the database if they don't exist"""
     try:
-        # Simply check if Stripe gateway exists using the ORM
+        # Initialize Stripe gateway
         stripe_gateway = PaymentGateway.query.filter_by(gateway_type=PaymentGatewayType.STRIPE).first()
         
         if not stripe_gateway:
@@ -107,7 +115,23 @@ def init_payment_gateways():
             db.session.commit()
             logger.info("Stripe payment gateway initialized")
         
-        # Initialize other gateways as needed...
+        # Initialize PayPal gateway
+        paypal_gateway = PaymentGateway.query.filter_by(gateway_type=PaymentGatewayType.PAYPAL).first()
+        
+        if not paypal_gateway:
+            # Create PayPal gateway
+            paypal_gateway = PaymentGateway(
+                name="PayPal",
+                gateway_type=PaymentGatewayType.PAYPAL,
+                api_endpoint="https://api-m.sandbox.paypal.com",  # Sandbox endpoint, change to https://api-m.paypal.com for production
+                api_key=os.environ.get('PAYPAL_CLIENT_ID', ''),
+                webhook_secret=os.environ.get('PAYPAL_SECRET', ''),
+                ethereum_address=None,
+                is_active=True
+            )
+            db.session.add(paypal_gateway)
+            db.session.commit()
+            logger.info("PayPal payment gateway initialized")
         
         return True
     
