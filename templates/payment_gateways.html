@@ -80,7 +80,7 @@
                 <h5 class="modal-title" id="addGatewayModalLabel"><i class="fas fa-plus-circle me-2"></i>Add Payment Gateway</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ url_for('new_payment_gateway') }}" method="POST">
+            <form action="{{ url_for('web.main.new_payment_gateway') }}" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="name" class="form-label">Gateway Name</label>
@@ -180,7 +180,7 @@
                 const form = document.getElementById('edit-gateway-form');
                 
                 // Set the form action URL
-                form.action = `/payment_gateway/${gatewayId}/edit`;
+                form.action = `/main/payment_gateway/${gatewayId}/edit`;
                 
                 // Get the gateway data from the table row
                 const row = this.closest('tr');
