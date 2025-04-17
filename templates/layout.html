@@ -101,7 +101,7 @@
                     {% endif %}
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/main/api_docs' %}active{% endif %}" href="/main/api_docs">
+                        <a class="nav-link {% if request.path == '/main/api_docs' %}active{% endif %}" href="{{ url_for('web.main.api_docs') }}">
                             <i class="fas fa-book me-1"></i> API Docs
                         </a>
                     </li>
@@ -121,7 +121,7 @@
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/main/login' %}active{% endif %}" href="/main/login">
+                        <a class="nav-link {% if request.path == '/main/login' %}active{% endif %}" href="{{ url_for('web.main.login') }}">
                             <i class="fas fa-sign-in-alt me-1"></i> Sign In
                         </a>
                     </li>
