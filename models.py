@@ -97,13 +97,31 @@ class FinancialInstitution(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class PaymentGatewayType(enum.Enum):
+    """Payment gateway types
+    
+    Note: XRP_LEDGER is currently not in the database enum, but included here
+    for future use. NVC_GLOBAL is in the database as 'nvc_global' (lowercase).
+    """
     STRIPE = "stripe"
     PAYPAL = "paypal"
     SQUARE = "square"
     COINBASE = "coinbase"
     XRP_LEDGER = "xrp_ledger"
-    NVC_GLOBAL = "nvc_global"  # This matches the database enum value (lowercase)
+    NVC_GLOBAL = "nvc_global"
     CUSTOM = "custom"
+    
+    @classmethod
+    def from_string(cls, value: str):
+        """Create enum from string, with extra handling for known special cases"""
+        try:
+            # Try direct conversion first
+            return cls(value)
+        except ValueError:
+            # Handle specific cases
+            if value == 'nvc_global':
+                return cls.NVC_GLOBAL
+            # Add other special cases here if needed in the future
+            raise
 
 class PaymentGateway(db.Model):
     id = db.Column(db.Integer, primary_key=True)
