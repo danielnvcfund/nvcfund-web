@@ -25,5 +25,5 @@ api_blueprint.register_blueprint(ha_api, url_prefix='/v1/ha')
 api_blueprint.register_blueprint(status_bp)
 
 # Register Web route blueprints
-web_blueprint.register_blueprint(ha_web)
-web_blueprint.register_blueprint(main)
+web_blueprint.register_blueprint(ha_web, url_prefix='/ha')
+web_blueprint.register_blueprint(main, url_prefix='/main')

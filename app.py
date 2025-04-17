@@ -71,15 +71,33 @@ def create_app():
         app.logger.error(f"Unhandled exception: {str(e)}", exc_info=True)
         return render_template('error.html', error=str(e)), 500
     
-    # Add a direct route to index for testing
+    # Add direct routes to handle common paths
     @app.route('/')
-    def index():
-        """Homepage route"""
+    def root():
+        """Root route - redirects to the index"""
         try:
-            # Use a simplified template to isolate the issue
-            return render_template('index_simple.html')
+            # Use the real index template
+            return render_template('index.html')
         except Exception as e:
             logger.error(f"Error rendering index: {str(e)}")
+            return f"Error: {str(e)}", 500
+    
+    @app.route('/main')
+    def main_index():
+        """Main index route"""
+        try:
+            return render_template('index.html')
+        except Exception as e:
+            logger.error(f"Error rendering main index: {str(e)}")
+            return f"Error: {str(e)}", 500
+            
+    @app.route('/main/index')
+    def main_explicit_index():
+        """Explicit main index route"""
+        try:
+            return render_template('index.html')
+        except Exception as e:
+            logger.error(f"Error rendering explicit main index: {str(e)}")
             return f"Error: {str(e)}", 500
 
     @app.route('/routes')
