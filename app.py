@@ -61,11 +61,26 @@ def create_app():
     jwt.init_app(app)
     login_manager.init_app(app)
 
+    # Set debug mode to True
+    app.config['DEBUG'] = True
+    
+    # Global error handler
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        """Global exception handler to log errors"""
+        app.logger.error(f"Unhandled exception: {str(e)}", exc_info=True)
+        return render_template('error.html', error=str(e)), 500
+    
     # Add a direct route to index for testing
     @app.route('/')
     def index():
         """Homepage route"""
-        return render_template('index.html')
+        try:
+            # Use a simplified template to isolate the issue
+            return render_template('index_simple.html')
+        except Exception as e:
+            logger.error(f"Error rendering index: {str(e)}")
+            return f"Error: {str(e)}", 500
 
     @app.route('/routes')
     def list_routes():
