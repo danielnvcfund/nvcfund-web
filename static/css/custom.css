@@ -115,18 +115,42 @@
 .form-select {
     background-color: var(--bs-body-bg);
     color: var(--bs-body-color);
-    border: 1px solid var(--bs-primary);
+    border: 2px solid var(--bs-primary);
+    font-weight: 500;
+    padding: 0.5rem 2.25rem 0.5rem 0.75rem;
 }
 
 .form-select:focus {
     border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.4);
 }
 
+/* Enhanced styling for select options */
 .form-select option {
     background-color: var(--bs-dark);
-    color: var(--bs-light);
+    color: white;
     padding: 10px;
+    font-weight: 500;
+}
+
+/* Add a higher contrast indicator for the dropdown arrow */
+.form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+}
+
+/* Additional specific styling for payment form dropdowns */
+#payment-form .form-select {
+    background-color: rgba(var(--bs-primary-rgb), 0.15);
+    font-size: 1.05rem;
+    border-width: 2px;
+    border-color: var(--bs-primary);
+}
+
+#payment-form .form-select:focus {
+    background-color: rgba(var(--bs-primary-rgb), 0.25);
 }
 
 /* Card element styles for Stripe */
