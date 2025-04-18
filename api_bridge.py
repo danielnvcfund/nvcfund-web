@@ -90,18 +90,9 @@ def sync_accounts():
     
     # Verify signature if provided
     if 'signature' in data:
-        # Get the NVC Global gateway configuration for the shared secret
-        nvc_gateway = get_gateway_by_type(PaymentGatewayType.NVC_GLOBAL)
-        if not nvc_gateway:
-            return jsonify({"success": False, "error": "NVC Global gateway not configured"}), 500
-        
-        shared_secret = nvc_gateway.api_secret or os.environ.get('NVC_GLOBAL_SECRET_KEY')
-        if not shared_secret:
-            return jsonify({"success": False, "error": "Missing shared secret"}), 500
-        
-        # Extract signature and verify
+        # Extract signature and verify with our constant shared secret
         signature = data.pop('signature')
-        if not verify_nvcplatform_signature(data, signature, shared_secret):
+        if not verify_nvcplatform_signature(data, signature, SHARED_SECRET):
             return jsonify({"success": False, "error": "Invalid signature"}), 401
     
     # Process account data
@@ -234,18 +225,9 @@ def sync_transactions():
     
     # Verify signature if provided
     if 'signature' in data:
-        # Get the NVC Global gateway configuration for the shared secret
-        nvc_gateway = get_gateway_by_type(PaymentGatewayType.NVC_GLOBAL)
-        if not nvc_gateway:
-            return jsonify({"success": False, "error": "NVC Global gateway not configured"}), 500
-        
-        shared_secret = nvc_gateway.api_secret or os.environ.get('NVC_GLOBAL_SECRET_KEY')
-        if not shared_secret:
-            return jsonify({"success": False, "error": "Missing shared secret"}), 500
-        
-        # Extract signature and verify
+        # Extract signature and verify with our constant shared secret
         signature = data.pop('signature')
-        if not verify_nvcplatform_signature(data, signature, shared_secret):
+        if not verify_nvcplatform_signature(data, signature, SHARED_SECRET):
             return jsonify({"success": False, "error": "Invalid signature"}), 401
     
     # Process transaction data
@@ -310,7 +292,7 @@ def sync_transactions():
                     description=f"Imported: {txn['description']}",
                     status=transaction_status,
                     transaction_type=txn['transaction_type'].upper(),
-                    gateway_id=nvc_gateway.id if nvc_gateway else None,
+                    gateway_id=get_gateway_by_type(PaymentGatewayType.NVC_GLOBAL).id if get_gateway_by_type(PaymentGatewayType.NVC_GLOBAL) else None,
                     created_at=datetime.fromisoformat(txn['created_at'].replace('Z', '+00:00'))
                 )
                 
@@ -368,18 +350,9 @@ def process_payment():
     
     # Verify signature if provided
     if 'signature' in data:
-        # Get the NVC Global gateway configuration for the shared secret
-        nvc_gateway = get_gateway_by_type(PaymentGatewayType.NVC_GLOBAL)
-        if not nvc_gateway:
-            return jsonify({"success": False, "error": "NVC Global gateway not configured"}), 500
-        
-        shared_secret = nvc_gateway.api_secret or os.environ.get('NVC_GLOBAL_SECRET_KEY')
-        if not shared_secret:
-            return jsonify({"success": False, "error": "Missing shared secret"}), 500
-        
-        # Extract signature and verify
+        # Extract signature and verify with our constant shared secret
         signature = data.pop('signature')
-        if not verify_nvcplatform_signature(data, signature, shared_secret):
+        if not verify_nvcplatform_signature(data, signature, SHARED_SECRET):
             return jsonify({"success": False, "error": "Invalid signature"}), 401
     
     # Find user by external customer ID
@@ -556,9 +529,8 @@ def payment_callback():
     
     # Forward callback to PHP application
     try:
-        # Get NVC Global gateway for signature generation
-        nvc_gateway = get_gateway_by_type(PaymentGatewayType.NVC_GLOBAL)
-        shared_secret = nvc_gateway.api_secret if nvc_gateway else os.environ.get('NVC_GLOBAL_SECRET_KEY')
+        # Use our constant shared secret for signature generation
+        shared_secret = SHARED_SECRET
         
         # Prepare callback data
         callback_data = {
