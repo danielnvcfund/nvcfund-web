@@ -57,6 +57,14 @@ def create_app():
 
     # Initialize extensions with app
     db.init_app(app)
+    
+    # Configure CSRF protection to exclude API paths
+    app.config['WTF_CSRF_CHECK_DEFAULT'] = True
+    app.config['WTF_CSRF_ENABLED'] = True
+    # Disable CSRF for API routes
+    app.config['WTF_CSRF_EXEMPT_LIST'] = ['/api/php-bridge/*']
+    
+    # Initialize extensions
     csrf.init_app(app)
     jwt.init_app(app)
     login_manager.init_app(app)

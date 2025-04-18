@@ -24,6 +24,16 @@ logger = logging.getLogger(__name__)
 # Create blueprint for PHP integration API
 php_bridge = Blueprint('php_bridge', __name__)
 
+# Exempt API routes from CSRF protection
+from flask_wtf.csrf import CSRFProtect
+csrf = CSRFProtect()
+
+@php_bridge.before_request
+def disable_csrf():
+    # Disable CSRF for all routes in this blueprint
+    # This is safe because we're using API key and signature verification instead
+    csrf.exempt(php_bridge)
+
 # Constants
 API_TIMEOUT = 30  # seconds
 SHARED_SECRET = "php_bridge_shared_secret"  # Shared secret for signature verification
