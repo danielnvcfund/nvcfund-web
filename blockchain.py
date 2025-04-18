@@ -481,7 +481,7 @@ def initialize_settlement_contract():
             
             if not admin_private_key:
                 logger.error("Admin private key not found. Cannot deploy settlement contract.")
-                return
+                return None, None
             
             admin_account = Account.from_key(admin_private_key)
             
@@ -534,13 +534,16 @@ def initialize_settlement_contract():
             db.session.commit()
             
             logger.info(f"Settlement contract deployed at address: {contract_address}")
+            return contract_address, tx_hash.hex()
         except Exception as e:
             logger.error(f"Error deploying settlement contract: {str(e)}")
+            return None, None
     else:
         logger.info(f"Settlement contract already exists at address: {contract.address}")
+        return contract.address, None
 
 
-def initialize_multisig_wallet():
+def initialize_multisig_wallet(owner_addresses=None, required_confirmations=None):
     """Deploy the multi-signature wallet contract if it doesn't exist"""
     db = get_db()
     BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
@@ -553,14 +556,17 @@ def initialize_multisig_wallet():
             
             if not admin_private_key:
                 logger.error("Admin private key not found. Cannot deploy MultiSigWallet contract.")
-                return
+                return None, None
             
             admin_account = Account.from_key(admin_private_key)
             
             # For MultiSigWallet, we need initial owners (default to just admin for now)
             # In a production system, this would likely include multiple administrators or partners
-            owner_addresses = [admin_account.address]
-            required_confirmations = 1  # Single confirmation for now, would be higher in production
+            if not owner_addresses:
+                owner_addresses = [admin_account.address]
+                
+            if not required_confirmations:
+                required_confirmations = 1  # Single confirmation for now, would be higher in production
             
             # Build contract
             multisig_contract = w3.eth.contract(
@@ -606,10 +612,13 @@ def initialize_multisig_wallet():
             db.session.commit()
             
             logger.info(f"MultiSigWallet contract deployed at address: {contract_address}")
+            return contract_address, tx_hash.hex()
         except Exception as e:
             logger.error(f"Error deploying MultiSigWallet contract: {str(e)}")
+            return None, None
     else:
         logger.info(f"MultiSigWallet contract already exists at address: {contract.address}")
+        return contract.address, None
 
 
 def initialize_nvc_token():
@@ -625,7 +634,7 @@ def initialize_nvc_token():
             
             if not admin_private_key:
                 logger.error("Admin private key not found. Cannot deploy NVCToken contract.")
-                return
+                return None, None
             
             admin_account = Account.from_key(admin_private_key)
             
@@ -676,10 +685,13 @@ def initialize_nvc_token():
             db.session.commit()
             
             logger.info(f"NVCToken contract deployed at address: {contract_address}")
+            return contract_address, tx_hash.hex()
         except Exception as e:
             logger.error(f"Error deploying NVCToken contract: {str(e)}")
+            return None, None
     else:
         logger.info(f"NVCToken contract already exists at address: {contract.address}")
+        return contract.address, None
 
 
 def get_settlement_contract():
