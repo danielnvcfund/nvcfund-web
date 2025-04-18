@@ -22,7 +22,7 @@ api_blueprint = Blueprint('api', __name__, url_prefix='/api')
 web_blueprint = Blueprint('web', __name__)
 
 # Register API route blueprints
-api_blueprint.register_blueprint(blockchain_api, url_prefix='/v1/blockchain')
+api_blueprint.register_blueprint(blockchain_api, url_prefix='/blockchain')
 api_blueprint.register_blueprint(xrp_api, url_prefix='/v1/xrp')
 api_blueprint.register_blueprint(ha_api, url_prefix='/v1/ha')
 api_blueprint.register_blueprint(status_bp)
