@@ -64,6 +64,11 @@ main = Blueprint('main', __name__)
 def nvc_token_economics():
     """NVC Token economics documentation"""
     return redirect('/static/docs/NVCTokenomics.html')
+
+@main.route('/nvctoken/pdf')
+def nvc_token_economics_pdf():
+    """NVC Token economics documentation in PDF format"""
+    return redirect('/static/docs/NVCTokenomics.pdf')
 @main.route('/')
 def index():
     """Homepage route"""
