@@ -1,0 +1,346 @@
+{% extends "layout.html" %}
+
+{% block title %}API Bridge Documentation{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">PHP Banking Software Integration (API Bridge)</h1>
+            <div class="alert alert-info">
+                <strong>Important:</strong> This documentation explains how to integrate nvcplatform.net PHP banking software with the NVC Global Payment Gateway.
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Authentication</h3>
+                </div>
+                <div class="card-body">
+                    <p>All API requests require an API key to be sent in the headers:</p>
+                    <pre><code>X-API-KEY: your_api_key_here</code></pre>
+                    <p>To get an API key, contact your NVC Global administrator.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Account Synchronization</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Endpoint: <code>/api/php-bridge/account/sync</code></h5>
+                    <p>Method: <span class="badge bg-primary">POST</span></p>
+                    <p>This endpoint allows you to synchronize user accounts from your PHP banking software.</p>
+                    
+                    <h6 class="mt-3">Request Format:</h6>
+                    <pre><code>{
+  "accounts": [
+    {
+      "username": "user123",
+      "email": "user@example.com",
+      "account_number": "ACC12345678",
+      "customer_id": "CID9876543",
+      "account_type": "savings",
+      "balance": 1000.00,
+      "currency": "USD",
+      "status": "active"
+    },
+    ...
+  ],
+  "signature": "hmac_signature"  // Optional
+}</code></pre>
+                    
+                    <h6 class="mt-3">Response Format:</h6>
+                    <pre><code>{
+  "success": true,
+  "processed": 10,
+  "created": 5,
+  "updated": 5,
+  "errors": [
+    {
+      "account": "user123",
+      "error": "Error message"
+    }
+  ]
+}</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Transaction Synchronization</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Endpoint: <code>/api/php-bridge/transaction/sync</code></h5>
+                    <p>Method: <span class="badge bg-primary">POST</span></p>
+                    <p>This endpoint allows you to synchronize transactions from your PHP banking software.</p>
+                    
+                    <h6 class="mt-3">Request Format:</h6>
+                    <pre><code>{
+  "transactions": [
+    {
+      "transaction_id": "TXN123456789",
+      "customer_id": "CID9876543",
+      "account_number": "ACC12345678",
+      "amount": 100.00,
+      "currency": "USD",
+      "description": "Payment for services",
+      "status": "completed",
+      "transaction_type": "payment",
+      "created_at": "2025-04-18T08:30:00Z"
+    },
+    ...
+  ],
+  "signature": "hmac_signature"  // Optional
+}</code></pre>
+                    
+                    <h6 class="mt-3">Response Format:</h6>
+                    <pre><code>{
+  "success": true,
+  "processed": 10,
+  "created": 7,
+  "updated": 3,
+  "errors": [
+    {
+      "transaction": "TXN123456789",
+      "error": "Error message"
+    }
+  ]
+}</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Payment Processing</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Endpoint: <code>/api/php-bridge/payment/process</code></h5>
+                    <p>Method: <span class="badge bg-primary">POST</span></p>
+                    <p>This endpoint allows you to process a payment through the NVC Global Payment Gateway.</p>
+                    
+                    <h6 class="mt-3">Request Format:</h6>
+                    <pre><code>{
+  "customer_id": "CID9876543",
+  "amount": 100.00,
+  "currency": "USD",
+  "description": "Payment for services",
+  "recipient": "recipient@example.com",
+  "callback_url": "https://phpbanking.example.com/callback",
+  "metadata": {
+    "invoice_id": "INV12345",
+    "product_id": "PROD678"
+  },
+  "signature": "hmac_signature"  // Optional
+}</code></pre>
+                    
+                    <h6 class="mt-3">Response Format:</h6>
+                    <pre><code>{
+  "success": true,
+  "message": "Payment processed successfully",
+  "transaction_id": "NVC-12345-67890",
+  "status": "pending",
+  "gateway_reference": "gw-ref-12345"
+}</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Payment Status Check</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Endpoint: <code>/api/php-bridge/payment/status/{transaction_id}</code></h5>
+                    <p>Method: <span class="badge bg-success">GET</span></p>
+                    <p>This endpoint allows you to check the status of a payment processed through the NVC Global Payment Gateway.</p>
+                    
+                    <h6 class="mt-3">Response Format:</h6>
+                    <pre><code>{
+  "success": true,
+  "transaction_id": "NVC-12345-67890",
+  "external_id": "TXN123456789",  // Your PHP system's transaction ID if provided
+  "amount": 100.00,
+  "currency": "USD",
+  "status": "completed",  // pending, processing, completed, failed, refunded
+  "description": "Payment for services",
+  "created_at": "2025-04-18T08:30:00Z",
+  "updated_at": "2025-04-18T08:35:00Z",
+  "metadata": {
+    "invoice_id": "INV12345",
+    "product_id": "PROD678"
+  },
+  "user": {
+    "id": 123,
+    "username": "user123",
+    "email": "user@example.com",
+    "external_customer_id": "CID9876543",
+    "external_account_id": "ACC12345678"
+  },
+  "gateway_status": "PAID",  // Gateway-specific status if available
+  "gateway_data": {
+    // Gateway-specific data
+  }
+}</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Payment Callbacks</h3>
+                </div>
+                <div class="card-body">
+                    <p>When a payment status changes, NVC Global will send a callback to the <code>callback_url</code> you provided in the payment process request.</p>
+                    
+                    <h6 class="mt-3">Callback Format:</h6>
+                    <pre><code>{
+  "transaction_id": "NVC-12345-67890",
+  "external_id": "TXN123456789",
+  "status": "completed",
+  "amount": 100.00,
+  "currency": "USD",
+  "description": "Payment for services",
+  "created_at": "2025-04-18T08:30:00Z",
+  "updated_at": "2025-04-18T08:35:00Z",
+  "metadata": {
+    "invoice_id": "INV12345",
+    "product_id": "PROD678"
+  },
+  "signature": "hmac_signature"  // If shared secret is configured
+}</code></pre>
+                    
+                    <h6 class="mt-3">Callback Response:</h6>
+                    <p>Your callback URL should return a 200 OK response to acknowledge receipt of the callback.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Signature Verification</h3>
+                </div>
+                <div class="card-body">
+                    <p>For secure communication, you can verify the signature of callbacks and we can verify the signature of your requests.</p>
+                    
+                    <h6 class="mt-3">PHP Code Example for Signature Generation:</h6>
+                    <pre><code>&lt;?php
+// Sort the data by key
+$data = [
+  'transaction_id' => 'NVC-12345-67890',
+  'amount' => 100.00,
+  'currency' => 'USD',
+  // ... other fields
+];
+ksort($data);
+
+// Create a string from the sorted data
+$data_string = '';
+foreach ($data as $key => $value) {
+  $data_string .= "{$key}={$value}&";
+}
+$data_string = rtrim($data_string, '&');
+
+// Generate signature
+$shared_secret = 'your_shared_secret';
+$signature = hash_hmac('sha256', $data_string, $shared_secret);
+
+// Add signature to the data
+$data['signature'] = $signature;
+
+// Send request
+$ch = curl_init('https://nvcglobal.com/api/php-bridge/payment/process');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+  'Content-Type: application/json',
+  'X-API-KEY: your_api_key_here'
+]);
+$response = curl_exec($ch);
+curl_close($ch);
+
+$result = json_decode($response, true);
+// Process result
+?&gt;</code></pre>
+                    
+                    <h6 class="mt-3">PHP Code Example for Signature Verification:</h6>
+                    <pre><code>&lt;?php
+// Extract signature from callback data
+$callback_data = json_decode(file_get_contents('php://input'), true);
+$signature = $callback_data['signature'];
+unset($callback_data['signature']);
+
+// Sort the data by key
+ksort($callback_data);
+
+// Create a string from the sorted data
+$data_string = '';
+foreach ($callback_data as $key => $value) {
+  $data_string .= "{$key}={$value}&";
+}
+$data_string = rtrim($data_string, '&');
+
+// Verify signature
+$shared_secret = 'your_shared_secret';
+$expected_signature = hash_hmac('sha256', $data_string, $shared_secret);
+
+if (hash_equals($expected_signature, $signature)) {
+  // Signature is valid, process the callback
+  http_response_code(200);
+  echo json_encode(['success' => true]);
+} else {
+  // Invalid signature
+  http_response_code(401);
+  echo json_encode(['success' => false, 'error' => 'Invalid signature']);
+}
+?&gt;</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Integration Testing</h3>
+                </div>
+                <div class="card-body">
+                    <p>Use our test environment to verify your integration:</p>
+                    <ol>
+                        <li>First, sync a test account using the account sync endpoint.</li>
+                        <li>Then, try processing a payment with that account.</li>
+                        <li>Check the payment status using the status check endpoint.</li>
+                        <li>Verify that you receive callbacks at your callback URL.</li>
+                    </ol>
+                    <p>Contact your NVC Global representative for test API keys and shared secrets.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

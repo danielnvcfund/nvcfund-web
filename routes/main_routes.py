@@ -6,8 +6,9 @@ import os
 import json
 import uuid
 import logging
+import subprocess
 from datetime import datetime, timedelta
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, abort, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, abort, current_app, send_file
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, current_user, login_required
@@ -64,6 +65,17 @@ main = Blueprint('main', __name__)
 def nvc_token_economics():
     """NVC Token economics preview page"""
     return render_template('nvctoken_preview.html')
+    
+@main.route('/php-bridge-docs')
+@login_required
+def php_bridge_docs():
+    """PHP API Bridge Documentation"""
+    # Only admin users can access this page
+    if session.get('role') != UserRole.ADMIN.value:
+        flash('You do not have permission to access this page', 'danger')
+        return redirect(url_for('main.dashboard'))
+    
+    return render_template('api_bridge_docs.html')
 
 @main.route('/nvctoken/pdf')
 def nvc_token_economics_pdf():
