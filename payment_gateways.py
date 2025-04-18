@@ -257,6 +257,47 @@ def init_payment_gateways():
         logger.error(f"Error initializing payment gateways: {str(e)}")
         return False
 
+def get_gateway_by_type(gateway_type):
+    """Get a payment gateway by type
+    
+    Args:
+        gateway_type (PaymentGatewayType or str): The type of gateway to retrieve
+        
+    Returns:
+        PaymentGateway: The payment gateway object or None if not found
+    """
+    try:
+        # Convert string to enum if needed
+        if isinstance(gateway_type, str):
+            try:
+                gateway_type = PaymentGatewayType(gateway_type)
+            except ValueError:
+                # Handle special case for NVC Global
+                if gateway_type.lower() == 'nvc_global':
+                    gateway_type = PaymentGatewayType.NVC_GLOBAL
+        
+        # Special case for NVC_GLOBAL gateway
+        if gateway_type == PaymentGatewayType.NVC_GLOBAL:
+            # Try to find by ID 3 first (known ID)
+            nvc_gateway = PaymentGateway.query.get(3)
+            if nvc_gateway and nvc_gateway.is_active:
+                return nvc_gateway
+                
+            # Fallback: Find by name (case-insensitive)
+            result = db.session.execute(
+                text("SELECT id FROM payment_gateway WHERE LOWER(name) = 'nvc global' AND is_active = true LIMIT 1")
+            )
+            gateway_id = result.scalar()
+            if gateway_id:
+                return PaymentGateway.query.get(gateway_id)
+        
+        # General case: find by type
+        return PaymentGateway.query.filter_by(gateway_type=gateway_type, is_active=True).first()
+        
+    except Exception as e:
+        logger.error(f"Error getting gateway by type: {str(e)}")
+        return None
+
 def get_gateway_handler(gateway_id=None, gateway_type=None):
     """Get a payment gateway handler based on ID or type"""
     try:

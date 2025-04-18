@@ -31,6 +31,14 @@ class User(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # PHP banking integration fields
+    external_customer_id = db.Column(db.String(64), index=True)
+    external_account_id = db.Column(db.String(64), index=True)  
+    external_account_type = db.Column(db.String(32))
+    external_account_currency = db.Column(db.String(3))
+    external_account_status = db.Column(db.String(16))
+    last_sync = db.Column(db.DateTime)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -72,6 +80,9 @@ class Transaction(db.Model):
     eth_transaction_hash = db.Column(db.String(128))
     institution_id = db.Column(db.Integer, db.ForeignKey('financial_institution.id'))
     gateway_id = db.Column(db.Integer, db.ForeignKey('payment_gateway.id'))
+    # PHP banking system integration
+    external_id = db.Column(db.String(64), index=True) # To store external transaction IDs
+    tx_metadata_json = db.Column(db.Text) # To store additional JSON data
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
