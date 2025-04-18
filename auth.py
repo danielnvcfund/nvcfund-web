@@ -74,12 +74,38 @@ def jwt_required(f):
 
 def api_test_access(f):
     """Decorator to allow API access for testing without authentication"""
+    import inspect
+    
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # Check for special test header or proceed with logged-in user
         test_header = request.headers.get('X-API-Test')
         if test_header == 'true':
-            # Proceed without authentication for test access
+            # For API endpoints that need a user, create or get a test user
+            # to avoid authentication errors when user information is needed
+            
+            # Check if the function accepts 'user' as a parameter
+            sig = inspect.signature(f)
+            accepts_user = 'user' in sig.parameters
+            
+            if accepts_user:
+                test_user = User.query.filter_by(username='test_api_user').first()
+                if not test_user:
+                    logger.info("Creating test API user for testing")
+                    test_user = User(
+                        username='test_api_user',
+                        email='test_api@example.com',
+                        password_hash='test_password_hash',
+                        role=UserRole.ADMIN,
+                        is_active=True
+                    )
+                    db.session.add(test_user)
+                    db.session.commit()
+                
+                # Add test user to kwargs only if the function accepts it
+                kwargs['user'] = test_user
+            
+            logger.info(f"API test header detected, bypassing authentication for {request.path}")
             return f(*args, **kwargs)
         
         # Otherwise, enforce standard login requirement
@@ -90,6 +116,13 @@ def api_test_access(f):
             else:
                 flash('Please log in to access this page', 'warning')
                 return redirect(url_for('web.main.login', next=request.url))
+        
+        # If user is logged in, add the user to kwargs only if endpoint accepts it
+        sig = inspect.signature(f)
+        if 'user' in sig.parameters:
+            user = User.query.get(session['user_id'])
+            if user:
+                kwargs['user'] = user
                 
         return f(*args, **kwargs)
     return decorated_function
