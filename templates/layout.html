@@ -60,8 +60,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/nvctoken' %}active{% endif %}" href="/nvctoken">
-                            <i class="fas fa-coin me-1"></i> NVC Token
+                        <a class="nav-link {% if request.path == '/main/nvctoken' %}active{% endif %}" href="/main/nvctoken">
+                            <i class="fas fa-coins me-1"></i> NVC Token
                         </a>
                     </li>
                     {% if session.get('role') == 'admin' %}
