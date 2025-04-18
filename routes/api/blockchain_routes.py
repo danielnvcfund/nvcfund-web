@@ -45,8 +45,11 @@ def deploy_all_contracts(user=None):
     """Deploy all smart contracts in the correct sequence"""
     global deployment_status
     
+    # Import the UserRole enum
+    from models import UserRole
+    
     # Check if user has admin role
-    if user and user.role != 'ADMIN':
+    if user and user.role != UserRole.ADMIN:
         return jsonify({
             'success': False,
             'message': 'Admin privileges required for contract deployment'
@@ -256,8 +259,11 @@ def blockchain_status():
 @api_test_access
 def deploy_specific_contract(user=None):
     """Deploy a specific smart contract"""
+    # Import the UserRole enum
+    from models import UserRole
+    
     # Check if user has admin role
-    if user and user.role != 'ADMIN':
+    if user and user.role != UserRole.ADMIN:
         return jsonify({
             'success': False,
             'message': 'Admin privileges required for contract deployment'
