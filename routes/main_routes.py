@@ -471,11 +471,70 @@ def blockchain_status():
     # Get recent blockchain transactions
     recent_transactions = BlockchainTransaction.query.order_by(BlockchainTransaction.created_at.desc()).limit(5).all()
     
+    # Network info
+    network_id = node_info.get('network_id', 'Unknown')
+    network_name = 'Sepolia Testnet' if network_id == '11155111' else f'Network ID {network_id}'
+    
+    # Connection status details
+    if node_info.get('connected', False):
+        connection_status = 'Connected'
+        connection_status_color = 'success'
+        connection_status_icon = 'fa-check-circle'
+        current_block = node_info.get('latest_block', 'Unknown')
+        fallback_notice = None
+    else:
+        connection_status = 'Disconnected'
+        connection_status_color = 'danger'
+        connection_status_icon = 'fa-times-circle'
+        current_block = 'N/A'
+        fallback_notice = {
+            'title': 'Connection Issue',
+            'message': 'Cannot connect to Ethereum network. Please check your connection or contact support.',
+            'type': 'warning'
+        }
+    
+    # Etherscan URL for the current network
+    etherscan_url = 'https://sepolia.etherscan.io' if network_id == '11155111' else 'https://etherscan.io'
+    
+    # User roles and addresses
+    is_admin = session.get('role') == UserRole.ADMIN.value
+    is_owner = False  # This would be set if the user is an owner of the MultiSig wallet
+    user_eth_address = "0x0"  # This would come from the user's profile
+    user_token_balance = 0  # This would be calculated from the blockchain
+    
+    # Prepare template variables
     return render_template(
         'blockchain_status.html',
-        node_info=node_info,
-        contract_info=contract_info,
-        recent_transactions=recent_transactions
+        # Contract instances
+        settlement_contract=settlement_contract,
+        multisig_contract=multisig_wallet,
+        token_contract=nvc_token,
+        # Node and network info
+        connected=node_info.get('connected', False),
+        connection_status=connection_status,
+        connection_status_color=connection_status_color,
+        connection_status_icon=connection_status_icon,
+        network_name=network_name,
+        current_block=current_block,
+        etherscan_url=etherscan_url,
+        # User info
+        user_eth_address=user_eth_address,
+        user_token_balance=user_token_balance,
+        is_admin=is_admin,
+        is_owner=is_owner,
+        # Notifications
+        fallback_notice=fallback_notice,
+        # Transactions
+        blockchain_transactions=recent_transactions,
+        # Contract details
+        token_name="NVC Banking Token",
+        token_symbol="NVCT",
+        token_total_supply=1000000,
+        settlement_fee_percentage=1.0,
+        settlement_contract_balance=0.0,
+        multisig_required_confirmations=2,
+        multisig_contract_balance=0.0,
+        multisig_owners=[]
     )
 
 @main.route('/payment/new', methods=['GET', 'POST'])
