@@ -39,7 +39,7 @@ deployment_status = {
     "nvc_token": {"status": "not_started", "address": None, "error": None}
 }
 
-@blockchain_api.route('/deploy/all', methods=['POST'])
+@blockchain_api.route('/deployment/start', methods=['POST'])
 @admin_required
 def deploy_all_contracts():
     """Deploy all smart contracts in the correct sequence"""
@@ -47,9 +47,9 @@ def deploy_all_contracts():
     
     # Reset deployment status
     deployment_status = {
-        "settlement_contract": {"status": "pending", "address": None, "error": None},
-        "multisig_wallet": {"status": "pending", "address": None, "error": None},
-        "nvc_token": {"status": "pending", "address": None, "error": None}
+        "settlement_contract": {"status": "PENDING", "address": None, "error": None},
+        "multisig_wallet": {"status": "PENDING", "address": None, "error": None},
+        "nvc_token": {"status": "PENDING", "address": None, "error": None}
     }
     
     # Start a background thread to handle deployments
@@ -60,7 +60,7 @@ def deploy_all_contracts():
     return jsonify({
         'success': True,
         'message': 'Deployment started in background',
-        'status_endpoint': '/api/blockchain/deploy/status'
+        'status_endpoint': '/api/blockchain/deployment/status'
     })
 
 
@@ -147,7 +147,7 @@ def deploy_contracts_background():
                 deployment_status[contract_name]["error"] = str(e)
 
 
-@blockchain_api.route('/deploy/status', methods=['GET'])
+@blockchain_api.route('/deployment/status', methods=['GET'])
 @admin_required
 def get_deployment_status():
     """Get the status of the contract deployments"""
@@ -161,22 +161,46 @@ def get_deployment_status():
     multisig = SmartContract.query.filter_by(name="MultiSigWallet").first()
     token = SmartContract.query.filter_by(name="NVCToken").first()
     
-    if settlement and deployment_status["settlement_contract"]["status"] != "completed":
-        deployment_status["settlement_contract"]["status"] = "completed"
-        deployment_status["settlement_contract"]["address"] = settlement.address
-        
-    if multisig and deployment_status["multisig_wallet"]["status"] != "completed":
-        deployment_status["multisig_wallet"]["status"] = "completed"
-        deployment_status["multisig_wallet"]["address"] = multisig.address
-        
-    if token and deployment_status["nvc_token"]["status"] != "completed":
-        deployment_status["nvc_token"]["status"] = "completed"
-        deployment_status["nvc_token"]["address"] = token.address
+    # Create response dictionary
+    response = {}
     
-    return jsonify({
-        'success': True,
-        'status': deployment_status
-    })
+    # Add settlement contract status
+    if settlement:
+        response["settlement_contract"] = {
+            "status": "COMPLETED",
+            "address": settlement.address
+        }
+    else:
+        response["settlement_contract"] = {
+            "status": deployment_status["settlement_contract"]["status"],
+            "address": None
+        }
+        
+    # Add multisig wallet status
+    if multisig:
+        response["multisig_wallet"] = {
+            "status": "COMPLETED",
+            "address": multisig.address
+        }
+    else:
+        response["multisig_wallet"] = {
+            "status": deployment_status["multisig_wallet"]["status"],
+            "address": None
+        }
+        
+    # Add NVC token status
+    if token:
+        response["nvc_token"] = {
+            "status": "COMPLETED",
+            "address": token.address
+        }
+    else:
+        response["nvc_token"] = {
+            "status": deployment_status["nvc_token"]["status"],
+            "address": None
+        }
+    
+    return jsonify(response)
 
 @blockchain_api.route('/status', methods=['GET'])
 @login_required
@@ -221,97 +245,66 @@ def blockchain_status():
         }), 500
 
 
-@blockchain_api.route('/deploy/settlement', methods=['POST'])
+@blockchain_api.route('/deployment/contract', methods=['POST'])
 @admin_required
-def deploy_settlement_contract():
-    """Deploy the settlement contract"""
+def deploy_specific_contract():
+    """Deploy a specific smart contract"""
     try:
-        contract_address, tx_hash = initialize_settlement_contract()
+        data = request.get_json()
+        contract_type = data.get('contract_type')
         
-        if contract_address:
+        if not contract_type:
             return jsonify({
-                'success': True,
-                'address': contract_address,
-                'tx_hash': tx_hash
-            })
+                'success': False,
+                'message': 'Missing contract_type parameter'
+            }), 400
+            
+        if contract_type == 'settlement_contract':
+            contract_address, tx_hash = initialize_settlement_contract()
+            contract_name = "Settlement Contract"
+        elif contract_type == 'multisig_wallet':
+            # Get a list of admin users to be owners
+            from models import User, UserRole
+            admins = User.query.filter_by(role=UserRole.ADMIN).all()
+            
+            # Use admin ethereum addresses if they exist, otherwise create new ones
+            owner_addresses = []
+            for admin in admins:
+                blockchain_account = BlockchainAccount.query.filter_by(user_id=admin.id).first()
+                if blockchain_account:
+                    owner_addresses.append(blockchain_account.eth_address)
+            
+            # Add at least 3 addresses if not enough admins
+            while len(owner_addresses) < 3:
+                new_address, _ = generate_ethereum_account()
+                owner_addresses.append(new_address)
+            
+            # Deploy with 2/3 required confirmations
+            contract_address, tx_hash = initialize_multisig_wallet(owner_addresses, 2)
+            contract_name = "MultiSig Wallet"
+        elif contract_type == 'nvc_token':
+            contract_address, tx_hash = initialize_nvc_token()
+            contract_name = "NVC Token"
         else:
             return jsonify({
                 'success': False,
-                'message': 'Failed to deploy Settlement Contract'
-            }), 500
-    except Exception as e:
-        logger.error(f"Error deploying settlement contract: {str(e)}")
-        return jsonify({
-            'success': False,
-            'message': f"Error: {str(e)}"
-        }), 500
-
-
-@blockchain_api.route('/deploy/multisig', methods=['POST'])
-@admin_required
-def deploy_multisig_wallet():
-    """Deploy the MultiSig wallet contract"""
-    try:
-        # Get a list of admin users to be owners
-        from models import User, UserRole
-        admins = User.query.filter_by(role=UserRole.ADMIN).all()
-        
-        # Use admin ethereum addresses if they exist, otherwise create new ones
-        owner_addresses = []
-        for admin in admins:
-            blockchain_account = BlockchainAccount.query.filter_by(user_id=admin.id).first()
-            if blockchain_account:
-                owner_addresses.append(blockchain_account.eth_address)
-        
-        # Add at least 3 addresses if not enough admins
-        while len(owner_addresses) < 3:
-            new_address, _ = generate_ethereum_account()
-            owner_addresses.append(new_address)
-        
-        # Deploy with 2/3 required confirmations
-        contract_address, tx_hash = initialize_multisig_wallet(owner_addresses, 2)
+                'message': f'Unknown contract type: {contract_type}'
+            }), 400
         
         if contract_address:
             return jsonify({
                 'success': True,
                 'address': contract_address,
                 'tx_hash': tx_hash,
-                'owners': owner_addresses,
-                'required_confirmations': 2
+                'message': f'{contract_name} deployment initiated'
             })
         else:
             return jsonify({
                 'success': False,
-                'message': 'Failed to deploy MultiSig Wallet'
+                'message': f'Failed to deploy {contract_name}'
             }), 500
     except Exception as e:
-        logger.error(f"Error deploying multisig wallet: {str(e)}")
-        return jsonify({
-            'success': False,
-            'message': f"Error: {str(e)}"
-        }), 500
-
-
-@blockchain_api.route('/deploy/token', methods=['POST'])
-@admin_required
-def deploy_nvc_token():
-    """Deploy the NVC token contract"""
-    try:
-        contract_address, tx_hash = initialize_nvc_token()
-        
-        if contract_address:
-            return jsonify({
-                'success': True,
-                'address': contract_address,
-                'tx_hash': tx_hash
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'message': 'Failed to deploy NVC Token'
-            }), 500
-    except Exception as e:
-        logger.error(f"Error deploying NVC token: {str(e)}")
+        logger.error(f"Error deploying contract: {str(e)}")
         return jsonify({
             'success': False,
             'message': f"Error: {str(e)}"

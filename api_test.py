@@ -5,186 +5,240 @@ This script demonstrates the usage of the blockchain API endpoints
 for deploying and monitoring smart contracts.
 """
 
-import requests
-import json
+import sys
 import time
+import json
+import logging
 import argparse
+import requests
+from requests.auth import HTTPBasicAuth
 
-BASE_URL = "http://localhost:5000"
+# Configure logging
+logging.basicConfig(level=logging.INFO, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger('api_test')
+
+# API configuration
+API_HOST = "http://localhost:5000"
+DEFAULT_USERNAME = "admin"
+DEFAULT_PASSWORD = "Admin123!"
+
+# Authentication session
 SESSION = requests.Session()
 
 def login(username, password):
     """Login to the NVC Banking Platform"""
-    login_url = f"{BASE_URL}/main/login"
-    login_data = {
-        "username": username,
-        "password": password
-    }
-    
-    # First get the login page to obtain any CSRF tokens
-    response = SESSION.get(login_url)
-    
-    # Now submit the login form
-    response = SESSION.post(login_url, data=login_data, allow_redirects=True)
-    
-    if response.status_code == 200 and "Dashboard" in response.text:
-        print("✅ Login successful")
-        return True
-    else:
-        print("❌ Login failed")
+    try:
+        response = SESSION.post(
+            f"{API_HOST}/login",
+            data={"username": username, "password": password},
+            allow_redirects=False
+        )
+        
+        if response.status_code == 302:  # Successful login redirects
+            print("✅ Login successful\n")
+            return True
+        else:
+            print(f"❌ Login failed: {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"❌ Error during login: {str(e)}")
         return False
 
 def check_blockchain_status():
     """Check the blockchain connection status"""
-    status_url = f"{BASE_URL}/api/v1/blockchain/status"
-    response = SESSION.get(status_url)
-    
-    if response.status_code == 200:
-        data = response.json()
-        print("\n🔍 Blockchain Status:")
-        print(f"Connected: {data.get('connected', False)}")
-        print(f"Network: {data.get('network', 'Unknown')}")
-        print(f"Current Block: {data.get('current_block', 'Unknown')}")
-        return data
-    else:
-        print(f"❌ Failed to get blockchain status. Status code: {response.status_code}")
-        return None
+    try:
+        response = SESSION.get(f"{API_HOST}/api/blockchain/status")
+        
+        if response.status_code == 200:
+            status = response.json()
+            print("\n🔗 Blockchain Connection Status:")
+            print(f"Connected: {'✅' if status.get('connected', False) else '❌'}")
+            print(f"Network: {status.get('network', 'Unknown')}")
+            print(f"Node Version: {status.get('node_version', 'Unknown')}")
+            return status.get('connected', False)
+        else:
+            print(f"❌ Failed to check blockchain status: {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"❌ Error checking blockchain status: {str(e)}")
+        return False
 
 def get_deployment_status():
     """Get the status of contract deployments"""
-    status_url = f"{BASE_URL}/api/v1/blockchain/deploy/status"
-    response = SESSION.get(status_url)
-    
-    if response.status_code == 200:
-        data = response.json()
-        print("\n📊 Contract Deployment Status:")
+    try:
+        response = SESSION.get(f"{API_HOST}/api/blockchain/deployment/status")
         
-        if 'status' in data:
-            for contract, info in data['status'].items():
-                status = info.get('status', 'unknown')
-                address = info.get('address', 'N/A')
-                
-                status_icon = "✅" if status == "completed" else "⏳" if status in ["pending", "in_progress"] else "❌"
-                print(f"{status_icon} {contract}: {status.upper()} - Address: {address}")
-        return data
-    else:
-        print(f"❌ Failed to get deployment status. Status code: {response.status_code}")
+        if response.status_code == 200:
+            status = response.json()
+            print("\n📊 Contract Deployment Status:")
+            for contract, info in status.items():
+                status_emoji = "✅" if info.get('status') == "COMPLETED" else "❌"
+                print(f"{status_emoji} {contract}: {info.get('status')} - Address: {info.get('address')}")
+            return status
+        else:
+            print(f"❌ Failed to get deployment status: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"❌ Error getting deployment status: {str(e)}")
         return None
 
 def start_deployment():
     """Start the deployment of all contracts"""
-    deploy_url = f"{BASE_URL}/api/v1/blockchain/deploy/all"
-    response = SESSION.post(deploy_url)
-    
-    if response.status_code == 200:
-        data = response.json()
-        print("\n🚀 Started contract deployment")
-        print(f"Message: {data.get('message', 'No message')}")
-        return data
-    else:
-        print(f"❌ Failed to start deployment. Status code: {response.status_code}")
-        return None
+    try:
+        response = SESSION.post(f"{API_HOST}/api/blockchain/deployment/start")
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get('success', False):
+                print("\n🚀 Deployment process started successfully!")
+                print(f"Message: {result.get('message')}")
+                return True
+            else:
+                print(f"\n❌ Deployment start failed: {result.get('message')}")
+                return False
+        else:
+            print(f"\n❌ Failed to start deployment: {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"\n❌ Error starting deployment: {str(e)}")
+        return False
 
 def deploy_contract(contract_type):
     """Deploy a specific contract type"""
-    if contract_type not in ["settlement", "multisig", "token"]:
-        print("❌ Invalid contract type. Must be 'settlement', 'multisig', or 'token'")
-        return None
-    
-    deploy_url = f"{BASE_URL}/api/v1/blockchain/deploy/{contract_type}"
-    response = SESSION.post(deploy_url)
-    
-    if response.status_code == 200:
-        data = response.json()
-        print(f"\n🚀 Started {contract_type} contract deployment")
-        if data.get('success', False):
-            print(f"Contract Address: {data.get('address', 'Unknown')}")
-            print(f"Transaction Hash: {data.get('tx_hash', 'Unknown')}")
+    try:
+        response = SESSION.post(
+            f"{API_HOST}/api/blockchain/deployment/contract",
+            json={"contract_type": contract_type}
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get('success', False):
+                print(f"\n🚀 {contract_type} deployment initiated!")
+                print(f"Message: {result.get('message')}")
+                return True
+            else:
+                print(f"\n❌ {contract_type} deployment failed: {result.get('message')}")
+                return False
         else:
-            print(f"Message: {data.get('message', 'Unknown error')}")
-        return data
-    else:
-        print(f"❌ Failed to deploy {contract_type} contract. Status code: {response.status_code}")
-        return None
+            print(f"\n❌ Failed to deploy {contract_type}: {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"\n❌ Error deploying {contract_type}: {str(e)}")
+        return False
 
 def monitor_deployment(interval=5, max_checks=12):
     """Monitor the deployment progress until completion or timeout"""
-    print("\n⏳ Monitoring deployment progress...")
+    print(f"\n⏳ Monitoring deployment progress (checking every {interval} seconds, max {max_checks} times)...")
+    
     checks = 0
     all_completed = False
     
     while checks < max_checks and not all_completed:
-        data = get_deployment_status()
-        
-        if data and 'status' in data:
-            statuses = [info.get('status') for info in data['status'].values()]
-            all_completed = all(status == "completed" for status in statuses)
-            
-            if all_completed:
-                print("\n✅ All contracts deployed successfully!")
-                break
-                
-            if "failed" in statuses:
-                print("\n❌ One or more contract deployments failed.")
-                break
-                
-        print(f"Checking again in {interval} seconds...")
         time.sleep(interval)
+        
+        status = get_deployment_status()
+        if not status:
+            print("❌ Failed to get status update")
+            continue
+            
+        # Check if all contracts are deployed
+        all_completed = all(
+            info.get('status') == "COMPLETED" 
+            for info in status.values()
+        )
+        
         checks += 1
         
-    if checks >= max_checks and not all_completed:
-        print("\n⚠️ Monitoring timed out. Deployments may still be in progress.")
+        if all_completed:
+            print("\n✅ All contracts successfully deployed!")
+            return True
+            
+    if not all_completed:
+        print("\n⚠️ Deployment monitoring timed out")
+        print("The deployment may still be in progress. Please check status endpoint later.")
+    
+    return all_completed
+
+def check_token_balance(address):
+    """Check NVC token balance for an address"""
+    try:
+        response = SESSION.get(
+            f"{API_HOST}/api/blockchain/token/balance",
+            params={"address": address}
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            print(f"\n💰 NVC Token Balance for {address}:")
+            print(f"Balance: {result.get('balance')} NVCT")
+            return result.get('balance')
+        else:
+            print(f"\n❌ Failed to check token balance: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"\n❌ Error checking token balance: {str(e)}")
+        return None
+
+def check_settlement_fee():
+    """Check the current settlement contract fee percentage"""
+    try:
+        response = SESSION.get(f"{API_HOST}/api/blockchain/settlement/fee")
+        
+        if response.status_code == 200:
+            result = response.json()
+            print(f"\n💸 Settlement Contract Fee Information:")
+            print(f"Fee Percentage: {result.get('fee_percentage')}%")
+            print(f"Fee Collector: {result.get('fee_collector')}")
+            return result
+        else:
+            print(f"\n❌ Failed to check settlement fee: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"\n❌ Error checking settlement fee: {str(e)}")
+        return None
 
 def main():
-    parser = argparse.ArgumentParser(description="NVC Banking Platform Blockchain API Test Client")
-    parser.add_argument('--username', default="admin", help="Username for login")
-    parser.add_argument('--password', default="Admin123!", help="Password for login")
-    
-    subparsers = parser.add_subparsers(dest='command', help='Command to execute')
-    
-    subparsers.add_parser('status', help='Check blockchain status')
-    subparsers.add_parser('deployment_status', help='Check deployment status')
-    
-    deploy_parser = subparsers.add_parser('deploy', help='Deploy contracts')
-    deploy_parser.add_argument('--type', choices=['all', 'settlement', 'multisig', 'token'], 
-                               default='all', help='Contract type to deploy')
-    
-    monitor_parser = subparsers.add_parser('monitor', help='Monitor deployment progress')
-    monitor_parser.add_argument('--interval', type=int, default=5, 
-                               help='Check interval in seconds')
-    monitor_parser.add_argument('--max-checks', type=int, default=12,
-                               help='Maximum number of status checks before timeout')
+    parser = argparse.ArgumentParser(description='Test NVC Banking Platform API')
+    parser.add_argument('action', nargs='?', default='all',
+                        choices=['status', 'deployment_status', 'start_deployment', 
+                                 'deploy_settlement', 'deploy_multisig', 'deploy_token',
+                                 'monitor', 'all'],
+                        help='Action to perform')
+    parser.add_argument('--username', default=DEFAULT_USERNAME, help='Login username')
+    parser.add_argument('--password', default=DEFAULT_PASSWORD, help='Login password')
     
     args = parser.parse_args()
     
     # Login first
     if not login(args.username, args.password):
-        return
+        sys.exit(1)
     
-    # Execute the requested command
-    if args.command == 'status':
+    # Execute requested action
+    if args.action == 'status':
         check_blockchain_status()
-    elif args.command == 'deployment_status':
+    elif args.action == 'deployment_status':
         get_deployment_status()
-    elif args.command == 'deploy':
-        if args.type == 'all':
-            start_deployment()
-        else:
-            deploy_contract(args.type)
-    elif args.command == 'monitor':
-        monitor_deployment(args.interval, args.max_checks)
-    else:
-        # Default action if no command specified
-        print("\n📋 Blockchain API Test Sequence:")
-        check_blockchain_status()
-        get_deployment_status()
-        
-        print("\nDo you want to start contract deployment? (y/n): ", end="")
-        choice = input().strip().lower()
-        
-        if choice == 'y':
-            start_deployment()
-            monitor_deployment()
+    elif args.action == 'start_deployment':
+        start_deployment()
+    elif args.action == 'deploy_settlement':
+        deploy_contract('settlement_contract')
+    elif args.action == 'deploy_multisig':
+        deploy_contract('multisig_wallet')
+    elif args.action == 'deploy_token':
+        deploy_contract('nvc_token')
+    elif args.action == 'monitor':
+        monitor_deployment()
+    elif args.action == 'all':
+        # Run the full test sequence
+        if check_blockchain_status():
+            print("\n=== Starting Full Deployment Test ===")
+            if start_deployment():
+                monitor_deployment()
+            
+            # Check final status
+            get_deployment_status()
 
 if __name__ == "__main__":
     main()
