@@ -638,8 +638,9 @@ def initialize_nvc_token():
             
             admin_account = Account.from_key(admin_private_key)
             
-            # Initial supply of 1,000,000 tokens (with 18 decimals)
-            initial_supply = 1000000
+            # Initial supply of 10,000,000,000,000 tokens (10 trillion - with 18 decimals)
+            # This matches the NVCTokenomics document specification
+            initial_supply = 10_000_000_000_000
             
             # Build contract
             token_contract = w3.eth.contract(
