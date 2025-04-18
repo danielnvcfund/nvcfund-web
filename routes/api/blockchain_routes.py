@@ -38,47 +38,50 @@ blockchain_api = Blueprint('blockchain_api', __name__)
 def get_blockchain_status(user=None):
     """Get the current blockchain connection status"""
     try:
+        # Attempt to initialize Web3
         web3 = init_web3()
-        if web3 and web3.isConnected():
-            # Get blockchain details
-            try:
-                network_id = web3.net.version
-                node_info = web3.clientVersion
-                latest_block = web3.eth.block_number
-                # Calculate block time
-                block_time = None
-                if latest_block > 0:
+        
+        # Try to access blockchain data to verify connection
+        try:
+            network_id = web3.net.version
+            node_info = web3.clientVersion
+            latest_block = web3.eth.block_number
+            
+            # Successfully connected - calculate block time
+            block_time = None
+            if latest_block > 0:
+                try:
                     current_block = web3.eth.get_block(latest_block)
                     previous_block = web3.eth.get_block(latest_block - 1)
                     block_time = current_block.timestamp - previous_block.timestamp
-                
-                return jsonify({
-                    'status': 'ok',
-                    'message': 'Blockchain connection established',
-                    'details': {
-                        'network_id': network_id,
-                        'node_info': node_info,
-                        'latest_block': latest_block,
-                        'block_time': block_time,
-                    },
-                    'lastChecked': datetime.utcnow().isoformat()
-                })
-            except Exception as e:
-                # Connected but can't get details
-                logger.warning(f"Connected to blockchain but encountered an error: {str(e)}")
-                return jsonify({
-                    'status': 'warning',
-                    'message': f'Connected to blockchain but encountered an error: {str(e)}',
-                    'lastChecked': datetime.utcnow().isoformat()
-                })
-        else:
-            # Not connected
+                except Exception:
+                    # Couldn't get block details but still connected
+                    pass
+            
+            # Return success response with blockchain details
             return jsonify({
-                'status': 'error',
-                'message': 'Unable to connect to blockchain',
+                'status': 'ok',
+                'message': 'Blockchain connection established',
+                'details': {
+                    'network_id': network_id,
+                    'node_info': node_info,
+                    'latest_block': latest_block,
+                    'block_time': block_time,
+                },
                 'lastChecked': datetime.utcnow().isoformat()
             })
+        
+        except Exception as e:
+            # Connected but can't get all details
+            logger.warning(f"Connected to blockchain but encountered an error: {str(e)}")
+            return jsonify({
+                'status': 'warning',
+                'message': f'Connected to blockchain but encountered an error: {str(e)}',
+                'lastChecked': datetime.utcnow().isoformat()
+            })
+            
     except Exception as e:
+        # Failed to connect to blockchain
         logger.error(f"Error checking blockchain status: {str(e)}")
         return jsonify({
             'status': 'error',
