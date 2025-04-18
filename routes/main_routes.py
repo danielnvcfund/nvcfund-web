@@ -515,7 +515,7 @@ def new_payment():
                 )
             else:
                 # Generic success
-                return redirect(url_for('main.transaction_details', transaction_id=result['transaction_id']))
+                return redirect(url_for('web.main.transaction_details', transaction_id=result['transaction_id']))
         else:
             flash(f"Payment failed: {result.get('error', 'Unknown error')}", 'danger')
             return render_template('payment_form.html', form=form, user=user)
