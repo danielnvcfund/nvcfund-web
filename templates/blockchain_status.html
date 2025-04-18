@@ -312,6 +312,10 @@
                                 <!-- Test address, don't link it -->
                                 <span class="text-break">{{ token_contract.address }}</span>
                                 <small class="text-muted">(Demo contract address - not on blockchain)</small>
+                            {% elif token_contract.address == '0xA4Bc40DD1f6d56d5EF6EE6D5c8FE6C2fE10CaA4c' %}
+                                <!-- Use mainnet Etherscan for this specific address -->
+                                <a href="https://etherscan.io/address/{{ token_contract.address }}" target="_blank" class="text-break">{{ token_contract.address }}</a>
+                                <small class="text-muted">(Ethereum Mainnet)</small>
                             {% else %}
                                 <a href="{{ etherscan_url }}/address/{{ token_contract.address }}" target="_blank" class="text-break">{{ token_contract.address }}</a>
                             {% endif %}
