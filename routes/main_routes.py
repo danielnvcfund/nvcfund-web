@@ -442,9 +442,27 @@ def blockchain_status():
     
     # Get smart contract info
     try:
+        # Add detailed logging for debugging
+        logger.info("Fetching smart contract instances for UI display")
+        
+        # Get contract instances and log their status
         settlement_contract = get_settlement_contract()
+        logger.info(f"Settlement contract retrieved: {settlement_contract is not None}")
+        if settlement_contract:
+            logger.info(f"Settlement contract address: {settlement_contract.address}")
+        
         multisig_wallet = get_multisig_wallet()
+        logger.info(f"MultiSig contract retrieved: {multisig_wallet is not None}")
+        if multisig_wallet:
+            logger.info(f"MultiSig contract address: {multisig_wallet.address}")
+        
         nvc_token = get_nvc_token()
+        logger.info(f"NVC token contract retrieved: {nvc_token is not None}")
+        if nvc_token:
+            logger.info(f"NVC token contract address: {nvc_token.address}")
+        
+        # Create direct references to contract objects to pass to template
+        # Instead of nested dict, we'll use the actual contract instances
         
         contract_info = {
             'settlement': {
@@ -502,13 +520,61 @@ def blockchain_status():
     user_eth_address = "0x0"  # This would come from the user's profile
     user_token_balance = 0  # This would be calculated from the blockchain
     
+    # Create template-compatible contract objects (non-Web3 objects)
+    class ContractObject:
+        def __init__(self, address, is_deployed=True):
+            self.address = address
+            self.is_deployed = is_deployed
+    
+    # Create objects in the format the template expects
+    settlement_contract_obj = None
+    multisig_contract_obj = None
+    token_contract_obj = None
+    
+    if settlement_contract:
+        settlement_contract_obj = ContractObject(settlement_contract.address)
+        logger.info(f"Created settlement contract object with address: {settlement_contract_obj.address}")
+    
+    if multisig_wallet:
+        multisig_contract_obj = ContractObject(multisig_wallet.address)
+        logger.info(f"Created multisig contract object with address: {multisig_contract_obj.address}")
+    
+    if nvc_token:
+        token_contract_obj = ContractObject(nvc_token.address)
+        logger.info(f"Created token contract object with address: {token_contract_obj.address}")
+    
+    # Check database directly for contracts as a fallback
+    if not settlement_contract_obj or not multisig_contract_obj or not token_contract_obj:
+        logger.info("Using fallback method to find contracts in database")
+        db = get_db()
+        BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
+        
+        # Get contracts directly from database if Web3 objects failed
+        if not settlement_contract_obj:
+            db_contract = SmartContract.query.filter_by(name="SettlementContract").first()
+            if db_contract:
+                settlement_contract_obj = ContractObject(db_contract.address)
+                logger.info(f"Created settlement contract object from DB with address: {settlement_contract_obj.address}")
+        
+        if not multisig_contract_obj:
+            db_contract = SmartContract.query.filter_by(name="MultiSigWallet").first()
+            if db_contract:
+                multisig_contract_obj = ContractObject(db_contract.address)
+                logger.info(f"Created multisig contract object from DB with address: {multisig_contract_obj.address}")
+        
+        if not token_contract_obj:
+            db_contract = SmartContract.query.filter_by(name="NVCToken").first()
+            if db_contract:
+                token_contract_obj = ContractObject(db_contract.address)
+                logger.info(f"Created token contract object from DB with address: {token_contract_obj.address}")
+    
     # Prepare template variables
     return render_template(
         'blockchain_status.html',
-        # Contract instances
-        settlement_contract=settlement_contract,
-        multisig_contract=multisig_wallet,
-        token_contract=nvc_token,
+        # Contract instances - properly formatted for template
+        settlement_contract=settlement_contract_obj,
+        multisig_contract=multisig_contract_obj,
+        token_contract=token_contract_obj,
         # Node and network info
         connected=node_info.get('connected', False),
         connection_status=connection_status,
