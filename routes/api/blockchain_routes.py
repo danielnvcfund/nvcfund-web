@@ -5,6 +5,7 @@ This module handles REST API endpoints for blockchain functionality
 
 import logging
 import threading
+from datetime import datetime
 from flask import Blueprint, jsonify, request
 from auth import login_required, admin_required, api_test_access
 from blockchain import (
@@ -123,7 +124,7 @@ def deploy_all_contracts(user=None):
     return jsonify({
         'success': True,
         'message': 'Deployment started in background',
-        'status_endpoint': '/api/v1/blockchain/deployment/status'
+        'status_endpoint': '/api/blockchain/deployment/status'
     })
 
 
@@ -270,47 +271,7 @@ def get_deployment_status():
     
     return jsonify(response)
 
-@blockchain_api.route('/status', methods=['GET'])
-@api_test_access
-def blockchain_status():
-    """Get the status of the blockchain connection"""
-    try:
-        web3 = init_web3()
-        
-        if web3 and web3.is_connected():
-            # Get current block
-            current_block = web3.eth.block_number
-            
-            # Get network name
-            chain_id = web3.eth.chain_id
-            network_map = {
-                1: "Ethereum Mainnet",
-                3: "Ropsten Testnet",
-                4: "Rinkeby Testnet",
-                5: "Goerli Testnet",
-                42: "Kovan Testnet",
-                11155111: "Sepolia Testnet"
-            }
-            network_name = network_map.get(chain_id, f"Unknown Network (Chain ID: {chain_id})")
-            
-            return jsonify({
-                'success': True,
-                'connected': True,
-                'current_block': current_block,
-                'network': network_name
-            })
-        else:
-            return jsonify({
-                'success': True,
-                'connected': False,
-                'message': 'Failed to connect to Ethereum node'
-            })
-    except Exception as e:
-        logger.error(f"Error checking blockchain status: {str(e)}")
-        return jsonify({
-            'success': False,
-            'message': f"Error: {str(e)}"
-        }), 500
+# (Removed duplicate blockchain status endpoint)
 
 
 @blockchain_api.route('/deployment/contract', methods=['POST'])

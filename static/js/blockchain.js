@@ -133,7 +133,7 @@ function deploySettlementContract() {
 
     showAlert('Deploying Settlement Contract... This may take a minute.', 'info');
     
-    fetch('/api/v1/blockchain/deployment/contract', {
+    fetch('/api/blockchain/deployment/contract', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -282,7 +282,7 @@ function deployMultiSigWallet() {
     
     showAlert('Deploying MultiSig Wallet... This may take a minute.', 'info');
     
-    fetch('/api/v1/blockchain/deployment/contract', {
+    fetch('/api/blockchain/deployment/contract', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
