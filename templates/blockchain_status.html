@@ -422,9 +422,9 @@
                                                 <span class="text-break" title="{{ transfer.transaction_hash }}">{{ transfer.transaction_hash }}</span>
                                             {% else %}
                                                 <a href="{{ etherscan_url }}/tx/{{ transfer.transaction_hash }}" target="_blank" title="{{ transfer.transaction_hash }}">
-                                            {% endif %}
                                                 {{ transfer.transaction_hash }}
-                                            </a>
+                                                </a>
+                                            {% endif %}
                                         </td>
                                         <td class="text-truncate" style="max-width: 100px;" title="{{ transfer.from_address }}">
                                             {{ transfer.from_address }}
@@ -478,9 +478,14 @@
                     {% for tx in blockchain_transactions %}
                     <tr>
                         <td class="text-truncate" style="max-width: 100px;">
-                            <a href="{{ etherscan_url }}/tx/{{ tx.eth_tx_hash }}" target="_blank" title="{{ tx.eth_tx_hash }}">
+                            {% if tx.eth_tx_hash.startswith('0x123456') or tx.eth_tx_hash.startswith('0x2345') or tx.eth_tx_hash.startswith('0x3456') %}
+                                <!-- Test transaction hash, don't link it -->
+                                <span class="text-break" title="{{ tx.eth_tx_hash }}">{{ tx.eth_tx_hash }}</span>
+                            {% else %}
+                                <a href="{{ etherscan_url }}/tx/{{ tx.eth_tx_hash }}" target="_blank" title="{{ tx.eth_tx_hash }}">
                                 {{ tx.eth_tx_hash }}
-                            </a>
+                                </a>
+                            {% endif %}
                         </td>
                         <td class="text-truncate" style="max-width: 100px;" title="{{ tx.from_address }}">
                             {{ tx.from_address }}
@@ -490,11 +495,17 @@
                         </td>
                         <td class="text-truncate" style="max-width: 100px;" title="{{ tx.contract_address }}">
                             {% if tx.contract_address %}
-                            <a href="{{ etherscan_url }}/address/{{ tx.contract_address }}" target="_blank">
-                                {{ tx.contract_address[:10] }}...
-                            </a>
+                                {% if tx.contract_address.startswith('0x123456') or tx.contract_address.startswith('0x2345') or tx.contract_address.startswith('0x3456') %}
+                                    <!-- Test contract address, don't link it -->
+                                    <span title="{{ tx.contract_address }}">{{ tx.contract_address[:10] }}...</span>
+                                    <small class="text-muted">(Demo)</small>
+                                {% else %}
+                                    <a href="{{ etherscan_url }}/address/{{ tx.contract_address }}" target="_blank">
+                                        {{ tx.contract_address[:10] }}...
+                                    </a>
+                                {% endif %}
                             {% else %}
-                            -
+                                -
                             {% endif %}
                         </td>
                         <td>{{ tx.amount }} ETH</td>
