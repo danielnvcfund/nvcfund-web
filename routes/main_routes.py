@@ -440,6 +440,17 @@ def blockchain_status():
             'gas_price': 'Unknown'
         }
     
+    # Import required models and blockchain functions outside try block
+    from blockchain import (
+        get_db, get_models, 
+        get_settlement_contract, get_multisig_wallet, get_nvc_token
+    )
+    db = get_db()
+    BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
+    
+    # Get recent blockchain transactions
+    recent_transactions = BlockchainTransaction.query.order_by(BlockchainTransaction.created_at.desc()).limit(5).all()
+    
     # Get smart contract info
     try:
         # Add detailed logging for debugging
@@ -479,15 +490,13 @@ def blockchain_status():
             }
         }
     except Exception as e:
+        logger.error(f"Error getting contract info: {str(e)}")
         contract_info = {
             'error': str(e),
             'settlement': {'deployed': False, 'address': 'Error'},
             'multisig': {'deployed': False, 'address': 'Error'},
             'token': {'deployed': False, 'address': 'Error'}
         }
-    
-    # Get recent blockchain transactions
-    recent_transactions = BlockchainTransaction.query.order_by(BlockchainTransaction.created_at.desc()).limit(5).all()
     
     # Network info
     network_id = node_info.get('network_id', 'Unknown')
