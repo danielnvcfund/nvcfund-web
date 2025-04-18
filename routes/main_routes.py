@@ -204,7 +204,7 @@ def register():
             return render_template('login.html', register=True, form=form)
         
         flash('Registration successful! You can now log in.', 'success')
-        return redirect(url_for('main.login'))
+        return redirect(url_for('web.main.login'))
     
     # If there were form validation errors or this is a GET request
     if form.errors and request.method == 'POST':
