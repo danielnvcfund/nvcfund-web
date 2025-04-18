@@ -110,16 +110,31 @@ function initializeActionButtons() {
  * Refresh blockchain connection status
  */
 function refreshBlockchainStatus() {
+    showAlert('Refreshing blockchain status...', 'info');
+    
     fetch('/api/blockchain/status')
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'ok') {
-                window.location.reload();
-            } else {
-                showAlert('Error refreshing blockchain status: ' + data.message, 'danger');
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.text();  // Get response as text first
+        })
+        .then(text => {
+            console.log("Raw response:", text);  // Log the raw response
+            try {
+                const data = JSON.parse(text);  // Then parse it as JSON
+                if (data.status === 'ok') {
+                    window.location.reload();
+                } else {
+                    showAlert('Error refreshing blockchain status: ' + data.message, 'danger');
+                }
+            } catch (e) {
+                console.error("JSON parse error:", e);
+                showAlert('Error parsing response: ' + e.message + '<br>Raw response: ' + text.substring(0, 100), 'danger');
             }
         })
         .catch(error => {
+            console.error("Fetch error:", error);
             showAlert('Error refreshing blockchain status: ' + error.message, 'danger');
         });
 }
@@ -563,11 +578,11 @@ function showAlert(message, type) {
     `;
     alertContainer.appendChild(alertDiv);
     
-    // Auto-dismiss after 5 seconds
+    // Auto-dismiss after 30 seconds (increased for better error visibility)
     setTimeout(() => {
         const bsAlert = new bootstrap.Alert(alertDiv);
         bsAlert.close();
-    }, 5000);
+    }, 30000);
 }
 
 function showModal(title, content) {
