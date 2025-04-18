@@ -604,7 +604,7 @@ def blockchain_status():
         # Contract details
         token_name="NVC Banking Token",
         token_symbol="NVCT",
-        token_total_supply=1000000,
+        token_total_supply=10_000_000_000_000,  # 10 trillion tokens as specified in NVCTokenomics
         settlement_fee_percentage=1.0,
         settlement_contract_balance=0.0,
         multisig_required_confirmations=2,
