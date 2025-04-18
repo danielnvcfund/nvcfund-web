@@ -70,7 +70,7 @@ def verify_nvcplatform_signature(request_data, signature, shared_secret):
 
 @php_bridge.route('/account/sync', methods=['POST'])
 @api_key_required
-def sync_accounts():
+def sync_accounts(user):
     """
     Synchronize user accounts from PHP banking software
     
@@ -204,7 +204,7 @@ def sync_accounts():
 
 @php_bridge.route('/transaction/sync', methods=['POST'])
 @api_key_required
-def sync_transactions():
+def sync_transactions(user):
     """
     Synchronize transactions from PHP banking software
     
@@ -324,7 +324,7 @@ def sync_transactions():
 
 @php_bridge.route('/payment/process', methods=['POST'])
 @api_key_required
-def process_payment():
+def process_payment(user):
     """
     Process a payment from PHP banking software through NVC Global
     
@@ -413,7 +413,7 @@ def process_payment():
 
 @php_bridge.route('/payment/status/<transaction_id>', methods=['GET'])
 @api_key_required
-def check_payment_status(transaction_id):
+def check_payment_status(user, transaction_id):
     """
     Check the status of a payment processed through NVC Global
     
