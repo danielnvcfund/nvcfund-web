@@ -32,6 +32,59 @@ logger = logging.getLogger(__name__)
 # Create blueprint
 blockchain_api = Blueprint('blockchain_api', __name__)
 
+@blockchain_api.route('/status', methods=['GET'])
+@api_test_access
+def get_blockchain_status(user=None):
+    """Get the current blockchain connection status"""
+    try:
+        web3 = init_web3()
+        if web3 and web3.isConnected():
+            # Get blockchain details
+            try:
+                network_id = web3.net.version
+                node_info = web3.clientVersion
+                latest_block = web3.eth.block_number
+                # Calculate block time
+                block_time = None
+                if latest_block > 0:
+                    current_block = web3.eth.get_block(latest_block)
+                    previous_block = web3.eth.get_block(latest_block - 1)
+                    block_time = current_block.timestamp - previous_block.timestamp
+                
+                return jsonify({
+                    'status': 'ok',
+                    'message': 'Blockchain connection established',
+                    'details': {
+                        'network_id': network_id,
+                        'node_info': node_info,
+                        'latest_block': latest_block,
+                        'block_time': block_time,
+                    },
+                    'lastChecked': datetime.utcnow().isoformat()
+                })
+            except Exception as e:
+                # Connected but can't get details
+                logger.warning(f"Connected to blockchain but encountered an error: {str(e)}")
+                return jsonify({
+                    'status': 'warning',
+                    'message': f'Connected to blockchain but encountered an error: {str(e)}',
+                    'lastChecked': datetime.utcnow().isoformat()
+                })
+        else:
+            # Not connected
+            return jsonify({
+                'status': 'error',
+                'message': 'Unable to connect to blockchain',
+                'lastChecked': datetime.utcnow().isoformat()
+            })
+    except Exception as e:
+        logger.error(f"Error checking blockchain status: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f'Error checking blockchain status: {str(e)}',
+            'lastChecked': datetime.utcnow().isoformat()
+        })
+
 # Global deployment status
 deployment_status = {
     "settlement_contract": {"status": "not_started", "address": None, "error": None},

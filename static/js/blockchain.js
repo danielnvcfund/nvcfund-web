@@ -110,10 +110,10 @@ function initializeActionButtons() {
  * Refresh blockchain connection status
  */
 function refreshBlockchainStatus() {
-    fetch('/api/v1/blockchain/status')
+    fetch('/api/blockchain/status')
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
+            if (data.status === 'ok') {
                 window.location.reload();
             } else {
                 showAlert('Error refreshing blockchain status: ' + data.message, 'danger');
