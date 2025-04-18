@@ -110,10 +110,14 @@ function initializeActionButtons() {
  * Refresh blockchain connection status
  */
 function refreshBlockchainStatus() {
-    fetch('/api/blockchain/status')
+    fetch('/api/v1/blockchain/status')
         .then(response => response.json())
         .then(data => {
-            window.location.reload();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                showAlert('Error refreshing blockchain status: ' + data.message, 'danger');
+            }
         })
         .catch(error => {
             showAlert('Error refreshing blockchain status: ' + error.message, 'danger');
@@ -129,11 +133,14 @@ function deploySettlementContract() {
 
     showAlert('Deploying Settlement Contract... This may take a minute.', 'info');
     
-    fetch('/api/blockchain/deploy/settlement', {
+    fetch('/api/v1/blockchain/deployment/contract', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({
+            contract_type: 'settlement_contract'
+        })
     })
     .then(response => response.json())
     .then(data => {
@@ -275,11 +282,14 @@ function deployMultiSigWallet() {
     
     showAlert('Deploying MultiSig Wallet... This may take a minute.', 'info');
     
-    fetch('/api/blockchain/deploy/multisig', {
+    fetch('/api/v1/blockchain/deployment/contract', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({
+            contract_type: 'multisig_wallet'
+        })
     })
     .then(response => response.json())
     .then(data => {
