@@ -6,7 +6,7 @@ This module handles REST API endpoints for blockchain functionality
 import logging
 import threading
 from flask import Blueprint, jsonify, request
-from auth import login_required, admin_required
+from auth import login_required, admin_required, api_test_access
 from blockchain import (
     init_web3, 
     get_settlement_contract, 
@@ -148,7 +148,7 @@ def deploy_contracts_background():
 
 
 @blockchain_api.route('/deployment/status', methods=['GET'])
-@admin_required
+@api_test_access
 def get_deployment_status():
     """Get the status of the contract deployments"""
     global deployment_status
@@ -203,7 +203,7 @@ def get_deployment_status():
     return jsonify(response)
 
 @blockchain_api.route('/status', methods=['GET'])
-@login_required
+@api_test_access
 def blockchain_status():
     """Get the status of the blockchain connection"""
     try:

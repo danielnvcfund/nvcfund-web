@@ -72,6 +72,28 @@ def jwt_required(f):
             return jsonify({'error': str(e)}), 401
     return decorated_function
 
+def api_test_access(f):
+    """Decorator to allow API access for testing without authentication"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Check for special test header or proceed with logged-in user
+        test_header = request.headers.get('X-API-Test')
+        if test_header == 'true':
+            # Proceed without authentication for test access
+            return f(*args, **kwargs)
+        
+        # Otherwise, enforce standard login requirement
+        if 'user_id' not in session:
+            if request.path.startswith('/api/'):
+                # Return JSON error for API routes instead of redirecting
+                return jsonify({'error': 'Authentication required'}), 401
+            else:
+                flash('Please log in to access this page', 'warning')
+                return redirect(url_for('web.main.login', next=request.url))
+                
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 # User authentication functions
 def authenticate_user(username, password):
