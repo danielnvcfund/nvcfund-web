@@ -69,7 +69,15 @@
                     <div class="col-md-6">
                         <h5>Settlement Contract Details</h5>
                         {% if settlement_contract %}
-                        <p><strong>Address:</strong> <a href="{{ etherscan_url }}/address/{{ settlement_contract.address }}" target="_blank" class="text-break">{{ settlement_contract.address }}</a></p>
+                        <p><strong>Address:</strong> 
+                            {% if settlement_contract.address.startswith('0x123456') %}
+                                <!-- Test address, don't link it -->
+                                <span class="text-break">{{ settlement_contract.address }}</span>
+                                <small class="text-muted">(Demo contract address - not on blockchain)</small>
+                            {% else %}
+                                <a href="{{ etherscan_url }}/address/{{ settlement_contract.address }}" target="_blank" class="text-break">{{ settlement_contract.address }}</a>
+                            {% endif %}
+                        </p>
                         <p><strong>Status:</strong> <span class="badge bg-success">Deployed</span></p>
                         <p><strong>Fee Percentage:</strong> {{ settlement_fee_percentage|default('Loading...') }}%</p>
                         <p><strong>Contract Balance:</strong> {{ settlement_contract_balance|default('Loading...') }} ETH</p>
@@ -178,7 +186,15 @@
                     <div class="col-md-6">
                         <h5>MultiSig Wallet Details</h5>
                         {% if multisig_contract %}
-                        <p><strong>Address:</strong> <a href="{{ etherscan_url }}/address/{{ multisig_contract.address }}" target="_blank" class="text-break">{{ multisig_contract.address }}</a></p>
+                        <p><strong>Address:</strong> 
+                            {% if multisig_contract.address.startswith('0x2345') %}
+                                <!-- Test address, don't link it -->
+                                <span class="text-break">{{ multisig_contract.address }}</span>
+                                <small class="text-muted">(Demo contract address - not on blockchain)</small>
+                            {% else %}
+                                <a href="{{ etherscan_url }}/address/{{ multisig_contract.address }}" target="_blank" class="text-break">{{ multisig_contract.address }}</a>
+                            {% endif %}
+                        </p>
                         <p><strong>Status:</strong> <span class="badge bg-success">Deployed</span></p>
                         <p><strong>Required Confirmations:</strong> {{ multisig_required_confirmations|default('Loading...') }}</p>
                         <p><strong>Wallet Balance:</strong> {{ multisig_contract_balance|default('Loading...') }} ETH</p>
@@ -291,7 +307,15 @@
                     <div class="col-md-6">
                         <h5>NVC Token Details</h5>
                         {% if token_contract %}
-                        <p><strong>Address:</strong> <a href="{{ etherscan_url }}/address/{{ token_contract.address }}" target="_blank" class="text-break">{{ token_contract.address }}</a></p>
+                        <p><strong>Address:</strong> 
+                            {% if token_contract.address.startswith('0x3456') %}
+                                <!-- Test address, don't link it -->
+                                <span class="text-break">{{ token_contract.address }}</span>
+                                <small class="text-muted">(Demo contract address - not on blockchain)</small>
+                            {% else %}
+                                <a href="{{ etherscan_url }}/address/{{ token_contract.address }}" target="_blank" class="text-break">{{ token_contract.address }}</a>
+                            {% endif %}
+                        </p>
                         <p><strong>Status:</strong> <span class="badge bg-success">Deployed</span></p>
                         <p><strong>Token Name:</strong> {{ token_name|default('NVC Banking Token') }}</p>
                         <p><strong>Token Symbol:</strong> {{ token_symbol|default('NVC') }}</p>
@@ -393,7 +417,12 @@
                                     {% for transfer in token_transfers %}
                                     <tr>
                                         <td class="text-truncate" style="max-width: 100px;">
-                                            <a href="{{ etherscan_url }}/tx/{{ transfer.transaction_hash }}" target="_blank" title="{{ transfer.transaction_hash }}">
+                                            {% if transfer.transaction_hash.startswith('0x123456') or transfer.transaction_hash.startswith('0x2345') or transfer.transaction_hash.startswith('0x3456') %}
+                                                <!-- Test transaction hash, don't link it -->
+                                                <span class="text-break" title="{{ transfer.transaction_hash }}">{{ transfer.transaction_hash }}</span>
+                                            {% else %}
+                                                <a href="{{ etherscan_url }}/tx/{{ transfer.transaction_hash }}" target="_blank" title="{{ transfer.transaction_hash }}">
+                                            {% endif %}
                                                 {{ transfer.transaction_hash }}
                                             </a>
                                         </td>
