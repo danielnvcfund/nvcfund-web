@@ -78,83 +78,88 @@ def deploy_contracts_background():
     """Background function to deploy all contracts"""
     global deployment_status
     
-    try:
-        # 1. Deploy Settlement Contract
-        logger.info("Starting Settlement Contract deployment...")
-        deployment_status["settlement_contract"]["status"] = "in_progress"
-        
-        settlement_address, settlement_tx = initialize_settlement_contract()
-        
-        if settlement_address:
-            deployment_status["settlement_contract"]["status"] = "completed"
-            deployment_status["settlement_contract"]["address"] = settlement_address
-            deployment_status["settlement_contract"]["tx_hash"] = settlement_tx
-            logger.info(f"Settlement Contract deployed at: {settlement_address}")
-        else:
-            deployment_status["settlement_contract"]["status"] = "failed"
-            deployment_status["settlement_contract"]["error"] = "Failed to deploy contract"
-            logger.error("Settlement Contract deployment failed")
-            return
+    # Import app at function level to avoid circular imports
+    from app import app
+    
+    # Use application context to ensure database operations work correctly
+    with app.app_context():
+        try:
+            # 1. Deploy Settlement Contract
+            logger.info("Starting Settlement Contract deployment...")
+            deployment_status["settlement_contract"]["status"] = "in_progress"
             
-        # 2. Deploy MultiSig Wallet
-        logger.info("Starting MultiSig Wallet deployment...")
-        deployment_status["multisig_wallet"]["status"] = "in_progress"
-        
-        # Get admin users for MultiSig owners
-        from models import User, UserRole
-        admins = User.query.filter_by(role=UserRole.ADMIN).all()
-        
-        # Get ethereum addresses for admins (or create new ones)
-        owner_addresses = []
-        for admin in admins:
-            blockchain_account = BlockchainAccount.query.filter_by(user_id=admin.id).first()
-            if blockchain_account:
-                owner_addresses.append(blockchain_account.eth_address)
+            settlement_address, settlement_tx = initialize_settlement_contract()
+            
+            if settlement_address:
+                deployment_status["settlement_contract"]["status"] = "completed"
+                deployment_status["settlement_contract"]["address"] = settlement_address
+                deployment_status["settlement_contract"]["tx_hash"] = settlement_tx
+                logger.info(f"Settlement Contract deployed at: {settlement_address}")
             else:
-                # Generate a new account if needed
-                new_address, private_key = generate_ethereum_account()
+                deployment_status["settlement_contract"]["status"] = "failed"
+                deployment_status["settlement_contract"]["error"] = "Failed to deploy contract"
+                logger.error("Settlement Contract deployment failed")
+                return
+                
+            # 2. Deploy MultiSig Wallet
+            logger.info("Starting MultiSig Wallet deployment...")
+            deployment_status["multisig_wallet"]["status"] = "in_progress"
+            
+            # Get admin users for MultiSig owners
+            from models import User, UserRole
+            admins = User.query.filter_by(role=UserRole.ADMIN).all()
+            
+            # Get ethereum addresses for admins (or create new ones)
+            owner_addresses = []
+            for admin in admins:
+                blockchain_account = BlockchainAccount.query.filter_by(user_id=admin.id).first()
+                if blockchain_account:
+                    owner_addresses.append(blockchain_account.eth_address)
+                else:
+                    # Generate a new account if needed
+                    new_address, private_key = generate_ethereum_account()
+                    owner_addresses.append(new_address)
+            
+            # Ensure we have at least 3 owners
+            while len(owner_addresses) < 3:
+                new_address, _ = generate_ethereum_account()
                 owner_addresses.append(new_address)
-        
-        # Ensure we have at least 3 owners
-        while len(owner_addresses) < 3:
-            new_address, _ = generate_ethereum_account()
-            owner_addresses.append(new_address)
+                
+            multisig_address, multisig_tx = initialize_multisig_wallet(owner_addresses, 2)
             
-        multisig_address, multisig_tx = initialize_multisig_wallet(owner_addresses, 2)
-        
-        if multisig_address:
-            deployment_status["multisig_wallet"]["status"] = "completed"
-            deployment_status["multisig_wallet"]["address"] = multisig_address
-            deployment_status["multisig_wallet"]["tx_hash"] = multisig_tx
-            logger.info(f"MultiSig Wallet deployed at: {multisig_address}")
-        else:
-            deployment_status["multisig_wallet"]["status"] = "failed"
-            deployment_status["multisig_wallet"]["error"] = "Failed to deploy contract"
-            logger.error("MultiSig Wallet deployment failed")
+            if multisig_address:
+                deployment_status["multisig_wallet"]["status"] = "completed"
+                deployment_status["multisig_wallet"]["address"] = multisig_address
+                deployment_status["multisig_wallet"]["tx_hash"] = multisig_tx
+                logger.info(f"MultiSig Wallet deployed at: {multisig_address}")
+            else:
+                deployment_status["multisig_wallet"]["status"] = "failed"
+                deployment_status["multisig_wallet"]["error"] = "Failed to deploy contract"
+                logger.error("MultiSig Wallet deployment failed")
+                
+            # 3. Deploy NVC Token
+            logger.info("Starting NVC Token deployment...")
+            deployment_status["nvc_token"]["status"] = "in_progress"
             
-        # 3. Deploy NVC Token
-        logger.info("Starting NVC Token deployment...")
-        deployment_status["nvc_token"]["status"] = "in_progress"
-        
-        token_address, token_tx = initialize_nvc_token()
-        
-        if token_address:
-            deployment_status["nvc_token"]["status"] = "completed"
-            deployment_status["nvc_token"]["address"] = token_address
-            deployment_status["nvc_token"]["tx_hash"] = token_tx
-            logger.info(f"NVC Token deployed at: {token_address}")
-        else:
-            deployment_status["nvc_token"]["status"] = "failed"
-            deployment_status["nvc_token"]["error"] = "Failed to deploy contract"
-            logger.error("NVC Token deployment failed")
+            token_address, token_tx = initialize_nvc_token()
             
-    except Exception as e:
-        logger.error(f"Error during contract deployment sequence: {str(e)}")
-        # Mark any pending deployments as failed
-        for contract_name, status in deployment_status.items():
-            if status["status"] in ["pending", "in_progress"]:
-                deployment_status[contract_name]["status"] = "failed"
-                deployment_status[contract_name]["error"] = str(e)
+            if token_address:
+                deployment_status["nvc_token"]["status"] = "completed"
+                deployment_status["nvc_token"]["address"] = token_address
+                deployment_status["nvc_token"]["tx_hash"] = token_tx
+                logger.info(f"NVC Token deployed at: {token_address}")
+            else:
+                deployment_status["nvc_token"]["status"] = "failed"
+                deployment_status["nvc_token"]["error"] = "Failed to deploy contract"
+                logger.error("NVC Token deployment failed")
+                
+        except Exception as e:
+            logger.error(f"Error during contract deployment sequence: {str(e)}")
+            # Mark any pending deployments as failed
+            for contract_name, status in deployment_status.items():
+                if status["status"] in ["pending", "in_progress"]:
+                    deployment_status[contract_name]["status"] = "failed"
+                    deployment_status[contract_name]["error"] = str(e)
 
 
 @blockchain_api.route('/deployment/status', methods=['GET'])
