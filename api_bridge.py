@@ -26,6 +26,7 @@ php_bridge = Blueprint('php_bridge', __name__)
 
 # Constants
 API_TIMEOUT = 30  # seconds
+SHARED_SECRET = "php_bridge_shared_secret"  # Shared secret for signature verification
 
 
 def verify_nvcplatform_signature(request_data, signature, shared_secret):

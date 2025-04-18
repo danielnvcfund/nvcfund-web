@@ -12,6 +12,9 @@ from routes.api.status_routes import status_bp
 from routes.high_availability_routes import ha_web
 from routes.main_routes import main
 
+# Import PHP Bridge routes
+from api_bridge import php_bridge
+
 # Create API blueprint
 api_blueprint = Blueprint('api', __name__, url_prefix='/api')
 
@@ -23,6 +26,7 @@ api_blueprint.register_blueprint(blockchain_api, url_prefix='/v1/blockchain')
 api_blueprint.register_blueprint(xrp_api, url_prefix='/v1/xrp')
 api_blueprint.register_blueprint(ha_api, url_prefix='/v1/ha')
 api_blueprint.register_blueprint(status_bp)
+api_blueprint.register_blueprint(php_bridge, url_prefix='/php-bridge')
 
 # Register Web route blueprints
 web_blueprint.register_blueprint(ha_web, url_prefix='/ha')

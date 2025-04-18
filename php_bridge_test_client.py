@@ -32,9 +32,11 @@ from datetime import datetime, timedelta
 from urllib.parse import urljoin
 
 # Configuration
-BASE_URL = "http://localhost:5000/api/php-bridge/"
-API_KEY = "php_test_api_key"  # Replace with your actual API key
-SHARED_SECRET = "your_shared_secret"  # Replace with your actual shared secret
+# Get the Replit domain or use localhost as fallback
+replit_domain = os.environ.get('REPLIT_DOMAINS', 'localhost:5000').split(',')[0]
+BASE_URL = f"https://{replit_domain}/api/php-bridge/" if replit_domain != 'localhost:5000' else "http://localhost:5000/api/php-bridge/"
+API_KEY = "php_test_api_key"  # This matches the API key created in auth.py
+SHARED_SECRET = "php_bridge_shared_secret"  # A simple shared secret for testing
 
 # Endpoints
 ACCOUNT_SYNC_ENDPOINT = "account/sync"

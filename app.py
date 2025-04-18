@@ -149,6 +149,17 @@ def create_app():
         from routes import api_blueprint, web_blueprint
         app.register_blueprint(api_blueprint)
         app.register_blueprint(web_blueprint)
+
+        # Create PHP test integration user
+        try:
+            from auth import create_php_test_user
+            php_test_user = create_php_test_user()
+            if php_test_user:
+                logger.info(f"PHP test integration user ready with API key: php_test_api_key")
+            else:
+                logger.warning("Failed to create PHP test integration user")
+        except Exception as e:
+            logger.error(f"Error creating PHP test user: {str(e)}")
         
         logger.info("Application initialized successfully")
 
