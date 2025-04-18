@@ -67,8 +67,62 @@ def nvc_token_economics():
 
 @main.route('/nvctoken/pdf')
 def nvc_token_economics_pdf():
-    """NVC Token economics documentation in PDF format"""
-    return redirect('/static/docs/NVCTokenomics.pdf')
+    """NVC Token economics documentation in PDF format - generates a fresh PDF on demand"""
+    from flask import current_app, send_file, flash
+    import sys
+    import os
+    import subprocess
+    import logging
+    
+    try:
+        # Get paths for static directory and files
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        static_dir = os.path.join(base_dir, 'static', 'docs')
+        html_path = os.path.join(static_dir, 'NVCTokenomics.html')
+        pdf_path = os.path.join(static_dir, 'NVCTokenomics.pdf')
+        pdf_script = os.path.join(static_dir, 'NVCTokenomics.pdf.py')
+        
+        # Ensure the PDF is freshly generated
+        current_app.logger.info(f"Generating fresh PDF from {html_path}")
+        
+        # Run the external script to generate the PDF
+        result = subprocess.run(
+            [sys.executable, pdf_script], 
+            capture_output=True, 
+            text=True, 
+            check=False
+        )
+        
+        if result.returncode != 0:
+            current_app.logger.error(f"PDF generation script failed: {result.stderr}")
+            # Try direct command line approach with wkhtmltopdf
+            try:
+                subprocess.run(["wkhtmltopdf", html_path, pdf_path], check=True)
+                current_app.logger.info("Generated PDF using wkhtmltopdf")
+            except Exception as e:
+                current_app.logger.error(f"wkhtmltopdf failed: {str(e)}")
+        else:
+            current_app.logger.info(f"PDF generation script output: {result.stdout}")
+        
+        # Check if the PDF was created
+        if os.path.exists(pdf_path):
+            # Return the PDF file
+            return send_file(
+                pdf_path,
+                mimetype='application/pdf',
+                as_attachment=True,
+                download_name='NVCTokenomics.pdf'
+            )
+        else:
+            current_app.logger.error("PDF file does not exist after generation attempt")
+            raise FileNotFoundError("PDF file not found after generation attempt")
+            
+    except Exception as e:
+        current_app.logger.error(f"Error generating PDF: {str(e)}")
+        flash('Error generating PDF document. Please try again later.', 'danger')
+        
+    # If all else fails, redirect back to the HTML page
+    return redirect('/static/docs/NVCTokenomics.html')
 @main.route('/')
 def index():
     """Homepage route"""
