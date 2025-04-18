@@ -40,10 +40,17 @@ deployment_status = {
 }
 
 @blockchain_api.route('/deployment/start', methods=['POST'])
-@admin_required
-def deploy_all_contracts():
+@api_test_access
+def deploy_all_contracts(user=None):
     """Deploy all smart contracts in the correct sequence"""
     global deployment_status
+    
+    # Check if user has admin role
+    if user and user.role != 'ADMIN':
+        return jsonify({
+            'success': False,
+            'message': 'Admin privileges required for contract deployment'
+        }), 403
     
     # Reset deployment status
     deployment_status = {
@@ -60,7 +67,7 @@ def deploy_all_contracts():
     return jsonify({
         'success': True,
         'message': 'Deployment started in background',
-        'status_endpoint': '/api/blockchain/deployment/status'
+        'status_endpoint': '/api/v1/blockchain/deployment/status'
     })
 
 
@@ -246,9 +253,15 @@ def blockchain_status():
 
 
 @blockchain_api.route('/deployment/contract', methods=['POST'])
-@admin_required
-def deploy_specific_contract():
+@api_test_access
+def deploy_specific_contract(user=None):
     """Deploy a specific smart contract"""
+    # Check if user has admin role
+    if user and user.role != 'ADMIN':
+        return jsonify({
+            'success': False,
+            'message': 'Admin privileges required for contract deployment'
+        }), 403
     try:
         data = request.get_json()
         contract_type = data.get('contract_type')
