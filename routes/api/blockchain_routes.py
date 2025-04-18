@@ -44,7 +44,8 @@ def get_blockchain_status(user=None):
         # Try to access blockchain data to verify connection
         try:
             network_id = web3.net.version
-            node_info = web3.clientVersion
+            # Fix: Get client version via RPC call to web3_clientVersion
+            node_info = web3.manager.request_blocking("web3_clientVersion", [])
             latest_block = web3.eth.block_number
             
             # Successfully connected - calculate block time
@@ -54,7 +55,8 @@ def get_blockchain_status(user=None):
                     current_block = web3.eth.get_block(latest_block)
                     previous_block = web3.eth.get_block(latest_block - 1)
                     block_time = current_block.timestamp - previous_block.timestamp
-                except Exception:
+                except Exception as block_ex:
+                    logger.warning(f"Could not calculate block time: {str(block_ex)}")
                     # Couldn't get block details but still connected
                     pass
             
