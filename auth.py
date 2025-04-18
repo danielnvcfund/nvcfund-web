@@ -196,3 +196,37 @@ def generate_reset_token(user):
     except Exception as e:
         logger.error(f"Error generating reset token: {str(e)}")
         return None
+
+def create_php_test_user():
+    """Create or update a test user for PHP integration"""
+    try:
+        # Check if the test user already exists
+        php_test_user = User.query.filter_by(username="php_test_integration").first()
+        
+        if php_test_user:
+            # Update existing user
+            php_test_user.api_key = "php_test_api_key"
+            php_test_user.role = UserRole.API
+            php_test_user.is_active = True
+            db.session.commit()
+            logger.info("Updated PHP test integration user")
+            return php_test_user
+        else:
+            # Create new user
+            new_user = User(
+                username="php_test_integration",
+                email="php_test@example.com",
+                password_hash=generate_password_hash("PhpTest123!"),
+                role=UserRole.API,
+                api_key="php_test_api_key"
+            )
+            
+            db.session.add(new_user)
+            db.session.commit()
+            logger.info("Created new PHP test integration user")
+            return new_user
+            
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error creating PHP test user: {str(e)}")
+        return None

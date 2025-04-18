@@ -25,4 +25,5 @@ dependencies = [
     "paypalrestsdk>=1.13.3",
     "pdfkit>=1.0.0",
     "weasyprint>=65.1",
+    "trafilatura>=2.0.0",
 ]
