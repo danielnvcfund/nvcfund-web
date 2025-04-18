@@ -59,6 +59,11 @@ logger = logging.getLogger(__name__)
 main = Blueprint('main', __name__)
 
 # Web Routes for User Interface
+
+@main.route('/nvctoken')
+def nvc_token_economics():
+    """NVC Token economics documentation"""
+    return redirect('/static/docs/NVCTokenomics.html')
 @main.route('/')
 def index():
     """Homepage route"""

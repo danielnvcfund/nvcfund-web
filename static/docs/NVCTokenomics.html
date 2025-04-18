@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVCToken: Tokenomics & Core Statistics</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <style>
+        body {
+            padding: 40px 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .nvc-document {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        .nvc-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 20px;
+        }
+        .nvc-logo {
+            width: 100px;
+            height: 100px;
+            background-color: #0056b3;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            margin: 0 auto 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            color: #0056b3;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .token-stat {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .token-stat-name {
+            font-weight: bold;
+            min-width: 200px;
+        }
+        .token-stat-value {
+            flex-grow: 1;
+        }
+        .token-stat-description {
+            color: #666;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        .printable {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .distribution-chart {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            height: 300px;
+            position: relative;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .chart-segment {
+            position: absolute;
+            bottom: 0;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+        .chart-label {
+            text-align: center;
+            padding: 5px;
+            font-weight: bold;
+            color: white;
+        }
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .nvc-document {
+                box-shadow: none;
+                max-width: 100%;
+                padding: 0;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="nvc-document">
+        <div class="nvc-header">
+            <div class="nvc-logo">NVC</div>
+            <h1>NVCToken</h1>
+            <h3>Tokenomics & Core Statistics</h3>
+            <p class="text-muted">Version 1.0 | April 2025</p>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">1. Executive Summary</h2>
+            <p>The NVCToken (NVC) is the native utility token of the NVC Banking Platform. It serves as the primary means of value exchange, settlement, and governance within the ecosystem. This document outlines the key economic parameters, utility functions, and technical specifications of the token.</p>
+            <p>NVCToken is built on the Ethereum blockchain as an ERC-20 compliant token, ensuring broad compatibility with existing wallets, exchanges, and DeFi protocols. The token incorporates enhanced security features including account freezing capabilities, ownership controls, and comprehensive transaction logging.</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">2. Core Token Specifications</h2>
+            
+            <div class="token-stat">
+                <div class="token-stat-name">Token Name:</div>
+                <div class="token-stat-value">NVC Banking Token</div>
+            </div>
+            <div class="token-stat">
+                <div class="token-stat-name">Token Symbol:</div>
+                <div class="token-stat-value">NVC</div>
+            </div>
+            <div class="token-stat">
+                <div class="token-stat-name">Decimals:</div>
+                <div class="token-stat-value">18</div>
+                <div class="token-stat-description">Standard ERC-20 decimal places for maximum compatibility</div>
+            </div>
+            <div class="token-stat">
+                <div class="token-stat-name">Initial Supply:</div>
+                <div class="token-stat-value">1,000,000 NVC</div>
+                <div class="token-stat-description">Initial tokens minted at contract deployment</div>
+            </div>
+            <div class="token-stat">
+                <div class="token-stat-name">Maximum Supply:</div>
+                <div class="token-stat-value">10,000,000 NVC</div>
+                <div class="token-stat-description">Hard cap on total token supply</div>
+            </div>
+            <div class="token-stat">
+                <div class="token-stat-name">Token Standard:</div>
+                <div class="token-stat-value">ERC-20</div>
+                <div class="token-stat-description">Ethereum token standard ensuring wallet and exchange compatibility</div>
+            </div>
+            <div class="token-stat">
+                <div class="token-stat-name">Blockchain:</div>
+                <div class="token-stat-value">Ethereum</div>
+                <div class="token-stat-description">Initially deployed on Sepolia Testnet, with mainnet migration planned</div>
+            </div>
+            <div class="token-stat">
+                <div class="token-stat-name">Smart Contract Language:</div>
+                <div class="token-stat-value">Solidity v0.8.0+</div>
+                <div class="token-stat-description">Using the latest compiler with built-in overflow protection</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">3. Token Distribution</h2>
+            
+            <div class="distribution-chart">
+                <div class="chart-segment" style="left: 0%; width: 40%; height: 60%; background-color: #0056b3;">
+                    <div class="chart-label">Platform Operations<br>40%</div>
+                </div>
+                <div class="chart-segment" style="left: 40%; width: 20%; height: 45%; background-color: #28a745;">
+                    <div class="chart-label">Financial Institutions<br>20%</div>
+                </div>
+                <div class="chart-segment" style="left: 60%; width: 15%; height: 30%; background-color: #dc3545;">
+                    <div class="chart-label">Team<br>15%</div>
+                </div>
+                <div class="chart-segment" style="left: 75%; width: 15%; height: 20%; background-color: #ffc107; color: #333;">
+                    <div class="chart-label">Strategic Reserves<br>15%</div>
+                </div>
+                <div class="chart-segment" style="left: 90%; width: 10%; height: 15%; background-color: #17a2b8;">
+                    <div class="chart-label">Community<br>10%</div>
+                </div>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Allocation</th>
+                        <th>Percentage</th>
+                        <th>Amount (NVC)</th>
+                        <th>Vesting Period</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Platform Operations</td>
+                        <td>40%</td>
+                        <td>400,000</td>
+                        <td>None - Available for immediate use</td>
+                    </tr>
+                    <tr>
+                        <td>Financial Institutions</td>
+                        <td>20%</td>
+                        <td>200,000</td>
+                        <td>3 months cliff, then 25% quarterly</td>
+                    </tr>
+                    <tr>
+                        <td>Team & Advisors</td>
+                        <td>15%</td>
+                        <td>150,000</td>
+                        <td>6 months cliff, then 25% quarterly</td>
+                    </tr>
+                    <tr>
+                        <td>Strategic Reserves</td>
+                        <td>15%</td>
+                        <td>150,000</td>
+                        <td>12 months lock, then 25% annually</td>
+                    </tr>
+                    <tr>
+                        <td>Community Incentives</td>
+                        <td>10%</td>
+                        <td>100,000</td>
+                        <td>Released gradually for user rewards and liquidity</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">4. Security Features</h2>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Implementation</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Account Freezing</td>
+                        <td>Implemented</td>
+                        <td>Contract owner can freeze/unfreeze accounts in case of suspicious activity, hacks, or regulatory requirements</td>
+                    </tr>
+                    <tr>
+                        <td>Ownership Control</td>
+                        <td>Implemented</td>
+                        <td>Transferable ownership with two-step verification to prevent accidental transfers</td>
+                    </tr>
+                    <tr>
+                        <td>SafeMath</td>
+                        <td>Native (Solidity 0.8.0+)</td>
+                        <td>Automatic overflow/underflow protection built into the Solidity compiler</td>
+                    </tr>
+                    <tr>
+                        <td>Role Management</td>
+                        <td>Owner-Based</td>
+                        <td>All critical administrative functions restricted to the contract owner</td>
+                    </tr>
+                    <tr>
+                        <td>Zero-Address Protection</td>
+                        <td>Implemented</td>
+                        <td>Prevents accidental token burns by rejecting transfers to the zero address</td>
+                    </tr>
+                    <tr>
+                        <td>Reentrancy Protection</td>
+                        <td>Implemented</td>
+                        <td>Uses mutex pattern to prevent reentrancy attacks on sensitive functions</td>
+                    </tr>
+                    <tr>
+                        <td>Event Logging</td>
+                        <td>Comprehensive</td>
+                        <td>All critical actions emit Ethereum events for transparency and auditability</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">5. Token Functions</h2>
+            
+            <p>NVCToken implements the standard ERC-20 interface as well as additional functionality for advanced tokenomics and security.</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Function</th>
+                        <th>Access Level</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>transfer</td>
+                        <td>Public</td>
+                        <td>Standard ERC-20 transfer function with additional checks for frozen accounts</td>
+                    </tr>
+                    <tr>
+                        <td>approve</td>
+                        <td>Public</td>
+                        <td>Standard ERC-20 approve function with additional security checks</td>
+                    </tr>
+                    <tr>
+                        <td>transferFrom</td>
+                        <td>Public</td>
+                        <td>Standard ERC-20 transferFrom function with frozen account validation</td>
+                    </tr>
+                    <tr>
+                        <td>increaseAllowance</td>
+                        <td>Public</td>
+                        <td>Safely increase the allowance granted to a spender</td>
+                    </tr>
+                    <tr>
+                        <td>decreaseAllowance</td>
+                        <td>Public</td>
+                        <td>Safely decrease the allowance granted to a spender</td>
+                    </tr>
+                    <tr>
+                        <td>mint</td>
+                        <td>Owner Only</td>
+                        <td>Creates new tokens, subject to maximum supply cap</td>
+                    </tr>
+                    <tr>
+                        <td>burn</td>
+                        <td>Owner Only</td>
+                        <td>Permanently destroys tokens, reducing total supply</td>
+                    </tr>
+                    <tr>
+                        <td>freezeAccount</td>
+                        <td>Owner Only</td>
+                        <td>Restricts specific addresses from sending or receiving tokens</td>
+                    </tr>
+                    <tr>
+                        <td>unfreezeAccount</td>
+                        <td>Owner Only</td>
+                        <td>Removes restrictions from previously frozen accounts</td>
+                    </tr>
+                    <tr>
+                        <td>transferOwnership</td>
+                        <td>Owner Only</td>
+                        <td>Two-step process to transfer contract control to a new address</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">6. Economic Parameters</h2>
+            
+            <div class="token-stat">
+                <div class="token-stat-name">Transaction Fee:</div>
+                <div class="token-stat-value">0% (None in contract)</div>
+                <div class="token-stat-description">No direct fee mechanism in the token contract itself</div>
+            </div>
+            <div class="token-stat">
+                <div class="token-stat-name">Platform Fee:</div>
+                <div class="token-stat-value">0.1% - 0.5%</div>
+                <div class="token-stat-description">Applied at the platform level for financial transactions</div>
+            </div>
+            <div class="token-stat">
+                <div class="token-stat-name">Distribution Model:</div>
+                <div class="token-stat-value">Owner-controlled with vesting schedules</div>
+                <div class="token-stat-description">Structured distribution with vesting periods for certain allocations</div>
+            </div>
+            <div class="token-stat">
+                <div class="token-stat-name">Supply Type:</div>
+                <div class="token-stat-value">Variable with hard cap</div>
+                <div class="token-stat-description">Can be increased through minting up to maximum supply</div>
+            </div>
+            <div class="token-stat">
+                <div class="token-stat-name">Value Basis:</div>
+                <div class="token-stat-value">Utility + Governance</div>
+                <div class="token-stat-description">Value derived from platform utility and governance rights</div>
+            </div>
+            <div class="token-stat">
+                <div class="token-stat-name">Liquidity Strategy:</div>
+                <div class="token-stat-value">Managed ecosystem</div>
+                <div class="token-stat-description">Strategic reserves used to ensure market liquidity</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">7. Token Utility</h2>
+            
+            <h5>Primary Utilities:</h5>
+            <ul>
+                <li><strong>Settlement Medium:</strong> For cross-border and inter-institutional transactions</li>
+                <li><strong>Transaction Fees:</strong> Platform fees can be paid using NVC at a discount</li>
+                <li><strong>Collateral:</strong> Can be used as collateral for certain financial products</li>
+                <li><strong>Governance:</strong> Token holders can participate in platform governance decisions</li>
+                <li><strong>Staking:</strong> Tokens can be staked to earn platform rewards</li>
+                <li><strong>Loyalty Program:</strong> Used for user rewards and incentives</li>
+            </ul>
+            
+            <h5>Use Cases:</h5>
+            <ul>
+                <li><strong>Cross-Border Payments:</strong> Instant, low-cost international transfers</li>
+                <li><strong>Institutional Settlements:</strong> Efficient clearing and settlement between financial institutions</li>
+                <li><strong>Multi-Currency Transactions:</strong> Bridge between different fiat and digital currencies</li>
+                <li><strong>Financial Products:</strong> Backing for tokenized securities and derivatives</li>
+                <li><strong>Identity Verification:</strong> Token-based KYC verification process</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">8. Integration Points</h2>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>System Component</th>
+                        <th>Integration Method</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Payment System</td>
+                        <td>Direct Contract Calls</td>
+                        <td>Facilitate token transfers for payments and settlements</td>
+                    </tr>
+                    <tr>
+                        <td>Banking Platform</td>
+                        <td>Web3 / JSON-RPC</td>
+                        <td>Balance checking, transfers, and financial operations</td>
+                    </tr>
+                    <tr>
+                        <td>Settlement System</td>
+                        <td>Smart Contract Interaction</td>
+                        <td>Cross-chain settlements and multi-currency operations</td>
+                    </tr>
+                    <tr>
+                        <td>User Wallets</td>
+                        <td>Standard ERC-20 Interface</td>
+                        <td>Allow users to store and manage their NVC tokens</td>
+                    </tr>
+                    <tr>
+                        <td>Financial Institutions</td>
+                        <td>API / SDK</td>
+                        <td>Institution-specific integration for settlements</td>
+                    </tr>
+                    <tr>
+                        <td>XRP Ledger Bridge</td>
+                        <td>Cross-Chain Protocol</td>
+                        <td>Facilitate token transfers between Ethereum and XRP Ledger</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">9. Regulatory Considerations</h2>
+            
+            <p>The NVCToken has been designed with regulatory compliance in mind, incorporating features that allow for adherence to various regulatory requirements:</p>
+            
+            <ul>
+                <li><strong>KYC Integration:</strong> Token transfers can be restricted to verified accounts only.</li>
+                <li><strong>Account Freezing:</strong> Ability to freeze accounts in response to legal requirements or suspicious activity.</li>
+                <li><strong>Transaction Monitoring:</strong> Comprehensive event logging facilitates monitoring for suspicious activities.</li>
+                <li><strong>Regulatory Reporting:</strong> Platform includes capabilities for generating regulatory reports.</li>
+                <li><strong>Jurisdictional Controls:</strong> Ability to implement jurisdiction-specific restrictions when required.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">10. Roadmap</h2>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Phase</th>
+                        <th>Timeline</th>
+                        <th>Milestones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Phase 1: Foundation</td>
+                        <td>Q2 2025</td>
+                        <td>
+                            <ul>
+                                <li>Initial token deployment on Sepolia Testnet</li>
+                                <li>Core smart contract audits</li>
+                                <li>Banking platform integration</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Phase 2: Expansion</td>
+                        <td>Q3-Q4 2025</td>
+                        <td>
+                            <ul>
+                                <li>Mainnet deployment</li>
+                                <li>Financial institution partnerships</li>
+                                <li>Liquidity provision and market making</li>
+                                <li>Governance mechanism activation</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Phase 3: Growth</td>
+                        <td>Q1-Q2 2026</td>
+                        <td>
+                            <ul>
+                                <li>Enhanced staking mechanisms</li>
+                                <li>Cross-chain bridge deployment</li>
+                                <li>Integration with additional payment gateways</li>
+                                <li>Advanced financial product offerings</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Phase 4: Maturity</td>
+                        <td>Q3 2026+</td>
+                        <td>
+                            <ul>
+                                <li>Global expansion of institutional partnerships</li>
+                                <li>Advanced DeFi integration</li>
+                                <li>Development of specialized financial instruments</li>
+                                <li>Integration with central bank digital currencies (CBDCs)</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">11. Conclusion</h2>
+            
+            <p>The NVCToken represents a critical component of the NVC Banking Platform ecosystem, providing utility, governance, and value transfer capabilities. With its robust technical foundation, security features, and carefully designed tokenomics, NVC is positioned to facilitate the next generation of financial operations.</p>
+            
+            <p>As the platform evolves, the tokenomics will be regularly reviewed and potentially adjusted through governance mechanisms to ensure long-term sustainability and utility for all stakeholders.</p>
+        </div>
+        
+        <div class="printable no-print">
+            <a href="javascript:window.print()" class="btn btn-primary">Print/Save as PDF</a>
+        </div>
+        
+        <footer class="mt-5 pt-5 text-center text-muted">
+            <p>© 2025 NVC Banking Platform. All Rights Reserved.</p>
+            <p class="small">This document is for informational purposes only and does not constitute an offer to sell or solicitation of an offer to buy any securities, commodities, or tokens.</p>
+        </footer>
+    </div>
+</body>
+</html>
