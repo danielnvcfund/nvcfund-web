@@ -73,7 +73,7 @@ def php_bridge_docs():
     # Only admin users can access this page
     if session.get('role') != UserRole.ADMIN.value:
         flash('You do not have permission to access this page', 'danger')
-        return redirect(url_for('main.dashboard'))
+        return redirect(url_for('web.main.dashboard'))
     
     return render_template('api_bridge_docs.html')
 
@@ -145,7 +145,7 @@ def login():
     """User login route"""
     # If user is already logged in, redirect to dashboard
     if 'user_id' in session:
-        return redirect(url_for('main.dashboard'))
+        return redirect(url_for('web.main.dashboard'))
         
     form = LoginForm()
     
@@ -168,7 +168,7 @@ def login():
         if next_page:
             return redirect(next_page)
         
-        return redirect(url_for('main.dashboard'))
+        return redirect(url_for('web.main.dashboard'))
     
     # If there were form validation errors
     if form.errors and request.method == 'POST':
@@ -184,14 +184,14 @@ def logout():
     """User logout route"""
     session.clear()
     flash('You have been logged out', 'info')
-    return redirect(url_for('main.index'))
+    return redirect(url_for('web.main.index'))
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
     """User registration route"""
     # If user is already logged in, redirect to dashboard
     if 'user_id' in session:
-        return redirect(url_for('main.dashboard'))
+        return redirect(url_for('web.main.dashboard'))
         
     form = RegistrationForm()
     
@@ -221,7 +221,7 @@ def reset_request():
     """Route for requesting a password reset"""
     # If user is already logged in, redirect to dashboard
     if 'user_id' in session:
-        return redirect(url_for('main.dashboard'))
+        return redirect(url_for('web.main.dashboard'))
     
     form = RequestResetForm()
     
@@ -241,7 +241,7 @@ def reset_request():
             # Don't reveal whether the email exists for security
             flash('If an account with that email exists, a password reset link will be sent', 'info')
             
-        return redirect(url_for('main.login'))
+        return redirect(url_for('web.main.login'))
     
     return render_template('reset_request.html', form=form)
 
@@ -250,14 +250,14 @@ def reset_password(token):
     """Route for resetting password using a token"""
     # If user is already logged in, redirect to dashboard
     if 'user_id' in session:
-        return redirect(url_for('main.dashboard'))
+        return redirect(url_for('web.main.dashboard'))
     
     # Verify token and get user
     user = verify_reset_token(token)
     
     if not user:
         flash('Invalid or expired reset token', 'danger')
-        return redirect(url_for('main.reset_request'))
+        return redirect(url_for('web.main.reset_request'))
     
     form = ResetPasswordForm()
     
@@ -267,7 +267,7 @@ def reset_password(token):
         db.session.commit()
         
         flash('Your password has been updated! You can now log in.', 'success')
-        return redirect(url_for('main.login'))
+        return redirect(url_for('web.main.login'))
     
     return render_template('reset_password.html', form=form)
 
@@ -276,7 +276,7 @@ def forgot_username():
     """Route for recovering username"""
     # If user is already logged in, redirect to dashboard
     if 'user_id' in session:
-        return redirect(url_for('main.dashboard'))
+        return redirect(url_for('web.main.dashboard'))
     
     form = ForgotUsernameForm()
     
@@ -297,7 +297,7 @@ def forgot_username():
             # Don't reveal whether the email exists for security
             flash('If an account with that email exists, a username reminder will be sent', 'info')
         
-        return redirect(url_for('main.login'))
+        return redirect(url_for('web.main.login'))
     
     return render_template('forgot_username.html', form=form)
 
@@ -308,14 +308,14 @@ def dashboard():
     user_id = session.get('user_id')
     if not user_id:
         flash('Please log in to access the dashboard', 'danger')
-        return redirect(url_for('main.login'))
+        return redirect(url_for('web.main.login'))
     
     user = User.query.get(user_id)
     if not user:
         # If user doesn't exist in database, clear session and redirect to login
         session.clear()
         flash('User not found, please log in again', 'danger')
-        return redirect(url_for('main.login'))
+        return redirect(url_for('web.main.login'))
     
     # Get recent transactions
     recent_transactions = Transaction.query.filter_by(user_id=user_id)\
@@ -396,12 +396,12 @@ def transaction_details(transaction_id):
     
     if not transaction:
         flash('Transaction not found', 'danger')
-        return redirect(url_for('main.transactions'))
+        return redirect(url_for('web.main.transactions'))
     
     # Check if the transaction belongs to the user or user is admin
     if transaction.user_id != user_id and session.get('role') != UserRole.ADMIN.value:
         flash('You do not have permission to view this transaction', 'danger')
-        return redirect(url_for('main.transactions'))
+        return redirect(url_for('web.main.transactions'))
     
     # Get blockchain transaction if available
     blockchain_tx = None
