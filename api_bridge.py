@@ -113,6 +113,96 @@ def sync_accounts():
         "errors": []
     }
     
+    try:
+        for account in accounts:
+            # Extract account data
+            username = account.get('username')
+            email = account.get('email')
+            customer_id = account.get('customer_id')
+            account_number = account.get('account_number')
+            account_type = account.get('account_type')
+            currency = account.get('currency')
+            status = account.get('status', 'active')
+            
+            # Validate required fields
+            if not (username and email and customer_id and account_number):
+                results['errors'].append(f"Missing required fields for account: {account}")
+                continue
+            
+            # Check if user exists by external customer ID
+            user = User.query.filter_by(external_customer_id=customer_id).first()
+            
+            if user:
+                # Update existing user
+                user.external_account_id = account_number
+                user.external_account_type = account_type
+                user.external_account_currency = currency
+                user.external_account_status = status
+                user.last_sync = datetime.utcnow()
+                
+                # Update email if changed
+                if user.email != email:
+                    user.email = email
+                
+                # Only update username if it's not already in use by another user
+                if user.username != username:
+                    existing_user = User.query.filter_by(username=username).first()
+                    if not existing_user or existing_user.id == user.id:
+                        user.username = username
+                
+                results['updated'] += 1
+            else:
+                # Check if user exists by email
+                user = User.query.filter_by(email=email).first()
+                
+                if user:
+                    # Link existing user to external account
+                    user.external_customer_id = customer_id
+                    user.external_account_id = account_number
+                    user.external_account_type = account_type
+                    user.external_account_currency = currency
+                    user.external_account_status = status
+                    user.last_sync = datetime.utcnow()
+                    results['updated'] += 1
+                else:
+                    # Create new user
+                    # Generate a secure random password (will be reset by user)
+                    temp_password = hashlib.sha256(os.urandom(32)).hexdigest()[:12]
+                    
+                    new_user = User(
+                        username=username,
+                        email=email,
+                        role=UserRole.USER,
+                        external_customer_id=customer_id,
+                        external_account_id=account_number,
+                        external_account_type=account_type,
+                        external_account_currency=currency,
+                        external_account_status=status,
+                        last_sync=datetime.utcnow(),
+                        is_active=status == 'active'
+                    )
+                    new_user.set_password(temp_password)
+                    
+                    db.session.add(new_user)
+                    results['created'] += 1
+            
+            results['processed'] += 1
+        
+        # Commit all changes
+        db.session.commit()
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error syncing accounts: {str(e)}")
+        results['success'] = False
+        results['error'] = str(e)
+    
+    return jsonify(results)
+        "created": 0,
+        "updated": 0,
+        "errors": []
+    }
+    
     for account in accounts:
         try:
             # Check if user exists
