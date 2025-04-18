@@ -74,6 +74,10 @@
                                 <!-- Test address, don't link it -->
                                 <span class="text-break">{{ settlement_contract.address }}</span>
                                 <small class="text-muted">(Demo contract address - not on blockchain)</small>
+                            {% elif settlement_contract.address == '0xE4eA76e830D1A10df277b9D3a1824F216F8F1A5A' %}
+                                <!-- Use mainnet Etherscan for this specific address -->
+                                <a href="https://etherscan.io/address/{{ settlement_contract.address }}" target="_blank" class="text-break">{{ settlement_contract.address }}</a>
+                                <small class="text-muted">(Ethereum Mainnet)</small>
                             {% else %}
                                 <a href="{{ etherscan_url }}/address/{{ settlement_contract.address }}" target="_blank" class="text-break">{{ settlement_contract.address }}</a>
                             {% endif %}
@@ -191,6 +195,10 @@
                                 <!-- Test address, don't link it -->
                                 <span class="text-break">{{ multisig_contract.address }}</span>
                                 <small class="text-muted">(Demo contract address - not on blockchain)</small>
+                            {% elif multisig_contract.address == '0xB2C857F7AeCB1dEad987ceB5323f88C3Ef0B7C3E' %}
+                                <!-- Use mainnet Etherscan for this specific address -->
+                                <a href="https://etherscan.io/address/{{ multisig_contract.address }}" target="_blank" class="text-break">{{ multisig_contract.address }}</a>
+                                <small class="text-muted">(Ethereum Mainnet)</small>
                             {% else %}
                                 <a href="{{ etherscan_url }}/address/{{ multisig_contract.address }}" target="_blank" class="text-break">{{ multisig_contract.address }}</a>
                             {% endif %}
