@@ -696,41 +696,71 @@ def initialize_nvc_token():
 
 def get_settlement_contract():
     """Get the settlement contract instance"""
-    db = get_db()
-    BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
-    contract = SmartContract.query.filter_by(name="SettlementContract").first()
-    
-    if not contract:
-        logger.error("Settlement contract not found in database")
+    try:
+        db = get_db()
+        BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
+        contract = SmartContract.query.filter_by(name="SettlementContract").first()
+        
+        if not contract:
+            logger.error("Settlement contract not found in database")
+            return None
+        
+        # Fix contract address format - ensure 0x is present and it's the right length
+        address = contract.address
+        if not address.startswith('0x'):
+            address = '0x' + address
+            
+        # Use the ABI from our predefined constants to ensure compatibility
+        return w3.eth.contract(address=address, abi=SETTLEMENT_CONTRACT_ABI)
+    except Exception as e:
+        logger.error(f"Error getting settlement contract: {str(e)}")
         return None
-    
-    return w3.eth.contract(address=contract.address, abi=json.loads(contract.abi))
 
 
 def get_multisig_wallet():
     """Get the MultiSigWallet contract instance"""
-    db = get_db()
-    BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
-    contract = SmartContract.query.filter_by(name="MultiSigWallet").first()
-    
-    if not contract:
-        logger.error("MultiSigWallet contract not found in database")
+    try:
+        db = get_db()
+        BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
+        contract = SmartContract.query.filter_by(name="MultiSigWallet").first()
+        
+        if not contract:
+            logger.error("MultiSigWallet contract not found in database")
+            return None
+        
+        # Fix contract address format - ensure 0x is present and it's the right length
+        address = contract.address
+        if not address.startswith('0x'):
+            address = '0x' + address
+            
+        # Use the ABI from our predefined constants to ensure compatibility
+        return w3.eth.contract(address=address, abi=MULTISIG_WALLET_ABI)
+    except Exception as e:
+        logger.error(f"Error getting multisig wallet contract: {str(e)}")
         return None
-    
-    return w3.eth.contract(address=contract.address, abi=json.loads(contract.abi))
 
 
 def get_nvc_token():
     """Get the NVCToken contract instance"""
-    db = get_db()
-    BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
-    contract = SmartContract.query.filter_by(name="NVCToken").first()
-    
-    if not contract:
-        logger.error("NVCToken contract not found in database")
+    try:
+        db = get_db()
+        BlockchainTransaction, SmartContract, Transaction, TransactionStatus = get_models()
+        contract = SmartContract.query.filter_by(name="NVCToken").first()
+        
+        if not contract:
+            logger.error("NVCToken contract not found in database")
+            return None
+        
+        # Fix contract address format - ensure 0x is present and it's the right length
+        address = contract.address
+        if not address.startswith('0x'):
+            address = '0x' + address
+            
+        # Use the ABI from our predefined constants to ensure compatibility
+        return w3.eth.contract(address=address, abi=NVC_TOKEN_ABI)
+    except Exception as e:
+        logger.error(f"Error getting NVC token contract: {str(e)}")
         return None
-    
-    return w3.eth.contract(address=contract.address, abi=json.loads(contract.abi))
 
 
 def send_ethereum_transaction(from_address, to_address, amount_in_eth, private_key, transaction_id):
