@@ -198,61 +198,6 @@ def sync_accounts():
         results['error'] = str(e)
     
     return jsonify(results)
-        "created": 0,
-        "updated": 0,
-        "errors": []
-    }
-    
-    for account in accounts:
-        try:
-            # Check if user exists
-            user = User.query.filter_by(email=account['email']).first()
-            
-            if user:
-                # Update existing user
-                user.username = account.get('username', user.username)
-                # Don't store actual account numbers, create a reference instead
-                user.external_customer_id = account.get('customer_id', user.external_customer_id)
-                user.external_account_id = account.get('account_number', user.external_account_id)
-                user.external_account_type = account.get('account_type', user.external_account_type)
-                user.external_account_currency = account.get('currency', user.external_account_currency)
-                user.external_account_status = account.get('status', user.external_account_status)
-                # Don't store balance directly, reference it
-                user.last_sync = datetime.utcnow()
-                
-                db.session.commit()
-                results["updated"] += 1
-            else:
-                # Create new user with random password (they'll need to reset)
-                temp_password = os.urandom(12).hex()
-                
-                new_user = User(
-                    username=account['username'],
-                    email=account['email'],
-                    password_hash=generate_password_hash(temp_password),
-                    role=UserRole.USER,
-                    external_customer_id=account.get('customer_id'),
-                    external_account_id=account.get('account_number'),
-                    external_account_type=account.get('account_type'),
-                    external_account_currency=account.get('currency'),
-                    external_account_status=account.get('status'),
-                    last_sync=datetime.utcnow()
-                )
-                
-                db.session.add(new_user)
-                db.session.commit()
-                results["created"] += 1
-            
-            results["processed"] += 1
-            
-        except Exception as e:
-            logger.error(f"Error syncing account {account.get('username')}: {str(e)}")
-            results["errors"].append({
-                "account": account.get('username'),
-                "error": str(e)
-            })
-    
-    return jsonify(results), 200
 
 
 @php_bridge.route('/transaction/sync', methods=['POST'])
@@ -494,65 +439,79 @@ def check_payment_status(transaction_id):
     Returns:
         JSON response with transaction status
     """
-    # Get the transaction
-    transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+    if not transaction_id:
+        return jsonify({"success": False, "error": "Missing transaction ID"}), 400
     
-    if not transaction:
-        # Check if it's an external ID
-        transaction = Transaction.query.filter_by(external_id=transaction_id).first()
-        
+    # Find transaction by ID or external ID
+    transaction = Transaction.query.filter(
+        (Transaction.transaction_id == transaction_id) | 
+        (Transaction.external_id == transaction_id)
+    ).first()
+    
     if not transaction:
         return jsonify({
             "success": False,
             "error": f"Transaction {transaction_id} not found"
         }), 404
     
-    # Get gateway handler
-    gateway = PaymentGateway.query.get(transaction.gateway_id) if transaction.gateway_id else None
+    # Map our status to PHP platform status
+    status_mapping = {
+        TransactionStatus.PENDING: "pending",
+        TransactionStatus.PROCESSING: "processing",
+        TransactionStatus.COMPLETED: "completed",
+        TransactionStatus.FAILED: "failed",
+        TransactionStatus.REFUNDED: "refunded"
+    }
     
-    if not gateway:
-        return jsonify({
-            "success": True,
-            "transaction_id": transaction.transaction_id,
-            "external_id": transaction.external_id,
-            "status": transaction.status.value,
-            "amount": float(transaction.amount),
-            "currency": transaction.currency,
-            "description": transaction.description,
-            "created_at": transaction.created_at.isoformat(),
-            "updated_at": transaction.updated_at.isoformat() if transaction.updated_at else None
-        }), 200
+    # Get any metadata as a dictionary
+    metadata = {}
+    if transaction.tx_metadata_json:
+        try:
+            metadata = json.loads(transaction.tx_metadata_json)
+        except:
+            metadata = {}
     
-    # Get gateway handler
-    gateway_handler = get_gateway_handler(gateway.id)
-    if not gateway_handler:
-        return jsonify({
-            "success": False,
-            "error": "Failed to get gateway handler"
-        }), 500
+    # Get user information
+    user = User.query.get(transaction.user_id)
     
-    # Check payment status
-    result = gateway_handler.check_payment_status(transaction.transaction_id)
+    # Build response
+    response = {
+        "success": True,
+        "transaction_id": transaction.transaction_id,
+        "external_id": transaction.external_id,
+        "amount": float(transaction.amount),
+        "currency": transaction.currency,
+        "status": status_mapping.get(transaction.status, "unknown"),
+        "description": transaction.description,
+        "created_at": transaction.created_at.isoformat(),
+        "updated_at": transaction.updated_at.isoformat() if transaction.updated_at else None,
+        "metadata": metadata
+    }
     
-    if result.get('success'):
-        return jsonify({
-            "success": True,
-            "transaction_id": transaction.transaction_id,
-            "external_id": transaction.external_id,
-            "status": result.get('status'),
-            "internal_status": result.get('internal_status'),
-            "amount": float(transaction.amount),
-            "currency": transaction.currency,
-            "description": transaction.description,
-            "created_at": transaction.created_at.isoformat(),
-            "updated_at": transaction.updated_at.isoformat() if transaction.updated_at else None,
-            "gateway_data": result.get('gateway_data')
-        }), 200
-    else:
-        return jsonify({
-            "success": False,
-            "error": result.get('error', 'Unknown error checking payment status')
-        }), 500
+    # Add user information if available
+    if user:
+        response["user"] = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "external_customer_id": user.external_customer_id,
+            "external_account_id": user.external_account_id
+        }
+    
+    # Try to get more detailed status from gateway if available
+    if transaction.gateway_id:
+        gateway_handler = get_gateway_handler(transaction.gateway_id)
+        if gateway_handler:
+            try:
+                result = gateway_handler.check_payment_status(transaction.transaction_id)
+                if result.get('success'):
+                    # Update response with gateway specific data
+                    response["gateway_status"] = result.get('status')
+                    response["gateway_data"] = result.get('gateway_data', {})
+            except Exception as e:
+                logger.warning(f"Error getting gateway status: {str(e)}")
+    
+    return jsonify(response), 200
 
 
 @php_bridge.route('/payment/callback', methods=['POST'])
@@ -579,7 +538,7 @@ def payment_callback():
     
     # Get transaction metadata
     try:
-        metadata = json.loads(transaction.metadata) if transaction.metadata else {}
+        metadata = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
     except:
         metadata = {}
     
