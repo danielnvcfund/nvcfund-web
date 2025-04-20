@@ -1147,14 +1147,24 @@ class NVCGlobalGateway(PaymentGatewayInterface):
                     "error": f"Error parsing bank transfer details: {str(e)}"
                 }
             
-            # Extract NVC Global payment ID from description
+            # Try to extract NVC Global payment ID from description
             import re
             match = re.search(r"NVC Global Payment ID: (NVC-[a-zA-Z0-9]+)", transaction.description)
             
+            # If no payment ID in description, generate a new one
             if not match:
-                return {"success": False, "error": "NVC Global Payment ID not found"}
-            
-            nvc_payment_id = match.group(1)
+                # Generate a new payment ID
+                nvc_payment_id = f"NVC-{uuid.uuid4().hex[:8].upper()}"
+                
+                # Update metadata with payment ID
+                metadata['nvc_payment_id'] = nvc_payment_id
+                transaction.tx_metadata_json = json.dumps(metadata)
+                
+                # Update the transaction description to include the payment ID
+                transaction.description = f"{transaction.description} (NVC Global Payment ID: {nvc_payment_id})"
+                db.session.commit()
+            else:
+                nvc_payment_id = match.group(1)
             
             # Create bank transfer request data for NVC Global API
             transfer_request = {
