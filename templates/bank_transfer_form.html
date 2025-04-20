@@ -1,0 +1,314 @@
+{% extends 'layout.html' %}
+
+{% block title %}Bank Transfer - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">NVC Global Bank Transfer</h2>
+    
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Transaction Information</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Amount:</strong> ${{ amount }}</p>
+                    <p><strong>Transaction ID:</strong> {{ transaction_id }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Date:</strong> {{ date }}</p>
+                    <p><strong>Description:</strong> {{ description }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <form method="POST" action="{{ url_for('web.main.process_bank_transfer') }}">
+        {{ form.hidden_tag() }}
+        <input type="hidden" name="transaction_id" value="{{ transaction_id }}">
+        <input type="hidden" name="amount" value="{{ amount }}">
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Recipient Information</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="recipient_name" class="form-label">Full Legal Name*</label>
+                            <input type="text" class="form-control" id="recipient_name" name="recipient_name" required>
+                            <small class="form-text text-muted">Exactly as it appears on their bank account</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="recipient_email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="recipient_email" name="recipient_email">
+                            <small class="form-text text-muted">For payment notifications (optional)</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="recipient_address" class="form-label">Address*</label>
+                            <input type="text" class="form-control" id="recipient_address" name="recipient_address" required>
+                            <small class="form-text text-muted">Registered address of the account holder</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="recipient_city" class="form-label">City*</label>
+                            <input type="text" class="form-control" id="recipient_city" name="recipient_city" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="recipient_state" class="form-label">State/Province</label>
+                            <input type="text" class="form-control" id="recipient_state" name="recipient_state">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="recipient_zip" class="form-label">Postal Code*</label>
+                            <input type="text" class="form-control" id="recipient_zip" name="recipient_zip" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="recipient_country" class="form-label">Country*</label>
+                            <input type="text" class="form-control" id="recipient_country" name="recipient_country" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Bank Account Information</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="bank_name" class="form-label">Bank Name*</label>
+                            <input type="text" class="form-control" id="bank_name" name="bank_name" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="account_number" class="form-label">Account Number*</label>
+                            <input type="text" class="form-control" id="account_number" name="account_number" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="account_type" class="form-label">Account Type*</label>
+                            <select class="form-select" id="account_type" name="account_type" required>
+                                <option value="">Select Account Type</option>
+                                <option value="checking">Checking</option>
+                                <option value="savings">Savings</option>
+                                <option value="business">Business</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="transfer_type" class="form-label">Transfer Type*</label>
+                            <select class="form-select" id="transfer_type" name="transfer_type" onchange="toggleTransferFields()" required>
+                                <option value="">Select Transfer Type</option>
+                                <option value="domestic">Domestic (Same Country)</option>
+                                <option value="international">International</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Domestic Transfer Fields -->
+                    <div class="col-md-6 domestic-field">
+                        <div class="form-group">
+                            <label for="routing_number" class="form-label">Routing/Sort Code*</label>
+                            <input type="text" class="form-control" id="routing_number" name="routing_number">
+                            <small class="form-text text-muted">For domestic transfers</small>
+                        </div>
+                    </div>
+                    
+                    <!-- International Transfer Fields -->
+                    <div class="col-md-6 international-field" style="display: none;">
+                        <div class="form-group">
+                            <label for="swift_bic" class="form-label">SWIFT/BIC Code*</label>
+                            <input type="text" class="form-control" id="swift_bic" name="swift_bic">
+                            <small class="form-text text-muted">For international transfers</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6 international-field" style="display: none;">
+                        <div class="form-group">
+                            <label for="iban" class="form-label">IBAN</label>
+                            <input type="text" class="form-control" id="iban" name="iban">
+                            <small class="form-text text-muted">If applicable for recipient's country</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label for="bank_address" class="form-label">Bank Address*</label>
+                            <input type="text" class="form-control" id="bank_address" name="bank_address" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="bank_city" class="form-label">Bank City*</label>
+                            <input type="text" class="form-control" id="bank_city" name="bank_city" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="bank_state" class="form-label">Bank State/Province</label>
+                            <input type="text" class="form-control" id="bank_state" name="bank_state">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="bank_country" class="form-label">Bank Country*</label>
+                            <input type="text" class="form-control" id="bank_country" name="bank_country" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mb-4 international-field" style="display: none;">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Additional International Transfer Information</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="intermediary_bank" class="form-label">Intermediary Bank Name</label>
+                            <input type="text" class="form-control" id="intermediary_bank" name="intermediary_bank">
+                            <small class="form-text text-muted">If required for the transfer</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="intermediary_swift" class="form-label">Intermediary SWIFT/BIC</label>
+                            <input type="text" class="form-control" id="intermediary_swift" name="intermediary_swift">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="currency" class="form-label">Currency for Receipt*</label>
+                            <select class="form-select" id="currency" name="currency">
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - British Pound</option>
+                                <option value="CAD">CAD - Canadian Dollar</option>
+                                <option value="JPY">JPY - Japanese Yen</option>
+                                <option value="AUD">AUD - Australian Dollar</option>
+                                <option value="CHF">CHF - Swiss Franc</option>
+                                <option value="CNY">CNY - Chinese Yuan</option>
+                                <option value="local">Local Currency of Recipient's Country</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="purpose" class="form-label">Purpose of Payment*</label>
+                            <select class="form-select" id="purpose" name="purpose">
+                                <option value="goods">Goods/Services Payment</option>
+                                <option value="family">Family Support</option>
+                                <option value="gift">Gift</option>
+                                <option value="investment">Investment</option>
+                                <option value="loan">Loan Repayment</option>
+                                <option value="other">Other (Specify)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12" id="purpose_detail_group" style="display: none;">
+                        <div class="form-group">
+                            <label for="purpose_detail" class="form-label">Specify Purpose</label>
+                            <input type="text" class="form-control" id="purpose_detail" name="purpose_detail">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Reference Information</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="reference" class="form-label">Payment Reference</label>
+                            <input type="text" class="form-control" id="reference" name="reference">
+                            <small class="form-text text-muted">Invoice number or other reference</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="description" class="form-label">Payment Note</label>
+                            <input type="text" class="form-control" id="description" name="description" value="{{ description }}">
+                            <small class="form-text text-muted">Will appear on recipient's statement</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Processing Information</h5>
+                <div class="alert alert-info">
+                    <h6>Fees and Processing Time:</h6>
+                    <ul class="mb-0">
+                        <li><strong>Domestic Transfers:</strong> 1-3 business days, 1% fee (minimum $5)</li>
+                        <li><strong>International Transfers:</strong> 3-7 business days, 3% fee (minimum $15)</li>
+                        <li>Currency conversion may include additional fees.</li>
+                    </ul>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="terms_agree" name="terms_agree" required>
+                    <label class="form-check-label" for="terms_agree">
+                        I confirm that the recipient's information is correct, and I authorize NVC Banking Platform to process this bank transfer.
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-5">
+            <a href="{{ url_for('web.main.payment_form') }}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Process Bank Transfer</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleTransferFields() {
+    const transferType = document.getElementById('transfer_type').value;
+    const domesticFields = document.querySelectorAll('.domestic-field');
+    const internationalFields = document.querySelectorAll('.international-field');
+    
+    if (transferType === 'domestic') {
+        domesticFields.forEach(field => field.style.display = 'block');
+        internationalFields.forEach(field => field.style.display = 'none');
+        document.getElementById('routing_number').setAttribute('required', 'required');
+        document.getElementById('swift_bic').removeAttribute('required');
+        document.getElementById('currency').removeAttribute('required');
+        document.getElementById('purpose').removeAttribute('required');
+    } else if (transferType === 'international') {
+        domesticFields.forEach(field => field.style.display = 'none');
+        internationalFields.forEach(field => field.style.display = 'block');
+        document.getElementById('routing_number').removeAttribute('required');
+        document.getElementById('swift_bic').setAttribute('required', 'required');
+        document.getElementById('currency').setAttribute('required', 'required');
+        document.getElementById('purpose').setAttribute('required', 'required');
+    }
+}
+
+document.getElementById('purpose').addEventListener('change', function() {
+    const purposeGroup = document.getElementById('purpose_detail_group');
+    if (this.value === 'other') {
+        purposeGroup.style.display = 'block';
+        document.getElementById('purpose_detail').setAttribute('required', 'required');
+    } else {
+        purposeGroup.style.display = 'none';
+        document.getElementById('purpose_detail').removeAttribute('required');
+    }
+});
+</script>
+{% endblock %}

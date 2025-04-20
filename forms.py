@@ -164,3 +164,63 @@ class TestPaymentForm(FlaskForm):
                         ], default='USD')
     description = TextAreaField('Description', validators=[Optional(), Length(max=255)])
     submit = SubmitField('Start Test Payment')
+    
+class BankTransferForm(FlaskForm):
+    """Form for bank transfers through NVC Global Payment Gateway"""
+    # Hidden fields
+    transaction_id = HiddenField('Transaction ID', validators=[DataRequired()])
+    amount = HiddenField('Amount', validators=[DataRequired()])
+    
+    # Recipient Information
+    recipient_name = StringField('Full Legal Name', validators=[DataRequired(), Length(max=128)])
+    recipient_email = EmailField('Email Address', validators=[Optional(), Email()])
+    recipient_address = StringField('Address', validators=[DataRequired(), Length(max=256)])
+    recipient_city = StringField('City', validators=[DataRequired(), Length(max=64)])
+    recipient_state = StringField('State/Province', validators=[Optional(), Length(max=64)])
+    recipient_zip = StringField('Postal Code', validators=[DataRequired(), Length(max=16)])
+    recipient_country = StringField('Country', validators=[DataRequired(), Length(max=64)])
+    
+    # Bank Account Information
+    bank_name = StringField('Bank Name', validators=[DataRequired(), Length(max=128)])
+    account_number = StringField('Account Number', validators=[DataRequired(), Length(max=64)])
+    account_type = SelectField('Account Type', validators=[DataRequired()], 
+                              choices=[('checking', 'Checking'), ('savings', 'Savings'), 
+                                       ('business', 'Business'), ('other', 'Other')])
+    transfer_type = SelectField('Transfer Type', validators=[DataRequired()],
+                              choices=[('domestic', 'Domestic (Same Country)'), 
+                                       ('international', 'International')])
+    
+    # Domestic Transfer Fields
+    routing_number = StringField('Routing/Sort Code', validators=[Optional(), Length(max=64)])
+    
+    # International Transfer Fields
+    swift_bic = StringField('SWIFT/BIC Code', validators=[Optional(), Length(max=32)])
+    iban = StringField('IBAN', validators=[Optional(), Length(max=64)])
+    
+    # Bank Address
+    bank_address = StringField('Bank Address', validators=[DataRequired(), Length(max=256)])
+    bank_city = StringField('Bank City', validators=[DataRequired(), Length(max=64)])
+    bank_state = StringField('Bank State/Province', validators=[Optional(), Length(max=64)])
+    bank_country = StringField('Bank Country', validators=[DataRequired(), Length(max=64)])
+    
+    # Additional International Transfer Information
+    intermediary_bank = StringField('Intermediary Bank Name', validators=[Optional(), Length(max=128)])
+    intermediary_swift = StringField('Intermediary SWIFT/BIC', validators=[Optional(), Length(max=32)])
+    currency = SelectField('Currency for Receipt', validators=[Optional()],
+                          choices=[('USD', 'USD - US Dollar'), ('EUR', 'EUR - Euro'), 
+                                  ('GBP', 'GBP - British Pound'), ('CAD', 'CAD - Canadian Dollar'),
+                                  ('JPY', 'JPY - Japanese Yen'), ('AUD', 'AUD - Australian Dollar'),
+                                  ('CHF', 'CHF - Swiss Franc'), ('CNY', 'CNY - Chinese Yuan'),
+                                  ('local', 'Local Currency of Recipient\'s Country')])
+    purpose = SelectField('Purpose of Payment', validators=[Optional()],
+                         choices=[('goods', 'Goods/Services Payment'), ('family', 'Family Support'),
+                                 ('gift', 'Gift'), ('investment', 'Investment'),
+                                 ('loan', 'Loan Repayment'), ('other', 'Other (Specify)')])
+    purpose_detail = StringField('Specify Purpose', validators=[Optional(), Length(max=128)])
+    
+    # Reference Information
+    reference = StringField('Payment Reference', validators=[Optional(), Length(max=128)])
+    description = TextAreaField('Payment Note', validators=[Optional(), Length(max=256)])
+    
+    # Terms Agreement
+    terms_agree = BooleanField('Terms Agreement', validators=[DataRequired()])
