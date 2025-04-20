@@ -905,7 +905,7 @@ def bank_transfer_form(transaction_id):
         return redirect(url_for('web.main.dashboard'))
     
     # Verify the transaction is for NVC Global and is in an appropriate state
-    if transaction.gateway_name != 'NVC Global' or transaction.status not in [TransactionStatus.PENDING, TransactionStatus.PROCESSING]:
+    if not transaction.gateway or transaction.gateway.name != 'NVC Global' or transaction.status not in [TransactionStatus.PENDING, TransactionStatus.PROCESSING]:
         flash('This transaction cannot be processed as a bank transfer', 'danger')
         return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
     
@@ -973,7 +973,11 @@ def bank_transfer_form(transaction_id):
             
             # Get gateway handler to process the bank transfer
             try:
-                gateway_handler = get_gateway_handler(transaction.gateway_id)
+                # Make sure we have a valid gateway
+                if not transaction.gateway or not transaction.gateway.id:
+                    raise ValueError("No valid payment gateway found for this transaction")
+                
+                gateway_handler = get_gateway_handler(transaction.gateway.id)
                 
                 # Process the bank transfer through NVC Global
                 result = gateway_handler.process_bank_transfer(transaction)

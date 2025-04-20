@@ -300,14 +300,27 @@ function toggleTransferFields() {
     }
 }
 
-document.getElementById('purpose').addEventListener('change', function() {
-    const purposeGroup = document.getElementById('purpose_detail_group');
-    if (this.value === 'other') {
-        purposeGroup.style.display = 'block';
-        document.getElementById('purpose_detail').setAttribute('required', 'required');
-    } else {
-        purposeGroup.style.display = 'none';
-        document.getElementById('purpose_detail').removeAttribute('required');
+// Wait for the DOM to be fully loaded before attaching event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up transfer type change handler
+    const transferTypeSelect = document.getElementById('transfer_type');
+    if (transferTypeSelect) {
+        transferTypeSelect.addEventListener('change', toggleTransferFields);
+    }
+    
+    // Set up purpose change handler
+    const purposeSelect = document.getElementById('purpose');
+    if (purposeSelect) {
+        purposeSelect.addEventListener('change', function() {
+            const purposeGroup = document.getElementById('purpose_detail_group');
+            if (this.value === 'other') {
+                purposeGroup.style.display = 'block';
+                document.getElementById('purpose_detail').setAttribute('required', 'required');
+            } else {
+                purposeGroup.style.display = 'none';
+                document.getElementById('purpose_detail').removeAttribute('required');
+            }
+        });
     }
 });
 </script>

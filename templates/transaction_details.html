@@ -79,7 +79,7 @@
             </div>
             {% endif %}
             
-            {% if transaction.gateway and transaction.gateway.name == 'NVC Global' and (transaction.status.value == 'pending' or transaction.status.value == 'processing') %}
+            {% if transaction.gateway is defined and transaction.gateway and transaction.gateway.name == 'NVC Global' and (transaction.status.value == 'pending' or transaction.status.value == 'processing') %}
             <div class="alert alert-primary mt-3 mb-0 d-flex justify-content-between align-items-center">
                 <div>
                     <i class="fas fa-university me-2"></i> <strong>Bank Transfer Option:</strong> 
