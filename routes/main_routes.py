@@ -18,7 +18,7 @@ import high_availability
 from forms import (
     LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, ForgotUsernameForm,
     PaymentForm, TransferForm, BlockchainTransactionForm, FinancialInstitutionForm, PaymentGatewayForm,
-    InvitationForm, AcceptInvitationForm, TestPaymentForm
+    InvitationForm, AcceptInvitationForm, TestPaymentForm, BankTransferForm
 )
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -884,3 +884,144 @@ def test_payment():
                 flash(f"{field}: {error}", 'danger')
     
     return render_template('payment_test.html', form=form, user=user, test_transactions=test_transactions)
+
+@main.route('/payment/bank-transfer/<transaction_id>', methods=['GET', 'POST'])
+@login_required
+def bank_transfer_form(transaction_id):
+    """Bank transfer form route for NVC Global payments"""
+    user_id = session.get('user_id')
+    user = User.query.get(user_id)
+    
+    # Get the transaction
+    transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+    
+    if not transaction:
+        flash('Transaction not found', 'danger')
+        return redirect(url_for('web.main.dashboard'))
+    
+    # Verify this transaction belongs to the current user
+    if transaction.user_id != user_id:
+        flash('You do not have permission to access this transaction', 'danger')
+        return redirect(url_for('web.main.dashboard'))
+    
+    # Verify the transaction is for NVC Global and is in an appropriate state
+    if transaction.gateway_name != 'NVC Global' or transaction.status not in [TransactionStatus.PENDING, TransactionStatus.PROCESSING]:
+        flash('This transaction cannot be processed as a bank transfer', 'danger')
+        return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
+    
+    # Create the bank transfer form
+    form = BankTransferForm()
+    
+    if form.validate_on_submit():
+        # Process the bank transfer request
+        try:
+            # Update transaction metadata with bank details
+            bank_details = {
+                'recipient': {
+                    'name': form.recipient_name.data,
+                    'email': form.recipient_email.data,
+                    'address': form.recipient_address.data,
+                    'city': form.recipient_city.data,
+                    'state': form.recipient_state.data,
+                    'zip': form.recipient_zip.data,
+                    'country': form.recipient_country.data
+                },
+                'bank': {
+                    'name': form.bank_name.data,
+                    'account_number': form.account_number.data,
+                    'account_type': form.account_type.data,
+                    'transfer_type': form.transfer_type.data,
+                    'address': form.bank_address.data,
+                    'city': form.bank_city.data,
+                    'state': form.bank_state.data,
+                    'country': form.bank_country.data
+                },
+                'reference': form.reference.data,
+                'payment_note': form.description.data
+            }
+            
+            # Add routing or SWIFT code based on transfer type
+            if form.transfer_type.data == 'domestic':
+                bank_details['bank']['routing_number'] = form.routing_number.data
+            else:
+                bank_details['bank']['swift_bic'] = form.swift_bic.data
+                bank_details['bank']['iban'] = form.iban.data
+                bank_details['international'] = {
+                    'currency': form.currency.data,
+                    'purpose': form.purpose.data,
+                    'purpose_detail': form.purpose_detail.data if form.purpose.data == 'other' else None,
+                    'intermediary_bank': form.intermediary_bank.data,
+                    'intermediary_swift': form.intermediary_swift.data
+                }
+            
+            # Update transaction with bank transfer details
+            if transaction.tx_metadata_json:
+                metadata = json.loads(transaction.tx_metadata_json)
+                metadata['bank_transfer'] = bank_details
+                transaction.tx_metadata_json = json.dumps(metadata)
+            else:
+                transaction.tx_metadata_json = json.dumps({'bank_transfer': bank_details})
+            
+            # Update transaction description to include bank transfer info
+            transaction.description = f"{transaction.description} (Bank Transfer to {form.bank_name.data})"
+            
+            # Update transaction status to processing
+            transaction.status = TransactionStatus.PROCESSING
+            
+            # Save transaction
+            db.session.commit()
+            
+            # Get gateway handler to process the bank transfer
+            try:
+                gateway_handler = get_gateway_handler(transaction.gateway_id)
+                
+                # Process the bank transfer through NVC Global
+                result = gateway_handler.process_bank_transfer(transaction)
+                
+                if result.get('success'):
+                    flash('Bank transfer initiated successfully', 'success')
+                    return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
+                else:
+                    flash(f"Error processing bank transfer: {result.get('error', 'Unknown error')}", 'danger')
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Error processing bank transfer: {str(e)}")
+                flash(f"Error processing bank transfer: {str(e)}", 'danger')
+        
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error updating transaction with bank details: {str(e)}")
+            flash(f"Error updating transaction with bank details: {str(e)}", 'danger')
+    
+    # For GET request or form validation errors, show the bank transfer form
+    return render_template(
+        'bank_transfer_form.html', 
+        form=form, 
+        transaction_id=transaction.transaction_id,
+        amount=format_currency(transaction.amount, transaction.currency),
+        date=transaction.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+        description=transaction.description
+    )
+
+@main.route('/payment/process-bank-transfer', methods=['POST'])
+@login_required
+def process_bank_transfer():
+    """Process a bank transfer form submission"""
+    # Get the form data
+    form = BankTransferForm()
+    
+    if form.validate_on_submit():
+        # Get the transaction ID from the form
+        transaction_id = form.transaction_id.data
+        
+        # Redirect to the bank transfer form route for processing
+        return redirect(url_for('web.main.bank_transfer_form', transaction_id=transaction_id))
+    
+    # If there were form validation errors
+    if form.errors:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
+    
+    # If the form validation failed, redirect to dashboard
+    return redirect(url_for('web.main.dashboard'))
