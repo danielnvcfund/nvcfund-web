@@ -22,10 +22,10 @@
         </div>
     </div>
     
-    <form method="POST" action="{{ url_for('web.main.process_bank_transfer') }}">
+    <form method="POST">
         {{ form.hidden_tag() }}
-        <input type="hidden" name="transaction_id" value="{{ transaction_id }}">
-        <input type="hidden" name="amount" value="{{ amount }}">
+        {{ form.transaction_id(value=transaction_id) }}
+        {{ form.amount(value=amount) }}
         
         <div class="card shadow-sm mb-4">
             <div class="card-body">
@@ -33,47 +33,47 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="recipient_name" class="form-label">Full Legal Name*</label>
-                            <input type="text" class="form-control" id="recipient_name" name="recipient_name" required>
+                            {{ form.recipient_name.label(class="form-label") }}*
+                            {{ form.recipient_name(class="form-control", required=True) }}
                             <small class="form-text text-muted">Exactly as it appears on their bank account</small>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="recipient_email" class="form-label">Email Address</label>
-                            <input type="email" class="form-control" id="recipient_email" name="recipient_email">
+                            {{ form.recipient_email.label(class="form-label") }}
+                            {{ form.recipient_email(class="form-control") }}
                             <small class="form-text text-muted">For payment notifications (optional)</small>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="recipient_address" class="form-label">Address*</label>
-                            <input type="text" class="form-control" id="recipient_address" name="recipient_address" required>
+                            {{ form.recipient_address.label(class="form-label") }}*
+                            {{ form.recipient_address(class="form-control", required=True) }}
                             <small class="form-text text-muted">Registered address of the account holder</small>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="recipient_city" class="form-label">City*</label>
-                            <input type="text" class="form-control" id="recipient_city" name="recipient_city" required>
+                            {{ form.recipient_city.label(class="form-label") }}*
+                            {{ form.recipient_city(class="form-control", required=True) }}
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label for="recipient_state" class="form-label">State/Province</label>
-                            <input type="text" class="form-control" id="recipient_state" name="recipient_state">
+                            {{ form.recipient_state.label(class="form-label") }}
+                            {{ form.recipient_state(class="form-control") }}
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label for="recipient_zip" class="form-label">Postal Code*</label>
-                            <input type="text" class="form-control" id="recipient_zip" name="recipient_zip" required>
+                            {{ form.recipient_zip.label(class="form-label") }}*
+                            {{ form.recipient_zip(class="form-control", required=True) }}
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label for="recipient_country" class="form-label">Country*</label>
-                            <input type="text" class="form-control" id="recipient_country" name="recipient_country" required>
+                            {{ form.recipient_country.label(class="form-label") }}*
+                            {{ form.recipient_country(class="form-control", required=True) }}
                         </div>
                     </div>
                 </div>
@@ -86,44 +86,34 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="bank_name" class="form-label">Bank Name*</label>
-                            <input type="text" class="form-control" id="bank_name" name="bank_name" required>
+                            {{ form.bank_name.label(class="form-label") }}*
+                            {{ form.bank_name(class="form-control", required=True) }}
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="account_number" class="form-label">Account Number*</label>
-                            <input type="text" class="form-control" id="account_number" name="account_number" required>
+                            {{ form.account_number.label(class="form-label") }}*
+                            {{ form.account_number(class="form-control", required=True) }}
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="account_type" class="form-label">Account Type*</label>
-                            <select class="form-select" id="account_type" name="account_type" required>
-                                <option value="">Select Account Type</option>
-                                <option value="checking">Checking</option>
-                                <option value="savings">Savings</option>
-                                <option value="business">Business</option>
-                                <option value="other">Other</option>
-                            </select>
+                            {{ form.account_type.label(class="form-label") }}*
+                            {{ form.account_type(class="form-select", required=True) }}
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="transfer_type" class="form-label">Transfer Type*</label>
-                            <select class="form-select" id="transfer_type" name="transfer_type" onchange="toggleTransferFields()" required>
-                                <option value="">Select Transfer Type</option>
-                                <option value="domestic">Domestic (Same Country)</option>
-                                <option value="international">International</option>
-                            </select>
+                            {{ form.transfer_type.label(class="form-label") }}*
+                            {{ form.transfer_type(class="form-select", required=True, **{'onchange': 'toggleTransferFields()'}) }}
                         </div>
                     </div>
                     
                     <!-- Domestic Transfer Fields -->
                     <div class="col-md-6 domestic-field">
                         <div class="form-group">
-                            <label for="routing_number" class="form-label">Routing/Sort Code*</label>
-                            <input type="text" class="form-control" id="routing_number" name="routing_number">
+                            {{ form.routing_number.label(class="form-label") }}*
+                            {{ form.routing_number(class="form-control") }}
                             <small class="form-text text-muted">For domestic transfers</small>
                         </div>
                     </div>
@@ -131,41 +121,41 @@
                     <!-- International Transfer Fields -->
                     <div class="col-md-6 international-field" style="display: none;">
                         <div class="form-group">
-                            <label for="swift_bic" class="form-label">SWIFT/BIC Code*</label>
-                            <input type="text" class="form-control" id="swift_bic" name="swift_bic">
+                            {{ form.swift_bic.label(class="form-label") }}*
+                            {{ form.swift_bic(class="form-control") }}
                             <small class="form-text text-muted">For international transfers</small>
                         </div>
                     </div>
                     <div class="col-md-6 international-field" style="display: none;">
                         <div class="form-group">
-                            <label for="iban" class="form-label">IBAN</label>
-                            <input type="text" class="form-control" id="iban" name="iban">
+                            {{ form.iban.label(class="form-label") }}
+                            {{ form.iban(class="form-control") }}
                             <small class="form-text text-muted">If applicable for recipient's country</small>
                         </div>
                     </div>
                     
                     <div class="col-12">
                         <div class="form-group">
-                            <label for="bank_address" class="form-label">Bank Address*</label>
-                            <input type="text" class="form-control" id="bank_address" name="bank_address" required>
+                            {{ form.bank_address.label(class="form-label") }}*
+                            {{ form.bank_address(class="form-control", required=True) }}
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label for="bank_city" class="form-label">Bank City*</label>
-                            <input type="text" class="form-control" id="bank_city" name="bank_city" required>
+                            {{ form.bank_city.label(class="form-label") }}*
+                            {{ form.bank_city(class="form-control", required=True) }}
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label for="bank_state" class="form-label">Bank State/Province</label>
-                            <input type="text" class="form-control" id="bank_state" name="bank_state">
+                            {{ form.bank_state.label(class="form-label") }}
+                            {{ form.bank_state(class="form-control") }}
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label for="bank_country" class="form-label">Bank Country*</label>
-                            <input type="text" class="form-control" id="bank_country" name="bank_country" required>
+                            {{ form.bank_country.label(class="form-label") }}*
+                            {{ form.bank_country(class="form-control", required=True) }}
                         </div>
                     </div>
                 </div>
@@ -178,50 +168,33 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="intermediary_bank" class="form-label">Intermediary Bank Name</label>
-                            <input type="text" class="form-control" id="intermediary_bank" name="intermediary_bank">
+                            {{ form.intermediary_bank.label(class="form-label") }}
+                            {{ form.intermediary_bank(class="form-control") }}
                             <small class="form-text text-muted">If required for the transfer</small>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="intermediary_swift" class="form-label">Intermediary SWIFT/BIC</label>
-                            <input type="text" class="form-control" id="intermediary_swift" name="intermediary_swift">
+                            {{ form.intermediary_swift.label(class="form-label") }}
+                            {{ form.intermediary_swift(class="form-control") }}
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="currency" class="form-label">Currency for Receipt*</label>
-                            <select class="form-select" id="currency" name="currency">
-                                <option value="USD">USD - US Dollar</option>
-                                <option value="EUR">EUR - Euro</option>
-                                <option value="GBP">GBP - British Pound</option>
-                                <option value="CAD">CAD - Canadian Dollar</option>
-                                <option value="JPY">JPY - Japanese Yen</option>
-                                <option value="AUD">AUD - Australian Dollar</option>
-                                <option value="CHF">CHF - Swiss Franc</option>
-                                <option value="CNY">CNY - Chinese Yuan</option>
-                                <option value="local">Local Currency of Recipient's Country</option>
-                            </select>
+                            {{ form.currency.label(class="form-label") }}*
+                            {{ form.currency(class="form-select") }}
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="purpose" class="form-label">Purpose of Payment*</label>
-                            <select class="form-select" id="purpose" name="purpose">
-                                <option value="goods">Goods/Services Payment</option>
-                                <option value="family">Family Support</option>
-                                <option value="gift">Gift</option>
-                                <option value="investment">Investment</option>
-                                <option value="loan">Loan Repayment</option>
-                                <option value="other">Other (Specify)</option>
-                            </select>
+                            {{ form.purpose.label(class="form-label") }}*
+                            {{ form.purpose(class="form-select") }}
                         </div>
                     </div>
                     <div class="col-12" id="purpose_detail_group" style="display: none;">
                         <div class="form-group">
-                            <label for="purpose_detail" class="form-label">Specify Purpose</label>
-                            <input type="text" class="form-control" id="purpose_detail" name="purpose_detail">
+                            {{ form.purpose_detail.label(class="form-label") }}
+                            {{ form.purpose_detail(class="form-control") }}
                         </div>
                     </div>
                 </div>
@@ -234,15 +207,15 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="reference" class="form-label">Payment Reference</label>
-                            <input type="text" class="form-control" id="reference" name="reference">
+                            {{ form.reference.label(class="form-label") }}
+                            {{ form.reference(class="form-control") }}
                             <small class="form-text text-muted">Invoice number or other reference</small>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="description" class="form-label">Payment Note</label>
-                            <input type="text" class="form-control" id="description" name="description" value="{{ description }}">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control", value=description if description else '') }}
                             <small class="form-text text-muted">Will appear on recipient's statement</small>
                         </div>
                     </div>
@@ -262,10 +235,11 @@
                     </ul>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="terms_agree" name="terms_agree" required>
-                    <label class="form-check-label" for="terms_agree">
+                    {{ form.terms_agree(class="form-check-input") }}
+                    {{ form.terms_agree.label(class="form-check-label") }}
+                    <div class="form-text">
                         I confirm that the recipient's information is correct, and I authorize NVC Banking Platform to process this bank transfer.
-                    </label>
+                    </div>
                 </div>
             </div>
         </div>
