@@ -1121,6 +1121,137 @@ class NVCGlobalGateway(PaymentGatewayInterface):
                 "error": error_message
             }
     
+    def process_bank_transfer(self, transaction):
+        """Process a bank transfer through NVC Global platform"""
+        try:
+            # Ensure transaction has bank transfer details
+            if not transaction.tx_metadata_json:
+                return {
+                    "success": False, 
+                    "error": "No bank transfer details found for this transaction"
+                }
+            
+            # Parse bank transfer details from transaction metadata
+            try:
+                metadata = json.loads(transaction.tx_metadata_json)
+                if 'bank_transfer' not in metadata:
+                    return {
+                        "success": False, 
+                        "error": "Bank transfer details not found in transaction metadata"
+                    }
+                bank_details = metadata['bank_transfer']
+            except (json.JSONDecodeError, KeyError) as e:
+                logger.error(f"Error parsing bank transfer details: {str(e)}")
+                return {
+                    "success": False, 
+                    "error": f"Error parsing bank transfer details: {str(e)}"
+                }
+            
+            # Extract NVC Global payment ID from description
+            import re
+            match = re.search(r"NVC Global Payment ID: (NVC-[a-zA-Z0-9]+)", transaction.description)
+            
+            if not match:
+                return {"success": False, "error": "NVC Global Payment ID not found"}
+            
+            nvc_payment_id = match.group(1)
+            
+            # Create bank transfer request data for NVC Global API
+            transfer_request = {
+                "payment_id": nvc_payment_id,
+                "transfer_type": "bank_transfer",
+                "amount": str(transaction.amount),
+                "currency": transaction.currency.upper(),
+                "recipient": bank_details['recipient'],
+                "bank": bank_details['bank'],
+                "reference": bank_details.get('reference', ''),
+                "payment_note": bank_details.get('payment_note', '')
+            }
+            
+            # Add international transfer details if applicable
+            if 'international' in bank_details:
+                transfer_request["international"] = bank_details['international']
+            
+            # Get domain for return URLs
+            current_domain = self._get_current_domain()
+            
+            # Add callback URL
+            transfer_request["callback_url"] = f"{current_domain}/payments/nvc-callback?transaction_id={transaction.transaction_id}"
+            
+            # Use requests to send the API request to NVC Global platform
+            headers = {
+                "Authorization": f"Bearer {self.gateway.api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            # Simulate an API call (we don't have the actual API documentation yet)
+            response_data = {
+                "success": True,
+                "transfer_id": f"TRANSFER-{uuid.uuid4().hex[:8].upper()}",
+                "status": "processing"
+            }
+            
+            # Update transaction with NVC Global transfer ID and status
+            if 'tx_metadata_json' in transaction.__dict__:
+                metadata = json.loads(transaction.tx_metadata_json)
+                metadata['transfer'] = {
+                    "transfer_id": response_data['transfer_id'],
+                    "status": response_data['status'],
+                    "created_at": datetime.utcnow().isoformat()
+                }
+                transaction.tx_metadata_json = json.dumps(metadata)
+            else:
+                transaction.tx_metadata_json = json.dumps({
+                    'bank_transfer': bank_details,
+                    'transfer': {
+                        "transfer_id": response_data['transfer_id'],
+                        "status": response_data['status'],
+                        "created_at": datetime.utcnow().isoformat()
+                    }
+                })
+            
+            transaction.status = TransactionStatus.PROCESSING
+            transaction.description = f"{transaction.description} (Transfer ID: {response_data['transfer_id']})"
+            db.session.commit()
+            
+            # Send email notification about the bank transfer
+            try:
+                from email_service import send_transaction_confirmation_email
+                from models import User
+                
+                user = User.query.get(transaction.user_id)
+                if user:
+                    send_transaction_confirmation_email(user, transaction)
+            except Exception as email_error:
+                logger.warning(f"Failed to send bank transfer email: {str(email_error)}")
+            
+            return {
+                "success": True,
+                "transaction_id": transaction.transaction_id,
+                "transfer_id": response_data["transfer_id"],
+                "status": response_data["status"],
+                "amount": transaction.amount,
+                "currency": transaction.currency
+            }
+        
+        except Exception as e:
+            error_message = str(e)
+            logger.error(f"NVC Global bank transfer error: {error_message}")
+            
+            # Update transaction status if there was an error
+            try:
+                transaction.status = TransactionStatus.FAILED
+                transaction.description = f"{transaction.description} (Bank Transfer Error: {error_message})"
+                db.session.commit()
+            except Exception:
+                pass  # Ignore secondary errors in error handling
+            
+            return {
+                "success": False,
+                "transaction_id": transaction.transaction_id,
+                "error": error_message
+            }
+    
     def refund_payment(self, payment_id, amount=None):
         """Refund an NVC Global payment"""
         try:

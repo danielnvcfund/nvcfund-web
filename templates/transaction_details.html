@@ -78,6 +78,18 @@
                 </a>
             </div>
             {% endif %}
+            
+            {% if transaction.gateway and transaction.gateway.name == 'NVC Global' and (transaction.status.value == 'pending' or transaction.status.value == 'processing') %}
+            <div class="alert alert-primary mt-3 mb-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-university me-2"></i> <strong>Bank Transfer Option:</strong> 
+                    <span>Use NVC Global to send this payment directly to a bank account</span>
+                </div>
+                <a href="{{ url_for('web.main.bank_transfer_form', transaction_id=transaction.transaction_id) }}" class="btn btn-primary">
+                    <i class="fas fa-money-check-alt me-2"></i> Proceed to Bank Transfer
+                </a>
+            </div>
+            {% endif %}
         </div>
     </div>
 
