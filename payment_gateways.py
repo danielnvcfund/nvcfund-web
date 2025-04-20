@@ -1274,14 +1274,25 @@ class NVCGlobalGateway(PaymentGatewayInterface):
             if transaction.status != TransactionStatus.COMPLETED:
                 return {"success": False, "error": "Transaction not completed, cannot refund"}
             
-            # Extract NVC Global payment ID from description
+            # Try to extract NVC Global payment ID from description
             import re
             match = re.search(r"NVC Global Payment ID: (NVC-[a-zA-Z0-9]+)", transaction.description)
             
+            # If no payment ID in description, check metadata
             if not match:
-                return {"success": False, "error": "NVC Global Payment ID not found"}
-            
-            nvc_payment_id = match.group(1)
+                if transaction.tx_metadata_json:
+                    try:
+                        metadata = json.loads(transaction.tx_metadata_json)
+                        if metadata.get('nvc_payment_id'):
+                            nvc_payment_id = metadata.get('nvc_payment_id')
+                        else:
+                            return {"success": False, "error": "NVC Global Payment ID not found"}
+                    except json.JSONDecodeError:
+                        return {"success": False, "error": "Error parsing transaction metadata"}
+                else:
+                    return {"success": False, "error": "NVC Global Payment ID not found"}
+            else:
+                nvc_payment_id = match.group(1)
             
             # Create refund data
             refund_data = {
