@@ -22,7 +22,7 @@
         </div>
     </div>
     
-    <form method="POST">
+    <form method="POST" action="{{ url_for('web.main.process_bank_transfer') }}">
         {{ form.hidden_tag() }}
         {{ form.transaction_id(value=transaction_id) }}
         {{ form.amount(value=amount) }}
@@ -280,6 +280,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const transferTypeSelect = document.getElementById('transfer_type');
     if (transferTypeSelect) {
         transferTypeSelect.addEventListener('change', toggleTransferFields);
+        
+        // Initialize the form based on the current selection
+        toggleTransferFields();
     }
     
     // Set up purpose change handler
@@ -295,6 +298,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('purpose_detail').removeAttribute('required');
             }
         });
+        
+        // Initialize the purpose fields based on current selection
+        const purposeGroup = document.getElementById('purpose_detail_group');
+        if (purposeSelect.value === 'other') {
+            purposeGroup.style.display = 'block';
+            document.getElementById('purpose_detail').setAttribute('required', 'required');
+        } else {
+            purposeGroup.style.display = 'none';
+            document.getElementById('purpose_detail').removeAttribute('required');
+        }
     }
 });
 </script>

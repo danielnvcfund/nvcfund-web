@@ -196,6 +196,22 @@
             </ul>
         </div>
     </div>
+
+    <!-- Actions Section -->
+    {% if transaction.gateway and transaction.gateway.name == 'NVC Global' and transaction.status.value in ['pending', 'processing'] %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Available Actions</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-grid gap-2 d-md-flex">
+                <a href="{{ url_for('web.main.bank_transfer_form', transaction_id=transaction.transaction_id) }}" class="btn btn-primary">
+                    <i class="fas fa-university me-2"></i>Process as Bank Transfer
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
 
