@@ -912,6 +912,23 @@ def bank_transfer_form(transaction_id):
     # Create the bank transfer form
     form = BankTransferForm()
     
+    # Check if we have saved form data for this transaction
+    saved_data = FormData.get_for_transaction(transaction_id, 'bank_transfer')
+    if saved_data and request.method == 'GET':
+        # Pre-fill the form with saved data
+        logger.info(f"Loading saved bank transfer form data for transaction {transaction_id}")
+        
+        for field_name, value in saved_data.items():
+            if hasattr(form, field_name):
+                field = getattr(form, field_name)
+                if value is not None:
+                    try:
+                        field.data = value
+                    except Exception as e:
+                        logger.error(f"Error restoring field {field_name}: {str(e)}")
+                        
+        flash('Your previously entered information has been restored', 'info')
+    
     if form.validate_on_submit():
         # Process the bank transfer request
         try:

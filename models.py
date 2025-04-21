@@ -1,5 +1,6 @@
 import enum
-from datetime import datetime
+import json
+from datetime import datetime, timedelta
 from app import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -289,3 +290,100 @@ class Invitation(db.Model):
     def is_valid(self):
         """Check if the invitation is valid (not expired, not accepted, not revoked)"""
         return self.status == InvitationStatus.PENDING and not self.is_expired()
+
+class FormData(db.Model):
+    """
+    Temporary storage for form data to allow recovery after errors
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    transaction_id = db.Column(db.String(64), nullable=False, index=True)
+    form_type = db.Column(db.String(64), nullable=False)  # e.g., 'bank_transfer'
+    form_data = db.Column(db.Text, nullable=False)  # JSON serialized form data
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    
+    user = db.relationship('User', backref=db.backref('form_data', lazy=True))
+    
+    @classmethod
+    def create_from_form(cls, user_id, transaction_id, form_type, form_data, expiry_hours=24):
+        """
+        Create a new FormData entry from a form object
+        
+        Args:
+            user_id (int): The user ID
+            transaction_id (str): The transaction ID
+            form_type (str): The type of form
+            form_data (dict): The form data
+            expiry_hours (int): Hours until this data expires
+            
+        Returns:
+            FormData: The created FormData object
+        """
+        # Convert form data to JSON
+        form_data_json = json.dumps(form_data)
+        
+        # Set expiry time
+        expires_at = datetime.utcnow() + timedelta(hours=expiry_hours)
+        
+        # Check if we already have a form for this transaction
+        existing = cls.query.filter_by(
+            transaction_id=transaction_id,
+            form_type=form_type
+        ).first()
+        
+        if existing:
+            # Update existing record
+            existing.form_data = form_data_json
+            existing.expires_at = expires_at
+            existing.created_at = datetime.utcnow()
+            return existing
+        
+        # Create new record
+        form_data_obj = cls(
+            user_id=user_id,
+            transaction_id=transaction_id,
+            form_type=form_type,
+            form_data=form_data_json,
+            expires_at=expires_at
+        )
+        
+        db.session.add(form_data_obj)
+        return form_data_obj
+    
+    @classmethod
+    def get_for_transaction(cls, transaction_id, form_type):
+        """
+        Get form data for a transaction
+        
+        Args:
+            transaction_id (str): The transaction ID
+            form_type (str): The type of form
+            
+        Returns:
+            dict: The form data, or None if not found
+        """
+        # Find the most recent form data for this transaction
+        form_data = cls.query.filter_by(
+            transaction_id=transaction_id,
+            form_type=form_type
+        ).filter(
+            cls.expires_at > datetime.utcnow()
+        ).order_by(cls.created_at.desc()).first()
+        
+        if not form_data:
+            return None
+        
+        # Parse JSON
+        try:
+            return json.loads(form_data.form_data)
+        except json.JSONDecodeError:
+            return None
+    
+    @classmethod
+    def cleanup_expired(cls):
+        """Remove all expired form data"""
+        expired = cls.query.filter(cls.expires_at < datetime.utcnow()).all()
+        for item in expired:
+            db.session.delete(item)
+        db.session.commit()
