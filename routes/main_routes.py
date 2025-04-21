@@ -28,7 +28,7 @@ from models import (
     FinancialInstitution, FinancialInstitutionType,
     PaymentGateway, PaymentGatewayType, SmartContract, BlockchainTransaction,
     BlockchainAccount, Invitation, InvitationType, InvitationStatus, 
-    AssetManager, BusinessPartner, PartnerType, Webhook
+    AssetManager, BusinessPartner, PartnerType, Webhook, FormData
 )
 from auth import (
     login_required, admin_required, api_key_required, authenticate_user,
@@ -929,6 +929,29 @@ def bank_transfer_form(transaction_id):
                         
         flash('Your previously entered information has been restored', 'info')
     
+    # Always try to save the form data if there's anything entered
+    if request.method == 'POST' and form.transaction_id.data:
+        try:
+            # Create a dictionary of form data
+            form_data = {}
+            for field_name in dir(form):
+                if field_name.startswith('_') or field_name == 'meta':
+                    continue
+                    
+                field = getattr(form, field_name)
+                if hasattr(field, 'data'):
+                    # Convert to string for all data types to ensure JSON compatibility
+                    form_data[field_name] = str(field.data) if field.data is not None else None
+            
+            # Save form data
+            user_id = current_user.id
+            FormData.create_from_form(user_id, transaction_id, 'bank_transfer', form_data)
+            db.session.commit()
+            logger.info(f"Saved bank transfer form data for transaction {transaction_id}")
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error saving form data: {str(e)}")
+    
     if form.validate_on_submit():
         # Process the bank transfer request
         try:
@@ -1030,6 +1053,30 @@ def process_bank_transfer():
     """Process a bank transfer form submission"""
     # Get the form data
     form = BankTransferForm()
+    
+    # Store form data immediately so it can be recovered if there's an error
+    if form.transaction_id.data:
+        try:
+            # Create a dictionary of form data
+            form_data = {}
+            for field_name in dir(form):
+                if field_name.startswith('_') or field_name == 'meta':
+                    continue
+                    
+                field = getattr(form, field_name)
+                if hasattr(field, 'data'):
+                    # Convert to string for all data types to ensure JSON compatibility
+                    form_data[field_name] = str(field.data) if field.data is not None else None
+            
+            # Save form data
+            user_id = current_user.id
+            transaction_id = form.transaction_id.data
+            FormData.create_from_form(user_id, transaction_id, 'bank_transfer', form_data)
+            db.session.commit()
+            logger.info(f"Saved bank transfer form data for transaction {transaction_id}")
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error saving form data: {str(e)}")
     
     if form.validate_on_submit():
         # Get the transaction ID from the form
