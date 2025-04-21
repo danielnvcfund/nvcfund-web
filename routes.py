@@ -237,11 +237,50 @@ def dashboard():
     # Get transaction analytics
     analytics = get_transaction_analytics(user_id, days=30)
     
+    # Generate JWT token for API access if the user doesn't have one already
+    jwt_token = generate_jwt_token(user_id)
+    
+    # Pre-serialize analytics data
+    import json
+    class DecimalEncoder(json.JSONEncoder):
+        def default(self, obj):
+            import decimal
+            if isinstance(obj, decimal.Decimal):
+                return float(obj)
+            return super(DecimalEncoder, self).default(obj)
+    
+    analytics_json = json.dumps(analytics, cls=DecimalEncoder) if analytics else '{}'
+    
+    # Create or get Ethereum address if missing
+    if not user.ethereum_address:
+        # Check if user has a blockchain account
+        blockchain_account = BlockchainAccount.query.filter_by(user_id=user.id).first()
+        
+        if not blockchain_account:
+            # Create a new account
+            eth_address, private_key = generate_ethereum_account()
+            if eth_address:
+                blockchain_account = BlockchainAccount(
+                    user_id=user.id,
+                    eth_address=eth_address,
+                    eth_private_key=private_key
+                )
+                db.session.add(blockchain_account)
+                db.session.commit()
+                
+                # Update user object for template
+                user.ethereum_address = eth_address
+        else:
+            # User has account but ethereum_address property is missing
+            user.ethereum_address = blockchain_account.eth_address
+    
     return render_template(
         'dashboard.html',
         user=user,
         recent_transactions=recent_transactions,
-        analytics=analytics
+        analytics=analytics,
+        analytics_json=analytics_json,
+        jwt_token=jwt_token
     )
 
 @app.route('/transactions')

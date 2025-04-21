@@ -8,7 +8,7 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0 text-center">Logging out</h5>
+                    <h5 class="mb-0 text-center">Logging Out</h5>
                 </div>
                 <div class="card-body text-center">
                     <div class="spinner-border text-primary mb-3" role="status">
@@ -25,18 +25,17 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         try {
-            // Clear JWT token from localStorage
+            // Clear JWT tokens from storage
             localStorage.removeItem('jwt_token');
             console.log('JWT token removed from localStorage');
             
-            // Also clear from sessionStorage
             sessionStorage.removeItem('jwt_token');
             console.log('JWT token removed from sessionStorage');
             
-            // Redirect to the homepage or other designated page
+            // Redirect to the logout destination
             setTimeout(function() {
                 window.location.href = '{{ redirect_url }}';
-            }, 1000); // slight delay for visual feedback
+            }, 500); // slight delay for visual feedback
         } catch (error) {
             console.error('Error clearing JWT token:', error);
             // Still redirect even if clearing fails
