@@ -78,14 +78,17 @@ def login():
         session['username'] = user.username
         session['role'] = user.role.value
         
+        # Generate JWT token for API access
+        token = generate_jwt_token(user.id)
+        
         flash(f'Welcome back, {user.username}!', 'success')
         
-        # Redirect to next parameter or dashboard
+        # Get the destination URL
         next_page = request.args.get('next')
-        if next_page:
-            return redirect(next_page)
+        redirect_url = next_page if next_page else url_for('dashboard')
         
-        return redirect(url_for('dashboard'))
+        # Return the token storage page which will store the token and redirect
+        return render_template('store_token.html', jwt_token=token, redirect_url=redirect_url)
     
     # If there were form validation errors
     if form.errors and request.method == 'POST':
@@ -101,7 +104,9 @@ def logout():
     """User logout route"""
     session.clear()
     flash('You have been logged out', 'info')
-    return redirect(url_for('index'))
+    
+    # Use the clear_token template to remove JWT tokens from browser storage
+    return render_template('clear_token.html', redirect_url=url_for('index'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
