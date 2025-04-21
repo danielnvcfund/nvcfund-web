@@ -316,6 +316,21 @@ def dashboard():
         session.clear()
         flash('User not found, please log in again', 'danger')
         return redirect(url_for('web.main.login'))
+        
+    # Make sure user has an Ethereum address
+    if not user.ethereum_address:
+        # Generate and assign a default Ethereum address
+        from blockchain_utils import generate_ethereum_account
+        eth_address, _ = generate_ethereum_account()
+        user.ethereum_address = eth_address
+        try:
+            db.session.commit()
+            logger.info(f"Assigned new Ethereum address {eth_address} to user {user.id}")
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Failed to assign Ethereum address to user: {str(e)}")
+            # Use a fallback address if needed - this is just for UI purposes
+            user.ethereum_address = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F"
     
     # Get recent transactions
     recent_transactions = Transaction.query.filter_by(user_id=user_id)\
@@ -367,11 +382,14 @@ def dashboard():
             'raw_data': []
         })
     
+    # Make sure the ethereum_address is directly available in the template
+    # Add it as a data attribute in the template to be accessed by JavaScript
     return render_template(
         'dashboard.html',
         user=user,
         recent_transactions=recent_transactions,
-        analytics_json=analytics_json
+        analytics_json=analytics_json,
+        user_eth_address=user.ethereum_address if user.ethereum_address else ""
     )
 
 @main.route('/transactions')
@@ -585,7 +603,27 @@ def blockchain_status():
     # User roles and addresses
     is_admin = session.get('role') == UserRole.ADMIN.value
     is_owner = False  # This would be set if the user is an owner of the MultiSig wallet
-    user_eth_address = "0x0"  # This would come from the user's profile
+    
+    # Get the user's ethereum address
+    user_id = session.get('user_id')
+    current_user = User.query.get(user_id)
+    
+    # Make sure user has an Ethereum address
+    if current_user and not current_user.ethereum_address:
+        # Generate and assign a default Ethereum address
+        from blockchain_utils import generate_ethereum_account
+        eth_address, _ = generate_ethereum_account()
+        current_user.ethereum_address = eth_address
+        try:
+            db.session.commit()
+            logger.info(f"Assigned new Ethereum address {eth_address} to user {current_user.id}")
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Failed to assign Ethereum address to user: {str(e)}")
+            # Use a fallback address if needed - this is just for UI purposes
+            current_user.ethereum_address = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F"
+    
+    user_eth_address = current_user.ethereum_address if current_user else "0x0"
     user_token_balance = 0  # This would be calculated from the blockchain
     
     # Create template-compatible contract objects (non-Web3 objects)
