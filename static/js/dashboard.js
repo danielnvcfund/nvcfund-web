@@ -404,6 +404,13 @@ function initBlockchainBalance() {
         const encodedAddress = encodeURIComponent(ethereumAddress);
         console.log(`Fetching balance for address: ${encodedAddress} with token ${jwtToken.substring(0, 10)}...`);
         
+        // First, check if the address has a proper format
+        if (!ethereumAddress || !ethereumAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+            console.error("Invalid Ethereum address format:", ethereumAddress);
+            balanceEl.textContent = "Invalid address format";
+            return;
+        }
+        
         fetch(`/api/blockchain/balances?address=${encodedAddress}`, {
             method: 'GET',
             headers: {

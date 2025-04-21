@@ -1121,9 +1121,13 @@ class NVCGlobalGateway(PaymentGatewayInterface):
                 "error": error_message
             }
     
-    def process_bank_transfer(self, transaction):
+    def process_bank_transfer(self, transaction, *args):
         """Process a bank transfer through NVC Global platform"""
         try:
+            # Log any extra arguments that are being passed
+            if args:
+                logger.warning(f"Extra arguments detected in process_bank_transfer: {args}")
+                
             # Ensure transaction has bank transfer details
             if not transaction.tx_metadata_json:
                 return {
