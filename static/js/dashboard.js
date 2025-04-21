@@ -551,7 +551,31 @@ function resetButton(button) {
 
 // Get JWT token from localStorage or sessionStorage
 function getJwtToken() {
-    return localStorage.getItem('jwt_token') || sessionStorage.getItem('jwt_token') || '';
+    // Try to get the token from localStorage first
+    let token = localStorage.getItem('jwt_token');
+    
+    // If not in localStorage, try sessionStorage
+    if (!token) {
+        token = sessionStorage.getItem('jwt_token');
+    }
+    
+    // Check for null, undefined, or empty string
+    if (!token) {
+        console.warn('No JWT token found in storage');
+        
+        // Try to extract from cookie as fallback (some older implementations used cookies)
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith('jwt_token=')) {
+                token = cookie.substring('jwt_token='.length, cookie.length);
+                console.log('Found JWT token in cookie');
+                break;
+            }
+        }
+    }
+    
+    return token || '';
 }
 
 // Get CSS class for status badge
