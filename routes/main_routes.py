@@ -1069,8 +1069,10 @@ def process_bank_transfer():
     # Get the form data
     form = BankTransferForm()
     
-    # Store form data immediately so it can be recovered if there's an error
+    # First attempt to save form data for possible recovery
+    transaction_id = None
     if form.transaction_id.data:
+        transaction_id = form.transaction_id.data
         try:
             # Create a dictionary of form data
             form_data = {}
@@ -1085,9 +1087,6 @@ def process_bank_transfer():
             
             # Save form data
             user_id = current_user.id
-            transaction_id = form.transaction_id.data
-            
-            # If we have a transaction ID, save the form data
             FormData.create_from_form(user_id, transaction_id, 'bank_transfer', form_data)
             db.session.commit()
             logger.info(f"Saved bank transfer form data for transaction {transaction_id}")
@@ -1095,10 +1094,8 @@ def process_bank_transfer():
             db.session.rollback()
             logger.error(f"Error saving form data: {str(e)}")
     
+    # Begin form validation
     if form.validate_on_submit():
-        # Get the transaction ID from the form
-        transaction_id = form.transaction_id.data
-        
         # Get the transaction from the database
         user_id = current_user.id
         transaction = Transaction.query.filter_by(transaction_id=transaction_id, user_id=user_id).first()
@@ -1113,7 +1110,6 @@ def process_bank_transfer():
             return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
             
         try:
-            # Process the bank transfer (re-use the code from bank_transfer_form route)
             # Update transaction metadata with bank details
             bank_details = {
                 'recipient': {
@@ -1155,22 +1151,26 @@ def process_bank_transfer():
             
             # Update transaction with bank transfer details
             if transaction.tx_metadata_json:
-                metadata = json.loads(transaction.tx_metadata_json)
-                metadata['bank_transfer'] = bank_details
-                transaction.tx_metadata_json = json.dumps(metadata)
+                try:
+                    metadata = json.loads(transaction.tx_metadata_json)
+                    metadata['bank_transfer'] = bank_details
+                    transaction.tx_metadata_json = json.dumps(metadata)
+                except json.JSONDecodeError:
+                    # If existing metadata is invalid, create new
+                    transaction.tx_metadata_json = json.dumps({'bank_transfer': bank_details})
             else:
                 transaction.tx_metadata_json = json.dumps({'bank_transfer': bank_details})
             
-            # Update transaction description to include bank transfer info
+            # Update transaction description
             transaction.description = f"{transaction.description} (Bank Transfer to {form.bank_name.data})"
             
-            # Update transaction status to processing
+            # Update transaction status
             transaction.status = TransactionStatus.PROCESSING
             
             # Save transaction
             db.session.commit()
             
-            # Get gateway handler to process the bank transfer
+            # Process the bank transfer through NVC Global
             try:
                 # Make sure we have a valid gateway
                 if not transaction.gateway or not transaction.gateway.id:
@@ -1178,7 +1178,7 @@ def process_bank_transfer():
                 
                 gateway_handler = get_gateway_handler(transaction.gateway.id)
                 
-                # Process the bank transfer through NVC Global
+                # Process the bank transfer
                 result = gateway_handler.process_bank_transfer(transaction)
                 
                 if result.get('success'):
@@ -1204,5 +1204,5 @@ def process_bank_transfer():
             for error in errors:
                 flash(f"{field}: {error}", 'danger')
     
-    # If the form validation failed, redirect to dashboard where the user can try again
+    # If the form validation failed, redirect to dashboard
     return redirect(url_for('web.main.dashboard'))

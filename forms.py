@@ -169,7 +169,7 @@ class BankTransferForm(FlaskForm):
     """Form for bank transfers through NVC Global Payment Gateway"""
     # Hidden fields
     transaction_id = HiddenField('Transaction ID', validators=[DataRequired()])
-    amount = HiddenField('Amount')
+    amount = HiddenField('Amount', validators=[])
     
     # Recipient Information
     recipient_name = StringField('Full Legal Name', validators=[DataRequired(), Length(max=128)])
