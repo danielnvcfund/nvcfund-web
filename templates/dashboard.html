@@ -73,14 +73,14 @@
     </div>
 
     <!-- Incomplete Transfers Section -->
-    {% set has_incomplete_transfers = false %}
+    {% set incomplete_count = namespace(count=0) %}
     {% for tx in recent_transactions %}
         {% if tx.status.value in ['pending', 'processing'] and tx.gateway and tx.gateway.name == 'NVC Global' %}
-            {% set has_incomplete_transfers = true %}
+            {% set incomplete_count.count = incomplete_count.count + 1 %}
         {% endif %}
     {% endfor %}
     
-    {% if has_incomplete_transfers %}
+    {% if incomplete_count.count > 0 %}
     <div class="row mt-4">
         <div class="col-md-12">
             <div class="card dashboard-widget">
