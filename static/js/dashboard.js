@@ -328,24 +328,8 @@ function initBlockchainBalance() {
         return;
     }
     
-    // Get ethereum address from multiple possible sources
-    let ethereumAddress = balanceEl.getAttribute('data-address');
-    
-    // If not found, try the analytics data element
-    if (!ethereumAddress) {
-        const analyticsDataEl = document.getElementById('analytics-data');
-        if (analyticsDataEl) {
-            ethereumAddress = analyticsDataEl.getAttribute('data-ethereum-address');
-        }
-    }
-    
-    // If still not found, try to get from the transaction charts
-    if (!ethereumAddress) {
-        const dateChartEl = document.getElementById('transactionsByDateChart');
-        if (dateChartEl) {
-            ethereumAddress = dateChartEl.getAttribute('data-ethereum-address');
-        }
-    }
+    // Use our helper function to get Ethereum address from any available source
+    const ethereumAddress = getEthereumAddress();
     
     if (!ethereumAddress) {
         console.warn('No Ethereum address found in any data attribute');
@@ -354,10 +338,13 @@ function initBlockchainBalance() {
     }
     
     // Check if the address is null, undefined, or "None" (Python's None converted to string)
-    if (!ethereumAddress || ethereumAddress === "None" || ethereumAddress === "null" || ethereumAddress === "undefined" || ethereumAddress.trim() === "") {
+    if (ethereumAddress === "None" || ethereumAddress === "null" || ethereumAddress === "undefined" || ethereumAddress.trim() === "") {
         console.warn('No valid Ethereum address available:', ethereumAddress);
         balanceEl.textContent = 'No address assigned';
-        balanceEl.parentElement.querySelector('.btn-refresh').style.display = 'none';
+        const refreshButton = balanceEl.parentElement.querySelector('.btn-refresh');
+        if (refreshButton) {
+            refreshButton.style.display = 'none';
+        }
         return;
     }
     
@@ -513,24 +500,8 @@ function refreshBlockchainBalance(button) {
         return;
     }
     
-    // Get ethereum address from multiple possible sources
-    let ethereumAddress = balanceEl.getAttribute('data-address');
-    
-    // If not found, try the analytics data element
-    if (!ethereumAddress) {
-        const analyticsDataEl = document.getElementById('analytics-data');
-        if (analyticsDataEl) {
-            ethereumAddress = analyticsDataEl.getAttribute('data-ethereum-address');
-        }
-    }
-    
-    // If still not found, try to get from the transaction charts
-    if (!ethereumAddress) {
-        const dateChartEl = document.getElementById('transactionsByDateChart');
-        if (dateChartEl) {
-            ethereumAddress = dateChartEl.getAttribute('data-ethereum-address');
-        }
-    }
+    // Use our helper function to get Ethereum address from any available source
+    const ethereumAddress = getEthereumAddress();
     
     if (!ethereumAddress) {
         console.warn('No Ethereum address found in any data attribute');
@@ -540,7 +511,7 @@ function refreshBlockchainBalance(button) {
     }
     
     // Check if the address is null, undefined, or "None" (Python's None converted to string)
-    if (!ethereumAddress || ethereumAddress === "None" || ethereumAddress === "null" || ethereumAddress === "undefined" || ethereumAddress.trim() === "") {
+    if (ethereumAddress === "None" || ethereumAddress === "null" || ethereumAddress === "undefined" || ethereumAddress.trim() === "") {
         console.warn('No valid Ethereum address available:', ethereumAddress);
         balanceEl.textContent = 'No address assigned';
         resetButton(button);
