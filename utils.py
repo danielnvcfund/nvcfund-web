@@ -68,6 +68,7 @@ def get_transaction_analytics(user_id=None, days=30):
     from models import Transaction, TransactionType
     from sqlalchemy import func
     import decimal
+    import json
     
     # Default empty structure that matches what the dashboard.js expects
     default_analytics = {
@@ -75,7 +76,7 @@ def get_transaction_analytics(user_id=None, days=30):
         'start_date': (datetime.utcnow() - timedelta(days=days)).strftime('%Y-%m-%d'),
         'end_date': datetime.utcnow().strftime('%Y-%m-%d'),
         'total_transactions': 0,
-        'total_amount': 0,
+        'total_amount': 0.0,  # Use float
         'by_type': {},
         'by_status': {},
         'by_date': {},
@@ -136,12 +137,20 @@ def get_transaction_analytics(user_id=None, days=30):
             'start_date': start_date.strftime('%Y-%m-%d'),
             'end_date': end_date.strftime('%Y-%m-%d'),
             'total_transactions': sum(r.count for r in results),
-            'total_amount': decimal_to_float(sum(decimal_to_float(r.total_amount or 0) for r in results)),
+            'total_amount': 0.0,  # Initialize with float instead of potentially Decimal
             'by_type': {},
             'by_status': {},
             'by_date': {},
             'raw_data': []
         }
+        
+        # Calculate total amount with explicit conversion to float
+        try:
+            total_sum = sum(decimal_to_float(r.total_amount or 0) for r in results)
+            analytics['total_amount'] = float(total_sum) if total_sum is not None else 0.0
+        except (TypeError, ValueError, decimal.InvalidOperation) as e:
+            logger.error(f"Error calculating total amount: {str(e)}")
+            analytics['total_amount'] = 0.0
         
         # Process results
         for r in results:
@@ -156,38 +165,38 @@ def get_transaction_analytics(user_id=None, days=30):
             if type_str not in analytics['by_type']:
                 analytics['by_type'][type_str] = {
                     'count': 0,
-                    'total_amount': 0
+                    'total_amount': 0.0  # Initialize with float
                 }
             analytics['by_type'][type_str]['count'] += count
-            analytics['by_type'][type_str]['total_amount'] += total_amount
+            analytics['by_type'][type_str]['total_amount'] = float(analytics['by_type'][type_str]['total_amount'] + total_amount)
             
             # By status
             if status_str not in analytics['by_status']:
                 analytics['by_status'][status_str] = {
                     'count': 0,
-                    'total_amount': 0
+                    'total_amount': 0.0  # Initialize with float
                 }
             analytics['by_status'][status_str]['count'] += count
-            analytics['by_status'][status_str]['total_amount'] += total_amount
+            analytics['by_status'][status_str]['total_amount'] = float(analytics['by_status'][status_str]['total_amount'] + total_amount)
             
             # By date
             if date_str not in analytics['by_date']:
                 analytics['by_date'][date_str] = {
                     'count': 0,
-                    'total_amount': 0,
+                    'total_amount': 0.0,  # Initialize with float
                     'by_type': {}
                 }
             analytics['by_date'][date_str]['count'] += count
-            analytics['by_date'][date_str]['total_amount'] += total_amount
+            analytics['by_date'][date_str]['total_amount'] = float(analytics['by_date'][date_str]['total_amount'] + total_amount)
             
             # By date and type
             if type_str not in analytics['by_date'][date_str]['by_type']:
                 analytics['by_date'][date_str]['by_type'][type_str] = {
                     'count': 0,
-                    'total_amount': 0
+                    'total_amount': 0.0  # Initialize with float
                 }
             analytics['by_date'][date_str]['by_type'][type_str]['count'] += count
-            analytics['by_date'][date_str]['by_type'][type_str]['total_amount'] += total_amount
+            analytics['by_date'][date_str]['by_type'][type_str]['total_amount'] = float(analytics['by_date'][date_str]['by_type'][type_str]['total_amount'] + total_amount)
             
             # Raw data
             analytics['raw_data'].append({
@@ -195,7 +204,7 @@ def get_transaction_analytics(user_id=None, days=30):
                 'type': type_str,
                 'status': status_str,
                 'count': count,
-                'total_amount': total_amount
+                'total_amount': float(total_amount)  # Ensure float in raw data
             })
         
         # Ensure we have data for all days in the range, even if no transactions
@@ -205,10 +214,35 @@ def get_transaction_analytics(user_id=None, days=30):
             if date_str not in analytics['by_date']:
                 analytics['by_date'][date_str] = {
                     'count': 0,
-                    'total_amount': 0,
+                    'total_amount': 0.0,  # Initialize with float
                     'by_type': {}
                 }
             current_date += timedelta(days=1)
+        
+        # Final check to ensure all amounts are floats before returning
+        try:
+            # Verify all nested amounts are floats
+            for type_key in analytics['by_type']:
+                analytics['by_type'][type_key]['total_amount'] = float(analytics['by_type'][type_key]['total_amount'])
+            
+            for status_key in analytics['by_status']:
+                analytics['by_status'][status_key]['total_amount'] = float(analytics['by_status'][status_key]['total_amount'])
+            
+            for date_key in analytics['by_date']:
+                analytics['by_date'][date_key]['total_amount'] = float(analytics['by_date'][date_key]['total_amount'])
+                for type_key in analytics['by_date'][date_key].get('by_type', {}):
+                    if 'total_amount' in analytics['by_date'][date_key]['by_type'][type_key]:
+                        analytics['by_date'][date_key]['by_type'][type_key]['total_amount'] = float(
+                            analytics['by_date'][date_key]['by_type'][type_key]['total_amount']
+                        )
+            
+            # Ensure total_amount is a float
+            analytics['total_amount'] = float(analytics['total_amount'])
+            
+            logger.debug("Successfully converted all decimal values to float in analytics")
+        except Exception as e:
+            logger.error(f"Error converting decimal values in analytics: {str(e)}")
+            # Continue with the data as is - we've done our best to convert values
         
         return analytics
     
@@ -220,7 +254,7 @@ def get_transaction_analytics(user_id=None, days=30):
             'start_date': (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d'),
             'end_date': datetime.now().strftime('%Y-%m-%d'),
             'total_transactions': 0,
-            'total_amount': 0,
+            'total_amount': 0.0,  # Use float
             'by_type': {},
             'by_status': {},
             'by_date': {},
