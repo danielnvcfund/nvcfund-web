@@ -11,6 +11,7 @@ from routes.api.ha_routes import ha_api
 from routes.api.status_routes import status_bp
 from routes.high_availability_routes import ha_web
 from routes.main_routes import main
+from routes.swift_routes import swift
 
 # Import PHP Bridge routes
 from api_bridge import php_bridge
@@ -31,3 +32,4 @@ api_blueprint.register_blueprint(php_bridge, url_prefix='/php-bridge')
 # Register Web route blueprints
 web_blueprint.register_blueprint(ha_web, url_prefix='/ha')
 web_blueprint.register_blueprint(main, url_prefix='/main')
+web_blueprint.register_blueprint(swift, url_prefix='/swift')

@@ -36,48 +36,40 @@
           
           <div class="row">
             <div class="col-md-6">
-              <h4 class="h5 mb-3">Transaction Details</h4>
+              <h4 class="h5 mb-3">Letter of Credit Details</h4>
               <table class="table table-bordered">
                 <tr>
-                  <th class="table-light" style="width: 40%">Transaction ID</th>
+                  <th class="table-light" style="width: 40%">Reference Number</th>
+                  <td>{{ swift_data.get('reference', 'N/A') }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Transaction ID</th>
                   <td>{{ transaction.transaction_id }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Transaction Type</th>
-                  <td>{{ transaction.transaction_type.value | title }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Date</th>
-                  <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                 </tr>
                 <tr>
                   <th class="table-light">Amount</th>
                   <td>{{ transaction.amount | format_currency(transaction.currency) }}</td>
                 </tr>
                 <tr>
-                  <th class="table-light">Status</th>
-                  <td>
-                    <span class="badge bg-{{ 'success' if transaction.status.value == 'completed' else 'warning' if transaction.status.value == 'pending' else 'danger' }}">
-                      {{ transaction.status.value | upper }}
-                    </span>
-                  </td>
+                  <th class="table-light">Beneficiary</th>
+                  <td>{{ swift_data.get('beneficiary', 'N/A') | truncate(50) }}</td>
                 </tr>
                 <tr>
-                  <th class="table-light">Description</th>
-                  <td>{{ transaction.description }}</td>
+                  <th class="table-light">Issue Date</th>
+                  <td>{{ transaction.created_at.strftime('%Y-%m-%d') }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Expiry Date</th>
+                  <td>{{ swift_data.get('expiry_date', 'N/A').split('T')[0] if swift_data.get('expiry_date') else 'N/A' }}</td>
                 </tr>
               </table>
             </div>
             
             <div class="col-md-6">
-              <h4 class="h5 mb-3">SWIFT Details</h4>
+              <h4 class="h5 mb-3">SWIFT Message Details</h4>
               <table class="table table-bordered">
                 <tr>
-                  <th class="table-light" style="width: 40%">SWIFT Reference</th>
-                  <td>{{ swift_data.get('reference', 'N/A') }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Message Type</th>
+                  <th class="table-light" style="width: 40%">Message Type</th>
                   <td>{{ swift_data.get('message_type', 'MT760') }}</td>
                 </tr>
                 <tr>
@@ -89,29 +81,38 @@
                   <td>{{ swift_data.get('receiver_bic', 'N/A') }}</td>
                 </tr>
                 <tr>
-                  <th class="table-light">Beneficiary</th>
-                  <td>{{ swift_data.get('beneficiary', 'N/A') }}</td>
+                  <th class="table-light">Creation Date</th>
+                  <td>{{ swift_data.get('creation_date', 'N/A').split('T')[0] if swift_data.get('creation_date') else 'N/A' }}</td>
                 </tr>
                 <tr>
-                  <th class="table-light">Expiry Date</th>
+                  <th class="table-light">SWIFT Status</th>
                   <td>
-                    {% if swift_data.get('expiry_date') %}
-                      {{ swift_data.get('expiry_date').split('T')[0] }}
-                    {% else %}
-                      N/A
-                    {% endif %}
+                    <span class="badge bg-{{ 'success' if status_data.get('status') == 'delivered' else 'warning' if status_data.get('status') == 'processing' else 'danger' }}">
+                      {{ status_data.get('status', 'Unknown') | upper }}
+                    </span>
                   </td>
                 </tr>
               </table>
             </div>
           </div>
           
-          <h4 class="h5 mt-4 mb-3">SWIFT Delivery Status</h4>
+          <div class="row mt-4">
+            <div class="col-12">
+              <h4 class="h5 mb-3">Terms and Conditions</h4>
+              <div class="card">
+                <div class="card-body bg-light">
+                  <pre class="mb-0" style="white-space: pre-wrap;">{{ swift_data.get('terms_and_conditions', 'No terms and conditions provided.') }}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <h4 class="h5 mt-4 mb-3">Delivery Status</h4>
           
           <div class="alert {{ 'alert-success' if status_data.get('success') else 'alert-warning' }}">
             {% if status_data.get('success') %}
               <h5 class="alert-heading">SWIFT Status: {{ status_data.get('status', 'unknown') | upper }}</h5>
-              <p>{{ status_data.get('details', {}).get('details', 'The Letter of Credit has been processed.') }}</p>
+              <p>{{ status_data.get('details', {}).get('details', 'The Letter of Credit has been processed by the SWIFT network.') }}</p>
               
               {% if status_data.get('details', {}).get('delivery_time') %}
                 <hr>
@@ -130,7 +131,7 @@
             <a href="{{ url_for('web.main.transaction_details', transaction_id=transaction.transaction_id) }}" class="btn btn-secondary">
               <i class="fa fa-arrow-left"></i> Back to Transaction
             </a>
-            <a href="{{ url_for('web.main.letter_of_credit_status', transaction_id=transaction.transaction_id) }}" class="btn btn-primary">
+            <a href="{{ url_for('web.swift.letter_of_credit_status', transaction_id=transaction.transaction_id) }}" class="btn btn-primary">
               <i class="fa fa-refresh"></i> Refresh Status
             </a>
           </div>
@@ -139,18 +140,20 @@
       
       <div class="card shadow">
         <div class="card-header bg-light">
-          <h3 class="h5 mb-0">About SWIFT MT760 Messages</h3>
+          <h3 class="h5 mb-0">About Standby Letters of Credit</h3>
         </div>
         <div class="card-body">
-          <p>The MT760 message is a standardized SWIFT message type used for Standby Letters of Credit (SBLC). These financial instruments serve as a guarantee of payment, ensuring that financial obligations will be met if certain conditions are satisfied.</p>
+          <p>A Standby Letter of Credit (SBLC) is a guarantee from a bank on behalf of a client that a payment will be made to a beneficiary if certain conditions are not met. Unlike traditional Letters of Credit, SBLCs are only drawn upon in case of default.</p>
           
           <h5 class="h6 mt-3">Key Information</h5>
           <ul>
-            <li>SWIFT messages are securely transmitted through the SWIFT network connecting financial institutions worldwide.</li>
-            <li>Once delivered, the receiving bank will process the Letter of Credit according to their internal procedures.</li>
-            <li>Processing times may vary depending on the receiving institution.</li>
-            <li>Status updates are typically available within 24-48 hours of transmission.</li>
+            <li>SBLCs are transmitted via SWIFT MT760 message from the issuing bank to the advising bank.</li>
+            <li>Processing typically takes 1-3 business days after the message is sent.</li>
+            <li>The SBLC remains in effect until its expiry date or until a drawing is made against it.</li>
+            <li>If the issuing party defaults on their obligation, the beneficiary can draw on the SBLC by presenting documentation to the bank.</li>
           </ul>
+          
+          <p>For more information on the status of your Letter of Credit, please contact our customer support.</p>
         </div>
       </div>
     </div>

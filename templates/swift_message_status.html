@@ -1,0 +1,174 @@
+{% extends "layout.html" %}
+
+{% block title %}SWIFT Message Status{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('web.main.transactions') }}">Transactions</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('web.main.transaction_details', transaction_id=transaction.transaction_id) }}">Transaction Details</a></li>
+          <li class="breadcrumb-item active">SWIFT Message Status</li>
+        </ol>
+      </nav>
+      
+      <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <h2 class="h4 mb-0">
+            {% if transaction.transaction_type.value == 'swift_transfer' %}
+              SWIFT Transfer Status
+            {% else %}
+              SWIFT Message Status
+            {% endif %}
+          </h2>
+          <span class="badge bg-{{ 'success' if transaction.status.value == 'completed' else 'warning' if transaction.status.value == 'pending' else 'danger' }}">
+            {{ transaction.status.value | upper }}
+          </span>
+        </div>
+        <div class="card-body">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          
+          <div class="row">
+            <div class="col-md-6">
+              <h4 class="h5 mb-3">Transaction Details</h4>
+              <table class="table table-bordered">
+                <tr>
+                  <th class="table-light" style="width: 40%">Transaction ID</th>
+                  <td>{{ transaction.transaction_id }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Transaction Type</th>
+                  <td>{{ transaction.transaction_type.value | title }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Date</th>
+                  <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                </tr>
+                {% if transaction.transaction_type.value == 'swift_transfer' %}
+                <tr>
+                  <th class="table-light">Amount</th>
+                  <td>{{ transaction.amount | format_currency(transaction.currency) }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                  <th class="table-light">Status</th>
+                  <td>
+                    <span class="badge bg-{{ 'success' if transaction.status.value == 'completed' else 'warning' if transaction.status.value == 'pending' else 'danger' }}">
+                      {{ transaction.status.value | upper }}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th class="table-light">Description</th>
+                  <td>{{ transaction.description }}</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div class="col-md-6">
+              <h4 class="h5 mb-3">SWIFT Details</h4>
+              <table class="table table-bordered">
+                <tr>
+                  <th class="table-light" style="width: 40%">SWIFT Reference</th>
+                  <td>{{ swift_data.get('reference', 'N/A') }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Message Type</th>
+                  <td>{{ swift_data.get('message_type', 'N/A') }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Sender BIC</th>
+                  <td>{{ swift_data.get('sender_bic', 'N/A') }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Receiver BIC</th>
+                  <td>{{ swift_data.get('receiver_bic', 'N/A') }}</td>
+                </tr>
+                {% if transaction.transaction_type.value == 'swift_transfer' %}
+                <tr>
+                  <th class="table-light">Beneficiary</th>
+                  <td>{{ swift_data.get('beneficiary', 'N/A') | truncate(50) }}</td>
+                </tr>
+                {% elif transaction.transaction_type.value == 'swift_message' %}
+                <tr>
+                  <th class="table-light">Message Summary</th>
+                  <td>{{ swift_data.get('narrative', 'N/A') | truncate(50) }}</td>
+                </tr>
+                {% endif %}
+              </table>
+            </div>
+          </div>
+          
+          <h4 class="h5 mt-4 mb-3">SWIFT Delivery Status</h4>
+          
+          <div class="alert {{ 'alert-success' if status_data.get('success') else 'alert-warning' }}">
+            {% if status_data.get('success') %}
+              <h5 class="alert-heading">SWIFT Status: {{ status_data.get('status', 'unknown') | upper }}</h5>
+              <p>{{ status_data.get('details', {}).get('details', 'The message has been processed by the SWIFT network.') }}</p>
+              
+              {% if status_data.get('details', {}).get('delivery_time') %}
+                <hr>
+                <p class="mb-0">Delivered on: {{ status_data.get('details', {}).get('delivery_time').split('T')[0] }} 
+                  {{ status_data.get('details', {}).get('delivery_time').split('T')[1].split('.')[0] }}</p>
+              {% endif %}
+            {% else %}
+              <h5 class="alert-heading">SWIFT Status Check Failed</h5>
+              <p>{{ status_data.get('error', 'Unable to retrieve status from SWIFT at this time.') }}</p>
+              <hr>
+              <p class="mb-0">Please check back later for updated status information.</p>
+            {% endif %}
+          </div>
+          
+          <div class="mt-4 d-flex justify-content-between">
+            <a href="{{ url_for('web.main.transaction_details', transaction_id=transaction.transaction_id) }}" class="btn btn-secondary">
+              <i class="fa fa-arrow-left"></i> Back to Transaction
+            </a>
+            <a href="{{ url_for('web.swift.swift_message_status', transaction_id=transaction.transaction_id) }}" class="btn btn-primary">
+              <i class="fa fa-refresh"></i> Refresh Status
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card shadow">
+        <div class="card-header bg-light">
+          <h3 class="h5 mb-0">About SWIFT Messaging</h3>
+        </div>
+        <div class="card-body">
+          <p>SWIFT (Society for Worldwide Interbank Financial Telecommunication) is a global network that enables financial institutions to send and receive information about financial transactions in a secure, standardized environment.</p>
+          
+          {% if transaction.transaction_type.value == 'swift_transfer' %}
+            <h5 class="h6 mt-3">About {{ swift_data.get('message_type', 'MT103/MT202') }} Transfers</h5>
+            <p>
+              {% if swift_data.get('message_type') == 'MT103' %}
+                MT103 is used for customer credit transfers - sending money from one bank account to another.
+              {% elif swift_data.get('message_type') == 'MT202' %}
+                MT202 is used for general financial institution transfers between banks.
+              {% else %}
+                SWIFT transfers securely move funds between financial institutions around the world.
+              {% endif %}
+            </p>
+          {% elif transaction.transaction_type.value == 'swift_message' %}
+            <h5 class="h6 mt-3">About MT799 Free Format Messages</h5>
+            <p>MT799 messages are used for free format communication between financial institutions when no other specific message type is appropriate.</p>
+          {% endif %}
+          
+          <p>Status updates for SWIFT messages typically take 24-48 hours depending on the receiving institution's processing times.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

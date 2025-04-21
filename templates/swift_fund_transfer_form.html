@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}Standby Letter of Credit{% endblock %}
+{% block title %}SWIFT Fund Transfer{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -9,13 +9,13 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
-          <li class="breadcrumb-item active">Standby Letter of Credit</li>
+          <li class="breadcrumb-item active">SWIFT Fund Transfer</li>
         </ol>
       </nav>
       
       <div class="card shadow mb-4">
         <div class="card-header bg-primary text-white">
-          <h2 class="h4 mb-0">Create Standby Letter of Credit (SBLC)</h2>
+          <h2 class="h4 mb-0">Create SWIFT Fund Transfer</h2>
         </div>
         <div class="card-body">
           {% with messages = get_flashed_messages(with_categories=true) %}
@@ -30,18 +30,17 @@
           {% endwith %}
           
           <div class="alert alert-info">
-            <h5 class="alert-heading">About Standby Letters of Credit</h5>
-            <p>A Standby Letter of Credit (SBLC) is a financial instrument that guarantees payment if the recipient fails to meet specified obligations. Unlike traditional Letters of Credit, SBLCs are only drawn upon in case of default.</p>
+            <h5 class="alert-heading">About SWIFT Transfers</h5>
+            <p>The SWIFT network connects over 11,000 financial institutions worldwide, allowing secure international money transfers.</p>
             <hr>
-            <p class="mb-0">SBLCs are frequently used in international trade and financial transactions to:</p>
+            <p class="mb-0">There are two main types of SWIFT transfer messages:</p>
             <ul>
-              <li>Guarantee payment obligations</li>
-              <li>Support financial arrangements</li>
-              <li>Back loan agreements</li>
+              <li><strong>MT103</strong> - Used for customer credit transfers (personal or business)</li>
+              <li><strong>MT202</strong> - Used for financial institution transfers (bank-to-bank)</li>
             </ul>
           </div>
           
-          <form method="POST" action="{{ url_for('web.swift.new_letter_of_credit') }}" class="needs-validation" novalidate>
+          <form method="POST" action="{{ url_for('web.main.swift_fund_transfer') }}" class="needs-validation" novalidate>
             {{ form.hidden_tag() }}
             
             <div class="row mb-3">
@@ -83,27 +82,35 @@
               
               <div class="col-md-6">
                 <div class="form-group mb-3">
-                  {{ form.expiry_date.label(class="form-label") }}
-                  {{ form.expiry_date(class="form-control", type="date") }}
-                  <small class="form-text text-muted">The date when this Letter of Credit will expire</small>
-                  {% if form.expiry_date.errors %}
-                    <div class="invalid-feedback d-block">
-                      {% for error in form.expiry_date.errors %}
-                        {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
+                  {{ form.use_mt202.label(class="form-check-label") }}
+                  <div class="form-check form-switch">
+                    {{ form.use_mt202(class="form-check-input") }}
+                    <small class="form-text text-muted d-block">{{ form.use_mt202.description }}</small>
+                  </div>
                 </div>
               </div>
             </div>
             
             <div class="form-group mb-3">
-              {{ form.beneficiary.label(class="form-label") }}
-              {{ form.beneficiary(class="form-control", rows=3, placeholder="Enter beneficiary name and address") }}
-              <small class="form-text text-muted">{{ form.beneficiary.description }}</small>
-              {% if form.beneficiary.errors %}
+              {{ form.beneficiary_customer.label(class="form-label") }}
+              {{ form.beneficiary_customer(class="form-control", rows=3) }}
+              <small class="form-text text-muted">{{ form.beneficiary_customer.description }}</small>
+              {% if form.beneficiary_customer.errors %}
                 <div class="invalid-feedback d-block">
-                  {% for error in form.beneficiary.errors %}
+                  {% for error in form.beneficiary_customer.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            
+            <div class="form-group mb-3">
+              {{ form.ordering_customer.label(class="form-label") }}
+              {{ form.ordering_customer(class="form-control", rows=3) }}
+              <small class="form-text text-muted">{{ form.ordering_customer.description }}</small>
+              {% if form.ordering_customer.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.ordering_customer.errors %}
                     {{ error }}
                   {% endfor %}
                 </div>
@@ -111,32 +118,27 @@
             </div>
             
             <div class="form-group mb-4">
-              {{ form.terms_and_conditions.label(class="form-label") }}
-              {{ form.terms_and_conditions(class="form-control", rows=8, placeholder="Enter full terms and conditions of the letter of credit") }}
-              <small class="form-text text-muted">{{ form.terms_and_conditions.description }}</small>
-              {% if form.terms_and_conditions.errors %}
+              {{ form.details_of_payment.label(class="form-label") }}
+              {{ form.details_of_payment(class="form-control", rows=2) }}
+              <small class="form-text text-muted">{{ form.details_of_payment.description }}</small>
+              {% if form.details_of_payment.errors %}
                 <div class="invalid-feedback d-block">
-                  {% for error in form.terms_and_conditions.errors %}
+                  {% for error in form.details_of_payment.errors %}
                     {{ error }}
                   {% endfor %}
                 </div>
               {% endif %}
-              <div class="mt-1 text-end">
-                <small class="text-muted" id="char-count">
-                  <span id="current-chars">0</span>/<span id="max-chars">2000</span> characters
-                </small>
-              </div>
             </div>
             
             <div class="row">
               <div class="col-md-6">
                 <div class="alert alert-warning">
-                  <strong>Important:</strong> Once issued, a Letter of Credit cannot be modified without consent from all parties.
+                  <strong>Important:</strong> International fund transfers typically take 1-5 business days to complete.
                 </div>
               </div>
               <div class="col-md-6 text-end">
                 <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-secondary me-2">Cancel</a>
-                <button type="submit" class="btn btn-primary">Issue Letter of Credit</button>
+                {{ form.submit(class="btn btn-primary") }}
               </div>
             </div>
           </form>
@@ -145,17 +147,17 @@
       
       <div class="card shadow">
         <div class="card-header bg-light">
-          <h3 class="h5 mb-0">About SWIFT MT760</h3>
+          <h3 class="h5 mb-0">About SWIFT Messaging</h3>
         </div>
         <div class="card-body">
-          <p>MT760 is the SWIFT message type used for issuing a Standby Letter of Credit. This message is sent from the issuing bank to the advising bank to transmit the terms and conditions of the SBLC.</p>
+          <p>SWIFT (Society for Worldwide Interbank Financial Telecommunication) is a global member-owned cooperative that provides secure financial messaging services. Banks use SWIFT to securely transmit information and instructions through a standardized system of codes.</p>
           
           <h5 class="h6 mt-3">Key Information</h5>
           <ul>
-            <li>The MT760 is a legally binding financial instrument.</li>
-            <li>It includes details such as the beneficiary, amount, currency, expiry date, and terms/conditions.</li>
-            <li>Once issued, it typically takes 1-3 business days for the receiving bank to process.</li>
-            <li>The beneficiary can only draw on the SBLC if the specified conditions for default are met.</li>
+            <li>The MT103 message is the most common SWIFT message for cross-border payments, used for individual or business transfers.</li>
+            <li>The MT202 message is used for financial institution transfers (bank-to-bank).</li>
+            <li>Processing times vary depending on the receiving institution's policies and procedures.</li>
+            <li>Status updates are typically available within 24-48 hours after a transfer is initiated.</li>
           </ul>
         </div>
       </div>
@@ -167,40 +169,22 @@
 {% block scripts %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Character counter for terms and conditions
-    const termsField = document.getElementById('terms_and_conditions');
-    const currentChars = document.getElementById('current-chars');
-    const maxChars = document.getElementById('max-chars');
-    
-    function updateCharCount() {
-      const count = termsField.value.length;
-      currentChars.textContent = count;
-      
-      if (count > 2000) {
-        document.getElementById('char-count').classList.add('text-danger');
-      } else {
-        document.getElementById('char-count').classList.remove('text-danger');
-      }
-    }
-    
-    if (termsField) {
-      termsField.addEventListener('input', updateCharCount);
-      updateCharCount(); // Initial count
-    }
-    
     // Auto-save form data to local storage
     const form = document.querySelector('form');
     const formFields = form.querySelectorAll('input:not([type="hidden"]), textarea, select');
-    const formId = 'letter_of_credit_form';
+    const formId = 'swift_fund_transfer_form';
     
     // Load saved data
     const savedData = localStorage.getItem(formId);
     if (savedData) {
       const data = JSON.parse(savedData);
       formFields.forEach(field => {
-        field.value = data[field.name] || '';
+        if (field.type === 'checkbox') {
+          field.checked = data[field.name] || false;
+        } else {
+          field.value = data[field.name] || '';
+        }
       });
-      updateCharCount(); // Update counter after loading saved data
     }
     
     // Save data on change
@@ -212,7 +196,11 @@
     function saveFormData() {
       const data = {};
       formFields.forEach(field => {
-        data[field.name] = field.value;
+        if (field.type === 'checkbox') {
+          data[field.name] = field.checked;
+        } else {
+          data[field.name] = field.value;
+        }
       });
       localStorage.setItem(formId, JSON.stringify(data));
     }

@@ -4,6 +4,7 @@ This module handles transaction processing, status updates, and notifications
 """
 import logging
 import uuid
+import json
 from datetime import datetime
 from typing import Dict, Any, Optional, Tuple, Union
 
@@ -145,3 +146,71 @@ def get_transaction(transaction_id: str) -> Tuple[Optional[Transaction], Optiona
     except Exception as e:
         logger.error(f"Error fetching transaction: {str(e)}")
         return None, f"Failed to fetch transaction: {str(e)}"
+
+def record_transaction(
+    user_id: int,
+    transaction_type: TransactionType,
+    amount: float,
+    currency: str,
+    description: str,
+    status: TransactionStatus = TransactionStatus.PENDING,
+    metadata: Optional[Dict[str, Any]] = None,
+    send_email: bool = True
+) -> Transaction:
+    """
+    Record a transaction with all necessary details and metadata
+    
+    Args:
+        user_id (int): The user ID associated with the transaction
+        transaction_type (TransactionType): The type of transaction (e.g., PAYMENT, TRANSFER)
+        amount (float): The transaction amount
+        currency (str): The currency code (USD, EUR, etc.)
+        description (str): Text description of the transaction
+        status (TransactionStatus): The initial status (default: PENDING)
+        metadata (Dict): Optional metadata to store with the transaction
+        send_email (bool): Whether to send a notification email
+        
+    Returns:
+        Transaction: The created transaction object
+    """
+    # Generate unique transaction ID
+    transaction_id = f"TXN-{uuid.uuid4().hex[:8].upper()}-{int(datetime.now().timestamp())}"
+    
+    # Create transaction object
+    transaction = Transaction(
+        transaction_id=transaction_id,
+        user_id=user_id,
+        amount=amount,
+        currency=currency,
+        transaction_type=transaction_type,
+        status=status,
+        description=description
+    )
+    
+    # Store metadata as JSON if provided
+    if metadata:
+        transaction.tx_metadata_json = json.dumps(metadata)
+    
+    # Save to database
+    try:
+        db.session.add(transaction)
+        db.session.commit()
+        
+        # Send email notification if requested
+        if send_email:
+            user = User.query.get(user_id)
+            if user:
+                try:
+                    success = send_transaction_confirmation_email(user, transaction)
+                    if not success:
+                        logger.warning(f"Failed to send transaction confirmation email for {transaction_id}")
+                except Exception as e:
+                    logger.error(f"Error sending transaction email: {str(e)}")
+        
+        return transaction
+    
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error recording transaction: {str(e)}")
+        # Re-raise the exception for the caller to handle
+        raise

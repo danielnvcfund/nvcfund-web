@@ -53,6 +53,7 @@ class TransactionStatus(enum.Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     REFUNDED = "refunded"
+    CANCELLED = "cancelled"
 
 class TransactionType(enum.Enum):
     DEPOSIT = "deposit"

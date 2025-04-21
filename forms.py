@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SelectField, TextAreaField, HiddenField, FloatField, DateField, validators
+from wtforms import StringField, PasswordField, BooleanField, SelectField, TextAreaField, HiddenField, FloatField, DateField, SubmitField, validators
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional
 from datetime import datetime, timedelta
 from models import FinancialInstitution, TransactionType
@@ -145,3 +145,63 @@ class LetterOfCreditForm(FlaskForm):
         max_date = datetime.now().date() + timedelta(days=730)
         if field.data > max_date:
             raise ValidationError('Maximum expiry period is 2 years from today')
+            
+            
+class SwiftFundTransferForm(FlaskForm):
+    """Form for creating a SWIFT MT103/MT202 fund transfer"""
+    receiver_institution_id = SelectField('Receiving Institution', coerce=int, validators=[DataRequired()])
+    amount = FloatField('Amount', validators=[DataRequired()])
+    currency = SelectField('Currency', choices=[
+        ('USD', 'USD'), ('EUR', 'EUR'), ('GBP', 'GBP'), ('CHF', 'CHF'), 
+        ('JPY', 'JPY'), ('CNY', 'CNY'), ('CAD', 'CAD'), ('AUD', 'AUD')
+    ], validators=[DataRequired()])
+    beneficiary_customer = TextAreaField('Beneficiary Details', 
+                                       validators=[DataRequired(), Length(min=5, max=200)],
+                                       description="Beneficiary name, account number, and address")
+    ordering_customer = TextAreaField('Sender Details', validators=[Optional(), Length(max=200)],
+                                     description="Your bank details (auto-filled if left blank)")
+    details_of_payment = TextAreaField('Payment Details/Purpose', 
+                                      validators=[Optional(), Length(max=140)],
+                                      description="Reason for transfer (invoice number, purpose, etc.)")
+    use_mt202 = BooleanField('Send as Financial Institution Transfer (MT202)', 
+                            description="Check this if sending to financial institution rather than individual")
+    submit = SubmitField('Initiate SWIFT Transfer')
+    
+    def __init__(self, *args, **kwargs):
+        super(SwiftFundTransferForm, self).__init__(*args, **kwargs)
+        # Load available financial institutions that support SWIFT
+        from swift_integration import SwiftService
+        swift_institutions = SwiftService.get_swift_enabled_institutions()
+        if not swift_institutions:
+            # If no SWIFT-enabled institutions are found, fall back to all active institutions
+            swift_institutions = FinancialInstitution.query.filter_by(is_active=True).all()
+        
+        self.receiver_institution_id.choices = [(i.id, i.name) for i in swift_institutions]
+    
+    
+class SwiftFreeFormatMessageForm(FlaskForm):
+    """Form for sending a SWIFT MT799 free format message"""
+    receiver_institution_id = SelectField('Receiving Institution', coerce=int, validators=[DataRequired()])
+    reference = StringField('Reference Number', validators=[DataRequired(), Length(min=5, max=16)],
+                           description="Unique reference for this message")
+    narrative_text = TextAreaField('Message Content', 
+                                  validators=[DataRequired(), Length(min=10, max=2000)],
+                                  description="Content of your message to the institution")
+    submit = SubmitField('Send SWIFT Message')
+    
+    def __init__(self, *args, **kwargs):
+        super(SwiftFreeFormatMessageForm, self).__init__(*args, **kwargs)
+        # Load available financial institutions that support SWIFT
+        from swift_integration import SwiftService
+        swift_institutions = SwiftService.get_swift_enabled_institutions()
+        if not swift_institutions:
+            # If no SWIFT-enabled institutions are found, fall back to all active institutions
+            swift_institutions = FinancialInstitution.query.filter_by(is_active=True).all()
+        
+        self.receiver_institution_id.choices = [(i.id, i.name) for i in swift_institutions]
+        
+        # Generate a default reference if none provided
+        if not self.reference.data:
+            import uuid
+            from datetime import datetime
+            self.reference.data = f"M{datetime.now().strftime('%Y%m%d')}{uuid.uuid4().hex[:6].upper()}"

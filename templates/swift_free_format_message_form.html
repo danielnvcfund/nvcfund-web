@@ -1,0 +1,188 @@
+{% extends "layout.html" %}
+
+{% block title %}SWIFT Free Format Message{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
+          <li class="breadcrumb-item active">SWIFT Free Format Message</li>
+        </ol>
+      </nav>
+      
+      <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+          <h2 class="h4 mb-0">Send SWIFT Free Format Message (MT799)</h2>
+        </div>
+        <div class="card-body">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          
+          <div class="alert alert-info">
+            <h5 class="alert-heading">About MT799 Messages</h5>
+            <p>MT799 is a free format message type in the SWIFT network, used when no specific message format is available or required.</p>
+            <hr>
+            <p class="mb-0">Common uses for MT799 messages include:</p>
+            <ul>
+              <li>Pre-advice communications before sending a formal financial instrument</li>
+              <li>Amendments or clarifications to previous transactions</li>
+              <li>Requests for information from financial institutions</li>
+              <li>General banking communications that don't fit standard formats</li>
+            </ul>
+          </div>
+          
+          <form method="POST" action="{{ url_for('web.main.swift_free_format_message') }}" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group mb-3">
+              {{ form.receiver_institution_id.label(class="form-label") }}
+              {{ form.receiver_institution_id(class="form-select") }}
+              {% if form.receiver_institution_id.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.receiver_institution_id.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            
+            <div class="form-group mb-3">
+              {{ form.reference.label(class="form-label") }}
+              {{ form.reference(class="form-control") }}
+              <small class="form-text text-muted">{{ form.reference.description }}</small>
+              {% if form.reference.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.reference.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            
+            <div class="form-group mb-4">
+              {{ form.narrative_text.label(class="form-label") }}
+              {{ form.narrative_text(class="form-control", rows=8) }}
+              <small class="form-text text-muted">{{ form.narrative_text.description }}</small>
+              {% if form.narrative_text.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.narrative_text.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <div class="mt-1 text-end">
+                <small class="text-muted" id="char-count">
+                  <span id="current-chars">0</span>/<span id="max-chars">2000</span> characters
+                </small>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="alert alert-warning">
+                  <strong>Note:</strong> Messages are delivered in real-time and cannot be recalled once sent.
+                </div>
+              </div>
+              <div class="col-md-6 text-end">
+                <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-secondary me-2">Cancel</a>
+                {{ form.submit(class="btn btn-primary") }}
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div class="card shadow">
+        <div class="card-header bg-light">
+          <h3 class="h5 mb-0">About SWIFT MT799 Messages</h3>
+        </div>
+        <div class="card-body">
+          <p>MT799 is a free format SWIFT message type that allows for communication between financial institutions when no other specific message type is suitable.</p>
+          
+          <h5 class="h6 mt-3">Message Structure</h5>
+          <p>MT799 messages have a simple structure:</p>
+          <ul>
+            <li><strong>Reference:</strong> A unique identifier for tracking the message</li>
+            <li><strong>Narrative Text:</strong> The main content of the message in free format</li>
+          </ul>
+          
+          <p>Unlike other SWIFT message types with rigid field structures, MT799 provides flexibility for various types of banking communications that don't require formatted data fields.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Character counter for narrative text
+    const narrativeText = document.getElementById('narrative_text');
+    const currentChars = document.getElementById('current-chars');
+    const maxChars = document.getElementById('max-chars');
+    
+    function updateCharCount() {
+      const count = narrativeText.value.length;
+      currentChars.textContent = count;
+      
+      if (count > 2000) {
+        document.getElementById('char-count').classList.add('text-danger');
+      } else {
+        document.getElementById('char-count').classList.remove('text-danger');
+      }
+    }
+    
+    if (narrativeText) {
+      narrativeText.addEventListener('input', updateCharCount);
+      updateCharCount(); // Initial count
+    }
+    
+    // Auto-save form data to local storage
+    const form = document.querySelector('form');
+    const formFields = form.querySelectorAll('input:not([type="hidden"]), textarea, select');
+    const formId = 'swift_free_format_message_form';
+    
+    // Load saved data
+    const savedData = localStorage.getItem(formId);
+    if (savedData) {
+      const data = JSON.parse(savedData);
+      formFields.forEach(field => {
+        field.value = data[field.name] || '';
+      });
+      updateCharCount(); // Update counter after loading saved data
+    }
+    
+    // Save data on change
+    formFields.forEach(field => {
+      field.addEventListener('change', saveFormData);
+      field.addEventListener('keyup', saveFormData);
+    });
+    
+    function saveFormData() {
+      const data = {};
+      formFields.forEach(field => {
+        data[field.name] = field.value;
+      });
+      localStorage.setItem(formId, JSON.stringify(data));
+    }
+    
+    // Clear saved data on successful submission
+    form.addEventListener('submit', function() {
+      // We'll keep the data until successful submission
+      // Server will redirect to success page, which will clear localStorage
+    });
+  });
+</script>
+{% endblock %}
