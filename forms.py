@@ -116,13 +116,61 @@ class PaymentForm(FlaskForm):
 
 class BankTransferForm(FlaskForm):
     transaction_id = HiddenField('Transaction ID', validators=[Optional()])
+    
+    # Recipient information fields
+    recipient_name = StringField('Recipient Name', validators=[DataRequired()])
+    recipient_email = StringField('Email Address', validators=[Optional(), Email()])
+    recipient_address = TextAreaField('Street Address', validators=[DataRequired()])
+    recipient_city = StringField('City', validators=[DataRequired()])
+    recipient_state = StringField('State/Province', validators=[Optional()])
+    recipient_zip = StringField('ZIP/Postal Code', validators=[DataRequired()])
+    recipient_country = StringField('Country', validators=[DataRequired()])
+    
+    # Bank account information fields
     bank_name = StringField('Bank Name', validators=[DataRequired()])
     account_holder = StringField('Account Holder Name', validators=[DataRequired()])
     account_number = StringField('Account Number', validators=[DataRequired()])
-    routing_number = StringField('Routing Number', validators=[DataRequired()])
-    swift_code = StringField('SWIFT/BIC Code', validators=[DataRequired()])
+    account_type = SelectField('Account Type', choices=[
+        ('checking', 'Checking'),
+        ('savings', 'Savings'),
+        ('business', 'Business')
+    ], validators=[DataRequired()])
+    transfer_type = SelectField('Transfer Type', choices=[
+        ('domestic', 'Domestic'),
+        ('international', 'International')
+    ], default='domestic', validators=[DataRequired()])
+    routing_number = StringField('Routing Number', validators=[Optional()])
+    swift_bic = StringField('SWIFT/BIC Code', validators=[Optional()])
+    iban = StringField('IBAN', validators=[Optional()])
     bank_address = TextAreaField('Bank Address', validators=[DataRequired()])
-    reference = StringField('Payment Reference', validators=[DataRequired()])
+    bank_city = StringField('City', validators=[DataRequired()])
+    bank_state = StringField('State/Province', validators=[Optional()])
+    bank_country = StringField('Country', validators=[DataRequired()])
+    
+    # International transfer fields
+    currency = SelectField('Currency', choices=[
+        ('USD', 'USD'), ('EUR', 'EUR'), ('GBP', 'GBP'), ('JPY', 'JPY'),
+        ('CAD', 'CAD'), ('AUD', 'AUD'), ('CHF', 'CHF')
+    ], default='USD', validators=[Optional()])
+    purpose = SelectField('Purpose of Payment', choices=[
+        ('business', 'Business Services'),
+        ('personal', 'Personal Transfer'),
+        ('property', 'Property Purchase'),
+        ('investment', 'Investment'),
+        ('education', 'Education'),
+        ('other', 'Other (Please Specify)')
+    ], validators=[Optional()])
+    purpose_detail = StringField('Purpose Details', validators=[Optional()])
+    intermediary_bank = StringField('Intermediary Bank', validators=[Optional()])
+    intermediary_swift = StringField('Intermediary SWIFT Code', validators=[Optional()])
+    
+    # Reference information
+    reference = StringField('Payment Reference', validators=[Optional()])
+    description = TextAreaField('Description', validators=[Optional()])
+    
+    # Terms agreement
+    terms_agree = BooleanField('I agree to the terms', validators=[DataRequired()])
+    
     amount = HiddenField('Amount')
     
     def populate_from_stored_data(self, stored_data):
