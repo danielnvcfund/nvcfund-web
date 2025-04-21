@@ -50,6 +50,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/main/letter_of_credit/new' %}active{% endif %}" href="/main/letter_of_credit/new">
+                            <i class="fas fa-file-contract me-1"></i> Letter of Credit
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {% if request.path == '/main/payment/test' %}active{% endif %}" href="/main/payment/test">
                             <i class="fas fa-flask me-1"></i> Test Payment
                         </a>
