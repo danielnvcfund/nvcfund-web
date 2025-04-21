@@ -82,13 +82,13 @@ def new_fund_transfer():
                 receiver_institution_id=form.receiver_institution_id.data,
                 amount=form.amount.data,
                 currency=form.currency.data,
-                ordering_customer=form.ordering_customer.data or f"{current_user.username}\nNVC Global Banking\nAccount: {current_user.id}",
+                ordering_customer=form.ordering_customer.data,
                 beneficiary_customer=form.beneficiary_customer.data,
-                details_of_payment=form.details_of_payment.data or "Fund transfer",
-                is_financial_institution=form.use_mt202.data
+                details_of_payment=form.details_of_payment.data,
+                is_financial_institution=bool(form.is_financial_institution.data)
             )
             
-            message_type = "MT202" if form.use_mt202.data else "MT103"
+            message_type = "MT202" if form.is_financial_institution.data else "MT103"
             flash(f'SWIFT {message_type} fund transfer initiated successfully. Reference: {transaction.transaction_id}', 'success')
             return redirect(url_for('web.swift.fund_transfer_status', transaction_id=transaction.transaction_id))
         except Exception as e:
@@ -108,8 +108,8 @@ def new_free_format_message():
             transaction = SwiftService.create_free_format_message(
                 user_id=current_user.id,
                 receiver_institution_id=form.receiver_institution_id.data,
-                subject=form.reference.data,
-                message_body=form.narrative_text.data
+                subject=form.subject.data,
+                message_body=form.message_body.data
             )
             
             flash(f'SWIFT MT799 message sent successfully. Reference: {transaction.transaction_id}', 'success')

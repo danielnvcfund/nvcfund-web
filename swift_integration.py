@@ -55,8 +55,12 @@ class SwiftMessage:
         return {}
         
     def generate_transaction(self):
-        """Generate a transaction record for this message"""
-        pass
+        """Generate a transaction record for this message
+        
+        Returns:
+            Transaction: The created transaction object
+        """
+        return None
 
 class MT760(SwiftMessage):
     """SWIFT MT760 - Standby Letter of Credit"""
@@ -145,6 +149,10 @@ class MT103(SwiftMessage):
         """Create a transaction record for this fund transfer"""
         description = f"SWIFT MT103 Fund Transfer {self.reference} for {self.amount} {self.currency}"
         
+        # Prepare metadata
+        metadata = self.to_json()
+        metadata["institution_id"] = self.institution_id
+        
         # Create the transaction
         transaction = record_transaction(
             user_id=self.user_id,
@@ -153,9 +161,7 @@ class MT103(SwiftMessage):
             transaction_type=TransactionType.SWIFT_FUND_TRANSFER,
             status=TransactionStatus.PENDING,
             description=description,
-            institution_id=self.institution_id,
-            gateway_id=None,
-            tx_metadata=json.dumps(self.to_json())
+            metadata=metadata
         )
         
         return transaction
@@ -197,6 +203,10 @@ class MT202(SwiftMessage):
         """Create a transaction record for this institution transfer"""
         description = f"SWIFT MT202 Financial Institution Transfer {self.reference} for {self.amount} {self.currency}"
         
+        # Prepare metadata
+        metadata = self.to_json()
+        metadata["institution_id"] = self.institution_id
+        
         # Create the transaction
         transaction = record_transaction(
             user_id=self.user_id,
@@ -205,9 +215,7 @@ class MT202(SwiftMessage):
             transaction_type=TransactionType.SWIFT_INSTITUTION_TRANSFER,
             status=TransactionStatus.PENDING,
             description=description,
-            institution_id=self.institution_id,
-            gateway_id=None,
-            tx_metadata=json.dumps(self.to_json())
+            metadata=metadata
         )
         
         return transaction
@@ -245,6 +253,10 @@ class MT799(SwiftMessage):
         amount = 0.0
         description = f"SWIFT MT799 Free Format Message: {self.subject}"
         
+        # Prepare metadata
+        metadata = self.to_json()
+        metadata["institution_id"] = self.institution_id
+        
         # Create the transaction
         transaction = record_transaction(
             user_id=self.user_id,
@@ -253,9 +265,7 @@ class MT799(SwiftMessage):
             transaction_type=TransactionType.SWIFT_FREE_FORMAT,
             status=TransactionStatus.PENDING,
             description=description,
-            institution_id=self.institution_id,
-            gateway_id=None,
-            tx_metadata=json.dumps(self.to_json())
+            metadata=metadata
         )
         
         return transaction

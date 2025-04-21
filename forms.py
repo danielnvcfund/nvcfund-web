@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SelectField, TextAreaField, HiddenField, FloatField, DateField, SubmitField, validators
+from wtforms import StringField, PasswordField, BooleanField, SelectField, TextAreaField, HiddenField, FloatField, DateField, SubmitField, RadioField, validators
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional
 from datetime import datetime, timedelta
 from models import FinancialInstitution, TransactionType
@@ -174,21 +174,22 @@ class SwiftFundTransferForm(FlaskForm):
     """Form for creating a SWIFT MT103/MT202 fund transfer"""
     receiver_institution_id = SelectField('Receiving Institution', coerce=int, validators=[DataRequired()])
     amount = FloatField('Amount', validators=[DataRequired()])
-    currency = SelectField('Currency', choices=[
-        ('USD', 'USD'), ('EUR', 'EUR'), ('GBP', 'GBP'), ('CHF', 'CHF'), 
-        ('JPY', 'JPY'), ('CNY', 'CNY'), ('CAD', 'CAD'), ('AUD', 'AUD')
-    ], validators=[DataRequired()])
+    currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
     beneficiary_customer = TextAreaField('Beneficiary Details', 
-                                       validators=[DataRequired(), Length(min=5, max=200)],
-                                       description="Beneficiary name, account number, and address")
-    ordering_customer = TextAreaField('Sender Details', validators=[Optional(), Length(max=200)],
-                                     description="Your bank details (auto-filled if left blank)")
+                                      validators=[DataRequired(), Length(min=5, max=500)],
+                                      description="Name, account number, and address of the recipient")
+    ordering_customer = TextAreaField('Sender Details', validators=[DataRequired(), Length(min=5, max=500)],
+                                    description="Name, account number, and address of the sender")
     details_of_payment = TextAreaField('Payment Details/Purpose', 
-                                      validators=[Optional(), Length(max=140)],
-                                      description="Reason for transfer (invoice number, purpose, etc.)")
-    use_mt202 = BooleanField('Send as Financial Institution Transfer (MT202)', 
-                            description="Check this if sending to financial institution rather than individual")
-    submit = SubmitField('Initiate SWIFT Transfer')
+                                     validators=[DataRequired(), Length(max=300)],
+                                     description="Reason for transfer (invoice number, purpose, etc.)")
+    is_financial_institution = RadioField('Transfer Type', 
+                                       choices=[(0, 'MT103 - Customer Credit Transfer'), 
+                                                (1, 'MT202 - Financial Institution Transfer')],
+                                       coerce=int,
+                                       default=0,
+                                       validators=[DataRequired()])
+    submit = SubmitField('Submit Fund Transfer')
     
     def __init__(self, *args, **kwargs):
         super(SwiftFundTransferForm, self).__init__(*args, **kwargs)
@@ -205,12 +206,12 @@ class SwiftFundTransferForm(FlaskForm):
 class SwiftFreeFormatMessageForm(FlaskForm):
     """Form for sending a SWIFT MT799 free format message"""
     receiver_institution_id = SelectField('Receiving Institution', coerce=int, validators=[DataRequired()])
-    reference = StringField('Reference Number', validators=[DataRequired(), Length(min=5, max=16)],
-                           description="Unique reference for this message")
-    narrative_text = TextAreaField('Message Content', 
-                                  validators=[DataRequired(), Length(min=10, max=2000)],
-                                  description="Content of your message to the institution")
-    submit = SubmitField('Send SWIFT Message')
+    subject = StringField('Subject', validators=[DataRequired(), Length(min=5, max=100)],
+                         description="A clear subject for your message")
+    message_body = TextAreaField('Message Content', 
+                               validators=[DataRequired(), Length(min=10, max=2000)],
+                               description="Content of your message to the institution")
+    submit = SubmitField('Send Message')
     
     def __init__(self, *args, **kwargs):
         super(SwiftFreeFormatMessageForm, self).__init__(*args, **kwargs)
@@ -222,9 +223,3 @@ class SwiftFreeFormatMessageForm(FlaskForm):
             swift_institutions = FinancialInstitution.query.filter_by(is_active=True).all()
         
         self.receiver_institution_id.choices = [(i.id, i.name) for i in swift_institutions]
-        
-        # Generate a default reference if none provided
-        if not self.reference.data:
-            import uuid
-            from datetime import datetime
-            self.reference.data = f"M{datetime.now().strftime('%Y%m%d')}{uuid.uuid4().hex[:6].upper()}"

@@ -9,19 +9,21 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
-          <li class="breadcrumb-item"><a href="{{ url_for('web.main.transactions') }}">Transactions</a></li>
-          <li class="breadcrumb-item"><a href="{{ url_for('web.main.transaction_details', transaction_id=transaction.transaction_id) }}">Transaction Details</a></li>
           <li class="breadcrumb-item active">SWIFT Fund Transfer Status</li>
         </ol>
       </nav>
       
       <div class="card shadow mb-4">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <div class="card-header d-flex justify-content-between align-items-center">
           <h2 class="h4 mb-0">
-            SWIFT {{ 'MT202 Financial Institution Transfer' if transaction.transaction_type == TransactionType.SWIFT_INSTITUTION_TRANSFER else 'MT103 Customer Fund Transfer' }} Status
+            {% if transaction.transaction_type == 'SWIFT_INSTITUTION_TRANSFER' %}
+            MT202 Financial Institution Transfer
+            {% else %}
+            MT103 Customer Credit Transfer
+            {% endif %}
           </h2>
-          <span class="badge bg-{{ 'success' if transaction.status.value == 'completed' else 'warning' if transaction.status.value == 'pending' else 'danger' }}">
-            {{ transaction.status.value | upper }}
+          <span class="badge bg-{{ 'success' if transaction.status == 'COMPLETED' else 'warning' if transaction.status == 'PENDING' else 'danger' }}">
+            {{ transaction.status }}
           </span>
         </div>
         <div class="card-body">
@@ -36,154 +38,139 @@
             {% endif %}
           {% endwith %}
           
+          <h5 class="mb-3">Reference: {{ swift_data.get('reference', 'N/A') }}</h5>
+          
           <div class="row">
             <div class="col-md-6">
-              <h4 class="h5 mb-3">Transfer Details</h4>
-              <table class="table table-bordered">
-                <tr>
-                  <th class="table-light" style="width: 40%">Transfer Reference</th>
-                  <td>{{ swift_data.get('reference', transaction.transaction_id) }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Amount</th>
-                  <td>{{ transaction.amount | round(2) }} {{ transaction.currency }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Sending Institution</th>
-                  <td>{{ swift_data.get('sender_institution', 'NVC Global Bank') }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Receiving Institution</th>
-                  <td>{{ swift_data.get('receiver_institution', 'Not specified') }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Payment Details</th>
-                  <td>{{ swift_data.get('details_of_payment', 'Not specified') }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Execution Date</th>
-                  <td>{{ swift_data.get('execution_date', transaction.created_at.isoformat()).split('T')[0] }}</td>
-                </tr>
-              </table>
-            </div>
-            
-            <div class="col-md-6">
-              <h4 class="h5 mb-3">SWIFT Information</h4>
-              <table class="table table-bordered">
-                <tr>
-                  <th class="table-light" style="width: 40%">Message Type</th>
-                  <td>{{ 'MT202 (Financial Institution Transfer)' if transaction.transaction_type == TransactionType.SWIFT_INSTITUTION_TRANSFER else 'MT103 (Customer Fund Transfer)' }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Sender BIC</th>
-                  <td>{{ swift_data.get('sender_bic', 'N/A') }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Receiver BIC</th>
-                  <td>{{ swift_data.get('receiver_bic', 'N/A') }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Transaction ID</th>
-                  <td>{{ transaction.transaction_id }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Processing Status</th>
-                  <td>
-                    <span class="badge bg-{{ 'success' if status_data.get('status') == 'settled' else 'warning' if status_data.get('status') == 'processing' else 'danger' }}">
-                      {{ status_data.get('status', 'Unknown') | upper }}
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <th class="table-light">Last Updated</th>
-                  <td>{{ transaction.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                </tr>
-              </table>
-            </div>
-          </div>
-          
-          <div class="row mt-4">
-            <div class="col-md-6">
-              <h4 class="h5 mb-3">Ordering Customer</h4>
-              <div class="card">
-                <div class="card-body bg-light">
-                  <pre class="mb-0" style="white-space: pre-wrap;">{{ swift_data.get('ordering_customer', 'No ordering customer information specified.') }}</pre>
+              <div class="card mb-3">
+                <div class="card-header bg-light">
+                  <h6 class="mb-0">Transfer Details</h6>
+                </div>
+                <div class="card-body">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <th style="width: 200px;">Sending Institution:</th>
+                        <td>{{ swift_data.get('sender_institution', 'NVC Global Bank') }}</td>
+                      </tr>
+                      <tr>
+                        <th>Receiving Institution:</th>
+                        <td>{{ swift_data.get('receiver_institution', 'N/A') }}</td>
+                      </tr>
+                      <tr>
+                        <th>BIC Code:</th>
+                        <td>{{ swift_data.get('receiver_bic', 'N/A') }}</td>
+                      </tr>
+                      <tr>
+                        <th>Date:</th>
+                        <td>{{ swift_data.get('execution_date', transaction.timestamp.strftime('%Y-%m-%d')) }}</td>
+                      </tr>
+                      <tr>
+                        <th>Amount:</th>
+                        <td>{{ transaction.amount }} {{ transaction.currency }}</td>
+                      </tr>
+                      <tr>
+                        <th>Status:</th>
+                        <td>
+                          <span class="badge bg-{{ 'success' if transaction.status == 'COMPLETED' else 'warning' if transaction.status == 'PENDING' else 'danger' }}">
+                            {{ transaction.status }}
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
             
             <div class="col-md-6">
-              <h4 class="h5 mb-3">Beneficiary Customer</h4>
-              <div class="card">
-                <div class="card-body bg-light">
-                  <pre class="mb-0" style="white-space: pre-wrap;">{{ swift_data.get('beneficiary_customer', 'No beneficiary information specified.') }}</pre>
+              <div class="card mb-3">
+                <div class="card-header bg-light">
+                  <h6 class="mb-0">Payment Details</h6>
+                </div>
+                <div class="card-body">
+                  <h6>Ordering Customer/Institution</h6>
+                  <pre class="p-2 bg-light rounded mb-3">{{ swift_data.get('ordering_customer', swift_data.get('ordering_institution', 'Not specified')) }}</pre>
+                  
+                  <h6>Beneficiary Customer/Institution</h6>
+                  <pre class="p-2 bg-light rounded mb-3">{{ swift_data.get('beneficiary_customer', swift_data.get('beneficiary_institution', 'Not specified')) }}</pre>
+                  
+                  <h6>Payment Details</h6>
+                  <pre class="p-2 bg-light rounded">{{ swift_data.get('details_of_payment', 'Not provided') }}</pre>
                 </div>
               </div>
             </div>
           </div>
           
-          <h4 class="h5 mt-4 mb-3">SWIFT Transfer Status</h4>
-          
-          <div class="alert {{ 'alert-success' if status_data.get('success') else 'alert-warning' }}">
-            {% if status_data.get('success') %}
-              <h5 class="alert-heading">SWIFT Status: {{ status_data.get('status', 'unknown') | upper }}</h5>
-              <p>{{ status_data.get('details', {}).get('message', 'The fund transfer has been processed by the SWIFT network.') }}</p>
-              
-              {% if status_data.get('details', {}).get('settlement_time') %}
-                <hr>
-                <p class="mb-0">Settlement Time: {{ status_data.get('details', {}).get('settlement_time').split('T')[0] }} 
-                  {{ status_data.get('details', {}).get('settlement_time').split('T')[1].split('.')[0] }}</p>
+          {% if transaction.status == 'PENDING' %}
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i> 
+              This fund transfer is currently being processed by the SWIFT network. 
+              Processing typically takes 1-3 business days.
+            </div>
+          {% elif transaction.status == 'COMPLETED' %}
+            <div class="alert alert-success">
+              <i class="bi bi-check-circle me-2"></i>
+              This fund transfer has been successfully delivered to the receiving institution.
+              The actual funds settlement may take additional time depending on the institutions involved.
+            </div>
+          {% elif transaction.status == 'CANCELLED' %}
+            <div class="alert alert-danger">
+              <i class="bi bi-x-circle me-2"></i>
+              This fund transfer was cancelled and was not processed.
+            </div>
+          {% elif transaction.status == 'FAILED' %}
+            <div class="alert alert-danger">
+              <i class="bi bi-x-circle me-2"></i>
+              This fund transfer could not be processed. Please contact support for more information.
+            </div>
+          {% endif %}
+        </div>
+        <div class="card-footer">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+              </a>
+            </div>
+            <div>
+              {% if transaction.status == 'PENDING' %}
+                <form method="POST" action="{{ url_for('web.swift.cancel_transfer', transaction_id=transaction.transaction_id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this fund transfer? This action cannot be undone.');">
+                  <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-x-circle me-1"></i> Cancel Transfer
+                  </button>
+                </form>
               {% endif %}
-            {% else %}
-              <h5 class="alert-heading">SWIFT Status Check Failed</h5>
-              <p>{{ status_data.get('error', 'Unable to retrieve status from SWIFT at this time.') }}</p>
-              <hr>
-              <p class="mb-0">Please check back later for updated status information.</p>
-            {% endif %}
-          </div>
-          
-          <div class="mt-4 d-flex justify-content-between">
-            <a href="{{ url_for('web.main.transaction_details', transaction_id=transaction.transaction_id) }}" class="btn btn-secondary">
-              <i class="fa fa-arrow-left"></i> Back to Transaction
-            </a>
-            <a href="{{ url_for('web.swift.fund_transfer_status', transaction_id=transaction.transaction_id) }}" class="btn btn-primary">
-              <i class="fa fa-refresh"></i> Refresh Status
-            </a>
+              <a href="{{ url_for('web.swift.new_fund_transfer') }}" class="btn btn-primary ms-2">
+                <i class="bi bi-cash-coin me-1"></i> New Fund Transfer
+              </a>
+            </div>
           </div>
         </div>
       </div>
       
       <div class="card shadow">
         <div class="card-header bg-light">
-          <h3 class="h5 mb-0">About SWIFT Fund Transfers</h3>
+          <h3 class="h5 mb-0">SWIFT Processing Information</h3>
         </div>
         <div class="card-body">
           <div class="row">
             <div class="col-md-6">
-              <h5 class="h6 mb-2">MT103 Customer Credit Transfer</h5>
-              <p>MT103 is the SWIFT message format used for customer credit transfers. It's the most commonly used message for international wire transfers for a customer.</p>
+              <h6>Processing Time</h6>
               <ul>
-                <li>Contains detailed information about the sender (ordering customer)</li>
-                <li>Contains detailed information about the recipient (beneficiary customer)</li>
-                <li>Typically takes 1-3 business days to settle</li>
-                <li>Used primarily for individual and business payments</li>
+                <li>MT103 transfers typically process in 1-3 business days</li>
+                <li>MT202 transfers may process faster (24-48 hours)</li>
+                <li>Final settlement depends on receiving bank procedures</li>
               </ul>
             </div>
-            
             <div class="col-md-6">
-              <h5 class="h6 mb-2">MT202 Financial Institution Transfer</h5>
-              <p>MT202 is the SWIFT message format used for financial institution transfers. It's used for bank-to-bank transfers.</p>
+              <h6>Tracking</h6>
               <ul>
-                <li>Simpler format than MT103, with less customer information</li>
-                <li>Typically settles faster than customer transfers</li>
-                <li>Used for correspondent banking relationships</li>
-                <li>Common for treasury operations and nostro account movements</li>
+                <li>Your transfer is tracked via its SWIFT reference number</li>
+                <li>Status updates are provided as they become available</li>
+                <li>For urgent inquiries, contact our support team</li>
               </ul>
             </div>
-          </div>
-          
-          <div class="alert alert-info mt-3">
-            <strong>Note:</strong> Fund transfers through SWIFT are irrevocable once the status changes to "Settled". Contact customer support if you have any questions about your transfer.
           </div>
         </div>
       </div>

@@ -9,17 +9,15 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
-          <li class="breadcrumb-item"><a href="{{ url_for('web.main.transactions') }}">Transactions</a></li>
-          <li class="breadcrumb-item"><a href="{{ url_for('web.main.transaction_details', transaction_id=transaction.transaction_id) }}">Transaction Details</a></li>
           <li class="breadcrumb-item active">SWIFT Message Status</li>
         </ol>
       </nav>
       
       <div class="card shadow mb-4">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-          <h2 class="h4 mb-0">SWIFT Message Status</h2>
-          <span class="badge bg-{{ 'success' if transaction.status.value == 'completed' else 'warning' if transaction.status.value == 'pending' else 'danger' }}">
-            {{ transaction.status.value | upper }}
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h2 class="h4 mb-0">MT799 Free Format Message</h2>
+          <span class="badge bg-{{ 'success' if transaction.status == 'COMPLETED' else 'warning' if transaction.status == 'PENDING' else 'danger' }}">
+            {{ transaction.status }}
           </span>
         </div>
         <div class="card-body">
@@ -34,122 +32,104 @@
             {% endif %}
           {% endwith %}
           
-          <div class="row">
-            <div class="col-md-6">
-              <h4 class="h5 mb-3">Message Details</h4>
-              <table class="table table-bordered">
-                <tr>
-                  <th class="table-light" style="width: 40%">Message Type</th>
-                  <td>{{ swift_data.get('message_type', 'MT799') }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Reference</th>
-                  <td>{{ swift_data.get('reference', 'N/A') }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Transaction ID</th>
-                  <td>{{ transaction.transaction_id }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Subject</th>
-                  <td>{{ swift_data.get('subject', 'N/A') }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Creation Date</th>
-                  <td>{{ swift_data.get('creation_date', transaction.created_at.isoformat()).split('T')[0] }}</td>
-                </tr>
-              </table>
+          <h5 class="mb-3">Reference: {{ swift_data.get('reference', 'N/A') }}</h5>
+          
+          <table class="table table-striped">
+            <tbody>
+              <tr>
+                <th style="width: 200px;">Sending Institution:</th>
+                <td>{{ swift_data.get('sender_institution', 'NVC Global Bank') }}</td>
+              </tr>
+              <tr>
+                <th>Receiving Institution:</th>
+                <td>{{ swift_data.get('receiver_institution', 'N/A') }}</td>
+              </tr>
+              <tr>
+                <th>BIC Code:</th>
+                <td>{{ swift_data.get('receiver_bic', 'N/A') }}</td>
+              </tr>
+              <tr>
+                <th>Date Created:</th>
+                <td>{{ swift_data.get('creation_date', transaction.timestamp.strftime('%Y-%m-%d')) }}</td>
+              </tr>
+              <tr>
+                <th>Status:</th>
+                <td>
+                  <span class="badge bg-{{ 'success' if transaction.status == 'COMPLETED' else 'warning' if transaction.status == 'PENDING' else 'danger' }}">
+                    {{ transaction.status }}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <th>Subject:</th>
+                <td>{{ swift_data.get('subject', 'N/A') }}</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Message Content</h5>
             </div>
-            
-            <div class="col-md-6">
-              <h4 class="h5 mb-3">Routing Information</h4>
-              <table class="table table-bordered">
-                <tr>
-                  <th class="table-light" style="width: 40%">Sender BIC</th>
-                  <td>{{ swift_data.get('sender_bic', 'N/A') }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Receiver BIC</th>
-                  <td>{{ swift_data.get('receiver_bic', 'N/A') }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Sending Organization</th>
-                  <td>NVC Global</td>
-                </tr>
-                <tr>
-                  <th class="table-light">Receiving Organization</th>
-                  <td>{{ transaction.recipient.split(' (BIC:')[0] if transaction.recipient else 'N/A' }}</td>
-                </tr>
-                <tr>
-                  <th class="table-light">SWIFT Status</th>
-                  <td>
-                    <span class="badge bg-{{ 'success' if status_data.get('status') == 'delivered' else 'warning' if status_data.get('status') == 'processing' else 'danger' }}">
-                      {{ status_data.get('status', 'Unknown') | upper }}
-                    </span>
-                  </td>
-                </tr>
-              </table>
+            <div class="card-body">
+              <pre class="p-3 bg-light rounded">{{ swift_data.get('message_body', 'No message content available') }}</pre>
             </div>
           </div>
           
-          <div class="row mt-4">
-            <div class="col-12">
-              <h4 class="h5 mb-3">Message Content</h4>
-              <div class="card">
-                <div class="card-body bg-light">
-                  <pre class="mb-0" style="white-space: pre-wrap;">{{ swift_data.get('message_body', 'No message content available.') }}</pre>
-                </div>
-              </div>
+          {% if transaction.status == 'PENDING' %}
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i> 
+              This message is currently being processed by the SWIFT network. 
+              Processing typically takes 1-2 business days.
             </div>
-          </div>
-          
-          <h4 class="h5 mt-4 mb-3">Delivery Status</h4>
-          
-          <div class="alert {{ 'alert-success' if status_data.get('success') else 'alert-warning' }}">
-            {% if status_data.get('success') %}
-              <h5 class="alert-heading">SWIFT Status: {{ status_data.get('status', 'unknown') | upper }}</h5>
-              <p>{{ status_data.get('details', {}).get('details', 'The message has been processed by the SWIFT network.') }}</p>
-              
-              {% if status_data.get('details', {}).get('delivery_time') %}
-                <hr>
-                <p class="mb-0">Delivered on: {{ status_data.get('details', {}).get('delivery_time').split('T')[0] }} 
-                  {{ status_data.get('details', {}).get('delivery_time').split('T')[1].split('.')[0] }}</p>
+          {% elif transaction.status == 'COMPLETED' %}
+            <div class="alert alert-success">
+              <i class="bi bi-check-circle me-2"></i>
+              This message has been successfully delivered to the receiving institution.
+            </div>
+          {% elif transaction.status == 'CANCELLED' %}
+            <div class="alert alert-danger">
+              <i class="bi bi-x-circle me-2"></i>
+              This message was cancelled and was not delivered.
+            </div>
+          {% elif transaction.status == 'FAILED' %}
+            <div class="alert alert-danger">
+              <i class="bi bi-x-circle me-2"></i>
+              This message could not be delivered. Please contact support for more information.
+            </div>
+          {% endif %}
+        </div>
+        <div class="card-footer">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+              </a>
+            </div>
+            <div>
+              {% if transaction.status == 'PENDING' %}
+                <form method="POST" action="{{ url_for('web.swift.cancel_message', transaction_id=transaction.transaction_id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this message? This action cannot be undone.');">
+                  <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-x-circle me-1"></i> Cancel Message
+                  </button>
+                </form>
               {% endif %}
-            {% else %}
-              <h5 class="alert-heading">SWIFT Status Check Failed</h5>
-              <p>{{ status_data.get('error', 'Unable to retrieve status from SWIFT at this time.') }}</p>
-              <hr>
-              <p class="mb-0">Please check back later for updated status information.</p>
-            {% endif %}
-          </div>
-          
-          <div class="mt-4 d-flex justify-content-between">
-            <a href="{{ url_for('web.main.transaction_details', transaction_id=transaction.transaction_id) }}" class="btn btn-secondary">
-              <i class="fa fa-arrow-left"></i> Back to Transaction
-            </a>
-            <a href="{{ url_for('web.swift.message_status', transaction_id=transaction.transaction_id) }}" class="btn btn-primary">
-              <i class="fa fa-refresh"></i> Refresh Status
-            </a>
+              <a href="{{ url_for('web.swift.new_free_format_message') }}" class="btn btn-primary ms-2">
+                <i class="bi bi-envelope-plus me-1"></i> Send New Message
+              </a>
+            </div>
           </div>
         </div>
       </div>
       
       <div class="card shadow">
         <div class="card-header bg-light">
-          <h3 class="h5 mb-0">About SWIFT MT799 Messages</h3>
+          <h3 class="h5 mb-0">SWIFT Processing Information</h3>
         </div>
         <div class="card-body">
-          <p>SWIFT MT799 is a free format text message used for general communication between financial institutions. Unlike other SWIFT message types with strict field requirements, MT799 allows free-form text to be exchanged.</p>
-          
-          <h5 class="h6 mt-3">Key Information</h5>
-          <ul>
-            <li>Messages are typically processed within 1-2 business days</li>
-            <li>Free format messages can be used for various purposes including inquiries, clarifications, and pre-advice</li>
-            <li>MT799 messages are stored in the SWIFT system for future reference and audit purposes</li>
-            <li>Responses to MT799 messages often come through the same channel using another MT799</li>
-          </ul>
-          
-          <p>For more information on the status of your message, please contact our customer support.</p>
+          <div class="alert alert-info mb-0">
+            <p class="mb-0">SWIFT MT799 messages are typically processed within 1-2 business days. Once delivered, the receiving institution will process the message according to their internal procedures.</p>
+          </div>
         </div>
       </div>
     </div>
