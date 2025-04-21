@@ -385,6 +385,9 @@ def dashboard():
             'raw_data': []
         })
     
+    # Generate a fresh JWT token for the user
+    jwt_token = generate_jwt_token(user.id)
+    
     # Make sure the ethereum_address is directly available in the template
     # Add it as a data attribute in the template to be accessed by JavaScript
     return render_template(
@@ -392,7 +395,8 @@ def dashboard():
         user=user,
         recent_transactions=recent_transactions,
         analytics_json=analytics_json,
-        user_eth_address=user.ethereum_address if user.ethereum_address else ""
+        user_eth_address=user.ethereum_address if user.ethereum_address else "",
+        jwt_token=jwt_token
     )
 
 @main.route('/transactions')
@@ -677,6 +681,9 @@ def blockchain_status():
                 token_contract_obj = ContractObject(db_contract.address)
                 logger.info(f"Created token contract object from DB with address: {token_contract_obj.address}")
     
+    # Generate a JWT token for blockchain API access
+    jwt_token = generate_jwt_token(user_id)
+    
     # Prepare template variables
     return render_template(
         'blockchain_status.html',
@@ -709,7 +716,9 @@ def blockchain_status():
         settlement_contract_balance=0.0,
         multisig_required_confirmations=2,
         multisig_contract_balance=0.0,
-        multisig_owners=[]
+        multisig_owners=[],
+        # JWT Token for API access
+        jwt_token=jwt_token
     )
 
 # Routes for SWIFT Standby Letter of Credit functionality

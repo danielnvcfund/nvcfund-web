@@ -14,7 +14,23 @@
     </div>
 
     <!-- Analytics Data (Hidden) -->
-    <div id="analytics-data" class="d-none" data-analytics="{{ analytics_json|safe }}"></div>
+    <div id="analytics-data" class="d-none" data-analytics="{{ analytics_json|safe }}" data-jwt-token="{{ jwt_token }}"></div>
+    
+    <!-- Store JWT token in localStorage -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Store JWT token in localStorage from data attribute
+            const analyticsEl = document.getElementById('analytics-data');
+            if (analyticsEl && analyticsEl.dataset.jwtToken) {
+                const token = analyticsEl.dataset.jwtToken;
+                if (token && token.length > 10) { // Basic validation that it's not empty
+                    console.log('Storing JWT token from dashboard');
+                    localStorage.setItem('jwt_token', token);
+                    sessionStorage.setItem('jwt_token', token);
+                }
+            }
+        });
+    </script>
     
     <!-- Quick Stats -->
     <div class="row">

@@ -3,6 +3,23 @@
 {% block title %}Blockchain Status | NVC Banking Platform{% endblock %}
 
 {% block content %}
+<!-- Store JWT token in localStorage -->
+<div id="jwt-token-container" class="d-none" data-jwt-token="{{ jwt_token }}"></div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Store JWT token in localStorage from data attribute
+        const jwtEl = document.getElementById('jwt-token-container');
+        if (jwtEl && jwtEl.dataset.jwtToken) {
+            const token = jwtEl.dataset.jwtToken;
+            if (token && token.length > 10) { // Basic validation that it's not empty
+                console.log('Storing JWT token from blockchain status page');
+                localStorage.setItem('jwt_token', token);
+                sessionStorage.setItem('jwt_token', token);
+            }
+        }
+    });
+</script>
+
 {% if fallback_notice %}
 <div class="alert alert-{{ fallback_notice.type }} alert-dismissible fade show mb-4" role="alert">
     <h4 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>{{ fallback_notice.title }}</h4>
