@@ -65,6 +65,7 @@ def create_app():
     csrf.init_app(app)
     jwt.init_app(app)
     login_manager.init_app(app)
+    login_manager.login_view = 'web.main.login'
 
     # Set debug mode to True
     app.config['DEBUG'] = True

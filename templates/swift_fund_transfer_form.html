@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}SWIFT Fund Transfer{% endblock %}
+{% block title %}New SWIFT Fund Transfer{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -9,11 +9,11 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
-          <li class="breadcrumb-item active">Create SWIFT Fund Transfer</li>
+          <li class="breadcrumb-item active">New SWIFT Fund Transfer</li>
         </ol>
       </nav>
       
-      <div class="card shadow mb-4">
+      <div class="card shadow">
         <div class="card-header bg-primary text-white">
           <h2 class="h4 mb-0">Create SWIFT Fund Transfer</h2>
         </div>
@@ -29,20 +29,40 @@
             {% endif %}
           {% endwith %}
           
-          <div class="alert alert-info mb-4">
-            <h5 class="alert-heading">About SWIFT Fund Transfers</h5>
-            <p>SWIFT Fund Transfers are secure, standardized messages used by financial institutions worldwide to facilitate cross-border payments and transfers.</p>
-            <hr>
-            <p class="mb-0">This form supports both MT103 (Customer Credit Transfer) and MT202 (Financial Institution Transfer) message types.</p>
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            SWIFT transfers are used to send funds between financial institutions worldwide.
+            MT103 is used for customer credit transfers, while MT202 is used for financial institution transfers.
           </div>
           
-          <form method="POST" action="{{ url_for('web.swift.new_fund_transfer') }}" class="needs-validation" novalidate>
+          <form method="POST" action="{{ url_for('web.swift.new_fund_transfer') }}" id="swift-transfer-form">
             {{ form.hidden_tag() }}
             
-            <div class="row mb-4">
-              <div class="col-md-6">
-                <div class="form-group mb-3">
-                  {{ form.receiver_institution_id.label(class="form-label") }}
+            <div class="form-group mb-3">
+              <label class="form-label">{{ form.is_financial_institution.label }}</label>
+              <div class="btn-group w-100" role="group">
+                {% for subfield in form.is_financial_institution %}
+                <input type="radio" class="btn-check" name="{{ form.is_financial_institution.name }}" 
+                       id="{{ subfield.id }}" value="{{ subfield.data }}" 
+                       {% if loop.index0 == 0 %}checked{% endif %}>
+                <label class="btn btn-outline-primary" for="{{ subfield.id }}">
+                  {{ subfield.label }}
+                </label>
+                {% endfor %}
+              </div>
+              {% if form.is_financial_institution.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.is_financial_institution.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-8">
+                <div class="form-group">
+                  <label class="form-label">{{ form.receiver_institution_id.label }}</label>
                   {{ form.receiver_institution_id(class="form-select") }}
                   {% if form.receiver_institution_id.errors %}
                     <div class="invalid-feedback d-block">
@@ -51,22 +71,12 @@
                       {% endfor %}
                     </div>
                   {% endif %}
-                  <small class="form-text text-muted">The receiving financial institution</small>
                 </div>
-                
-                <div class="form-group mb-3">
-                  {{ form.amount.label(class="form-label") }}
-                  <div class="input-group">
-                    {{ form.amount(class="form-control", placeholder="Enter amount") }}
-                    {{ form.currency(class="form-select", style="max-width: 100px;") }}
-                  </div>
-                  {% if form.amount.errors %}
-                    <div class="invalid-feedback d-block">
-                      {% for error in form.amount.errors %}
-                        {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label class="form-label">{{ form.currency.label }}</label>
+                  {{ form.currency(class="form-select") }}
                   {% if form.currency.errors %}
                     <div class="invalid-feedback d-block">
                       {% for error in form.currency.errors %}
@@ -75,215 +85,193 @@
                     </div>
                   {% endif %}
                 </div>
-                
-                <div class="form-group mb-3">
-                  {{ form.is_financial_institution.label(class="form-label d-block") }}
-                  <div class="form-check form-check-inline">
-                    {{ form.is_financial_institution(class="form-check-input", id="transfer_type_mt103", value="0", checked="checked") }}
-                    <label class="form-check-label" for="transfer_type_mt103">
-                      MT103 - Customer Credit Transfer
-                    </label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    {{ form.is_financial_institution(class="form-check-input", id="transfer_type_mt202", value="1") }}
-                    <label class="form-check-label" for="transfer_type_mt202">
-                      MT202 - Financial Institution Transfer
-                    </label>
-                  </div>
-                  {% if form.is_financial_institution.errors %}
-                    <div class="invalid-feedback d-block">
-                      {% for error in form.is_financial_institution.errors %}
-                        {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                  <small class="form-text text-muted">Select the type of SWIFT transfer</small>
-                </div>
-              </div>
-              
-              <div class="col-md-6">
-                <div class="form-group mb-3">
-                  {{ form.details_of_payment.label(class="form-label") }}
-                  {{ form.details_of_payment(class="form-control", rows=3, placeholder="Enter details about the payment") }}
-                  {% if form.details_of_payment.errors %}
-                    <div class="invalid-feedback d-block">
-                      {% for error in form.details_of_payment.errors %}
-                        {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                  <small class="form-text text-muted">Purpose of payment, invoice numbers, etc.</small>
-                </div>
               </div>
             </div>
             
-            <div class="row mb-4">
-              <div class="col-md-6">
-                <div class="form-group mb-3">
-                  {{ form.ordering_customer.label(class="form-label") }}
-                  {{ form.ordering_customer(class="form-control", rows=4, placeholder="Enter full details of the ordering party") }}
-                  {% if form.ordering_customer.errors %}
-                    <div class="invalid-feedback d-block">
-                      {% for error in form.ordering_customer.errors %}
-                        {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                  <small class="form-text text-muted">Name, address, and account number of the sender</small>
-                </div>
+            <div class="form-group mb-3">
+              <label class="form-label">{{ form.amount.label }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-currency-exchange"></i></span>
+                {{ form.amount(class="form-control", placeholder="0.00") }}
               </div>
-              
-              <div class="col-md-6">
-                <div class="form-group mb-3">
-                  {{ form.beneficiary_customer.label(class="form-label") }}
-                  {{ form.beneficiary_customer(class="form-control", rows=4, placeholder="Enter full details of the beneficiary") }}
-                  {% if form.beneficiary_customer.errors %}
-                    <div class="invalid-feedback d-block">
-                      {% for error in form.beneficiary_customer.errors %}
-                        {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                  <small class="form-text text-muted">Name, address, and account number of the recipient</small>
+              {% if form.amount.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.amount.errors %}
+                    {{ error }}
+                  {% endfor %}
                 </div>
-              </div>
+              {% endif %}
             </div>
             
-            <div class="row">
-              <div class="col-md-6">
-                <div class="alert alert-warning">
-                  <strong>Important:</strong> Once submitted, a fund transfer cannot be easily recalled. Please ensure all information is correct before submitting.
+            <div class="form-group mb-3">
+              <label class="form-label">{{ form.ordering_customer.label }}</label>
+              {{ form.ordering_customer(class="form-control", rows=3, placeholder="Enter sender details including name, account number, and address") }}
+              {% if form.ordering_customer.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.ordering_customer.errors %}
+                    {{ error }}
+                  {% endfor %}
                 </div>
-              </div>
-              <div class="col-md-6 text-end">
-                <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-secondary me-2">Cancel</a>
-                <button type="submit" class="btn btn-primary">Submit Fund Transfer</button>
-              </div>
+              {% endif %}
+              <small class="form-text text-muted">Include full name, account number, and address of the sender</small>
+            </div>
+            
+            <div class="form-group mb-3">
+              <label class="form-label">{{ form.beneficiary_customer.label }}</label>
+              {{ form.beneficiary_customer(class="form-control", rows=3, placeholder="Enter recipient details including name, account number, and address") }}
+              {% if form.beneficiary_customer.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.beneficiary_customer.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <small class="form-text text-muted">Include full name, account number, and address of the recipient</small>
+            </div>
+            
+            <div class="form-group mb-3">
+              <label class="form-label">{{ form.details_of_payment.label }}</label>
+              {{ form.details_of_payment(class="form-control", placeholder="Reason for transfer (invoice number, purpose, etc.)") }}
+              {% if form.details_of_payment.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.details_of_payment.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <small class="form-text text-muted">Specify the reason for the transfer (e.g., invoice payment, contract settlement)</small>
+            </div>
+            
+            <div class="mt-4 d-flex justify-content-between">
+              <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-send-fill me-1"></i> Submit Transfer
+              </button>
             </div>
           </form>
         </div>
+        <div class="card-footer bg-light">
+          <div class="small text-muted">
+            <p class="mb-0"><strong>Note:</strong> SWIFT transfers typically take 1-3 business days to process and complete. Additional fees may be charged by the receiving bank.</p>
+          </div>
+        </div>
       </div>
       
-      <div class="card shadow">
+      <div class="card mt-4 shadow">
         <div class="card-header bg-light">
-          <h3 class="h5 mb-0">SWIFT Fund Transfer Types</h3>
+          <h3 class="h5 mb-0">About SWIFT Transfers</h3>
         </div>
         <div class="card-body">
           <div class="row">
             <div class="col-md-6">
-              <h5 class="h6">MT103: Customer Credit Transfer</h5>
+              <h6>MT103 - Customer Credit Transfer</h6>
               <ul>
-                <li>Used for sending payments from/to customer accounts</li>
-                <li>Contains detailed customer information</li>
-                <li>Most common SWIFT message type for international payments</li>
-                <li>Processing typically takes 1-3 business days</li>
+                <li>Used for transferring funds between individual customers</li>
+                <li>Requires detailed customer information</li>
+                <li>Typically processed in 1-3 business days</li>
+                <li>Common for international payments, remittances, etc.</li>
               </ul>
             </div>
             <div class="col-md-6">
-              <h5 class="h6">MT202: Financial Institution Transfer</h5>
+              <h6>MT202 - Financial Institution Transfer</h6>
               <ul>
                 <li>Used for bank-to-bank transfers</li>
-                <li>Used for cover payments and treasury operations</li>
-                <li>Contains less customer information than MT103</li>
-                <li>Typically processes faster than MT103</li>
+                <li>Faster processing time (usually 24-48 hours)</li>
+                <li>Used for correspondent banking, nostro/vostro settlements</li>
+                <li>Designed for high-value, time-sensitive transactions</li>
               </ul>
             </div>
           </div>
-          <hr>
-          <p class="text-center mb-0">
-            <strong>Note:</strong> Standard fees apply for all SWIFT fund transfers
-          </p>
+          <p class="mb-0 mt-3">All transfers sent through SWIFT are secure, authenticated, and comply with international financial standards.</p>
         </div>
       </div>
     </div>
   </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Save form data in local storage for recovery
-    const form = document.querySelector('form');
-    const formFields = form.querySelectorAll('input:not([type="hidden"]):not([type="radio"]), textarea, select');
-    const radioFields = form.querySelectorAll('input[type="radio"]');
-    const formId = 'swift_fund_transfer_form';
+    const form = document.getElementById('swift-transfer-form');
     
-    // Load saved data
-    const savedData = localStorage.getItem(formId);
-    if (savedData) {
-      const data = JSON.parse(savedData);
-      formFields.forEach(field => {
-        field.value = data[field.name] || '';
-      });
+    // Auto-save form data every 30 seconds
+    setInterval(function() {
+      const formData = new FormData(form);
+      const data = {
+        receiver_institution_id: formData.get('receiver_institution_id'),
+        amount: formData.get('amount'),
+        currency: formData.get('currency'),
+        ordering_customer: formData.get('ordering_customer'),
+        beneficiary_customer: formData.get('beneficiary_customer'),
+        details_of_payment: formData.get('details_of_payment'),
+        is_financial_institution: formData.get('is_financial_institution')
+      };
       
-      // Handle radio buttons
-      radioFields.forEach(radio => {
-        if (data[radio.name] === radio.value) {
-          radio.checked = true;
+      // Save form data
+      fetch('/api/save_form_data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          form_name: 'swift_fund_transfer_form',
+          form_data: data
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Show a non-intrusive notification
+          const saveNotice = document.createElement('div');
+          saveNotice.className = 'position-fixed bottom-0 end-0 p-3';
+          saveNotice.style.zIndex = '5';
+          saveNotice.innerHTML = `
+            <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+              <div class="d-flex">
+                <div class="toast-body">
+                  <i class="bi bi-check-circle me-2"></i> Form data auto-saved
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(saveNotice);
+          
+          // Initialize and show the toast
+          const toastEl = saveNotice.querySelector('.toast');
+          const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+          toast.show();
+          
+          // Remove from DOM after it's hidden
+          toastEl.addEventListener('hidden.bs.toast', function () {
+            saveNotice.remove();
+          });
+        }
+      })
+      .catch(error => console.error('Error saving form data:', error));
+    }, 30000);
+    
+    // Update form fields based on transfer type
+    const transferTypeRadios = document.querySelectorAll('input[name="is_financial_institution"]');
+    transferTypeRadios.forEach(radio => {
+      radio.addEventListener('change', function() {
+        const isFinancialInstitution = this.value === '1';
+        const orderingLabel = document.querySelector('label[for="' + form.ordering_customer.id + '"]');
+        const beneficiaryLabel = document.querySelector('label[for="' + form.beneficiary_customer.id + '"]');
+        
+        if (isFinancialInstitution) {
+          orderingLabel.textContent = 'Ordering Institution';
+          beneficiaryLabel.textContent = 'Beneficiary Institution';
+          form.ordering_customer.placeholder = 'Enter sending institution details';
+          form.beneficiary_customer.placeholder = 'Enter receiving institution details';
+        } else {
+          orderingLabel.textContent = 'Ordering Customer';
+          beneficiaryLabel.textContent = 'Beneficiary Customer';
+          form.ordering_customer.placeholder = 'Enter sender details including name, account number, and address';
+          form.beneficiary_customer.placeholder = 'Enter recipient details including name, account number, and address';
         }
       });
-    }
-    
-    // Save data on change
-    formFields.forEach(field => {
-      field.addEventListener('change', saveFormData);
-      if (field.tagName.toLowerCase() === 'textarea') {
-        field.addEventListener('keyup', saveFormData);
-      }
-    });
-    
-    radioFields.forEach(radio => {
-      radio.addEventListener('change', saveFormData);
-    });
-    
-    function saveFormData() {
-      const data = {};
-      formFields.forEach(field => {
-        data[field.name] = field.value;
-      });
-      
-      // Save selected radio button value
-      const checkedRadios = form.querySelectorAll('input[type="radio"]:checked');
-      checkedRadios.forEach(radio => {
-        data[radio.name] = radio.value;
-      });
-      
-      localStorage.setItem(formId, JSON.stringify(data));
-      
-      // Show save notification briefly
-      showSaveNotification();
-    }
-    
-    // Clear saved data on successful submission
-    form.addEventListener('submit', function() {
-      // We'll clear the data on success page
-    });
-    
-    // Show auto-save notification
-    function showSaveNotification() {
-      if (document.querySelector('.auto-save-notification')) return;
-      
-      const notification = document.createElement('div');
-      notification.className = 'auto-save-notification alert alert-info position-fixed bottom-0 end-0 m-3';
-      notification.innerHTML = 'Your form data is automatically saved';
-      notification.style.zIndex = '1050';
-      document.body.appendChild(notification);
-      
-      // Remove notification after 2 seconds
-      setTimeout(function() {
-        notification.remove();
-      }, 2000);
-    }
-    
-    // Show periodic save notification
-    const saveTimer = setInterval(function() {
-      showSaveNotification();
-    }, 30000); // Show every 30 seconds
-    
-    // Clean up on page unload
-    window.addEventListener('beforeunload', function() {
-      clearInterval(saveTimer);
     });
   });
 </script>

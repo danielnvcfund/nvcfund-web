@@ -160,6 +160,62 @@ def fund_transfer_status(transaction_id):
     # This is just a specialized redirect to message_status for fund transfers
     return redirect(url_for('web.swift.message_status', transaction_id=transaction_id))
 
+@swift.route('/cancel_message/<transaction_id>', methods=['POST'])
+@login_required
+def cancel_message(transaction_id):
+    """Cancel a pending SWIFT message"""
+    transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+    if not transaction:
+        flash('Transaction not found.', 'danger')
+        return redirect(url_for('web.main.dashboard'))
+    
+    if transaction.transaction_type != TransactionType.SWIFT_FREE_FORMAT:
+        flash('This transaction is not a SWIFT message.', 'warning')
+        return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
+    
+    if transaction.status != TransactionStatus.PENDING:
+        flash('Only pending messages can be cancelled.', 'warning')
+        return redirect(url_for('web.swift.message_status', transaction_id=transaction.transaction_id))
+    
+    try:
+        # Update transaction status
+        transaction.status = TransactionStatus.CANCELLED
+        db.session.commit()
+        flash('Message has been cancelled successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error cancelling message: {str(e)}', 'danger')
+    
+    return redirect(url_for('web.swift.message_status', transaction_id=transaction.transaction_id))
+
+@swift.route('/cancel_transfer/<transaction_id>', methods=['POST'])
+@login_required
+def cancel_transfer(transaction_id):
+    """Cancel a pending SWIFT fund transfer"""
+    transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+    if not transaction:
+        flash('Transaction not found.', 'danger')
+        return redirect(url_for('web.main.dashboard'))
+    
+    if transaction.transaction_type not in [TransactionType.SWIFT_FUND_TRANSFER, TransactionType.SWIFT_INSTITUTION_TRANSFER]:
+        flash('This transaction is not a SWIFT fund transfer.', 'warning')
+        return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
+    
+    if transaction.status != TransactionStatus.PENDING:
+        flash('Only pending transfers can be cancelled.', 'warning')
+        return redirect(url_for('web.swift.fund_transfer_status', transaction_id=transaction.transaction_id))
+    
+    try:
+        # Update transaction status
+        transaction.status = TransactionStatus.CANCELLED
+        db.session.commit()
+        flash('Fund transfer has been cancelled successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error cancelling fund transfer: {str(e)}', 'danger')
+    
+    return redirect(url_for('web.swift.fund_transfer_status', transaction_id=transaction.transaction_id))
+
 @swift.route('/api/swift/status/<transaction_id>')
 @login_required
 def api_swift_status(transaction_id):
