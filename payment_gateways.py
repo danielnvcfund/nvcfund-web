@@ -1133,18 +1133,44 @@ class NVCGlobalGateway(PaymentGatewayInterface):
             
             # Parse bank transfer details from transaction metadata
             try:
-                metadata = json.loads(transaction.tx_metadata_json)
+                # First, ensure tx_metadata_json isn't None and isn't an empty string
+                if not transaction.tx_metadata_json or not transaction.tx_metadata_json.strip():
+                    return {
+                        "success": False, 
+                        "error": "Transaction has no metadata"
+                    }
+                
+                # Try to parse the JSON
+                try:
+                    metadata = json.loads(transaction.tx_metadata_json)
+                except json.JSONDecodeError as e:
+                    logger.error(f"Error parsing transaction metadata JSON: {str(e)}")
+                    # Fix common issues with malformed JSON
+                    try:
+                        # Try to fix and parse common JSON issues
+                        fixed_json = transaction.tx_metadata_json.strip()
+                        if fixed_json.startswith('"') and fixed_json.endswith('"'):
+                            # Handle double-encoded JSON string
+                            fixed_json = fixed_json[1:-1].replace('\\"', '"')
+                        metadata = json.loads(fixed_json)
+                    except Exception:
+                        return {
+                            "success": False, 
+                            "error": f"Error parsing transaction metadata: {str(e)}"
+                        }
+                
+                # Check if bank_transfer exists in the metadata
                 if 'bank_transfer' not in metadata:
                     return {
                         "success": False, 
                         "error": "Bank transfer details not found in transaction metadata"
                     }
                 bank_details = metadata['bank_transfer']
-            except (json.JSONDecodeError, KeyError) as e:
-                logger.error(f"Error parsing bank transfer details: {str(e)}")
+            except Exception as e:
+                logger.error(f"Error processing bank transfer details: {str(e)}")
                 return {
                     "success": False, 
-                    "error": f"Error parsing bank transfer details: {str(e)}"
+                    "error": f"Error processing bank transfer details: {str(e)}"
                 }
             
             # Try to extract NVC Global payment ID from description
@@ -1280,15 +1306,28 @@ class NVCGlobalGateway(PaymentGatewayInterface):
             
             # If no payment ID in description, check metadata
             if not match:
-                if transaction.tx_metadata_json:
+                if transaction.tx_metadata_json and transaction.tx_metadata_json.strip():
                     try:
                         metadata = json.loads(transaction.tx_metadata_json)
                         if metadata.get('nvc_payment_id'):
                             nvc_payment_id = metadata.get('nvc_payment_id')
                         else:
                             return {"success": False, "error": "NVC Global Payment ID not found"}
-                    except json.JSONDecodeError:
-                        return {"success": False, "error": "Error parsing transaction metadata"}
+                    except json.JSONDecodeError as e:
+                        # Try to fix common issues with malformed JSON
+                        try:
+                            fixed_json = transaction.tx_metadata_json.strip()
+                            if fixed_json.startswith('"') and fixed_json.endswith('"'):
+                                # Handle double-encoded JSON string
+                                fixed_json = fixed_json[1:-1].replace('\\"', '"')
+                            metadata = json.loads(fixed_json)
+                            if metadata.get('nvc_payment_id'):
+                                nvc_payment_id = metadata.get('nvc_payment_id')
+                            else:
+                                return {"success": False, "error": "NVC Global Payment ID not found"}
+                        except Exception:
+                            logger.error(f"Error parsing transaction metadata JSON: {str(e)}")
+                            return {"success": False, "error": "Error parsing transaction metadata"}
                 else:
                     return {"success": False, "error": "NVC Global Payment ID not found"}
             else:
