@@ -580,18 +580,32 @@ function getJwtToken() {
 
 // Get CSS class for status badge
 function getStatusClass(status) {
-    switch (status.toLowerCase()) {
-        case 'completed':
-            return 'bg-success';
-        case 'pending':
-            return 'bg-warning text-dark';
-        case 'processing':
-            return 'bg-info text-dark';
-        case 'failed':
-            return 'bg-danger';
-        case 'refunded':
-            return 'bg-secondary';
-        default:
-            return 'bg-secondary';
+    // If status is null or undefined, return a default class
+    if (!status) {
+        console.warn('Null or undefined transaction status');
+        return 'bg-secondary';
+    }
+    
+    try {
+        switch (status.toLowerCase()) {
+            case 'completed':
+                return 'bg-success';
+            case 'pending':
+                return 'bg-warning text-dark';
+            case 'processing':
+                return 'bg-info text-dark';
+            case 'failed':
+                return 'bg-danger';
+            case 'refunded':
+                return 'bg-secondary';
+            case 'cancelled':
+                return 'bg-secondary';
+            default:
+                console.log('Unknown transaction status:', status);
+                return 'bg-secondary';
+        }
+    } catch (error) {
+        console.error('Error processing transaction status:', error);
+        return 'bg-secondary';
     }
 }

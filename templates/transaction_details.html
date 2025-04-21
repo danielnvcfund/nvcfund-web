@@ -34,7 +34,13 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Amount:</div>
-                        <div class="col-md-8">{{ transaction.amount }} {{ transaction.currency }}</div>
+                        <div class="col-md-8">
+                            {% if formatted_amount is defined %}
+                                {{ formatted_amount }} {{ formatted_currency }}
+                            {% else %}
+                                {{ transaction.amount }} {{ transaction.currency }}
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Description:</div>

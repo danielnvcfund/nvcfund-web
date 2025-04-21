@@ -431,6 +431,8 @@ def transactions():
 @login_required
 def transaction_details(transaction_id):
     """Transaction details route"""
+    from utils import format_currency
+    
     user_id = session.get('user_id')
     
     # Get transaction
@@ -454,10 +456,25 @@ def transaction_details(transaction_id):
         if not blockchain_tx:
             blockchain_tx = get_transaction_status(transaction.eth_transaction_hash)
     
+    # Format the transaction amount
+    try:
+        # Don't apply format_currency directly to prevent double currency symbols
+        formatted_amount = transaction.amount
+        formatted_currency = transaction.currency
+        
+        # Just for debugging purposes
+        logger.debug(f"Currency: {transaction.currency}, Amount: {transaction.amount}, Formatted: {formatted_amount} {formatted_currency}")
+    except Exception as e:
+        logger.error(f"Error formatting currency: {str(e)}")
+        formatted_amount = transaction.amount
+        formatted_currency = transaction.currency
+    
     return render_template(
         'transaction_details.html',
         transaction=transaction,
-        blockchain_tx=blockchain_tx
+        blockchain_tx=blockchain_tx,
+        formatted_amount=formatted_amount,
+        formatted_currency=formatted_currency
     )
 
 @main.route('/blockchain')
