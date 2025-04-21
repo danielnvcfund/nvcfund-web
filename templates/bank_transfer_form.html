@@ -22,6 +22,21 @@
         </div>
     </div>
     
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+    
+    <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle me-2"></i> <strong>Auto-Save Feature:</strong> Your form information is automatically saved as you complete it. If you encounter any errors or need to come back later, your data will be restored when you return.
+    </div>
+    
     <form method="POST" action="{{ url_for('web.main.process_bank_transfer') }}">
         {{ form.hidden_tag() }}
         {{ form.transaction_id(value=transaction_id) }}

@@ -72,6 +72,58 @@
         </div>
     </div>
 
+    <!-- Incomplete Transfers Section -->
+    {% set incomplete_transfers = [] %}
+    {% for tx in recent_transactions %}
+        {% if tx.status.value in ['pending', 'processing'] and tx.gateway and tx.gateway.name == 'NVC Global' %}
+            {% set incomplete_transfers = incomplete_transfers.append(tx) %}
+        {% endif %}
+    {% endfor %}
+    
+    {% if incomplete_transfers|length > 0 %}
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card dashboard-widget">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Incomplete Transfers</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tx in recent_transactions %}
+                                    {% if tx.status.value in ['pending', 'processing'] and tx.gateway and tx.gateway.name == 'NVC Global' %}
+                                    <tr>
+                                        <td><a href="{{ url_for('web.main.transaction_details', transaction_id=tx.transaction_id) }}">{{ tx.transaction_id[:8] }}...</a></td>
+                                        <td>{{ tx.amount }} {{ tx.currency }}</td>
+                                        <td>{{ tx.description }}</td>
+                                        <td>{{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <a href="{{ url_for('web.main.bank_transfer_form', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-university me-1"></i> Complete Transfer
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="row mt-4">
         <!-- Recent Transactions -->
         <div class="col-md-12 col-lg-6">
@@ -106,8 +158,18 @@
                                                 <span class="badge bg-success">{{ tx.status.value }}</span>
                                             {% elif tx.status.value == 'pending' %}
                                                 <span class="badge bg-warning text-dark">{{ tx.status.value }}</span>
+                                                {% if tx.gateway and tx.gateway.name == 'NVC Global' %}
+                                                <a href="{{ url_for('web.main.bank_transfer_form', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-primary ms-1">
+                                                    <i class="fas fa-university"></i>
+                                                </a>
+                                                {% endif %}
                                             {% elif tx.status.value == 'processing' %}
                                                 <span class="badge bg-info text-dark">{{ tx.status.value }}</span>
+                                                {% if tx.gateway and tx.gateway.name == 'NVC Global' %}
+                                                <a href="{{ url_for('web.main.bank_transfer_form', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-primary ms-1">
+                                                    <i class="fas fa-university"></i>
+                                                </a>
+                                                {% endif %}
                                             {% elif tx.status.value == 'failed' %}
                                                 <span class="badge bg-danger">{{ tx.status.value }}</span>
                                             {% elif tx.status.value == 'refunded' %}
