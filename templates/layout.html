@@ -49,10 +49,33 @@
                             <i class="fas fa-credit-card me-1"></i> Make Payment
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/main/letter_of_credit/new' %}active{% endif %}" href="/main/letter_of_credit/new">
-                            <i class="fas fa-file-contract me-1"></i> Letter of Credit
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if '/swift/' in request.path %}active{% endif %}" href="#" id="swiftDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-university me-1"></i> SWIFT Banking
                         </a>
+                        <ul class="dropdown-menu" aria-labelledby="swiftDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.swift.new_letter_of_credit') }}">
+                                    <i class="fas fa-file-contract me-1"></i> Letter of Credit (MT760)
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.swift.new_fund_transfer') }}">
+                                    <i class="fas fa-exchange-alt me-1"></i> Fund Transfer (MT103/MT202)
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.swift.new_free_format_message') }}">
+                                    <i class="fas fa-envelope me-1"></i> Free Format Message (MT799)
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.transactions') }}?type=swift">
+                                    <i class="fas fa-list me-1"></i> View SWIFT Messages
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/main/payment/test' %}active{% endif %}" href="/main/payment/test">

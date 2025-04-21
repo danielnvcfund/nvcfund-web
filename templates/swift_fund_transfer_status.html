@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}Letter of Credit Status{% endblock %}
+{% block title %}SWIFT Fund Transfer Status{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -11,13 +11,15 @@
           <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
           <li class="breadcrumb-item"><a href="{{ url_for('web.main.transactions') }}">Transactions</a></li>
           <li class="breadcrumb-item"><a href="{{ url_for('web.main.transaction_details', transaction_id=transaction.transaction_id) }}">Transaction Details</a></li>
-          <li class="breadcrumb-item active">Letter of Credit Status</li>
+          <li class="breadcrumb-item active">SWIFT Fund Transfer Status</li>
         </ol>
       </nav>
       
       <div class="card shadow mb-4">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-          <h2 class="h4 mb-0">Standby Letter of Credit (SBLC) Status</h2>
+          <h2 class="h4 mb-0">
+            SWIFT {{ 'MT202 Financial Institution Transfer' if transaction.transaction_type == TransactionType.SWIFT_INSTITUTION_TRANSFER else 'MT103 Customer Fund Transfer' }} Status
+          </h2>
           <span class="badge bg-{{ 'success' if transaction.status.value == 'completed' else 'warning' if transaction.status.value == 'pending' else 'danger' }}">
             {{ transaction.status.value | upper }}
           </span>
@@ -36,10 +38,10 @@
           
           <div class="row">
             <div class="col-md-6">
-              <h4 class="h5 mb-3">Letter of Credit Details</h4>
+              <h4 class="h5 mb-3">Transfer Details</h4>
               <table class="table table-bordered">
                 <tr>
-                  <th class="table-light" style="width: 40%">Letter Reference</th>
+                  <th class="table-light" style="width: 40%">Transfer Reference</th>
                   <td>{{ swift_data.get('reference', transaction.transaction_id) }}</td>
                 </tr>
                 <tr>
@@ -47,20 +49,20 @@
                   <td>{{ transaction.amount | round(2) }} {{ transaction.currency }}</td>
                 </tr>
                 <tr>
-                  <th class="table-light">Issuing Bank</th>
-                  <td>{{ swift_data.get('issuing_bank', 'NVC Global Bank') }}</td>
+                  <th class="table-light">Sending Institution</th>
+                  <td>{{ swift_data.get('sender_institution', 'NVC Global Bank') }}</td>
                 </tr>
                 <tr>
-                  <th class="table-light">Beneficiary</th>
-                  <td>{{ swift_data.get('beneficiary', 'Not specified') }}</td>
+                  <th class="table-light">Receiving Institution</th>
+                  <td>{{ swift_data.get('receiver_institution', 'Not specified') }}</td>
                 </tr>
                 <tr>
-                  <th class="table-light">Issue Date</th>
-                  <td>{{ swift_data.get('issue_date', transaction.created_at.isoformat()).split('T')[0] }}</td>
+                  <th class="table-light">Payment Details</th>
+                  <td>{{ swift_data.get('details_of_payment', 'Not specified') }}</td>
                 </tr>
                 <tr>
-                  <th class="table-light">Expiry Date</th>
-                  <td>{{ swift_data.get('expiry_date', '') }}</td>
+                  <th class="table-light">Execution Date</th>
+                  <td>{{ swift_data.get('execution_date', transaction.created_at.isoformat()).split('T')[0] }}</td>
                 </tr>
               </table>
             </div>
@@ -70,7 +72,7 @@
               <table class="table table-bordered">
                 <tr>
                   <th class="table-light" style="width: 40%">Message Type</th>
-                  <td>MT760 (Standby Letter of Credit)</td>
+                  <td>{{ 'MT202 (Financial Institution Transfer)' if transaction.transaction_type == TransactionType.SWIFT_INSTITUTION_TRANSFER else 'MT103 (Customer Fund Transfer)' }}</td>
                 </tr>
                 <tr>
                   <th class="table-light">Sender BIC</th>
@@ -87,7 +89,7 @@
                 <tr>
                   <th class="table-light">Processing Status</th>
                   <td>
-                    <span class="badge bg-{{ 'success' if status_data.get('status') == 'confirmed' else 'warning' if status_data.get('status') == 'processing' else 'danger' }}">
+                    <span class="badge bg-{{ 'success' if status_data.get('status') == 'settled' else 'warning' if status_data.get('status') == 'processing' else 'danger' }}">
                       {{ status_data.get('status', 'Unknown') | upper }}
                     </span>
                   </td>
@@ -101,27 +103,36 @@
           </div>
           
           <div class="row mt-4">
-            <div class="col-12">
-              <h4 class="h5 mb-3">Terms and Conditions</h4>
+            <div class="col-md-6">
+              <h4 class="h5 mb-3">Ordering Customer</h4>
               <div class="card">
                 <div class="card-body bg-light">
-                  <pre class="mb-0" style="white-space: pre-wrap;">{{ swift_data.get('terms_and_conditions', 'No terms and conditions specified.') }}</pre>
+                  <pre class="mb-0" style="white-space: pre-wrap;">{{ swift_data.get('ordering_customer', 'No ordering customer information specified.') }}</pre>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <h4 class="h5 mb-3">Beneficiary Customer</h4>
+              <div class="card">
+                <div class="card-body bg-light">
+                  <pre class="mb-0" style="white-space: pre-wrap;">{{ swift_data.get('beneficiary_customer', 'No beneficiary information specified.') }}</pre>
                 </div>
               </div>
             </div>
           </div>
           
-          <h4 class="h5 mt-4 mb-3">SWIFT Delivery Status</h4>
+          <h4 class="h5 mt-4 mb-3">SWIFT Transfer Status</h4>
           
           <div class="alert {{ 'alert-success' if status_data.get('success') else 'alert-warning' }}">
             {% if status_data.get('success') %}
               <h5 class="alert-heading">SWIFT Status: {{ status_data.get('status', 'unknown') | upper }}</h5>
-              <p>{{ status_data.get('details', {}).get('message', 'The Letter of Credit has been processed by the SWIFT network.') }}</p>
+              <p>{{ status_data.get('details', {}).get('message', 'The fund transfer has been processed by the SWIFT network.') }}</p>
               
-              {% if status_data.get('details', {}).get('confirmation_time') %}
+              {% if status_data.get('details', {}).get('settlement_time') %}
                 <hr>
-                <p class="mb-0">Confirmed on: {{ status_data.get('details', {}).get('confirmation_time').split('T')[0] }} 
-                  {{ status_data.get('details', {}).get('confirmation_time').split('T')[1].split('.')[0] }}</p>
+                <p class="mb-0">Settlement Time: {{ status_data.get('details', {}).get('settlement_time').split('T')[0] }} 
+                  {{ status_data.get('details', {}).get('settlement_time').split('T')[1].split('.')[0] }}</p>
               {% endif %}
             {% else %}
               <h5 class="alert-heading">SWIFT Status Check Failed</h5>
@@ -135,7 +146,7 @@
             <a href="{{ url_for('web.main.transaction_details', transaction_id=transaction.transaction_id) }}" class="btn btn-secondary">
               <i class="fa fa-arrow-left"></i> Back to Transaction
             </a>
-            <a href="{{ url_for('web.swift.letter_of_credit_status', transaction_id=transaction.transaction_id) }}" class="btn btn-primary">
+            <a href="{{ url_for('web.swift.fund_transfer_status', transaction_id=transaction.transaction_id) }}" class="btn btn-primary">
               <i class="fa fa-refresh"></i> Refresh Status
             </a>
           </div>
@@ -144,24 +155,36 @@
       
       <div class="card shadow">
         <div class="card-header bg-light">
-          <h3 class="h5 mb-0">About MT760 Letters of Credit</h3>
+          <h3 class="h5 mb-0">About SWIFT Fund Transfers</h3>
         </div>
         <div class="card-body">
-          <p>An MT760 SWIFT message is used to issue, advise or confirm a Standby Letter of Credit (SBLC). This is a standardized format recognized by financial institutions worldwide.</p>
+          <div class="row">
+            <div class="col-md-6">
+              <h5 class="h6 mb-2">MT103 Customer Credit Transfer</h5>
+              <p>MT103 is the SWIFT message format used for customer credit transfers. It's the most commonly used message for international wire transfers for a customer.</p>
+              <ul>
+                <li>Contains detailed information about the sender (ordering customer)</li>
+                <li>Contains detailed information about the recipient (beneficiary customer)</li>
+                <li>Typically takes 1-3 business days to settle</li>
+                <li>Used primarily for individual and business payments</li>
+              </ul>
+            </div>
+            
+            <div class="col-md-6">
+              <h5 class="h6 mb-2">MT202 Financial Institution Transfer</h5>
+              <p>MT202 is the SWIFT message format used for financial institution transfers. It's used for bank-to-bank transfers.</p>
+              <ul>
+                <li>Simpler format than MT103, with less customer information</li>
+                <li>Typically settles faster than customer transfers</li>
+                <li>Used for correspondent banking relationships</li>
+                <li>Common for treasury operations and nostro account movements</li>
+              </ul>
+            </div>
+          </div>
           
-          <h5 class="h6 mt-3">Letter of Credit Status</h5>
-          <ul>
-            <li><strong>Pending:</strong> The Letter of Credit has been created but is awaiting processing by the SWIFT network</li>
-            <li><strong>Processing:</strong> The Letter of Credit is being transmitted through the SWIFT network</li>
-            <li><strong>Confirmed:</strong> The receiving bank has acknowledged receipt of the Letter of Credit</li>
-            <li><strong>Completed:</strong> The Letter of Credit has been fully processed and is now active</li>
-            <li><strong>Cancelled:</strong> The Letter of Credit has been cancelled prior to its expiry date</li>
-            <li><strong>Expired:</strong> The Letter of Credit has reached its expiry date</li>
-          </ul>
-          
-          <p class="alert alert-info mt-3">
-            <strong>Note:</strong> For detailed information about this Letter of Credit or to request an amendment, please contact our customer support.
-          </p>
+          <div class="alert alert-info mt-3">
+            <strong>Note:</strong> Fund transfers through SWIFT are irrevocable once the status changes to "Settled". Contact customer support if you have any questions about your transfer.
+          </div>
         </div>
       </div>
     </div>

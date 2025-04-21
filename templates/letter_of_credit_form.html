@@ -9,13 +9,13 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
-          <li class="breadcrumb-item active">Standby Letter of Credit</li>
+          <li class="breadcrumb-item active">Create Standby Letter of Credit</li>
         </ol>
       </nav>
       
       <div class="card shadow mb-4">
         <div class="card-header bg-primary text-white">
-          <h2 class="h4 mb-0">Create Standby Letter of Credit (SBLC)</h2>
+          <h2 class="h4 mb-0">Create Standby Letter of Credit (SBLC) via SWIFT MT760</h2>
         </div>
         <div class="card-body">
           {% with messages = get_flashed_messages(with_categories=true) %}
@@ -29,22 +29,17 @@
             {% endif %}
           {% endwith %}
           
-          <div class="alert alert-info">
+          <div class="alert alert-info mb-4">
             <h5 class="alert-heading">About Standby Letters of Credit</h5>
-            <p>A Standby Letter of Credit (SBLC) is a financial instrument that guarantees payment if the recipient fails to meet specified obligations. Unlike traditional Letters of Credit, SBLCs are only drawn upon in case of default.</p>
+            <p>A Standby Letter of Credit (SBLC) is a guarantee of payment issued by a bank on behalf of a client. It represents a bank's promise to pay a beneficiary if the client fails to fulfill a contractual commitment.</p>
             <hr>
-            <p class="mb-0">SBLCs are frequently used in international trade and financial transactions to:</p>
-            <ul>
-              <li>Guarantee payment obligations</li>
-              <li>Support financial arrangements</li>
-              <li>Back loan agreements</li>
-            </ul>
+            <p class="mb-0">SBLCs are transmitted via SWIFT MT760 messages and are commonly used in international trade to reduce risk between parties who don't know each other well.</p>
           </div>
           
           <form method="POST" action="{{ url_for('web.swift.new_letter_of_credit') }}" class="needs-validation" novalidate>
             {{ form.hidden_tag() }}
             
-            <div class="row mb-3">
+            <div class="row mb-4">
               <div class="col-md-6">
                 <div class="form-group mb-3">
                   {{ form.receiver_institution_id.label(class="form-label") }}
@@ -56,6 +51,7 @@
                       {% endfor %}
                     </div>
                   {% endif %}
+                  <small class="form-text text-muted">The financial institution that will issue the Letter of Credit</small>
                 </div>
                 
                 <div class="form-group mb-3">
@@ -79,13 +75,25 @@
                     </div>
                   {% endif %}
                 </div>
+                
+                <div class="form-group mb-3">
+                  {{ form.beneficiary.label(class="form-label") }}
+                  {{ form.beneficiary(class="form-control", rows=4, placeholder="Enter beneficiary name and address") }}
+                  <small class="form-text text-muted">{{ form.beneficiary.description }}</small>
+                  {% if form.beneficiary.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.beneficiary.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
               </div>
               
               <div class="col-md-6">
                 <div class="form-group mb-3">
                   {{ form.expiry_date.label(class="form-label") }}
                   {{ form.expiry_date(class="form-control", type="date") }}
-                  <small class="form-text text-muted">The date when this Letter of Credit will expire</small>
                   {% if form.expiry_date.errors %}
                     <div class="invalid-feedback d-block">
                       {% for error in form.expiry_date.errors %}
@@ -93,45 +101,33 @@
                       {% endfor %}
                     </div>
                   {% endif %}
+                  <small class="form-text text-muted">The date until which this Letter of Credit is valid</small>
                 </div>
-              </div>
-            </div>
-            
-            <div class="form-group mb-3">
-              {{ form.beneficiary.label(class="form-label") }}
-              {{ form.beneficiary(class="form-control", rows=3, placeholder="Enter beneficiary name and address") }}
-              <small class="form-text text-muted">{{ form.beneficiary.description }}</small>
-              {% if form.beneficiary.errors %}
-                <div class="invalid-feedback d-block">
-                  {% for error in form.beneficiary.errors %}
-                    {{ error }}
-                  {% endfor %}
+                
+                <div class="form-group mb-3">
+                  {{ form.terms_and_conditions.label(class="form-label") }}
+                  {{ form.terms_and_conditions(class="form-control", rows=10, placeholder="Enter the terms and conditions for this Letter of Credit") }}
+                  <small class="form-text text-muted">{{ form.terms_and_conditions.description }}</small>
+                  {% if form.terms_and_conditions.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.terms_and_conditions.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                  <div class="mt-1 text-end">
+                    <small class="text-muted" id="char-count">
+                      <span id="current-chars">0</span>/<span id="max-chars">2000</span> characters
+                    </small>
+                  </div>
                 </div>
-              {% endif %}
-            </div>
-            
-            <div class="form-group mb-4">
-              {{ form.terms_and_conditions.label(class="form-label") }}
-              {{ form.terms_and_conditions(class="form-control", rows=8, placeholder="Enter full terms and conditions of the letter of credit") }}
-              <small class="form-text text-muted">{{ form.terms_and_conditions.description }}</small>
-              {% if form.terms_and_conditions.errors %}
-                <div class="invalid-feedback d-block">
-                  {% for error in form.terms_and_conditions.errors %}
-                    {{ error }}
-                  {% endfor %}
-                </div>
-              {% endif %}
-              <div class="mt-1 text-end">
-                <small class="text-muted" id="char-count">
-                  <span id="current-chars">0</span>/<span id="max-chars">2000</span> characters
-                </small>
               </div>
             </div>
             
             <div class="row">
               <div class="col-md-6">
                 <div class="alert alert-warning">
-                  <strong>Important:</strong> Once issued, a Letter of Credit cannot be modified without consent from all parties.
+                  <strong>Important:</strong> Once submitted, a Letter of Credit cannot be easily modified. Please ensure all information is correct before submitting.
                 </div>
               </div>
               <div class="col-md-6 text-end">
@@ -145,18 +141,33 @@
       
       <div class="card shadow">
         <div class="card-header bg-light">
-          <h3 class="h5 mb-0">About SWIFT MT760</h3>
+          <h3 class="h5 mb-0">Standby Letter of Credit Process</h3>
         </div>
         <div class="card-body">
-          <p>MT760 is the SWIFT message type used for issuing a Standby Letter of Credit. This message is sent from the issuing bank to the advising bank to transmit the terms and conditions of the SBLC.</p>
-          
-          <h5 class="h6 mt-3">Key Information</h5>
-          <ul>
-            <li>The MT760 is a legally binding financial instrument.</li>
-            <li>It includes details such as the beneficiary, amount, currency, expiry date, and terms/conditions.</li>
-            <li>Once issued, it typically takes 1-3 business days for the receiving bank to process.</li>
-            <li>The beneficiary can only draw on the SBLC if the specified conditions for default are met.</li>
-          </ul>
+          <div class="row">
+            <div class="col-md-6">
+              <h5 class="h6">SBLC Purpose</h5>
+              <ul>
+                <li>Acts as a guarantee of payment or performance</li>
+                <li>Only drawn upon if the applicant defaults on the underlying obligation</li>
+                <li>Provides financial security in international transactions</li>
+                <li>Helps facilitate cross-border trade by reducing risk</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h5 class="h6">SBLC via SWIFT MT760</h5>
+              <ul>
+                <li>Transmitted securely through the SWIFT network</li>
+                <li>Authenticated and verified by banking professionals</li>
+                <li>Contains standardized fields to ensure proper interpretation</li>
+                <li>Legally binding financial instrument recognized worldwide</li>
+              </ul>
+            </div>
+          </div>
+          <hr>
+          <p class="text-center mb-0">
+            <strong>Note:</strong> Standard bank fees apply for issuing and amending Letters of Credit
+          </p>
         </div>
       </div>
     </div>
@@ -188,7 +199,7 @@
       updateCharCount(); // Initial count
     }
     
-    // Auto-save form data to local storage
+    // Save form data in local storage for recovery
     const form = document.querySelector('form');
     const formFields = form.querySelectorAll('input:not([type="hidden"]), textarea, select');
     const formId = 'letter_of_credit_form';
@@ -206,7 +217,9 @@
     // Save data on change
     formFields.forEach(field => {
       field.addEventListener('change', saveFormData);
-      field.addEventListener('keyup', saveFormData);
+      if (field.tagName.toLowerCase() === 'textarea') {
+        field.addEventListener('keyup', saveFormData);
+      }
     });
     
     function saveFormData() {
@@ -215,12 +228,40 @@
         data[field.name] = field.value;
       });
       localStorage.setItem(formId, JSON.stringify(data));
+      
+      // Show save notification briefly
+      showSaveNotification();
     }
     
     // Clear saved data on successful submission
     form.addEventListener('submit', function() {
-      // We'll keep the data until successful submission
-      // Server will redirect to success page, which will clear localStorage
+      // We'll clear the data on success page
+    });
+    
+    // Show auto-save notification
+    function showSaveNotification() {
+      if (document.querySelector('.auto-save-notification')) return;
+      
+      const notification = document.createElement('div');
+      notification.className = 'auto-save-notification alert alert-info position-fixed bottom-0 end-0 m-3';
+      notification.innerHTML = 'Your form data is automatically saved';
+      notification.style.zIndex = '1050';
+      document.body.appendChild(notification);
+      
+      // Remove notification after 2 seconds
+      setTimeout(function() {
+        notification.remove();
+      }, 2000);
+    }
+    
+    // Show periodic save notification
+    const saveTimer = setInterval(function() {
+      showSaveNotification();
+    }, 30000); // Show every 30 seconds
+    
+    // Clean up on page unload
+    window.addEventListener('beforeunload', function() {
+      clearInterval(saveTimer);
     });
   });
 </script>
