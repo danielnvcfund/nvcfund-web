@@ -1071,6 +1071,8 @@ def process_bank_transfer():
             # Save form data
             user_id = current_user.id
             transaction_id = form.transaction_id.data
+            
+            # If we have a transaction ID, save the form data
             FormData.create_from_form(user_id, transaction_id, 'bank_transfer', form_data)
             db.session.commit()
             logger.info(f"Saved bank transfer form data for transaction {transaction_id}")
