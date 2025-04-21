@@ -17,29 +17,65 @@ function initTransactionCharts() {
     const transactionsByTypeEl = document.getElementById('transactionsByTypeChart');
     const transactionsByStatusEl = document.getElementById('transactionsByStatusChart');
     
+    // Get the analytics data from the page
+    let analyticsData;
+    try {
+        const analyticsElement = document.getElementById('analytics-data');
+        if (analyticsElement && analyticsElement.dataset && analyticsElement.dataset.analytics) {
+            analyticsData = JSON.parse(analyticsElement.dataset.analytics);
+            console.log('Successfully parsed analytics data');
+        } else {
+            console.warn('Analytics data element not found or is empty');
+            return; // Exit early if no data
+        }
+    } catch (error) {
+        console.error('Error parsing analytics data:', error);
+        return; // Exit early - no valid data to display
+    }
+    
     if (transactionsByDateEl) {
         try {
-            initTransactionsByDateChart(transactionsByDateEl);
+            initTransactionsByDateChart(transactionsByDateEl, analyticsData);
         } catch (error) {
             console.error('Error initializing transactions by date chart:', error);
+            // Display a fallback message in the chart container
+            displayChartError(transactionsByDateEl, 'Unable to display transaction chart by date');
         }
     }
     
     if (transactionsByTypeEl) {
         try {
-            initTransactionsByTypeChart(transactionsByTypeEl);
+            initTransactionsByTypeChart(transactionsByTypeEl, analyticsData);
         } catch (error) {
             console.error('Error initializing transactions by type chart:', error);
+            // Display a fallback message in the chart container
+            displayChartError(transactionsByTypeEl, 'Unable to display transaction chart by type');
         }
     }
     
     if (transactionsByStatusEl) {
         try {
-            initTransactionsByStatusChart(transactionsByStatusEl);
+            initTransactionsByStatusChart(transactionsByStatusEl, analyticsData);
         } catch (error) {
             console.error('Error initializing transactions by status chart:', error);
+            // Display a fallback message in the chart container
+            displayChartError(transactionsByStatusEl, 'Unable to display transaction chart by status');
         }
     }
+}
+
+// Helper function to display an error message in place of a chart
+function displayChartError(container, message) {
+    // Clear the canvas
+    while (container.firstChild) {
+        container.removeChild(container.firstChild);
+    }
+    
+    // Create and append error message
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'alert alert-secondary text-center my-3';
+    errorDiv.innerText = message;
+    container.appendChild(errorDiv);
 }
 
 // Create transactions by date chart
