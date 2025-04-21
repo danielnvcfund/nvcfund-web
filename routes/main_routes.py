@@ -1092,7 +1092,7 @@ def bank_transfer_form(transaction_id):
         return redirect(url_for('web.main.dashboard'))
     
     # Verify this transaction belongs to the current user
-    if transaction.user_id != user_id:
+    if transaction.user_id != current_user.id:
         flash('You do not have permission to access this transaction', 'danger')
         return redirect(url_for('web.main.dashboard'))
     

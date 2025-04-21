@@ -75,6 +75,7 @@ def jwt_required(f):
 def api_test_access(f):
     """Decorator to allow API access for testing without authentication"""
     import inspect
+    from flask_login import current_user, login_user
     
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -104,26 +105,42 @@ def api_test_access(f):
                 
                 # Add test user to kwargs only if the function accepts it
                 kwargs['user'] = test_user
+                
+                # Also log in the test user for Flask-Login
+                login_user(test_user)
             
             logger.info(f"API test header detected, bypassing authentication for {request.path}")
             return f(*args, **kwargs)
         
-        # Otherwise, enforce standard login requirement
-        if 'user_id' not in session:
-            if request.path.startswith('/api/'):
-                # Return JSON error for API routes instead of redirecting
-                return jsonify({'error': 'Authentication required'}), 401
+        # Check if user is authenticated with Flask-Login
+        if not current_user.is_authenticated:
+            # Also check session for backward compatibility
+            if 'user_id' not in session:
+                if request.path.startswith('/api/'):
+                    # Return JSON error for API routes instead of redirecting
+                    return jsonify({'error': 'Authentication required'}), 401
+                else:
+                    flash('Please log in to access this page', 'warning')
+                    return redirect(url_for('web.main.login', next=request.url))
             else:
-                flash('Please log in to access this page', 'warning')
-                return redirect(url_for('web.main.login', next=request.url))
+                # User is in session but not logged in with Flask-Login
+                user = User.query.get(session['user_id'])
+                if user:
+                    # Log in the user with Flask-Login
+                    login_user(user)
         
         # If user is logged in, add the user to kwargs only if endpoint accepts it
         sig = inspect.signature(f)
         if 'user' in sig.parameters:
-            user = User.query.get(session['user_id'])
-            if user:
-                kwargs['user'] = user
-                
+            # If Flask-Login's current_user is authenticated, use it
+            if current_user.is_authenticated:
+                kwargs['user'] = current_user
+            # Fallback to session (legacy compatibility)
+            elif 'user_id' in session:
+                user = User.query.get(session['user_id'])
+                if user:
+                    kwargs['user'] = user
+                    
         return f(*args, **kwargs)
     return decorated_function
 
