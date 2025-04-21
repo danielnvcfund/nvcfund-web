@@ -262,6 +262,13 @@ function initBlockchainBalance() {
         return;
     }
     
+    // Check if the address is null, undefined, or "None" (Python's None converted to string)
+    if (!ethereumAddress || ethereumAddress === "None" || ethereumAddress === "null" || ethereumAddress === "undefined") {
+        console.warn('No Ethereum address available:', ethereumAddress);
+        balanceEl.textContent = 'No address assigned';
+        return;
+    }
+    
     // Make sure we have a valid address format
     if (!ethereumAddress.startsWith('0x') || ethereumAddress.length !== 42) {
         console.warn('Invalid Ethereum address format:', ethereumAddress);
@@ -419,6 +426,14 @@ function refreshBlockchainBalance(button) {
     if (!ethereumAddress) {
         console.warn('No Ethereum address found in data attribute');
         balanceEl.textContent = 'No ETH address';
+        resetButton(button);
+        return;
+    }
+    
+    // Check if the address is null, undefined, or "None" (Python's None converted to string)
+    if (ethereumAddress === "None" || ethereumAddress === "null" || ethereumAddress === "undefined") {
+        console.warn('No Ethereum address available:', ethereumAddress);
+        balanceEl.textContent = 'No address assigned';
         resetButton(button);
         return;
     }
