@@ -45,9 +45,21 @@ function initTransactionCharts() {
 // Create transactions by date chart
 function initTransactionsByDateChart(canvas) {
     // Get data from the data attribute
-    const data = JSON.parse(canvas.getAttribute('data-transactions'));
+    let data;
+    try {
+        const dataAttr = canvas.getAttribute('data-transactions');
+        if (!dataAttr) {
+            console.error('No data-transactions attribute found');
+            return;
+        }
+        data = JSON.parse(dataAttr);
+    } catch (e) {
+        console.error('Failed to parse transaction data:', e);
+        return;
+    }
     
     if (!data || !data.by_date) {
+        console.error('Missing by_date in transaction data');
         return;
     }
     
@@ -115,9 +127,21 @@ function initTransactionsByDateChart(canvas) {
 // Create transactions by type chart
 function initTransactionsByTypeChart(canvas) {
     // Get data from the data attribute
-    const data = JSON.parse(canvas.getAttribute('data-transactions'));
+    let data;
+    try {
+        const dataAttr = canvas.getAttribute('data-transactions');
+        if (!dataAttr) {
+            console.error('No data-transactions attribute found');
+            return;
+        }
+        data = JSON.parse(dataAttr);
+    } catch (e) {
+        console.error('Failed to parse transaction data:', e);
+        return;
+    }
     
     if (!data || !data.by_type) {
+        console.error('Missing by_type in transaction data');
         return;
     }
     
@@ -164,9 +188,21 @@ function initTransactionsByTypeChart(canvas) {
 // Create transactions by status chart
 function initTransactionsByStatusChart(canvas) {
     // Get data from the data attribute
-    const data = JSON.parse(canvas.getAttribute('data-transactions'));
+    let data;
+    try {
+        const dataAttr = canvas.getAttribute('data-transactions');
+        if (!dataAttr) {
+            console.error('No data-transactions attribute found');
+            return;
+        }
+        data = JSON.parse(dataAttr);
+    } catch (e) {
+        console.error('Failed to parse transaction data:', e);
+        return;
+    }
     
     if (!data || !data.by_status) {
+        console.error('Missing by_status in transaction data');
         return;
     }
     
