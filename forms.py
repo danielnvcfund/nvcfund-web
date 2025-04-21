@@ -89,7 +89,16 @@ class AcceptInvitationForm(FlaskForm):
 class TestPaymentForm(FlaskForm):
     amount = FloatField('Amount', validators=[DataRequired()])
     currency = SelectField('Currency', choices=[('USD', 'USD'), ('EUR', 'EUR')], validators=[DataRequired()])
+    gateway_id = SelectField('Payment Gateway', choices=[], validators=[DataRequired()])
+    test_scenario = SelectField('Test Scenario', choices=[
+        ('success', 'Success'), 
+        ('failed', 'Failed'), 
+        ('3d_secure', '3D Secure'), 
+        ('webhook', 'Webhook')
+    ], default='success', validators=[DataRequired()])
+    description = TextAreaField('Description', default='Test payment from nvcplatform.net')
     success = BooleanField('Simulate Success')
+    submit = SubmitField('Submit Payment')
 
 class PaymentForm(FlaskForm):
     amount = FloatField('Amount', validators=[DataRequired()])
@@ -97,7 +106,7 @@ class PaymentForm(FlaskForm):
     transaction_type = SelectField('Transaction Type', choices=[], validators=[DataRequired()])
     gateway = SelectField('Payment Gateway', choices=[], validators=[DataRequired()])
     gateway_id = SelectField('Payment Gateway', choices=[], validators=[DataRequired()])
-    description = TextAreaField('Description', validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[DataRequired()], default='Payment from nvcplatform.net')
     submit = SubmitField('Submit Payment')
     
     def __init__(self, *args, **kwargs):

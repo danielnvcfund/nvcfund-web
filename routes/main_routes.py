@@ -814,7 +814,9 @@ def new_payment():
     
     # Create form and populate gateway choices
     form = PaymentForm()
-    form.gateway_id.choices = [(g.id, g.name) for g in gateways]
+    gateway_choices = [(g.id, g.name) for g in gateways]
+    form.gateway_id.choices = gateway_choices
+    form.gateway.choices = gateway_choices
     
     if form.validate_on_submit():
         # Get gateway handler
@@ -1054,7 +1056,8 @@ def test_payment():
     
     # Create form and populate gateway choices
     form = TestPaymentForm()
-    form.gateway_id.choices = [(g.id, g.name) for g in gateways]
+    gateway_choices = [(g.id, g.name) for g in gateways]
+    form.gateway_id.choices = gateway_choices
     
     # Get recent test transactions
     test_transactions = Transaction.query.filter(
