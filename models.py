@@ -61,9 +61,10 @@ class TransactionType(enum.Enum):
     TRANSFER = "transfer"
     PAYMENT = "payment"
     SETTLEMENT = "settlement"
-    LETTER_OF_CREDIT = "letter_of_credit"  # For SWIFT Letters of Credit (LC/SBLC)
-    SWIFT_TRANSFER = "swift_transfer"      # For SWIFT MT103/MT202 fund transfers
-    SWIFT_MESSAGE = "swift_message"        # For SWIFT MT799 and other free format messages
+    SWIFT_LETTER_OF_CREDIT = "swift_letter_of_credit"  # For SWIFT MT760 Letters of Credit
+    SWIFT_FUND_TRANSFER = "swift_fund_transfer"        # For SWIFT MT103 customer fund transfers
+    SWIFT_INSTITUTION_TRANSFER = "swift_institution_transfer"  # For SWIFT MT202 financial institution transfers
+    SWIFT_FREE_FORMAT = "swift_free_format"            # For SWIFT MT799 free format messages
 
 class GatewayType(enum.Enum):
     STRIPE = "stripe"

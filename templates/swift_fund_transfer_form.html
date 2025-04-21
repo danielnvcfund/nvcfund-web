@@ -29,18 +29,17 @@
             {% endif %}
           {% endwith %}
           
-          <div class="alert alert-info">
-            <h5 class="alert-heading">About SWIFT Transfers</h5>
-            <p>The SWIFT network connects over 11,000 financial institutions worldwide, allowing secure international money transfers.</p>
+          <div class="alert alert-info mb-4">
+            <h5 class="alert-heading">About SWIFT Fund Transfers</h5>
+            <p>SWIFT is the global standard for secure financial messaging between banks worldwide. Using SWIFT MT103 and MT202 message types, you can send money to beneficiaries around the world.</p>
             <hr>
-            <p class="mb-0">There are two main types of SWIFT transfer messages:</p>
-            <ul>
-              <li><strong>MT103</strong> - Used for customer credit transfers (personal or business)</li>
-              <li><strong>MT202</strong> - Used for financial institution transfers (bank-to-bank)</li>
+            <ul class="mb-0">
+              <li><strong>MT103</strong>: For customer fund transfers to individuals or businesses</li>
+              <li><strong>MT202</strong>: For financial institution transfers between banks</li>
             </ul>
           </div>
           
-          <form method="POST" action="{{ url_for('web.main.swift_fund_transfer') }}" class="needs-validation" novalidate>
+          <form method="POST" action="{{ url_for('web.swift.new_fund_transfer') }}" class="needs-validation" novalidate>
             {{ form.hidden_tag() }}
             
             <div class="row mb-3">
@@ -55,6 +54,7 @@
                       {% endfor %}
                     </div>
                   {% endif %}
+                  <small class="form-text text-muted">The receiving bank that will process this transfer</small>
                 </div>
                 
                 <div class="form-group mb-3">
@@ -81,59 +81,63 @@
               </div>
               
               <div class="col-md-6">
-                <div class="form-group mb-3">
+                <div class="form-check form-switch mb-4">
+                  {{ form.use_mt202(class="form-check-input") }}
                   {{ form.use_mt202.label(class="form-check-label") }}
-                  <div class="form-check form-switch">
-                    {{ form.use_mt202(class="form-check-input") }}
-                    <small class="form-text text-muted d-block">{{ form.use_mt202.description }}</small>
-                  </div>
+                  <div class="form-text">{{ form.use_mt202.description }}</div>
+                </div>
+                
+                <div class="form-group">
+                  {{ form.details_of_payment.label(class="form-label") }}
+                  {{ form.details_of_payment(class="form-control", rows=3) }}
+                  <small class="form-text text-muted">{{ form.details_of_payment.description }}</small>
+                  {% if form.details_of_payment.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.details_of_payment.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
                 </div>
               </div>
             </div>
             
-            <div class="form-group mb-3">
-              {{ form.beneficiary_customer.label(class="form-label") }}
-              {{ form.beneficiary_customer(class="form-control", rows=3) }}
-              <small class="form-text text-muted">{{ form.beneficiary_customer.description }}</small>
-              {% if form.beneficiary_customer.errors %}
-                <div class="invalid-feedback d-block">
-                  {% for error in form.beneficiary_customer.errors %}
-                    {{ error }}
-                  {% endfor %}
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  {{ form.beneficiary_customer.label(class="form-label") }}
+                  {{ form.beneficiary_customer(class="form-control", rows=5, placeholder="Enter full beneficiary details including name, account number, and address") }}
+                  <small class="form-text text-muted">{{ form.beneficiary_customer.description }}</small>
+                  {% if form.beneficiary_customer.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.beneficiary_customer.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
                 </div>
-              {% endif %}
-            </div>
-            
-            <div class="form-group mb-3">
-              {{ form.ordering_customer.label(class="form-label") }}
-              {{ form.ordering_customer(class="form-control", rows=3) }}
-              <small class="form-text text-muted">{{ form.ordering_customer.description }}</small>
-              {% if form.ordering_customer.errors %}
-                <div class="invalid-feedback d-block">
-                  {% for error in form.ordering_customer.errors %}
-                    {{ error }}
-                  {% endfor %}
+              </div>
+              
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  {{ form.ordering_customer.label(class="form-label") }}
+                  {{ form.ordering_customer(class="form-control", rows=5, placeholder="Your account details will be auto-filled if left blank") }}
+                  <small class="form-text text-muted">{{ form.ordering_customer.description }}</small>
+                  {% if form.ordering_customer.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.ordering_customer.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
                 </div>
-              {% endif %}
-            </div>
-            
-            <div class="form-group mb-4">
-              {{ form.details_of_payment.label(class="form-label") }}
-              {{ form.details_of_payment(class="form-control", rows=2) }}
-              <small class="form-text text-muted">{{ form.details_of_payment.description }}</small>
-              {% if form.details_of_payment.errors %}
-                <div class="invalid-feedback d-block">
-                  {% for error in form.details_of_payment.errors %}
-                    {{ error }}
-                  {% endfor %}
-                </div>
-              {% endif %}
+              </div>
             </div>
             
             <div class="row">
               <div class="col-md-6">
                 <div class="alert alert-warning">
-                  <strong>Important:</strong> International fund transfers typically take 1-5 business days to complete.
+                  <strong>Important:</strong> Ensure all beneficiary details are correct. SWIFT transfers cannot be easily reversed once initiated.
                 </div>
               </div>
               <div class="col-md-6 text-end">
@@ -141,24 +145,40 @@
                 {{ form.submit(class="btn btn-primary") }}
               </div>
             </div>
+            
           </form>
         </div>
       </div>
       
       <div class="card shadow">
         <div class="card-header bg-light">
-          <h3 class="h5 mb-0">About SWIFT Messaging</h3>
+          <h3 class="h5 mb-0">SWIFT Fund Transfer Process</h3>
         </div>
         <div class="card-body">
-          <p>SWIFT (Society for Worldwide Interbank Financial Telecommunication) is a global member-owned cooperative that provides secure financial messaging services. Banks use SWIFT to securely transmit information and instructions through a standardized system of codes.</p>
-          
-          <h5 class="h6 mt-3">Key Information</h5>
-          <ul>
-            <li>The MT103 message is the most common SWIFT message for cross-border payments, used for individual or business transfers.</li>
-            <li>The MT202 message is used for financial institution transfers (bank-to-bank).</li>
-            <li>Processing times vary depending on the receiving institution's policies and procedures.</li>
-            <li>Status updates are typically available within 24-48 hours after a transfer is initiated.</li>
-          </ul>
+          <div class="row">
+            <div class="col-md-6">
+              <h5 class="h6">MT103 Customer Transfer</h5>
+              <ul>
+                <li>Used for sending money to individual beneficiaries or businesses</li>
+                <li>Contains detailed information about the sender and the beneficiary</li>
+                <li>Typically settles within 1-3 business days</li>
+                <li>Provides clear details about the purpose of the payment</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h5 class="h6">MT202 Financial Institution Transfer</h5>
+              <ul>
+                <li>Used for bank-to-bank transfers between financial institutions</li>
+                <li>Faster settlement times than customer transfers</li>
+                <li>Less detailed, as it's between financial professionals</li>
+                <li>Used for correspondent banking and treasury operations</li>
+              </ul>
+            </div>
+          </div>
+          <hr>
+          <p class="text-center mb-0">
+            <strong>Note:</strong> Transfer fees may apply based on your agreement with the receiving institution
+          </p>
         </div>
       </div>
     </div>
@@ -169,7 +189,7 @@
 {% block scripts %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Auto-save form data to local storage
+    // Save form data in local storage for recovery
     const form = document.querySelector('form');
     const formFields = form.querySelectorAll('input:not([type="hidden"]), textarea, select');
     const formId = 'swift_fund_transfer_form';
@@ -180,7 +200,7 @@
       const data = JSON.parse(savedData);
       formFields.forEach(field => {
         if (field.type === 'checkbox') {
-          field.checked = data[field.name] || false;
+          field.checked = data[field.name] === 'true';
         } else {
           field.value = data[field.name] || '';
         }
@@ -190,14 +210,16 @@
     // Save data on change
     formFields.forEach(field => {
       field.addEventListener('change', saveFormData);
-      field.addEventListener('keyup', saveFormData);
+      if (field.tagName.toLowerCase() === 'textarea') {
+        field.addEventListener('keyup', saveFormData);
+      }
     });
     
     function saveFormData() {
       const data = {};
       formFields.forEach(field => {
         if (field.type === 'checkbox') {
-          data[field.name] = field.checked;
+          data[field.name] = field.checked.toString();
         } else {
           data[field.name] = field.value;
         }
@@ -207,8 +229,28 @@
     
     // Clear saved data on successful submission
     form.addEventListener('submit', function() {
-      // We'll keep the data until successful submission
-      // Server will redirect to success page, which will clear localStorage
+      // We'll clear the data on the success page after submission
+    });
+    
+    // Show auto-save notification when data is saved
+    const saveTimer = setInterval(function() {
+      if (document.querySelector('.auto-save-notification')) return;
+      
+      const notification = document.createElement('div');
+      notification.className = 'auto-save-notification alert alert-info position-fixed bottom-0 end-0 m-3';
+      notification.innerHTML = 'Your form data is automatically saved';
+      notification.style.zIndex = '1050';
+      document.body.appendChild(notification);
+      
+      // Remove notification after 3 seconds
+      setTimeout(function() {
+        notification.remove();
+      }, 3000);
+    }, 30000); // Show every 30 seconds
+    
+    // Clean up on page unload
+    window.addEventListener('beforeunload', function() {
+      clearInterval(saveTimer);
     });
   });
 </script>

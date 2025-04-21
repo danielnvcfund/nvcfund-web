@@ -1,313 +1,308 @@
 """
-SWIFT Integration Module for NVC Banking Platform
-This module provides functionality for interacting with the SWIFT messaging network
-for bank-to-bank communication.
-
-Supported message types:
-- MT760: Standby Letter of Credit
-- MT103: Single Customer Credit Transfer
-- MT202: General Financial Institution Transfer
-- MT799: Free Format Message
+SWIFT Integration Module for Bank-to-Bank Communications
+This module provides functionality for creating and processing SWIFT messages
+used in international banking communications.
 """
-
 import json
 import uuid
+import logging
 from datetime import datetime, timedelta
+from enum import Enum
 
-from app import db
-from models import Transaction, TransactionType, TransactionStatus, FinancialInstitution, User
-from transaction_service import record_transaction
+from models import db, FinancialInstitution, Transaction, TransactionType, TransactionStatus
 
+logger = logging.getLogger(__name__)
+
+class SwiftMessageType(Enum):
+    """Swift message types supported by the system"""
+    MT103 = "MT103"  # Single Customer Credit Transfer
+    MT202 = "MT202"  # General Financial Institution Transfer
+    MT760 = "MT760"  # Guarantee/Standby Letter of Credit
+    MT799 = "MT799"  # Free Format Message
 
 class SwiftMessage:
     """Base class for SWIFT messages"""
-    def __init__(self, message_type, sender_bic, receiver_bic, reference=None):
-        self.message_type = message_type
+    def __init__(self, sender_bic, receiver_bic, reference=None):
         self.sender_bic = sender_bic
         self.receiver_bic = receiver_bic
-        self.reference = reference or self._generate_reference()
-        self.creation_date = datetime.now()
-    
-    def _generate_reference(self):
-        """Generate a unique reference number for SWIFT message"""
-        return f"M{datetime.now().strftime('%Y%m%d')}{uuid.uuid4().hex[:8].upper()}"
-    
+        self.reference = reference or f"REF{uuid.uuid4().hex[:8].upper()}"
+        self.creation_date = datetime.utcnow().isoformat()
+        
     def to_dict(self):
         """Convert message to dictionary"""
         return {
-            'message_type': self.message_type,
-            'sender_bic': self.sender_bic,
-            'receiver_bic': self.receiver_bic,
-            'reference': self.reference,
-            'creation_date': self.creation_date.isoformat()
+            "sender_bic": self.sender_bic,
+            "receiver_bic": self.receiver_bic,
+            "reference": self.reference,
+            "creation_date": self.creation_date
         }
-    
+        
     def to_json(self):
         """Convert message to JSON string"""
         return json.dumps(self.to_dict())
 
-
-class MT760Message(SwiftMessage):
-    """SWIFT MT760 - Standby Letter of Credit message"""
-    def __init__(self, sender_bic, receiver_bic, reference=None, amount=0.0, 
-                 currency='USD', beneficiary='', expiry_date=None, terms_and_conditions=''):
-        super().__init__('MT760', sender_bic, receiver_bic, reference)
+class MT760(SwiftMessage):
+    """SWIFT MT760 - Standby Letter of Credit"""
+    def __init__(self, sender_bic, receiver_bic, amount, currency, beneficiary, 
+                 expiry_date, terms_and_conditions, reference=None):
+        super().__init__(sender_bic, receiver_bic, reference)
+        self.message_type = SwiftMessageType.MT760.value
         self.amount = amount
         self.currency = currency
         self.beneficiary = beneficiary
-        self.expiry_date = expiry_date or (datetime.now() + timedelta(days=180))
+        self.expiry_date = expiry_date
         self.terms_and_conditions = terms_and_conditions
-    
+        
     def to_dict(self):
-        """Convert message to dictionary with MT760 specific fields"""
-        data = super().to_dict()
-        data.update({
-            'amount': self.amount,
-            'currency': self.currency,
-            'beneficiary': self.beneficiary,
-            'expiry_date': self.expiry_date.isoformat(),
-            'terms_and_conditions': self.terms_and_conditions
+        """Convert message to dictionary"""
+        result = super().to_dict()
+        result.update({
+            "message_type": self.message_type,
+            "amount": self.amount,
+            "currency": self.currency,
+            "beneficiary": self.beneficiary,
+            "expiry_date": self.expiry_date,
+            "terms_and_conditions": self.terms_and_conditions
         })
-        return data
+        return result
 
-
-class MT103Message(SwiftMessage):
-    """SWIFT MT103 - Single Customer Credit Transfer message"""
-    def __init__(self, sender_bic, receiver_bic, reference=None, amount=0.0, 
-                 currency='USD', ordering_customer='', beneficiary_customer='', 
-                 details_of_payment=''):
-        super().__init__('MT103', sender_bic, receiver_bic, reference)
+class MT103(SwiftMessage):
+    """SWIFT MT103 - Single Customer Credit Transfer"""
+    def __init__(self, sender_bic, receiver_bic, amount, currency, 
+                 ordering_customer, beneficiary_customer, details_of_payment, reference=None):
+        super().__init__(sender_bic, receiver_bic, reference)
+        self.message_type = SwiftMessageType.MT103.value
         self.amount = amount
         self.currency = currency
         self.ordering_customer = ordering_customer
         self.beneficiary_customer = beneficiary_customer
         self.details_of_payment = details_of_payment
-    
+        
     def to_dict(self):
-        """Convert message to dictionary with MT103 specific fields"""
-        data = super().to_dict()
-        data.update({
-            'amount': self.amount,
-            'currency': self.currency,
-            'ordering_customer': self.ordering_customer,
-            'beneficiary_customer': self.beneficiary_customer,
-            'details_of_payment': self.details_of_payment
+        """Convert message to dictionary"""
+        result = super().to_dict()
+        result.update({
+            "message_type": self.message_type,
+            "amount": self.amount,
+            "currency": self.currency,
+            "ordering_customer": self.ordering_customer,
+            "beneficiary_customer": self.beneficiary_customer,
+            "details_of_payment": self.details_of_payment
         })
-        return data
+        return result
 
-
-class MT202Message(SwiftMessage):
-    """SWIFT MT202 - General Financial Institution Transfer message"""
-    def __init__(self, sender_bic, receiver_bic, reference=None, amount=0.0, 
-                 currency='USD', ordering_institution='', beneficiary_institution='', 
-                 details_of_payment=''):
-        super().__init__('MT202', sender_bic, receiver_bic, reference)
+class MT202(SwiftMessage):
+    """SWIFT MT202 - General Financial Institution Transfer"""
+    def __init__(self, sender_bic, receiver_bic, amount, currency, 
+                 ordering_institution, beneficiary_institution, reference=None):
+        super().__init__(sender_bic, receiver_bic, reference)
+        self.message_type = SwiftMessageType.MT202.value
         self.amount = amount
         self.currency = currency
         self.ordering_institution = ordering_institution
         self.beneficiary_institution = beneficiary_institution
-        self.details_of_payment = details_of_payment
-    
+        
     def to_dict(self):
-        """Convert message to dictionary with MT202 specific fields"""
-        data = super().to_dict()
-        data.update({
-            'amount': self.amount,
-            'currency': self.currency,
-            'ordering_institution': self.ordering_institution,
-            'beneficiary_institution': self.beneficiary_institution,
-            'details_of_payment': self.details_of_payment
+        """Convert message to dictionary"""
+        result = super().to_dict()
+        result.update({
+            "message_type": self.message_type,
+            "amount": self.amount,
+            "currency": self.currency,
+            "ordering_institution": self.ordering_institution,
+            "beneficiary_institution": self.beneficiary_institution
         })
-        return data
+        return result
 
-
-class MT799Message(SwiftMessage):
+class MT799(SwiftMessage):
     """SWIFT MT799 - Free Format Message"""
-    def __init__(self, sender_bic, receiver_bic, reference=None, narrative_text=''):
-        super().__init__('MT799', sender_bic, receiver_bic, reference)
-        self.narrative_text = narrative_text
-    
+    def __init__(self, sender_bic, receiver_bic, subject, message_body, reference=None):
+        super().__init__(sender_bic, receiver_bic, reference)
+        self.message_type = SwiftMessageType.MT799.value
+        self.subject = subject
+        self.message_body = message_body
+        
     def to_dict(self):
-        """Convert message to dictionary with MT799 specific fields"""
-        data = super().to_dict()
-        data.update({
-            'narrative': self.narrative_text
+        """Convert message to dictionary"""
+        result = super().to_dict()
+        result.update({
+            "message_type": self.message_type,
+            "subject": self.subject,
+            "message_body": self.message_body
         })
-        return data
+        return result
 
-
-class SwiftConnection:
-    """Handles connection to SWIFT network"""
-    def __init__(self, sender_institution_id):
-        self.institution = FinancialInstitution.query.get(sender_institution_id)
-        if not self.institution:
-            raise ValueError(f"Financial institution with ID {sender_institution_id} not found")
-        
-        self.swift_credentials = self._get_swift_credentials()
-    
-    def _get_swift_credentials(self):
-        """Get SWIFT credentials from institution metadata"""
-        if not self.institution.metadata_json:
-            return {}
+class SwiftMessageParser:
+    """Parser for SWIFT messages received from external sources"""
+    @staticmethod
+    def parse_message(message_data):
+        """Parse a SWIFT message from data dictionary or JSON string"""
+        if isinstance(message_data, str):
+            try:
+                message_data = json.loads(message_data)
+            except json.JSONDecodeError:
+                raise ValueError("Invalid JSON format in SWIFT message")
+                
+        message_type = message_data.get("message_type")
+        if not message_type:
+            raise ValueError("Missing message_type in SWIFT message")
             
-        try:
-            metadata = json.loads(self.institution.metadata_json)
-            return metadata.get('swift', {})
-        except json.JSONDecodeError:
-            return {}
-    
-    def send_message(self, message):
-        """Send a SWIFT message"""
-        # In a real implementation, this would connect to SWIFT network
-        # For this demo, we'll simulate sending and return success
-        
-        # Check if we have the required SWIFT credentials
-        if not self.swift_credentials.get('bic'):
-            return False, "Missing SWIFT BIC code in institution configuration"
-        
-        # Simulate sending the message
-        # In real implementation, this would use SWIFT SDK or API
-        
-        # Return success for simulation
-        return True, message.reference
-
+        if message_type == SwiftMessageType.MT760.value:
+            return MT760(
+                sender_bic=message_data.get("sender_bic"),
+                receiver_bic=message_data.get("receiver_bic"),
+                amount=message_data.get("amount"),
+                currency=message_data.get("currency"),
+                beneficiary=message_data.get("beneficiary"),
+                expiry_date=message_data.get("expiry_date"),
+                terms_and_conditions=message_data.get("terms_and_conditions"),
+                reference=message_data.get("reference")
+            )
+        elif message_type == SwiftMessageType.MT103.value:
+            return MT103(
+                sender_bic=message_data.get("sender_bic"),
+                receiver_bic=message_data.get("receiver_bic"),
+                amount=message_data.get("amount"),
+                currency=message_data.get("currency"),
+                ordering_customer=message_data.get("ordering_customer"),
+                beneficiary_customer=message_data.get("beneficiary_customer"),
+                details_of_payment=message_data.get("details_of_payment"),
+                reference=message_data.get("reference")
+            )
+        elif message_type == SwiftMessageType.MT202.value:
+            return MT202(
+                sender_bic=message_data.get("sender_bic"),
+                receiver_bic=message_data.get("receiver_bic"),
+                amount=message_data.get("amount"),
+                currency=message_data.get("currency"),
+                ordering_institution=message_data.get("ordering_institution"),
+                beneficiary_institution=message_data.get("beneficiary_institution"),
+                reference=message_data.get("reference")
+            )
+        elif message_type == SwiftMessageType.MT799.value:
+            return MT799(
+                sender_bic=message_data.get("sender_bic"),
+                receiver_bic=message_data.get("receiver_bic"),
+                subject=message_data.get("subject"),
+                message_body=message_data.get("message_body"),
+                reference=message_data.get("reference")
+            )
+        else:
+            raise ValueError(f"Unsupported SWIFT message type: {message_type}")
 
 class SwiftService:
-    """Service class for SWIFT messaging"""
-    
+    """Service for handling SWIFT message operations"""
     @staticmethod
     def get_swift_enabled_institutions():
-        """Get all institutions that have SWIFT capability"""
+        """Get all institutions with SWIFT information"""
         institutions = FinancialInstitution.query.filter_by(is_active=True).all()
-        
-        # Filter to only those with SWIFT credentials
-        swift_institutions = []
-        for institution in institutions:
-            if not institution.metadata_json:
-                continue
-                
-            try:
-                metadata = json.loads(institution.metadata_json)
-                if 'swift' in metadata and metadata['swift'].get('bic'):
-                    swift_institutions.append(institution)
-            except json.JSONDecodeError:
-                continue
-        
-        return swift_institutions
+        return [inst for inst in institutions if inst.metadata_json]
     
     @staticmethod
-    def create_standby_letter_of_credit(user_id, receiver_institution_id, amount, currency, 
-                                        beneficiary, expiry_date, terms_and_conditions):
-        """Create a Standby Letter of Credit via MT760 message"""
-        # Get the user and receiver institution
-        user = User.query.get(user_id)
-        if not user:
-            return False, "User not found", None
+    def get_institution_bic(institution_id):
+        """Get the BIC code for an institution"""
+        institution = FinancialInstitution.query.get(institution_id)
+        if not institution or not institution.metadata_json:
+            return None
             
-        institution = FinancialInstitution.query.get(receiver_institution_id)
-        if not institution:
-            return False, "Receiving institution not found", None
-        
-        # Get receiver SWIFT BIC code
-        receiver_bic = SwiftService._get_institution_bic(institution)
-        if not receiver_bic:
-            return False, "Receiving institution has no SWIFT BIC code configured", None
-        
-        # Get sender SWIFT BIC code (NVC Global)
-        sender_institution = FinancialInstitution.query.filter_by(name="NVC Global").first()
-        if not sender_institution:
-            return False, "NVC Global institution not found", None
+        try:
+            metadata = json.loads(institution.metadata_json)
+            return metadata.get("swift", {}).get("bic")
+        except json.JSONDecodeError:
+            logger.error(f"Invalid JSON in metadata_json for institution {institution_id}")
+            return None
+    
+    @staticmethod
+    def create_letter_of_credit(user_id, receiver_institution_id, amount, currency, 
+                               beneficiary, expiry_date, terms_and_conditions):
+        """Create a Letter of Credit using SWIFT MT760"""
+        # Get the NVC Global institution for sending
+        nvc_institution = FinancialInstitution.query.filter_by(name="NVC Global").first()
+        if not nvc_institution:
+            raise ValueError("NVC Global institution not found")
             
-        sender_bic = SwiftService._get_institution_bic(sender_institution)
+        # Get the receiving institution
+        receiver_institution = FinancialInstitution.query.get(receiver_institution_id)
+        if not receiver_institution:
+            raise ValueError(f"Receiver institution not found: {receiver_institution_id}")
+            
+        # Get BIC codes
+        sender_bic = SwiftService.get_institution_bic(nvc_institution.id)
+        receiver_bic = SwiftService.get_institution_bic(receiver_institution_id)
+        
         if not sender_bic:
-            return False, "NVC Global has no SWIFT BIC code configured", None
-        
+            raise ValueError("Sender BIC code not found")
+        if not receiver_bic:
+            raise ValueError("Receiver BIC code not found")
+            
         # Create the MT760 message
-        expiry_datetime = datetime.combine(expiry_date, datetime.min.time())
-        message = MT760Message(
+        message = MT760(
             sender_bic=sender_bic,
             receiver_bic=receiver_bic,
             amount=amount,
             currency=currency,
             beneficiary=beneficiary,
-            expiry_date=expiry_datetime,
+            expiry_date=expiry_date.isoformat() if isinstance(expiry_date, datetime) else expiry_date,
             terms_and_conditions=terms_and_conditions
         )
         
-        # Connect to SWIFT and send the message
-        try:
-            connection = SwiftConnection(sender_institution.id)
-            success, reference = connection.send_message(message)
-            
-            if not success:
-                return False, f"Failed to send SWIFT message: {reference}", None
-                
-            # Record the transaction
-            transaction = record_transaction(
-                user_id=user_id,
-                transaction_type=TransactionType.LETTER_OF_CREDIT,
-                amount=amount,
-                currency=currency,
-                description=f"Standby Letter of Credit to {institution.name}",
-                status=TransactionStatus.PENDING,
-                metadata={
-                    'swift': message.to_dict(),
-                    'receiver_institution_id': receiver_institution_id
-                }
-            )
-            
-            return True, "Standby Letter of Credit initiated successfully", transaction
-            
-        except Exception as e:
-            return False, f"Error sending SWIFT message: {str(e)}", None
+        # Create a transaction record
+        transaction = Transaction(
+            user_id=user_id,
+            transaction_type=TransactionType.SWIFT_LETTER_OF_CREDIT,
+            amount=amount,
+            currency=currency,
+            status=TransactionStatus.PENDING,
+            recipient=f"{receiver_institution.name} (BIC: {receiver_bic})",
+            description=f"SWIFT MT760 Letter of Credit - {message.reference}",
+            tx_metadata_json=json.dumps(message.to_dict())
+        )
+        
+        db.session.add(transaction)
+        db.session.commit()
+        
+        return transaction
     
     @staticmethod
     def create_swift_fund_transfer(user_id, receiver_institution_id, amount, currency,
-                                  beneficiary_customer, ordering_customer='', 
-                                  details_of_payment='', use_mt202=False):
-        """Create a SWIFT MT103 or MT202 fund transfer"""
-        # Get the user and receiver institution
-        user = User.query.get(user_id)
-        if not user:
-            return False, "User not found", None
+                                  ordering_customer, beneficiary_customer, details_of_payment,
+                                  is_financial_institution=False):
+        """Create a SWIFT fund transfer using MT103 or MT202"""
+        # Get the NVC Global institution for sending
+        nvc_institution = FinancialInstitution.query.filter_by(name="NVC Global").first()
+        if not nvc_institution:
+            raise ValueError("NVC Global institution not found")
             
-        institution = FinancialInstitution.query.get(receiver_institution_id)
-        if not institution:
-            return False, "Receiving institution not found", None
-        
-        # Get receiver SWIFT BIC code
-        receiver_bic = SwiftService._get_institution_bic(institution)
-        if not receiver_bic:
-            return False, "Receiving institution has no SWIFT BIC code configured", None
-        
-        # Get sender SWIFT BIC code (NVC Global)
-        sender_institution = FinancialInstitution.query.filter_by(name="NVC Global").first()
-        if not sender_institution:
-            return False, "NVC Global institution not found", None
+        # Get the receiving institution
+        receiver_institution = FinancialInstitution.query.get(receiver_institution_id)
+        if not receiver_institution:
+            raise ValueError(f"Receiver institution not found: {receiver_institution_id}")
             
-        sender_bic = SwiftService._get_institution_bic(sender_institution)
+        # Get BIC codes
+        sender_bic = SwiftService.get_institution_bic(nvc_institution.id)
+        receiver_bic = SwiftService.get_institution_bic(receiver_institution_id)
+        
         if not sender_bic:
-            return False, "NVC Global has no SWIFT BIC code configured", None
-        
-        # Auto-fill ordering customer if not provided
-        if not ordering_customer:
-            ordering_customer = f"{user.username}\nNVC Global Client\nAccount: {user.id}"
-        
-        # Create the appropriate message type
-        if use_mt202:
-            # MT202 for bank-to-bank transfers
-            message = MT202Message(
+            raise ValueError("Sender BIC code not found")
+        if not receiver_bic:
+            raise ValueError("Receiver BIC code not found")
+            
+        # Create the appropriate message based on whether it's a financial institution transfer
+        if is_financial_institution:
+            # Use MT202 for financial institution transfers
+            message = MT202(
                 sender_bic=sender_bic,
                 receiver_bic=receiver_bic,
                 amount=amount,
                 currency=currency,
-                ordering_institution="NVC GLOBAL BANK",
-                beneficiary_institution=beneficiary_customer,
-                details_of_payment=details_of_payment
+                ordering_institution=ordering_customer,
+                beneficiary_institution=beneficiary_customer
             )
+            transaction_type = TransactionType.SWIFT_INSTITUTION_TRANSFER
+            description = f"SWIFT MT202 Financial Institution Transfer - {message.reference}"
         else:
-            # MT103 for customer transfers
-            message = MT103Message(
+            # Use MT103 for customer transfers
+            message = MT103(
                 sender_bic=sender_bic,
                 receiver_bic=receiver_bic,
                 amount=amount,
@@ -316,207 +311,200 @@ class SwiftService:
                 beneficiary_customer=beneficiary_customer,
                 details_of_payment=details_of_payment
             )
+            transaction_type = TransactionType.SWIFT_FUND_TRANSFER
+            description = f"SWIFT MT103 Fund Transfer - {message.reference}"
         
-        # Connect to SWIFT and send the message
-        try:
-            connection = SwiftConnection(sender_institution.id)
-            success, reference = connection.send_message(message)
-            
-            if not success:
-                return False, f"Failed to send SWIFT message: {reference}", None
-                
-            # Record the transaction
-            transaction = record_transaction(
-                user_id=user_id,
-                transaction_type=TransactionType.SWIFT_TRANSFER,
-                amount=amount,
-                currency=currency,
-                description=f"SWIFT {message.message_type} Transfer to {institution.name}",
-                status=TransactionStatus.PENDING,
-                metadata={
-                    'swift': message.to_dict(),
-                    'receiver_institution_id': receiver_institution_id
-                }
-            )
-            
-            return True, f"{message.message_type} transfer initiated successfully", transaction
-            
-        except Exception as e:
-            return False, f"Error sending SWIFT message: {str(e)}", None
-    
-    @staticmethod
-    def send_free_format_message(user_id, receiver_institution_id, reference, narrative_text):
-        """Send a SWIFT MT799 free format message"""
-        # Get the user and receiver institution
-        user = User.query.get(user_id)
-        if not user:
-            return False, "User not found", None
-            
-        institution = FinancialInstitution.query.get(receiver_institution_id)
-        if not institution:
-            return False, "Receiving institution not found", None
-        
-        # Get receiver SWIFT BIC code
-        receiver_bic = SwiftService._get_institution_bic(institution)
-        if not receiver_bic:
-            return False, "Receiving institution has no SWIFT BIC code configured", None
-        
-        # Get sender SWIFT BIC code (NVC Global)
-        sender_institution = FinancialInstitution.query.filter_by(name="NVC Global").first()
-        if not sender_institution:
-            return False, "NVC Global institution not found", None
-            
-        sender_bic = SwiftService._get_institution_bic(sender_institution)
-        if not sender_bic:
-            return False, "NVC Global has no SWIFT BIC code configured", None
-        
-        # Create the MT799 message
-        message = MT799Message(
-            sender_bic=sender_bic,
-            receiver_bic=receiver_bic,
-            reference=reference,
-            narrative_text=narrative_text
+        # Create a transaction record
+        transaction = Transaction(
+            user_id=user_id,
+            transaction_type=transaction_type,
+            amount=amount,
+            currency=currency,
+            status=TransactionStatus.PENDING,
+            recipient=f"{receiver_institution.name} (BIC: {receiver_bic})",
+            description=description,
+            tx_metadata_json=json.dumps(message.to_dict())
         )
         
-        # Connect to SWIFT and send the message
-        try:
-            connection = SwiftConnection(sender_institution.id)
-            success, reference = connection.send_message(message)
-            
-            if not success:
-                return False, f"Failed to send SWIFT message: {reference}", None
-                
-            # Record the transaction
-            transaction = record_transaction(
-                user_id=user_id,
-                transaction_type=TransactionType.SWIFT_MESSAGE,
-                amount=0.0,  # No amount for free format message
-                currency="USD",  # Default currency
-                description=f"SWIFT MT799 Message to {institution.name}",
-                status=TransactionStatus.PENDING,
-                metadata={
-                    'swift': message.to_dict(),
-                    'receiver_institution_id': receiver_institution_id
-                }
-            )
-            
-            return True, "Free format message sent successfully", transaction
-            
-        except Exception as e:
-            return False, f"Error sending SWIFT message: {str(e)}", None
-    
-    @staticmethod
-    def get_swift_message_status(transaction_id):
-        """Get status of a SWIFT message"""
-        # Get the transaction
-        transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
-        if not transaction:
-            return {
-                'success': False,
-                'error': 'Transaction not found'
-            }
-        
-        # Check if this is a SWIFT transaction
-        if transaction.transaction_type not in [
-            TransactionType.LETTER_OF_CREDIT,
-            TransactionType.SWIFT_TRANSFER,
-            TransactionType.SWIFT_MESSAGE
-        ]:
-            return {
-                'success': False,
-                'error': 'Not a SWIFT transaction'
-            }
-        
-        # Get SWIFT data from transaction metadata
-        swift_data = {}
-        try:
-            metadata = json.loads(transaction.tx_metadata_json or '{}')
-            swift_data = metadata.get('swift', {})
-            
-            if not swift_data:
-                return {
-                    'success': False,
-                    'error': 'No SWIFT data found in transaction'
-                }
-        except:
-            return {
-                'success': False,
-                'error': 'Error parsing transaction metadata'
-            }
-        
-        # In a real implementation, this would query the SWIFT network
-        # For this demo, we'll return a simulated status based on transaction status
-        
-        status_mapping = {
-            TransactionStatus.COMPLETED: 'delivered',
-            TransactionStatus.PENDING: 'processing',
-            TransactionStatus.FAILED: 'failed',
-            TransactionStatus.CANCELLED: 'cancelled'
-        }
-        
-        swift_status = status_mapping.get(transaction.status, 'unknown')
-        
-        # Simulate SWIFT network response
-        return {
-            'success': True,
-            'status': swift_status,
-            'reference': swift_data.get('reference', 'unknown'),
-            'message_type': swift_data.get('message_type', 'unknown'),
-            'details': {
-                'sender_bic': swift_data.get('sender_bic', 'unknown'),
-                'receiver_bic': swift_data.get('receiver_bic', 'unknown'),
-                'creation_date': swift_data.get('creation_date', 'unknown'),
-                'delivery_time': datetime.now().isoformat() if transaction.status == TransactionStatus.COMPLETED else None,
-                'details': SwiftService._get_status_description(transaction.status)
-            }
-        }
-    
-    @staticmethod
-    def _get_institution_bic(institution):
-        """Get SWIFT BIC code from institution metadata"""
-        if not institution.metadata_json:
-            return None
-            
-        try:
-            metadata = json.loads(institution.metadata_json)
-            return metadata.get('swift', {}).get('bic')
-        except json.JSONDecodeError:
-            return None
-    
-    @staticmethod
-    def _get_status_description(status):
-        """Get human-readable description of SWIFT message status"""
-        if status == TransactionStatus.COMPLETED:
-            return "The message has been successfully delivered to the recipient institution."
-        elif status == TransactionStatus.PENDING:
-            return "The message is being processed by the SWIFT network and awaiting delivery."
-        elif status == TransactionStatus.FAILED:
-            return "The message could not be delivered due to an error. Please contact support."
-        elif status == TransactionStatus.CANCELLED:
-            return "The message delivery was cancelled."
-        else:
-            return "The status of this message is unknown."
-    
-    @staticmethod
-    def update_transaction_status(transaction_id, new_status, status_details=None):
-        """Update a SWIFT transaction status"""
-        transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
-        if not transaction:
-            return False, "Transaction not found"
-            
-        transaction.status = new_status
-        
-        # Update metadata if provided
-        if status_details:
-            try:
-                metadata = json.loads(transaction.tx_metadata_json or '{}')
-                metadata['swift_status'] = {
-                    'updated_at': datetime.now().isoformat(),
-                    'details': status_details
-                }
-                transaction.tx_metadata_json = json.dumps(metadata)
-            except:
-                pass
-                
+        db.session.add(transaction)
         db.session.commit()
-        return True, "Transaction status updated successfully"
+        
+        return transaction
+    
+    @staticmethod
+    def create_free_format_message(user_id, receiver_institution_id, subject, message_body):
+        """Create a free format SWIFT message using MT799"""
+        # Get the NVC Global institution for sending
+        nvc_institution = FinancialInstitution.query.filter_by(name="NVC Global").first()
+        if not nvc_institution:
+            raise ValueError("NVC Global institution not found")
+            
+        # Get the receiving institution
+        receiver_institution = FinancialInstitution.query.get(receiver_institution_id)
+        if not receiver_institution:
+            raise ValueError(f"Receiver institution not found: {receiver_institution_id}")
+            
+        # Get BIC codes
+        sender_bic = SwiftService.get_institution_bic(nvc_institution.id)
+        receiver_bic = SwiftService.get_institution_bic(receiver_institution_id)
+        
+        if not sender_bic:
+            raise ValueError("Sender BIC code not found")
+        if not receiver_bic:
+            raise ValueError("Receiver BIC code not found")
+            
+        # Create the MT799 message
+        message = MT799(
+            sender_bic=sender_bic,
+            receiver_bic=receiver_bic,
+            subject=subject,
+            message_body=message_body
+        )
+        
+        # Create a transaction record (with zero amount since it's just a message)
+        transaction = Transaction(
+            user_id=user_id,
+            transaction_type=TransactionType.SWIFT_FREE_FORMAT,
+            amount=0.0,
+            currency="USD",  # Default currency for record-keeping
+            status=TransactionStatus.PENDING,
+            recipient=f"{receiver_institution.name} (BIC: {receiver_bic})",
+            description=f"SWIFT MT799 Free Format Message - {message.reference}",
+            tx_metadata_json=json.dumps(message.to_dict())
+        )
+        
+        db.session.add(transaction)
+        db.session.commit()
+        
+        return transaction
+    
+    @staticmethod
+    def get_letter_of_credit_status(transaction_id):
+        """Get the status of a Letter of Credit"""
+        transaction = Transaction.query.get(transaction_id)
+        if not transaction:
+            return {"success": False, "error": "Transaction not found"}
+            
+        if transaction.transaction_type != TransactionType.SWIFT_LETTER_OF_CREDIT:
+            return {"success": False, "error": "Not a Letter of Credit transaction"}
+            
+        # In a real-world scenario, we would check the actual SWIFT network status
+        # For now, we'll simulate a response based on transaction creation time
+        created_delta = datetime.utcnow() - transaction.created_at
+        
+        # Parse the metadata to get the SWIFT message details
+        try:
+            swift_data = json.loads(transaction.tx_metadata_json)
+        except (json.JSONDecodeError, TypeError):
+            return {"success": False, "error": "Invalid SWIFT message data"}
+            
+        # Simulate different statuses based on time since creation
+        if created_delta < timedelta(minutes=5):
+            status = "processing"
+            details = {
+                "details": "The Letter of Credit has been submitted to the SWIFT network and is being processed.",
+                "estimated_completion": (datetime.utcnow() + timedelta(minutes=5)).isoformat()
+            }
+        else:
+            status = "delivered"
+            details = {
+                "details": f"The Letter of Credit with reference {swift_data.get('reference')} has been delivered to the beneficiary institution.",
+                "delivery_time": (transaction.created_at + timedelta(minutes=5)).isoformat()
+            }
+            
+            # If it's been delivered and transaction is still pending, update it
+            if transaction.status == TransactionStatus.PENDING:
+                transaction.status = TransactionStatus.COMPLETED
+                db.session.commit()
+        
+        return {
+            "success": True,
+            "status": status,
+            "details": details
+        }
+    
+    @staticmethod
+    def get_fund_transfer_status(transaction_id):
+        """Get the status of a Fund Transfer"""
+        transaction = Transaction.query.get(transaction_id)
+        if not transaction:
+            return {"success": False, "error": "Transaction not found"}
+            
+        if transaction.transaction_type not in [TransactionType.SWIFT_FUND_TRANSFER, TransactionType.SWIFT_INSTITUTION_TRANSFER]:
+            return {"success": False, "error": "Not a Fund Transfer transaction"}
+            
+        # Similar logic to letter of credit status
+        created_delta = datetime.utcnow() - transaction.created_at
+        
+        try:
+            swift_data = json.loads(transaction.tx_metadata_json)
+        except (json.JSONDecodeError, TypeError):
+            return {"success": False, "error": "Invalid SWIFT message data"}
+            
+        # Simulate different statuses based on time
+        if created_delta < timedelta(minutes=3):
+            status = "processing"
+            details = {
+                "details": "The Fund Transfer has been submitted to the SWIFT network and is being processed.",
+                "estimated_completion": (datetime.utcnow() + timedelta(minutes=3)).isoformat()
+            }
+        else:
+            status = "settled"
+            details = {
+                "details": f"The Fund Transfer with reference {swift_data.get('reference')} has been settled.",
+                "settlement_time": (transaction.created_at + timedelta(minutes=3)).isoformat()
+            }
+            
+            # Update transaction status if needed
+            if transaction.status == TransactionStatus.PENDING:
+                transaction.status = TransactionStatus.COMPLETED
+                db.session.commit()
+        
+        return {
+            "success": True,
+            "status": status,
+            "details": details
+        }
+    
+    @staticmethod
+    def get_free_format_message_status(transaction_id):
+        """Get the status of a Free Format Message"""
+        transaction = Transaction.query.get(transaction_id)
+        if not transaction:
+            return {"success": False, "error": "Transaction not found"}
+            
+        if transaction.transaction_type != TransactionType.SWIFT_FREE_FORMAT:
+            return {"success": False, "error": "Not a Free Format Message transaction"}
+            
+        # Similar approach to the other status methods
+        created_delta = datetime.utcnow() - transaction.created_at
+        
+        try:
+            swift_data = json.loads(transaction.tx_metadata_json)
+        except (json.JSONDecodeError, TypeError):
+            return {"success": False, "error": "Invalid SWIFT message data"}
+            
+        # Free format messages are typically delivered more quickly
+        if created_delta < timedelta(minutes=2):
+            status = "processing"
+            details = {
+                "details": "The message has been submitted to the SWIFT network and is being processed.",
+                "estimated_delivery": (datetime.utcnow() + timedelta(minutes=2)).isoformat()
+            }
+        else:
+            status = "delivered"
+            details = {
+                "details": f"The message with reference {swift_data.get('reference')} has been delivered to the recipient institution.",
+                "delivery_time": (transaction.created_at + timedelta(minutes=2)).isoformat()
+            }
+            
+            # Update transaction status if needed
+            if transaction.status == TransactionStatus.PENDING:
+                transaction.status = TransactionStatus.COMPLETED
+                db.session.commit()
+        
+        return {
+            "success": True,
+            "status": status,
+            "details": details
+        }

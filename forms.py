@@ -5,6 +5,29 @@ from datetime import datetime, timedelta
 from models import FinancialInstitution, TransactionType
 import json
 
+# Helper functions for forms
+def get_institution_choices():
+    """Get financial institution choices for select fields"""
+    try:
+        institutions = FinancialInstitution.query.filter_by(is_active=True).all()
+        return [(str(inst.id), inst.name) for inst in institutions]
+    except Exception:
+        # Return empty list if database query fails
+        return []
+
+def get_currency_choices():
+    """Get currency choices for select fields"""
+    return [
+        ('USD', 'USD - US Dollar'),
+        ('EUR', 'EUR - Euro'),
+        ('GBP', 'GBP - British Pound'),
+        ('CHF', 'CHF - Swiss Franc'),
+        ('JPY', 'JPY - Japanese Yen'),
+        ('CAD', 'CAD - Canadian Dollar'),
+        ('AUD', 'AUD - Australian Dollar'),
+        ('CNY', 'CNY - Chinese Yuan')
+    ]
+
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])

@@ -9,13 +9,13 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
-          <li class="breadcrumb-item active">SWIFT Free Format Message</li>
+          <li class="breadcrumb-item active">Free Format SWIFT Message</li>
         </ol>
       </nav>
       
       <div class="card shadow mb-4">
         <div class="card-header bg-primary text-white">
-          <h2 class="h4 mb-0">Send SWIFT Free Format Message (MT799)</h2>
+          <h2 class="h4 mb-0">Create SWIFT Free Format Message (MT799)</h2>
         </div>
         <div class="card-body">
           {% with messages = get_flashed_messages(with_categories=true) %}
@@ -29,50 +29,55 @@
             {% endif %}
           {% endwith %}
           
-          <div class="alert alert-info">
-            <h5 class="alert-heading">About MT799 Messages</h5>
-            <p>MT799 is a free format message type in the SWIFT network, used when no specific message format is available or required.</p>
-            <hr>
-            <p class="mb-0">Common uses for MT799 messages include:</p>
-            <ul>
-              <li>Pre-advice communications before sending a formal financial instrument</li>
-              <li>Amendments or clarifications to previous transactions</li>
-              <li>Requests for information from financial institutions</li>
-              <li>General banking communications that don't fit standard formats</li>
+          <div class="alert alert-info mb-4">
+            <h5 class="alert-heading">About SWIFT MT799 Messages</h5>
+            <p>SWIFT MT799 is a free format text message that allows financial institutions to communicate with one another in a secure, standardized format. This message type is commonly used for:</p>
+            <ul class="mb-0">
+              <li>General banking communications</li>
+              <li>Clarifying instructions or providing additional information</li>
+              <li>Pre-advice for financial transactions</li>
+              <li>Queries related to other SWIFT messages</li>
             </ul>
           </div>
           
-          <form method="POST" action="{{ url_for('web.main.swift_free_format_message') }}" class="needs-validation" novalidate>
+          <form method="POST" action="{{ url_for('web.swift.new_free_format_message') }}" class="needs-validation" novalidate>
             {{ form.hidden_tag() }}
             
-            <div class="form-group mb-3">
-              {{ form.receiver_institution_id.label(class="form-label") }}
-              {{ form.receiver_institution_id(class="form-select") }}
-              {% if form.receiver_institution_id.errors %}
-                <div class="invalid-feedback d-block">
-                  {% for error in form.receiver_institution_id.errors %}
-                    {{ error }}
-                  {% endfor %}
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  {{ form.receiver_institution_id.label(class="form-label") }}
+                  {{ form.receiver_institution_id(class="form-select") }}
+                  {% if form.receiver_institution_id.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.receiver_institution_id.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                  <small class="form-text text-muted">The financial institution that will receive this message</small>
                 </div>
-              {% endif %}
-            </div>
-            
-            <div class="form-group mb-3">
-              {{ form.reference.label(class="form-label") }}
-              {{ form.reference(class="form-control") }}
-              <small class="form-text text-muted">{{ form.reference.description }}</small>
-              {% if form.reference.errors %}
-                <div class="invalid-feedback d-block">
-                  {% for error in form.reference.errors %}
-                    {{ error }}
-                  {% endfor %}
+              </div>
+              
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  {{ form.reference.label(class="form-label") }}
+                  {{ form.reference(class="form-control", placeholder="Enter reference number") }}
+                  <small class="form-text text-muted">{{ form.reference.description }}</small>
+                  {% if form.reference.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.reference.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
                 </div>
-              {% endif %}
+              </div>
             </div>
             
             <div class="form-group mb-4">
               {{ form.narrative_text.label(class="form-label") }}
-              {{ form.narrative_text(class="form-control", rows=8) }}
+              {{ form.narrative_text(class="form-control", rows=8, placeholder="Enter your message content") }}
               <small class="form-text text-muted">{{ form.narrative_text.description }}</small>
               {% if form.narrative_text.errors %}
                 <div class="invalid-feedback d-block">
@@ -91,7 +96,7 @@
             <div class="row">
               <div class="col-md-6">
                 <div class="alert alert-warning">
-                  <strong>Note:</strong> Messages are delivered in real-time and cannot be recalled once sent.
+                  <strong>Important:</strong> Free format messages are legally binding communications. Please ensure the content is accurate and appropriate.
                 </div>
               </div>
               <div class="col-md-6 text-end">
@@ -105,19 +110,35 @@
       
       <div class="card shadow">
         <div class="card-header bg-light">
-          <h3 class="h5 mb-0">About SWIFT MT799 Messages</h3>
+          <h3 class="h5 mb-0">SWIFT MT799 Message Format</h3>
         </div>
         <div class="card-body">
-          <p>MT799 is a free format SWIFT message type that allows for communication between financial institutions when no other specific message type is suitable.</p>
-          
-          <h5 class="h6 mt-3">Message Structure</h5>
-          <p>MT799 messages have a simple structure:</p>
-          <ul>
-            <li><strong>Reference:</strong> A unique identifier for tracking the message</li>
-            <li><strong>Narrative Text:</strong> The main content of the message in free format</li>
-          </ul>
-          
-          <p>Unlike other SWIFT message types with rigid field structures, MT799 provides flexibility for various types of banking communications that don't require formatted data fields.</p>
+          <div class="row">
+            <div class="col-md-6">
+              <h5 class="h6">Common Uses</h5>
+              <ul>
+                <li>Request clarification on prior transactions</li>
+                <li>Provide additional information about transfers</li>
+                <li>Send general banking communications</li>
+                <li>Reply to queries about other SWIFT messages</li>
+                <li>Pre-advise upcoming financial transactions</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h5 class="h6">Best Practices</h5>
+              <ul>
+                <li>Be clear and concise in your message</li>
+                <li>Always include relevant reference numbers</li>
+                <li>Specify the transaction or topic you're addressing</li>
+                <li>Keep sensitive information to a minimum</li>
+                <li>Follow your institution's communication policies</li>
+              </ul>
+            </div>
+          </div>
+          <hr>
+          <p class="text-center mb-0">
+            <strong>Note:</strong> The recipient will typically respond within 1-2 business days
+          </p>
         </div>
       </div>
     </div>
@@ -129,12 +150,12 @@
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // Character counter for narrative text
-    const narrativeText = document.getElementById('narrative_text');
+    const narrativeField = document.getElementById('narrative_text');
     const currentChars = document.getElementById('current-chars');
     const maxChars = document.getElementById('max-chars');
     
     function updateCharCount() {
-      const count = narrativeText.value.length;
+      const count = narrativeField.value.length;
       currentChars.textContent = count;
       
       if (count > 2000) {
@@ -144,15 +165,15 @@
       }
     }
     
-    if (narrativeText) {
-      narrativeText.addEventListener('input', updateCharCount);
+    if (narrativeField) {
+      narrativeField.addEventListener('input', updateCharCount);
       updateCharCount(); // Initial count
     }
     
-    // Auto-save form data to local storage
+    // Save form data in local storage for recovery
     const form = document.querySelector('form');
     const formFields = form.querySelectorAll('input:not([type="hidden"]), textarea, select');
-    const formId = 'swift_free_format_message_form';
+    const formId = 'swift_free_format_form';
     
     // Load saved data
     const savedData = localStorage.getItem(formId);
@@ -167,7 +188,9 @@
     // Save data on change
     formFields.forEach(field => {
       field.addEventListener('change', saveFormData);
-      field.addEventListener('keyup', saveFormData);
+      if (field.tagName.toLowerCase() === 'textarea') {
+        field.addEventListener('keyup', saveFormData);
+      }
     });
     
     function saveFormData() {
@@ -176,12 +199,40 @@
         data[field.name] = field.value;
       });
       localStorage.setItem(formId, JSON.stringify(data));
+      
+      // Show save notification briefly
+      showSaveNotification();
     }
     
     // Clear saved data on successful submission
     form.addEventListener('submit', function() {
-      // We'll keep the data until successful submission
-      // Server will redirect to success page, which will clear localStorage
+      // We'll clear the data on success page
+    });
+    
+    // Show auto-save notification
+    function showSaveNotification() {
+      if (document.querySelector('.auto-save-notification')) return;
+      
+      const notification = document.createElement('div');
+      notification.className = 'auto-save-notification alert alert-info position-fixed bottom-0 end-0 m-3';
+      notification.innerHTML = 'Your form data is automatically saved';
+      notification.style.zIndex = '1050';
+      document.body.appendChild(notification);
+      
+      // Remove notification after 2 seconds
+      setTimeout(function() {
+        notification.remove();
+      }, 2000);
+    }
+    
+    // Show periodic save notification
+    const saveTimer = setInterval(function() {
+      showSaveNotification();
+    }, 30000); // Show every 30 seconds
+    
+    // Clean up on page unload
+    window.addEventListener('beforeunload', function() {
+      clearInterval(saveTimer);
     });
   });
 </script>
