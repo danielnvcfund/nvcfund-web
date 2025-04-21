@@ -25,6 +25,16 @@
                         {{ form.hidden_tag() }}
                         
                         <div class="mb-3">
+                            {{ form.transaction_type.label(class="form-label") }}
+                            {{ form.transaction_type(class="form-select", required=true) }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.gateway.label(class="form-label") }}
+                            {{ form.gateway(class="form-select", required=true) }}
+                        </div>
+
+                        <div class="mb-3">
                             {{ form.gateway_id.label(class="form-label") }}
                             {{ form.gateway_id(class="form-select", required=true) }}
                         </div>
