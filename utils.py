@@ -67,6 +67,7 @@ def get_transaction_analytics(user_id=None, days=30):
     """Get transaction analytics for the specified period"""
     from models import Transaction, TransactionType
     from sqlalchemy import func
+    import decimal
     
     try:
         # Set time period
@@ -105,13 +106,35 @@ def get_transaction_analytics(user_id=None, days=30):
         # Execute query
         results = query.all()
         
-        # Organize results
+        # If no results, return a basic structure with empty data
+        if not results:
+            logger.info(f"No transaction analytics data found for user {user_id}")
+            analytics = {
+                'days': days,
+                'start_date': start_date.strftime('%Y-%m-%d'),
+                'end_date': end_date.strftime('%Y-%m-%d'),
+                'total_transactions': 0,
+                'total_amount': 0,
+                'by_type': {},
+                'by_status': {},
+                'by_date': {},
+                'raw_data': []
+            }
+            return analytics
+        
+        # Helper function to convert decimals to float for JSON serialization
+        def decimal_to_float(obj):
+            if isinstance(obj, decimal.Decimal):
+                return float(obj)
+            return obj
+        
+        # Organize results with safe conversion of decimal values
         analytics = {
             'days': days,
             'start_date': start_date.strftime('%Y-%m-%d'),
             'end_date': end_date.strftime('%Y-%m-%d'),
             'total_transactions': sum(r.count for r in results),
-            'total_amount': sum(r.total_amount for r in results),
+            'total_amount': decimal_to_float(sum(decimal_to_float(r.total_amount or 0) for r in results)),
             'by_type': {},
             'by_status': {},
             'by_date': {},
@@ -120,10 +143,12 @@ def get_transaction_analytics(user_id=None, days=30):
         
         # Process results
         for r in results:
-            # Convert enums to strings
-            type_str = r.transaction_type.value
-            status_str = r.status.value
-            date_str = r.date.strftime('%Y-%m-%d')
+            # Convert enums to strings and handle possible None values
+            type_str = r.transaction_type.value if r.transaction_type else 'unknown'
+            status_str = r.status.value if r.status else 'unknown'
+            date_str = r.date.strftime('%Y-%m-%d') if r.date else 'unknown'
+            count = r.count or 0
+            total_amount = decimal_to_float(r.total_amount or 0)
             
             # By type
             if type_str not in analytics['by_type']:
@@ -131,8 +156,8 @@ def get_transaction_analytics(user_id=None, days=30):
                     'count': 0,
                     'total_amount': 0
                 }
-            analytics['by_type'][type_str]['count'] += r.count
-            analytics['by_type'][type_str]['total_amount'] += r.total_amount
+            analytics['by_type'][type_str]['count'] += count
+            analytics['by_type'][type_str]['total_amount'] += total_amount
             
             # By status
             if status_str not in analytics['by_status']:
@@ -140,8 +165,8 @@ def get_transaction_analytics(user_id=None, days=30):
                     'count': 0,
                     'total_amount': 0
                 }
-            analytics['by_status'][status_str]['count'] += r.count
-            analytics['by_status'][status_str]['total_amount'] += r.total_amount
+            analytics['by_status'][status_str]['count'] += count
+            analytics['by_status'][status_str]['total_amount'] += total_amount
             
             # By date
             if date_str not in analytics['by_date']:
@@ -150,8 +175,8 @@ def get_transaction_analytics(user_id=None, days=30):
                     'total_amount': 0,
                     'by_type': {}
                 }
-            analytics['by_date'][date_str]['count'] += r.count
-            analytics['by_date'][date_str]['total_amount'] += r.total_amount
+            analytics['by_date'][date_str]['count'] += count
+            analytics['by_date'][date_str]['total_amount'] += total_amount
             
             # By date and type
             if type_str not in analytics['by_date'][date_str]['by_type']:
@@ -159,23 +184,46 @@ def get_transaction_analytics(user_id=None, days=30):
                     'count': 0,
                     'total_amount': 0
                 }
-            analytics['by_date'][date_str]['by_type'][type_str]['count'] += r.count
-            analytics['by_date'][date_str]['by_type'][type_str]['total_amount'] += r.total_amount
+            analytics['by_date'][date_str]['by_type'][type_str]['count'] += count
+            analytics['by_date'][date_str]['by_type'][type_str]['total_amount'] += total_amount
             
             # Raw data
             analytics['raw_data'].append({
                 'date': date_str,
                 'type': type_str,
                 'status': status_str,
-                'count': r.count,
-                'total_amount': r.total_amount
+                'count': count,
+                'total_amount': total_amount
             })
+        
+        # Ensure we have data for all days in the range, even if no transactions
+        current_date = start_date
+        while current_date <= end_date:
+            date_str = current_date.strftime('%Y-%m-%d')
+            if date_str not in analytics['by_date']:
+                analytics['by_date'][date_str] = {
+                    'count': 0,
+                    'total_amount': 0,
+                    'by_type': {}
+                }
+            current_date += timedelta(days=1)
         
         return analytics
     
     except Exception as e:
         logger.error(f"Error getting transaction analytics: {str(e)}")
-        return None
+        # Return a minimal structure instead of None to avoid template errors
+        return {
+            'days': days,
+            'start_date': (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d'),
+            'end_date': datetime.now().strftime('%Y-%m-%d'),
+            'total_transactions': 0,
+            'total_amount': 0,
+            'by_type': {},
+            'by_status': {},
+            'by_date': {},
+            'raw_data': []
+        }
 
 def check_pending_transactions():
     """Check and update status of pending transactions"""

@@ -21,16 +21,44 @@ function initTransactionCharts() {
     let analyticsData;
     try {
         const analyticsElement = document.getElementById('analytics-data');
-        if (analyticsElement && analyticsElement.dataset && analyticsElement.dataset.analytics) {
-            analyticsData = JSON.parse(analyticsElement.dataset.analytics);
+        
+        if (!analyticsElement) {
+            console.warn('Analytics data element not found');
+            return; // Exit early if element doesn't exist
+        }
+        
+        if (!analyticsElement.dataset || !analyticsElement.dataset.analytics) {
+            console.warn('Analytics data attribute is missing or empty');
+            return; // Exit early if no data attribute
+        }
+        
+        // Additional protection against invalid data
+        const rawData = analyticsElement.dataset.analytics.trim();
+        if (!rawData || rawData === 'null' || rawData === 'undefined') {
+            console.warn('Analytics data is null or undefined');
+            return; // Exit early if data is null/undefined
+        }
+        
+        try {
+            // Try to parse the data
+            analyticsData = JSON.parse(rawData);
             console.log('Successfully parsed analytics data');
-        } else {
-            console.warn('Analytics data element not found or is empty');
-            return; // Exit early if no data
+            
+            // Additional validation to ensure it has expected properties
+            if (!analyticsData || typeof analyticsData !== 'object') {
+                console.warn('Analytics data is not a valid object');
+                return;
+            }
+        } catch (parseError) {
+            console.error('Error parsing analytics JSON data:', parseError);
+            
+            // Try to log the raw data for debugging purposes
+            console.error('Raw data causing parse error:', rawData);
+            return; // Exit early - invalid JSON format
         }
     } catch (error) {
-        console.error('Error parsing analytics data:', error);
-        return; // Exit early - no valid data to display
+        console.error('Unexpected error handling analytics data:', error);
+        return; // Exit early - unexpected error
     }
     
     if (transactionsByDateEl) {
