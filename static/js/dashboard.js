@@ -54,7 +54,14 @@ function initTransactionCharts() {
             
             // Try to log the raw data for debugging purposes
             console.error('Raw data causing parse error:', rawData);
-            return; // Exit early - invalid JSON format
+            
+            // Initialize with an empty structure instead of exiting
+            analyticsData = { 
+                by_date: {},
+                by_type: {},
+                by_status: {},
+                raw_data: []
+            };
         }
     } catch (error) {
         console.error('Unexpected error handling analytics data:', error);
