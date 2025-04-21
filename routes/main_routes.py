@@ -331,11 +331,25 @@ def dashboard():
     # Log the analytics structure for debugging purposes
     logger.debug(f"Analytics data for user {user_id}: {type(analytics)}, has {len(analytics.get('raw_data', []))} data points")
     
+    # Ensure JSON serialization works with decimal values
+    import json
+    from decimal import Decimal
+    
+    # Custom JSON encoder to handle Decimal values
+    class DecimalEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, Decimal):
+                return float(obj)
+            return super(DecimalEncoder, self).default(obj)
+    
+    # Pre-serialize the analytics data to ensure it's valid JSON
+    analytics_json = json.dumps(analytics, cls=DecimalEncoder)
+    
     return render_template(
         'dashboard.html',
         user=user,
         recent_transactions=recent_transactions,
-        analytics=analytics
+        analytics_json=analytics_json
     )
 
 @main.route('/transactions')

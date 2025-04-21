@@ -98,6 +98,7 @@ class PaymentForm(FlaskForm):
     gateway = SelectField('Payment Gateway', choices=[], validators=[DataRequired()])
     gateway_id = SelectField('Payment Gateway', choices=[], validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
+    submit = SubmitField('Submit Payment')
     
     def __init__(self, *args, **kwargs):
         super(PaymentForm, self).__init__(*args, **kwargs)
