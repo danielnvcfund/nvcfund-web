@@ -79,21 +79,8 @@ function displayChartError(container, message) {
 }
 
 // Create transactions by date chart
-function initTransactionsByDateChart(canvas) {
-    // Get data from the data attribute
-    let data;
-    try {
-        const dataAttr = canvas.getAttribute('data-transactions');
-        if (!dataAttr) {
-            console.error('No data-transactions attribute found');
-            return;
-        }
-        data = JSON.parse(dataAttr);
-    } catch (e) {
-        console.error('Failed to parse transaction data:', e);
-        return;
-    }
-    
+function initTransactionsByDateChart(canvas, data) {
+    // Use the data passed from the parent function
     if (!data || !data.by_date) {
         console.error('Missing by_date in transaction data');
         return;
@@ -161,21 +148,8 @@ function initTransactionsByDateChart(canvas) {
 }
 
 // Create transactions by type chart
-function initTransactionsByTypeChart(canvas) {
-    // Get data from the data attribute
-    let data;
-    try {
-        const dataAttr = canvas.getAttribute('data-transactions');
-        if (!dataAttr) {
-            console.error('No data-transactions attribute found');
-            return;
-        }
-        data = JSON.parse(dataAttr);
-    } catch (e) {
-        console.error('Failed to parse transaction data:', e);
-        return;
-    }
-    
+function initTransactionsByTypeChart(canvas, data) {
+    // Use the data passed from the parent function
     if (!data || !data.by_type) {
         console.error('Missing by_type in transaction data');
         return;
@@ -222,21 +196,8 @@ function initTransactionsByTypeChart(canvas) {
 }
 
 // Create transactions by status chart
-function initTransactionsByStatusChart(canvas) {
-    // Get data from the data attribute
-    let data;
-    try {
-        const dataAttr = canvas.getAttribute('data-transactions');
-        if (!dataAttr) {
-            console.error('No data-transactions attribute found');
-            return;
-        }
-        data = JSON.parse(dataAttr);
-    } catch (e) {
-        console.error('Failed to parse transaction data:', e);
-        return;
-    }
-    
+function initTransactionsByStatusChart(canvas, data) {
+    // Use the data passed from the parent function
     if (!data || !data.by_status) {
         console.error('Missing by_status in transaction data');
         return;
