@@ -1366,20 +1366,41 @@ def get_blockchain_balance(user):
     """Get Ethereum balance via API"""
     from web3 import Web3, HTTPProvider
     
+    # Get address from query parameters or use user's address
+    address = request.args.get('address')
+    if not address or address.strip() == "":
+        # Use the authenticated user's address if none specified
+        address = user.ethereum_address
+    
+    if not address or address == "None" or address == "null" or address == "undefined" or address.strip() == "":
+        return jsonify({
+            'success': False,
+            'error': 'No Ethereum address available'
+        }), 400
+    
     # Initialize Web3
-    eth_node_url = os.environ.get("ETHEREUM_NODE_URL", "https://ropsten.infura.io/v3/YOUR_INFURA_PROJECT_ID")
+    eth_node_url = os.environ.get("ETHEREUM_NODE_URL", f"https://sepolia.infura.io/v3/{os.environ.get('INFURA_PROJECT_ID')}")
     web3 = Web3(HTTPProvider(eth_node_url))
     
-    # Get Ethereum balance
+    # Ensure address is checksummed
     try:
-        balance_wei = web3.eth.get_balance(user.ethereum_address)
+        if not web3.is_address(address):
+            return jsonify({
+                'success': False,
+                'error': f'Invalid Ethereum address format: {address}'
+            }), 400
+            
+        checksummed_address = web3.to_checksum_address(address)
+        
+        # Get Ethereum balance
+        balance_wei = web3.eth.get_balance(checksummed_address)
         balance_eth = web3.from_wei(balance_wei, 'ether')
         
         return jsonify({
             'success': True,
-            'address': user.ethereum_address,
+            'address': checksummed_address,
             'balance_eth': float(balance_eth),
-            'balance_wei': balance_wei
+            'balance_wei': int(balance_wei)
         }), 200
     except Exception as e:
         return jsonify({

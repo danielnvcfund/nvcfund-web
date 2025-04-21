@@ -47,6 +47,41 @@ function getAnalyticsData() {
     }
 }
 
+// Get JWT token from browser storage - used for API authentication
+function getJwtToken() {
+    try {
+        // First try to get token from analytics-data element (if available)
+        const analyticsElement = document.getElementById('analytics-data');
+        if (analyticsElement && analyticsElement.dataset && analyticsElement.dataset.jwtToken) {
+            const token = analyticsElement.dataset.jwtToken;
+            if (token && token.length > 10) { // Basic validation
+                console.log('Using JWT token from data attribute');
+                return token;
+            }
+        }
+        
+        // Then try localStorage (persistent across browser sessions)
+        const localToken = localStorage.getItem('jwt_token');
+        if (localToken && localToken.length > 10) {
+            console.log('Using JWT token from localStorage');
+            return localToken;
+        }
+        
+        // Then try sessionStorage (cleared when browser tab is closed)
+        const sessionToken = sessionStorage.getItem('jwt_token');
+        if (sessionToken && sessionToken.length > 10) {
+            console.log('Using JWT token from sessionStorage');
+            return sessionToken;
+        }
+        
+        console.warn('No JWT token found in storage');
+        return null;
+    } catch (e) {
+        console.error('Error retrieving JWT token:', e);
+        return null;
+    }
+}
+
 // Get Ethereum address from the page - can be used by any function
 function getEthereumAddress() {
     try {
@@ -356,7 +391,8 @@ function initBlockchainBalance() {
     }
     
     // If no JWT token, display appropriate message
-    if (!getJwtToken()) {
+    const jwtToken = getJwtToken();
+    if (!jwtToken) {
         console.warn('No JWT token available for authenticated API calls');
         balanceEl.textContent = 'Authentication required';
         return;
@@ -364,12 +400,15 @@ function initBlockchainBalance() {
     
     // Use a try/catch block for the fetch to handle network errors
     try {
-        // Fetch balance from API
-        fetch(`/api/blockchain/balances?address=${ethereumAddress}`, {
+        // Fetch balance from API - ensure address is properly encoded
+        const encodedAddress = encodeURIComponent(ethereumAddress);
+        console.log(`Fetching balance for address: ${encodedAddress} with token ${jwtToken.substring(0, 10)}...`);
+        
+        fetch(`/api/blockchain/balances?address=${encodedAddress}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getJwtToken()}`
+                'Authorization': `Bearer ${jwtToken}`
             },
             credentials: 'same-origin'
         })
@@ -383,6 +422,7 @@ function initBlockchainBalance() {
         .then(data => {
             if (data.success) {
                 balanceEl.textContent = `${data.balance_eth} ETH`;
+                console.log(`Balance for ${data.address}: ${data.balance_eth} ETH`);
             } else {
                 console.warn('API returned unsuccessful status:', data.error || 'No specific error');
                 balanceEl.textContent = 'Balance unavailable';
