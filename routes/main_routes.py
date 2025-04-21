@@ -325,6 +325,21 @@ def dashboard():
     # Get transaction analytics
     analytics = get_transaction_analytics(user_id, days=30)
     
+    # If analytics is None (error or no data), provide default empty structure
+    if analytics is None:
+        analytics = {
+            'days': 30,
+            'start_date': (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d'),
+            'end_date': datetime.now().strftime('%Y-%m-%d'),
+            'total_transactions': 0,
+            'total_amount': 0,
+            'by_type': {},
+            'by_status': {},
+            'by_date': {},
+            'raw_data': []
+        }
+        logger.warning(f"Using default analytics structure for user {user_id}")
+    
     return render_template(
         'dashboard.html',
         user=user,
