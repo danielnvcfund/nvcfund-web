@@ -78,13 +78,19 @@ def letter_of_credit_status(transaction_id):
 @login_required
 def new_fund_transfer():
     """Create a new SWIFT MT103/MT202 fund transfer"""
+    # Check if user is authenticated - explicitly check session to prevent login redirection issues
+    user_id = session.get('user_id')
+    if not user_id:
+        flash('Please log in to access this page.', 'info')
+        return redirect(url_for('web.main.login', next=request.url))
+        
     form = SwiftFundTransferForm()
     
     if form.validate_on_submit():
         try:
             # Create the fund transfer
             transaction = SwiftService.create_swift_fund_transfer(
-                user_id=current_user.id,
+                user_id=user_id,  # Use the user_id from session instead of current_user
                 receiver_institution_id=form.receiver_institution_id.data,
                 amount=form.amount.data,
                 currency=form.currency.data,
@@ -106,13 +112,19 @@ def new_fund_transfer():
 @login_required
 def new_free_format_message():
     """Create a new SWIFT MT799 free format message"""
+    # Check if user is authenticated - explicitly check session to prevent login redirection issues
+    user_id = session.get('user_id')
+    if not user_id:
+        flash('Please log in to access this page.', 'info')
+        return redirect(url_for('web.main.login', next=request.url))
+        
     form = SwiftFreeFormatMessageForm()
     
     if form.validate_on_submit():
         try:
             # Create the free format message
             transaction = SwiftService.create_free_format_message(
-                user_id=current_user.id,
+                user_id=user_id,  # Use the user_id from session instead of current_user
                 receiver_institution_id=form.receiver_institution_id.data,
                 subject=form.subject.data,
                 message_body=form.message_body.data
@@ -129,6 +141,12 @@ def new_free_format_message():
 @login_required
 def message_status(transaction_id):
     """View the status of any SWIFT message"""
+    # Check if user is authenticated - explicitly check session to prevent login redirection issues
+    user_id = session.get('user_id')
+    if not user_id:
+        flash('Please log in to access this page.', 'info')
+        return redirect(url_for('web.main.login', next=request.url))
+        
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
     if not transaction:
         flash('Transaction not found.', 'danger')
@@ -163,6 +181,12 @@ def message_status(transaction_id):
 @login_required
 def fund_transfer_status(transaction_id):
     """View the status of a fund transfer"""
+    # Check if user is authenticated - explicitly check session to prevent login redirection issues
+    user_id = session.get('user_id')
+    if not user_id:
+        flash('Please log in to access this page.', 'info')
+        return redirect(url_for('web.main.login', next=request.url))
+        
     # This is just a specialized redirect to message_status for fund transfers
     return redirect(url_for('web.swift.message_status', transaction_id=transaction_id))
 
@@ -170,6 +194,12 @@ def fund_transfer_status(transaction_id):
 @login_required
 def cancel_message(transaction_id):
     """Cancel a pending SWIFT message"""
+    # Check if user is authenticated - explicitly check session to prevent login redirection issues
+    user_id = session.get('user_id')
+    if not user_id:
+        flash('Please log in to access this page.', 'info')
+        return redirect(url_for('web.main.login', next=request.url))
+        
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
     if not transaction:
         flash('Transaction not found.', 'danger')
@@ -198,6 +228,12 @@ def cancel_message(transaction_id):
 @login_required
 def cancel_transfer(transaction_id):
     """Cancel a pending SWIFT fund transfer"""
+    # Check if user is authenticated - explicitly check session to prevent login redirection issues
+    user_id = session.get('user_id')
+    if not user_id:
+        flash('Please log in to access this page.', 'info')
+        return redirect(url_for('web.main.login', next=request.url))
+        
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
     if not transaction:
         flash('Transaction not found.', 'danger')
@@ -226,6 +262,11 @@ def cancel_transfer(transaction_id):
 @login_required
 def api_swift_status(transaction_id):
     """API endpoint to get SWIFT message status"""
+    # Check if user is authenticated - explicitly check session to prevent login redirection issues
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'success': False, 'error': 'Authentication required'})
+        
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
     if not transaction:
         return jsonify({'success': False, 'error': 'Transaction not found'})
