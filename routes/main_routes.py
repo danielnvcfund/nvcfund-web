@@ -186,7 +186,8 @@ def logout():
     """User logout route"""
     session.clear()
     flash('You have been logged out', 'info')
-    return redirect(url_for('web.main.index'))
+    # Render a template that clears the JWT token from storage before redirecting
+    return render_template('clear_token.html', redirect_url=url_for('web.main.index'))
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
