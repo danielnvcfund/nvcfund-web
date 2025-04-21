@@ -23,7 +23,7 @@ db = SQLAlchemy(model_class=Base)
 csrf = CSRFProtect()
 jwt = JWTManager()
 login_manager = LoginManager()
-login_manager.login_view = 'login'
+login_manager.login_view = 'web.main.login'
 login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'info'
 
@@ -65,7 +65,7 @@ def create_app():
     csrf.init_app(app)
     jwt.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = 'web.main.login'
+    # login_view is already set in the global login_manager configuration
 
     # Set debug mode to True
     app.config['DEBUG'] = True
