@@ -107,6 +107,13 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
+                            {{ form.account_holder.label(class="form-label") }}*
+                            {{ form.account_holder(class="form-control", required=True) }}
+                            <small class="form-text text-muted">Name on the bank account</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
                             {{ form.account_number.label(class="form-label") }}*
                             {{ form.account_number(class="form-control", required=True) }}
                         </div>
