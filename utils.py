@@ -69,6 +69,19 @@ def get_transaction_analytics(user_id=None, days=30):
     from sqlalchemy import func
     import decimal
     
+    # Default empty structure that matches what the dashboard.js expects
+    default_analytics = {
+        'days': days,
+        'start_date': (datetime.utcnow() - timedelta(days=days)).strftime('%Y-%m-%d'),
+        'end_date': datetime.utcnow().strftime('%Y-%m-%d'),
+        'total_transactions': 0,
+        'total_amount': 0,
+        'by_type': {},
+        'by_status': {},
+        'by_date': {},
+        'raw_data': []
+    }
+    
     try:
         # Set time period
         end_date = datetime.utcnow()
@@ -106,21 +119,10 @@ def get_transaction_analytics(user_id=None, days=30):
         # Execute query
         results = query.all()
         
-        # If no results, return a basic structure with empty data
+        # If no results, return the default structure
         if not results:
             logger.info(f"No transaction analytics data found for user {user_id}")
-            analytics = {
-                'days': days,
-                'start_date': start_date.strftime('%Y-%m-%d'),
-                'end_date': end_date.strftime('%Y-%m-%d'),
-                'total_transactions': 0,
-                'total_amount': 0,
-                'by_type': {},
-                'by_status': {},
-                'by_date': {},
-                'raw_data': []
-            }
-            return analytics
+            return default_analytics
         
         # Helper function to convert decimals to float for JSON serialization
         def decimal_to_float(obj):

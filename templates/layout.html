@@ -138,6 +138,28 @@
                     </li>
                     {% endif %}
                     {% endif %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if '/swift/' in request.path %}active{% endif %}" href="#" id="swiftDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-exchange-alt me-1"></i> SWIFT Banking
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="swiftDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.swift.new_letter_of_credit') }}">
+                                    <i class="fas fa-file-contract me-1"></i> Letter of Credit
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.swift.new_fund_transfer') }}">
+                                    <i class="fas fa-money-bill-transfer me-1"></i> Fund Transfer
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.swift.new_free_format_message') }}">
+                                    <i class="fas fa-envelope me-1"></i> Free Format Message
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/main/api_docs' %}active{% endif %}" href="{{ url_for('web.main.api_docs') }}">
                             <i class="fas fa-book me-1"></i> API Docs
