@@ -11,6 +11,74 @@ document.addEventListener('DOMContentLoaded', function() {
     setupRefreshButtons();
 });
 
+// Get analytics data from the page - can be used by any function
+function getAnalyticsData() {
+    try {
+        // First try the analytics-data element
+        const analyticsElement = document.getElementById('analytics-data');
+        
+        if (analyticsElement && analyticsElement.dataset && analyticsElement.dataset.analytics) {
+            try {
+                return JSON.parse(analyticsElement.dataset.analytics);
+            } catch (e) {
+                console.error('Error parsing analytics data JSON:', e);
+                console.log('Raw analytics data:', analyticsElement.dataset.analytics);
+            }
+        }
+        
+        // If that fails, try data attributes on individual charts (legacy approach)
+        const charts = ['transactionsByDateChart', 'transactionsByTypeChart', 'transactionsByStatusChart'];
+        for (const chartId of charts) {
+            const chartEl = document.getElementById(chartId);
+            if (chartEl && chartEl.dataset && chartEl.dataset.transactions) {
+                try {
+                    return JSON.parse(chartEl.dataset.transactions);
+                } catch (e) {
+                    console.error(`Error parsing data from ${chartId}:`, e);
+                }
+            }
+        }
+        
+        console.warn('No valid analytics data found');
+        return null;
+    } catch (e) {
+        console.error('Error in getAnalyticsData:', e);
+        return null;
+    }
+}
+
+// Get Ethereum address from the page - can be used by any function
+function getEthereumAddress() {
+    try {
+        // Try analytics data element first
+        const analyticsElement = document.getElementById('analytics-data');
+        if (analyticsElement && analyticsElement.dataset && analyticsElement.dataset.ethereumAddress) {
+            return analyticsElement.dataset.ethereumAddress;
+        }
+        
+        // Then try the blockchain balance element
+        const balanceEl = document.getElementById('blockchainBalance');
+        if (balanceEl && balanceEl.dataset && balanceEl.dataset.address) {
+            return balanceEl.dataset.address;
+        }
+        
+        // Finally try any of the chart elements
+        const charts = ['transactionsByDateChart', 'transactionsByTypeChart', 'transactionsByStatusChart'];
+        for (const chartId of charts) {
+            const chartEl = document.getElementById(chartId);
+            if (chartEl && chartEl.dataset && chartEl.dataset.ethereumAddress) {
+                return chartEl.dataset.ethereumAddress;
+            }
+        }
+        
+        console.warn('No Ethereum address found');
+        return null;
+    } catch (e) {
+        console.error('Error in getEthereumAddress:', e);
+        return null;
+    }
+}
+
 // Initialize transaction charts
 function initTransactionCharts() {
     const transactionsByDateEl = document.getElementById('transactionsByDateChart');
@@ -18,65 +86,25 @@ function initTransactionCharts() {
     const transactionsByStatusEl = document.getElementById('transactionsByStatusChart');
     
     // Get the analytics data from the page
-    let analyticsData;
-    try {
-        const analyticsElement = document.getElementById('analytics-data');
-        
-        if (!analyticsElement) {
-            console.warn('Analytics data element not found');
-            return; // Exit early if element doesn't exist
-        }
-        
-        if (!analyticsElement.dataset || !analyticsElement.dataset.analytics) {
-            console.warn('Analytics data attribute is missing or empty');
-            return; // Exit early if no data attribute
-        }
-        
-        // Additional protection against invalid data
-        let rawData = analyticsElement.dataset.analytics.trim();
-        if (!rawData || rawData === 'null' || rawData === 'undefined') {
-            console.warn('Analytics data is null or undefined');
-            return; // Exit early if data is null/undefined
-        }
-        
-        try {
-            // Check if first character is a valid JSON start (object or array)
-            if (rawData.charAt(0) !== '{' && rawData.charAt(0) !== '[') {
-                console.warn('Analytics data does not start with a valid JSON character:', rawData.charAt(0));
-                // Try to find where the JSON actually starts
-                const jsonStart = rawData.indexOf('{');
-                if (jsonStart > 0) {
-                    console.log('Found JSON start at position', jsonStart);
-                    rawData = rawData.substring(jsonStart);
-                }
-            }
-            
-            // Try to parse the data
-            analyticsData = JSON.parse(rawData);
-            console.log('Successfully parsed analytics data');
-            
-            // Additional validation to ensure it has expected properties
-            if (!analyticsData || typeof analyticsData !== 'object') {
-                console.warn('Analytics data is not a valid object');
-                return;
-            }
-        } catch (parseError) {
-            console.error('Error parsing analytics JSON data:', parseError);
-            
-            // Try to log the raw data for debugging purposes
-            console.error('Raw data causing parse error:', rawData);
-            
-            // Initialize with an empty structure instead of exiting
-            analyticsData = { 
-                by_date: {},
-                by_type: {},
-                by_status: {},
-                raw_data: []
-            };
-        }
-    } catch (error) {
-        console.error('Unexpected error handling analytics data:', error);
-        return; // Exit early - unexpected error
+    let analyticsData = getAnalyticsData();
+    
+    if (!analyticsData) {
+        // Display error in charts
+        displayChartError(transactionsByDateEl, 'No analytics data available');
+        displayChartError(transactionsByTypeEl, 'No analytics data available');
+        displayChartError(transactionsByStatusEl, 'No analytics data available');
+        return;
+    }
+    
+    // Initialize with an empty structure if something's missing
+    if (!analyticsData.by_date || !analyticsData.by_type || !analyticsData.by_status) {
+        console.warn('Analytics data is missing expected properties');
+        analyticsData = { 
+            by_date: analyticsData.by_date || {},
+            by_type: analyticsData.by_type || {},
+            by_status: analyticsData.by_status || {},
+            raw_data: analyticsData.raw_data || []
+        };
     }
     
     if (transactionsByDateEl) {
@@ -300,17 +328,34 @@ function initBlockchainBalance() {
         return;
     }
     
-    const ethereumAddress = balanceEl.getAttribute('data-address');
+    // Get ethereum address from multiple possible sources
+    let ethereumAddress = balanceEl.getAttribute('data-address');
+    
+    // If not found, try the analytics data element
+    if (!ethereumAddress) {
+        const analyticsDataEl = document.getElementById('analytics-data');
+        if (analyticsDataEl) {
+            ethereumAddress = analyticsDataEl.getAttribute('data-ethereum-address');
+        }
+    }
+    
+    // If still not found, try to get from the transaction charts
+    if (!ethereumAddress) {
+        const dateChartEl = document.getElementById('transactionsByDateChart');
+        if (dateChartEl) {
+            ethereumAddress = dateChartEl.getAttribute('data-ethereum-address');
+        }
+    }
     
     if (!ethereumAddress) {
-        console.warn('No Ethereum address found in data attribute');
+        console.warn('No Ethereum address found in any data attribute');
         balanceEl.textContent = 'No ETH address';
         return;
     }
     
     // Check if the address is null, undefined, or "None" (Python's None converted to string)
-    if (!ethereumAddress || ethereumAddress === "None" || ethereumAddress === "null" || ethereumAddress === "undefined") {
-        console.warn('No Ethereum address available:', ethereumAddress);
+    if (!ethereumAddress || ethereumAddress === "None" || ethereumAddress === "null" || ethereumAddress === "undefined" || ethereumAddress.trim() === "") {
+        console.warn('No valid Ethereum address available:', ethereumAddress);
         balanceEl.textContent = 'No address assigned';
         balanceEl.parentElement.querySelector('.btn-refresh').style.display = 'none';
         return;
@@ -468,18 +513,35 @@ function refreshBlockchainBalance(button) {
         return;
     }
     
-    const ethereumAddress = balanceEl.getAttribute('data-address');
+    // Get ethereum address from multiple possible sources
+    let ethereumAddress = balanceEl.getAttribute('data-address');
+    
+    // If not found, try the analytics data element
+    if (!ethereumAddress) {
+        const analyticsDataEl = document.getElementById('analytics-data');
+        if (analyticsDataEl) {
+            ethereumAddress = analyticsDataEl.getAttribute('data-ethereum-address');
+        }
+    }
+    
+    // If still not found, try to get from the transaction charts
+    if (!ethereumAddress) {
+        const dateChartEl = document.getElementById('transactionsByDateChart');
+        if (dateChartEl) {
+            ethereumAddress = dateChartEl.getAttribute('data-ethereum-address');
+        }
+    }
     
     if (!ethereumAddress) {
-        console.warn('No Ethereum address found in data attribute');
+        console.warn('No Ethereum address found in any data attribute');
         balanceEl.textContent = 'No ETH address';
         resetButton(button);
         return;
     }
     
     // Check if the address is null, undefined, or "None" (Python's None converted to string)
-    if (!ethereumAddress || ethereumAddress === "None" || ethereumAddress === "null" || ethereumAddress === "undefined") {
-        console.warn('No Ethereum address available:', ethereumAddress);
+    if (!ethereumAddress || ethereumAddress === "None" || ethereumAddress === "null" || ethereumAddress === "undefined" || ethereumAddress.trim() === "") {
+        console.warn('No valid Ethereum address available:', ethereumAddress);
         balanceEl.textContent = 'No address assigned';
         resetButton(button);
         button.style.display = 'none';

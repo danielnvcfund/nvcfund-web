@@ -282,19 +282,19 @@
                     <div class="row">
                         <div class="col-lg-8">
                             <div class="chart-container">
-                                <canvas id="transactionsByDateChart"></canvas>
+                                <canvas id="transactionsByDateChart" data-ethereum-address="{{ user_eth_address }}"></canvas>
                             </div>
                         </div>
                         <div class="col-lg-4">
                             <div class="row">
                                 <div class="col-md-12 mb-4">
                                     <div class="chart-container" style="height: 200px;">
-                                        <canvas id="transactionsByTypeChart"></canvas>
+                                        <canvas id="transactionsByTypeChart" data-ethereum-address="{{ user_eth_address }}"></canvas>
                                     </div>
                                 </div>
                                 <div class="col-md-12">
                                     <div class="chart-container" style="height: 200px;">
-                                        <canvas id="transactionsByStatusChart"></canvas>
+                                        <canvas id="transactionsByStatusChart" data-ethereum-address="{{ user_eth_address }}"></canvas>
                                     </div>
                                 </div>
                             </div>
@@ -308,6 +308,9 @@
 {% endblock %}
 
 {% block scripts %}
+<!-- Hidden data element for analytics data -->
+<div id="analytics-data" style="display: none;" data-analytics='{{ analytics_json }}' data-ethereum-address="{{ user_eth_address }}"></div>
+
 <script>
     // Toggle API key visibility
     const toggleApiKey = document.getElementById('toggleApiKey');
