@@ -1,0 +1,157 @@
+{% extends "layout.html" %}
+
+{% block title %}Issue a Standby Letter of Credit{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <div class="card mb-4 shadow">
+        <div class="card-header bg-primary text-white">
+          <h2 class="h4 mb-0">Issue a Standby Letter of Credit</h2>
+        </div>
+        <div class="card-body">
+          <p class="lead mb-4">
+            A Standby Letter of Credit (SBLC) is a guarantee of payment issued by our bank on your behalf. 
+            It assures the beneficiary that if certain obligations are not met, the bank will make payment to them.
+          </p>
+          
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          
+          <form method="POST" action="{{ url_for('web.main.issue_letter_of_credit') }}">
+            {{ form.hidden_tag() }}
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="{{ form.receiver_institution_id.id }}" class="form-label">{{ form.receiver_institution_id.label.text }} <span class="text-danger">*</span></label>
+                  {{ form.receiver_institution_id(class="form-select") }}
+                  {% if form.receiver_institution_id.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.receiver_institution_id.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              
+              <div class="col-md-3">
+                <div class="form-group mb-3">
+                  <label for="{{ form.amount.id }}" class="form-label">{{ form.amount.label.text }} <span class="text-danger">*</span></label>
+                  {{ form.amount(class="form-control") }}
+                  {% if form.amount.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.amount.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              
+              <div class="col-md-3">
+                <div class="form-group mb-3">
+                  <label for="{{ form.currency.id }}" class="form-label">{{ form.currency.label.text }} <span class="text-danger">*</span></label>
+                  {{ form.currency(class="form-select") }}
+                  {% if form.currency.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.currency.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="{{ form.beneficiary.id }}" class="form-label">{{ form.beneficiary.label.text }} <span class="text-danger">*</span></label>
+                  <small class="form-text text-muted d-block mb-1">{{ form.beneficiary.description }}</small>
+                  {{ form.beneficiary(class="form-control", rows=4) }}
+                  {% if form.beneficiary.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.beneficiary.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="{{ form.expiry_date.id }}" class="form-label">{{ form.expiry_date.label.text }} <span class="text-danger">*</span></label>
+                  {{ form.expiry_date(class="form-control", type="date") }}
+                  {% if form.expiry_date.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.expiry_date.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                  <h5 class="h6">Important Information</h5>
+                  <p class="mb-0 small">
+                    The Standby Letter of Credit will be transmitted using SWIFT MT760 message format,
+                    providing a secure and standardized method recognized by financial institutions worldwide.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group mb-4">
+              <label for="{{ form.terms_and_conditions.id }}" class="form-label">{{ form.terms_and_conditions.label.text }} <span class="text-danger">*</span></label>
+              <small class="form-text text-muted d-block mb-1">{{ form.terms_and_conditions.description }}</small>
+              {{ form.terms_and_conditions(class="form-control", rows=8) }}
+              {% if form.terms_and_conditions.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.terms_and_conditions.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center">
+              <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary">Issue Letter of Credit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div class="card shadow">
+        <div class="card-header bg-light">
+          <h3 class="h5 mb-0">What is a Standby Letter of Credit?</h3>
+        </div>
+        <div class="card-body">
+          <p>A Standby Letter of Credit (SBLC) is a legal document that guarantees a bank's commitment of payment to a seller in case the buyer defaults on the agreement. The bank will issue this document on behalf of a customer and hold it as a guarantee.</p>
+          
+          <h4 class="h6 mt-3">Key Features</h4>
+          <ul>
+            <li>Provides security for international and domestic trade</li>
+            <li>Issued using the international SWIFT MT760 message format</li>
+            <li>Recognized by financial institutions worldwide</li>
+            <li>Can be customized with specific terms and conditions</li>
+            <li>Typically valid for up to 1 year, renewable if needed</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

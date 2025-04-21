@@ -60,6 +60,7 @@ class TransactionType(enum.Enum):
     TRANSFER = "transfer"
     PAYMENT = "payment"
     SETTLEMENT = "settlement"
+    LETTER_OF_CREDIT = "letter_of_credit"  # For SWIFT Letters of Credit (LC/SBLC)
 
 class GatewayType(enum.Enum):
     STRIPE = "stripe"
@@ -104,6 +105,7 @@ class FinancialInstitution(db.Model):
     api_endpoint = db.Column(db.String(256))
     api_key = db.Column(db.String(256))
     ethereum_address = db.Column(db.String(64))
+    metadata_json = db.Column(db.Text)  # JSON metadata for various integrations (SWIFT, etc.)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

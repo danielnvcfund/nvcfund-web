@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+
+{% block title %}Letter of Credit Status{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('web.main.transactions') }}">Transactions</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('web.main.transaction_details', transaction_id=transaction.transaction_id) }}">Transaction Details</a></li>
+          <li class="breadcrumb-item active">Letter of Credit Status</li>
+        </ol>
+      </nav>
+      
+      <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <h2 class="h4 mb-0">Standby Letter of Credit Status</h2>
+          <span class="badge bg-{{ 'success' if transaction.status.value == 'completed' else 'warning' if transaction.status.value == 'pending' else 'danger' }}">
+            {{ transaction.status.value | upper }}
+          </span>
+        </div>
+        <div class="card-body">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          
+          <div class="row">
+            <div class="col-md-6">
+              <h4 class="h5 mb-3">Transaction Details</h4>
+              <table class="table table-bordered">
+                <tr>
+                  <th class="table-light" style="width: 40%">Transaction ID</th>
+                  <td>{{ transaction.transaction_id }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Transaction Type</th>
+                  <td>{{ transaction.transaction_type.value | title }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Date</th>
+                  <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Amount</th>
+                  <td>{{ transaction.amount | format_currency(transaction.currency) }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Status</th>
+                  <td>
+                    <span class="badge bg-{{ 'success' if transaction.status.value == 'completed' else 'warning' if transaction.status.value == 'pending' else 'danger' }}">
+                      {{ transaction.status.value | upper }}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th class="table-light">Description</th>
+                  <td>{{ transaction.description }}</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div class="col-md-6">
+              <h4 class="h5 mb-3">SWIFT Details</h4>
+              <table class="table table-bordered">
+                <tr>
+                  <th class="table-light" style="width: 40%">SWIFT Reference</th>
+                  <td>{{ swift_data.get('reference', 'N/A') }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Message Type</th>
+                  <td>{{ swift_data.get('message_type', 'MT760') }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Sender BIC</th>
+                  <td>{{ swift_data.get('sender_bic', 'N/A') }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Receiver BIC</th>
+                  <td>{{ swift_data.get('receiver_bic', 'N/A') }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Beneficiary</th>
+                  <td>{{ swift_data.get('beneficiary', 'N/A') }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Expiry Date</th>
+                  <td>
+                    {% if swift_data.get('expiry_date') %}
+                      {{ swift_data.get('expiry_date').split('T')[0] }}
+                    {% else %}
+                      N/A
+                    {% endif %}
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          
+          <h4 class="h5 mt-4 mb-3">SWIFT Delivery Status</h4>
+          
+          <div class="alert {{ 'alert-success' if status_data.get('success') else 'alert-warning' }}">
+            {% if status_data.get('success') %}
+              <h5 class="alert-heading">SWIFT Status: {{ status_data.get('status', 'unknown') | upper }}</h5>
+              <p>{{ status_data.get('details', {}).get('details', 'The Letter of Credit has been processed.') }}</p>
+              
+              {% if status_data.get('details', {}).get('delivery_time') %}
+                <hr>
+                <p class="mb-0">Delivered on: {{ status_data.get('details', {}).get('delivery_time').split('T')[0] }} 
+                  {{ status_data.get('details', {}).get('delivery_time').split('T')[1].split('.')[0] }}</p>
+              {% endif %}
+            {% else %}
+              <h5 class="alert-heading">SWIFT Status Check Failed</h5>
+              <p>{{ status_data.get('error', 'Unable to retrieve status from SWIFT at this time.') }}</p>
+              <hr>
+              <p class="mb-0">Please check back later for updated status information.</p>
+            {% endif %}
+          </div>
+          
+          <div class="mt-4 d-flex justify-content-between">
+            <a href="{{ url_for('web.main.transaction_details', transaction_id=transaction.transaction_id) }}" class="btn btn-secondary">
+              <i class="fa fa-arrow-left"></i> Back to Transaction
+            </a>
+            <a href="{{ url_for('web.main.letter_of_credit_status', transaction_id=transaction.transaction_id) }}" class="btn btn-primary">
+              <i class="fa fa-refresh"></i> Refresh Status
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card shadow">
+        <div class="card-header bg-light">
+          <h3 class="h5 mb-0">About SWIFT MT760 Messages</h3>
+        </div>
+        <div class="card-body">
+          <p>The MT760 message is a standardized SWIFT message type used for Standby Letters of Credit (SBLC). These financial instruments serve as a guarantee of payment, ensuring that financial obligations will be met if certain conditions are satisfied.</p>
+          
+          <h5 class="h6 mt-3">Key Information</h5>
+          <ul>
+            <li>SWIFT messages are securely transmitted through the SWIFT network connecting financial institutions worldwide.</li>
+            <li>Once delivered, the receiving bank will process the Letter of Credit according to their internal procedures.</li>
+            <li>Processing times may vary depending on the receiving institution.</li>
+            <li>Status updates are typically available within 24-48 hours of transmission.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
