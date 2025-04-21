@@ -8,7 +8,7 @@ import uuid
 import logging
 import subprocess
 from datetime import datetime, timedelta
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, abort, current_app, send_file
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, abort, current_app, send_file, make_response
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, current_user, login_required
@@ -161,14 +161,16 @@ def login():
         session['username'] = user.username
         session['role'] = user.role.value
         
+        # Generate JWT token for API access
+        from auth import generate_jwt_token
+        jwt_token = generate_jwt_token(user.id)
+        
         flash(f'Welcome back, {user.username}!', 'success')
         
-        # Redirect to next parameter or dashboard
-        next_page = request.args.get('next')
-        if next_page:
-            return redirect(next_page)
-        
-        return redirect(url_for('web.main.dashboard'))
+        # We need to pass the JWT token to the template/client for API calls
+        # We'll set it in a special template that will store it in localStorage and redirect
+        response = make_response(render_template('store_token.html', jwt_token=jwt_token, redirect_url=request.args.get('next') or url_for('web.main.dashboard')))
+        return response
     
     # If there were form validation errors
     if form.errors and request.method == 'POST':
