@@ -19,13 +19,19 @@ swift = Blueprint('swift', __name__)
 @login_required
 def new_letter_of_credit():
     """Create a new Standby Letter of Credit (SBLC) using SWIFT MT760"""
+    # Check if user is authenticated - explicitly check session to prevent login redirection issues
+    user_id = session.get('user_id')
+    if not user_id:
+        flash('Please log in to access this page.', 'info')
+        return redirect(url_for('web.main.login', next=request.url))
+        
     form = LetterOfCreditForm()
     
     if form.validate_on_submit():
         try:
             # Create the letter of credit
             transaction = SwiftService.create_letter_of_credit(
-                user_id=current_user.id,
+                user_id=user_id,  # Use the user_id from session instead of current_user
                 receiver_institution_id=form.receiver_institution_id.data,
                 amount=form.amount.data,
                 currency=form.currency.data,
