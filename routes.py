@@ -1747,9 +1747,11 @@ def blockchain_status():
 
 # Import our API routes
 from routes.api.blockchain_routes import blockchain_api
+from routes.api.blockchain_balance_routes import blockchain_balance_api
 
-# Register API blueprint
+# Register API blueprints
 app.register_blueprint(blockchain_api, url_prefix='/api/blockchain')
+app.register_blueprint(blockchain_balance_api, url_prefix='/api/blockchain')
 
 # Error handlers
 @app.errorhandler(404)
