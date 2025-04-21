@@ -816,7 +816,6 @@ def new_payment():
     form = PaymentForm()
     gateway_choices = [(g.id, g.name) for g in gateways]
     form.gateway_id.choices = gateway_choices
-    form.gateway.choices = gateway_choices
     
     if form.validate_on_submit():
         # Get gateway handler
