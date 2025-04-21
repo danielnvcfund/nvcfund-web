@@ -18,15 +18,27 @@ function initTransactionCharts() {
     const transactionsByStatusEl = document.getElementById('transactionsByStatusChart');
     
     if (transactionsByDateEl) {
-        initTransactionsByDateChart(transactionsByDateEl);
+        try {
+            initTransactionsByDateChart(transactionsByDateEl);
+        } catch (error) {
+            console.error('Error initializing transactions by date chart:', error);
+        }
     }
     
     if (transactionsByTypeEl) {
-        initTransactionsByTypeChart(transactionsByTypeEl);
+        try {
+            initTransactionsByTypeChart(transactionsByTypeEl);
+        } catch (error) {
+            console.error('Error initializing transactions by type chart:', error);
+        }
     }
     
     if (transactionsByStatusEl) {
-        initTransactionsByStatusChart(transactionsByStatusEl);
+        try {
+            initTransactionsByStatusChart(transactionsByStatusEl);
+        } catch (error) {
+            console.error('Error initializing transactions by status chart:', error);
+        }
     }
 }
 
