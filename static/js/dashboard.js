@@ -294,6 +294,7 @@ function initBlockchainBalance() {
     if (!ethereumAddress || ethereumAddress === "None" || ethereumAddress === "null" || ethereumAddress === "undefined") {
         console.warn('No Ethereum address available:', ethereumAddress);
         balanceEl.textContent = 'No address assigned';
+        balanceEl.parentElement.querySelector('.btn-refresh').style.display = 'none';
         return;
     }
     
@@ -459,10 +460,11 @@ function refreshBlockchainBalance(button) {
     }
     
     // Check if the address is null, undefined, or "None" (Python's None converted to string)
-    if (ethereumAddress === "None" || ethereumAddress === "null" || ethereumAddress === "undefined") {
+    if (!ethereumAddress || ethereumAddress === "None" || ethereumAddress === "null" || ethereumAddress === "undefined") {
         console.warn('No Ethereum address available:', ethereumAddress);
         balanceEl.textContent = 'No address assigned';
         resetButton(button);
+        button.style.display = 'none';
         return;
     }
     

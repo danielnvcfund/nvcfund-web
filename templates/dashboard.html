@@ -14,7 +14,7 @@
     </div>
 
     <!-- Analytics Data (Hidden) -->
-    <div id="analytics-data" class="d-none" data-analytics="{{ analytics|tojson }}"></div>
+    <div id="analytics-data" class="d-none" data-analytics="{{ analytics|tojson|safe }}"></div>
     
     <!-- Quick Stats -->
     <div class="row">
