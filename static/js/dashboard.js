@@ -250,35 +250,66 @@ function initBlockchainBalance() {
     const balanceEl = document.getElementById('blockchainBalance');
     
     if (!balanceEl) {
+        console.log('Blockchain balance element not found');
         return;
     }
     
     const ethereumAddress = balanceEl.getAttribute('data-address');
     
     if (!ethereumAddress) {
+        console.warn('No Ethereum address found in data attribute');
+        balanceEl.textContent = 'No ETH address';
         return;
     }
     
-    // Fetch balance from API
-    fetch(`/api/blockchain/balances?address=${ethereumAddress}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getJwtToken()}`
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            balanceEl.textContent = `${data.balance_eth} ETH`;
-        } else {
-            balanceEl.textContent = 'Balance unavailable';
-        }
-    })
-    .catch(error => {
-        console.error('Error fetching blockchain balance:', error);
-        balanceEl.textContent = 'Error fetching balance';
-    });
+    // Make sure we have a valid address format
+    if (!ethereumAddress.startsWith('0x') || ethereumAddress.length !== 42) {
+        console.warn('Invalid Ethereum address format:', ethereumAddress);
+        balanceEl.textContent = 'Invalid address';
+        return;
+    }
+    
+    // If no JWT token, display appropriate message
+    if (!getJwtToken()) {
+        console.warn('No JWT token available for authenticated API calls');
+        balanceEl.textContent = 'Authentication required';
+        return;
+    }
+    
+    // Use a try/catch block for the fetch to handle network errors
+    try {
+        // Fetch balance from API
+        fetch(`/api/blockchain/balances?address=${ethereumAddress}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getJwtToken()}`
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            // Check if response is ok before trying to parse JSON
+            if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                balanceEl.textContent = `${data.balance_eth} ETH`;
+            } else {
+                console.warn('API returned unsuccessful status:', data.error || 'No specific error');
+                balanceEl.textContent = 'Balance unavailable';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching blockchain balance:', error);
+            balanceEl.textContent = 'Error fetching balance';
+        });
+    } catch (error) {
+        console.error('Exception during fetch setup:', error);
+        balanceEl.textContent = 'Connection error';
+    }
 }
 
 // Setup refresh buttons
@@ -378,52 +409,86 @@ function refreshBlockchainBalance(button) {
     const balanceEl = document.getElementById('blockchainBalance');
     
     if (!balanceEl) {
-        button.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
-        button.disabled = false;
+        console.log('Blockchain balance element not found');
+        resetButton(button);
         return;
     }
     
     const ethereumAddress = balanceEl.getAttribute('data-address');
     
     if (!ethereumAddress) {
-        button.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
-        button.disabled = false;
+        console.warn('No Ethereum address found in data attribute');
+        balanceEl.textContent = 'No ETH address';
+        resetButton(button);
         return;
     }
     
-    // Fetch balance from API
-    fetch(`/api/blockchain/balances?address=${ethereumAddress}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getJwtToken()}`
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            balanceEl.textContent = `${data.balance_eth} ETH`;
-        } else {
-            balanceEl.textContent = 'Balance unavailable';
-        }
-        
-        // Reset button
-        button.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
-        button.disabled = false;
-    })
-    .catch(error => {
-        console.error('Error fetching blockchain balance:', error);
-        balanceEl.textContent = 'Error fetching balance';
-        
-        // Reset button
-        button.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
-        button.disabled = false;
-    });
+    // Make sure we have a valid address format
+    if (!ethereumAddress.startsWith('0x') || ethereumAddress.length !== 42) {
+        console.warn('Invalid Ethereum address format:', ethereumAddress);
+        balanceEl.textContent = 'Invalid address';
+        resetButton(button);
+        return;
+    }
+    
+    // If no JWT token, display appropriate message
+    if (!getJwtToken()) {
+        console.warn('No JWT token available for authenticated API calls');
+        balanceEl.textContent = 'Authentication required';
+        resetButton(button);
+        return;
+    }
+    
+    // Use a try/catch block for the fetch to handle network errors
+    try {
+        // Fetch balance from API
+        fetch(`/api/blockchain/balances?address=${ethereumAddress}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getJwtToken()}`
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            // Check if response is ok before trying to parse JSON
+            if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                balanceEl.textContent = `${data.balance_eth} ETH`;
+            } else {
+                console.warn('API returned unsuccessful status:', data.error || 'No specific error');
+                balanceEl.textContent = 'Balance unavailable';
+            }
+            resetButton(button);
+        })
+        .catch(error => {
+            console.error('Error fetching blockchain balance:', error);
+            balanceEl.textContent = 'Error fetching balance';
+            resetButton(button);
+        });
+    } catch (error) {
+        console.error('Exception during fetch setup:', error);
+        balanceEl.textContent = 'Connection error';
+        resetButton(button);
+    }
 }
 
-// Get JWT token from localStorage
+// Helper function to reset button state
+function resetButton(button) {
+    if (button) {
+        button.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+        button.disabled = false;
+    }
+}
+
+// Get JWT token from localStorage or sessionStorage
 function getJwtToken() {
-    return localStorage.getItem('jwt_token') || '';
+    return localStorage.getItem('jwt_token') || sessionStorage.getItem('jwt_token') || '';
 }
 
 // Get CSS class for status badge
