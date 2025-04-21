@@ -96,6 +96,7 @@ class PaymentForm(FlaskForm):
     currency = SelectField('Currency', choices=[('USD', 'USD'), ('EUR', 'EUR'), ('GBP', 'GBP'), ('ETH', 'ETH'), ('XRP', 'XRP')], validators=[DataRequired()])
     transaction_type = SelectField('Transaction Type', choices=[], validators=[DataRequired()])
     gateway = SelectField('Payment Gateway', choices=[], validators=[DataRequired()])
+    gateway_id = SelectField('Payment Gateway', choices=[], validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
     
     def __init__(self, *args, **kwargs):
