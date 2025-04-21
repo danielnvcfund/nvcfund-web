@@ -33,13 +33,24 @@ function initTransactionCharts() {
         }
         
         // Additional protection against invalid data
-        const rawData = analyticsElement.dataset.analytics.trim();
+        let rawData = analyticsElement.dataset.analytics.trim();
         if (!rawData || rawData === 'null' || rawData === 'undefined') {
             console.warn('Analytics data is null or undefined');
             return; // Exit early if data is null/undefined
         }
         
         try {
+            // Check if first character is a valid JSON start (object or array)
+            if (rawData.charAt(0) !== '{' && rawData.charAt(0) !== '[') {
+                console.warn('Analytics data does not start with a valid JSON character:', rawData.charAt(0));
+                // Try to find where the JSON actually starts
+                const jsonStart = rawData.indexOf('{');
+                if (jsonStart > 0) {
+                    console.log('Found JSON start at position', jsonStart);
+                    rawData = rawData.substring(jsonStart);
+                }
+            }
+            
             // Try to parse the data
             analyticsData = JSON.parse(rawData);
             console.log('Successfully parsed analytics data');

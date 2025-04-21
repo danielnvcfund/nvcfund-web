@@ -22,11 +22,17 @@
             <div class="card dashboard-widget quick-stats-card bg-gradient">
                 <div class="card-body">
                     <i class="fas fa-wallet icon"></i>
-                    <div class="value" id="blockchainBalance" data-address="{{ user.ethereum_address }}">Loading...</div>
+                    <div class="value" id="blockchainBalance" data-address="{{ user.ethereum_address if user.ethereum_address else '' }}">
+                        {% if user.ethereum_address %}Loading...{% else %}No address{% endif %}
+                    </div>
                     <div class="label">ETH Balance</div>
+                    {% if user.ethereum_address %}
                     <button class="btn btn-sm btn-outline-primary mt-2 btn-refresh" data-target="blockchainBalance">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </button>
+                    {% else %}
+                    <small class="text-muted">No Ethereum address assigned</small>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -217,10 +223,14 @@
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">ETH Address:</div>
                         <div class="col-md-8">
+                            {% if user.ethereum_address %}
                             <span class="ethereum-address">{{ user.ethereum_address }}</span>
-                            <a href="https://ropsten.etherscan.io/address/{{ user.ethereum_address }}" target="_blank" class="btn btn-sm btn-outline-info ms-2">
+                            <a href="https://sepolia.etherscan.io/address/{{ user.ethereum_address }}" target="_blank" class="btn btn-sm btn-outline-info ms-2">
                                 <i class="fas fa-external-link-alt"></i>
                             </a>
+                            {% else %}
+                            <span class="text-muted">No Ethereum address assigned</span>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="row mb-3">

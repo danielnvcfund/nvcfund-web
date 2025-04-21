@@ -340,10 +340,32 @@ def dashboard():
         def default(self, obj):
             if isinstance(obj, Decimal):
                 return float(obj)
+            elif isinstance(obj, set):
+                return list(obj)
+            elif hasattr(obj, '__dict__'):
+                return obj.__dict__
             return super(DecimalEncoder, self).default(obj)
     
     # Pre-serialize the analytics data to ensure it's valid JSON
-    analytics_json = json.dumps(analytics, cls=DecimalEncoder)
+    try:
+        analytics_json = json.dumps(analytics, cls=DecimalEncoder)
+        # Verify the JSON is valid by attempting to parse it back
+        json.loads(analytics_json)
+        logger.debug("Successfully serialized analytics data")
+    except Exception as e:
+        logger.error(f"Error serializing analytics data: {str(e)}")
+        # Provide a basic valid JSON structure as fallback
+        analytics_json = json.dumps({
+            'days': 30,
+            'start_date': (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d'),
+            'end_date': datetime.now().strftime('%Y-%m-%d'),
+            'total_transactions': 0,
+            'total_amount': 0,
+            'by_type': {},
+            'by_status': {},
+            'by_date': {},
+            'raw_data': []
+        })
     
     return render_template(
         'dashboard.html',
