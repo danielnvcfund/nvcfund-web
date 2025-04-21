@@ -1082,8 +1082,7 @@ def test_payment():
 @login_required
 def bank_transfer_form(transaction_id):
     """Bank transfer form route for NVC Global payments"""
-    user_id = session.get('user_id')
-    user = User.query.get(user_id)
+    user = current_user
     
     # Get the transaction
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
