@@ -4,7 +4,7 @@
 
 The NVCToken (NVCT) is a fully-backed stablecoin pegged to the US Dollar (1 NVCT = 1 USD). As the native token of the NVC Banking Platform, it serves as a stable store of value, means of exchange, and settlement mechanism within the global financial ecosystem.
 
-NVCT is built on the Ethereum blockchain as an ERC-20 compliant token, ensuring broad compatibility with existing wallets, exchanges, and DeFi protocols. It is fully backed by over $1 quadrillion USD in audited assets managed by NVC Fund Holding Trust, including CPA-verified financial statements, investments, cash equivalents, precious metals, historic banking assets, and Central Bank certificates.
+NVCT is built on the Ethereum blockchain as an ERC-20 compliant token, ensuring broad compatibility with existing wallets, exchanges, and DeFi protocols. It is fully backed by over $10 trillion USD in audited assets managed by NVC Fund Holding Trust, including CPA-verified financial statements, investments, cash equivalents, precious metals, historic banking assets, and Central Bank certificates.
 
 ## Core Token Specifications
 
@@ -14,7 +14,7 @@ NVCT is built on the Ethereum blockchain as an ERC-20 compliant token, ensuring 
 - **Initial Supply:** 10,000,000,000,000 NVCT (10 trillion)
 - **Maximum Supply:** Unlimited (Expandable supply to allow for future growth)
 - **Token Type:** Stablecoin (Pegged to USD like USDT)
-- **Backing:** Fully backed by verified assets worth over $1 quadrillion USD
+- **Backing:** Fully backed by verified assets worth over $10 trillion USD
 - **Token Standard:** ERC-20
 - **Blockchain:** Ethereum
 
@@ -99,7 +99,7 @@ As a USD-pegged stablecoin similar to USDT but with significantly stronger backi
 
 ## Conclusion
 
-The NVCToken (NVCT) represents a revolutionary advancement in stablecoin technology, combining the stability of a USD-pegged digital asset with the unprecedented backing of over $1 quadrillion in Basel 3 compliant verified assets managed by NVC Fund Holding Trust. 
+The NVCToken (NVCT) represents a revolutionary advancement in stablecoin technology, combining the stability of a USD-pegged digital asset with the unprecedented backing of over $10 trillion in Basel 3 compliant verified assets managed by NVC Fund Holding Trust. 
 
 With its robust technical foundation, comprehensive security features, and fully-backed value proposition, NVCT is positioned to become a leading global stablecoin for institutional and enterprise financial operations, enabling seamless transactions across traditional and digital financial ecosystems.
 
