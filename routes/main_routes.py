@@ -975,11 +975,10 @@ def switch_role():
     # Commit the change
     db.session.commit()
     
-    # If admin role is true, always go to dashboard to ensure navigation
+    # Redirect to the appropriate dashboard based on role
     if user.role == UserRole.ADMIN:
-        return redirect('/main/dashboard')
+        return redirect('/admin-dashboard')
     else:
-        # In user role, always go to dashboard to ensure navigation
         return redirect('/main/dashboard')
     
 @main.route('/terms_of_service')
@@ -1152,6 +1151,68 @@ def payment_cancel():
 def privacy_policy():
     """Privacy policy route"""
     return render_template('privacy_policy.html')
+
+@main.route('/admin-dashboard')
+@login_required
+@admin_required
+def admin_dashboard():
+    """Admin dashboard route"""
+    # Get user and all users
+    user = current_user
+    all_users = User.query.all()
+    
+    # Get recent transactions for all users
+    recent_transactions = Transaction.query.order_by(Transaction.created_at.desc()).limit(10).all()
+    
+    # Get pending transactions
+    pending_transactions = Transaction.query.filter(
+        Transaction.status.in_([TransactionStatus.PENDING, TransactionStatus.PROCESSING])
+    ).order_by(Transaction.created_at.desc()).all()
+    
+    # Get transaction analytics
+    analytics = get_transaction_analytics(user.id, days=30)
+    
+    # Ensure JSON serialization works with decimal values
+    import json
+    from decimal import Decimal
+    
+    class DecimalEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, Decimal):
+                return float(obj)
+            return super(DecimalEncoder, self).default(obj)
+    
+    # Serialize analytics data
+    try:
+        analytics_json = json.dumps(analytics, cls=DecimalEncoder)
+        json.loads(analytics_json)  # Validate JSON is parseable
+    except Exception as e:
+        logger.error(f"Error serializing analytics data: {str(e)}")
+        # Provide a basic valid JSON structure as fallback
+        analytics_json = json.dumps({
+            'days': 30,
+            'start_date': (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d'),
+            'end_date': datetime.now().strftime('%Y-%m-%d'),
+            'total_transactions': 0,
+            'total_amount': 0,
+            'by_type': {},
+            'by_status': {},
+            'by_date': {},
+            'raw_data': []
+        })
+    
+    # Generate a fresh JWT token for the user
+    jwt_token = generate_jwt_token(user.id)
+    
+    return render_template(
+        'admin/admin_dashboard.html',
+        user=user,
+        all_users=all_users,
+        recent_transactions=recent_transactions,
+        pending_transactions=pending_transactions,
+        analytics_json=analytics_json,
+        jwt_token=jwt_token
+    )
 
 @main.route('/admin/incomplete-transactions', methods=['GET'])
 @login_required
