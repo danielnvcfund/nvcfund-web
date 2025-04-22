@@ -143,8 +143,8 @@ def index():
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     """User login route"""
-    # If user is already logged in, redirect to dashboard
-    if 'user_id' in session:
+    # Use Flask-Login's current_user to check if user is already logged in
+    if current_user.is_authenticated:
         return redirect(url_for('web.main.dashboard'))
         
     form = LoginForm()
@@ -156,7 +156,11 @@ def login():
             flash('Invalid username or password', 'danger')
             return render_template('login.html', form=form)
         
-        # Set user session
+        # Use Flask-Login's login_user function
+        from flask_login import login_user
+        login_user(user, remember=True)
+        
+        # Also maintain session for backward compatibility
         session['user_id'] = user.id
         session['username'] = user.username
         session['role'] = user.role.value
@@ -184,7 +188,13 @@ def login():
 @main.route('/logout')
 def logout():
     """User logout route"""
+    # Use Flask-Login's logout_user function
+    from flask_login import logout_user
+    logout_user()
+    
+    # Also clear session for backward compatibility
     session.clear()
+    
     flash('You have been logged out', 'info')
     # Render a template that clears the JWT token from storage before redirecting
     return render_template('clear_token.html', redirect_url=url_for('web.main.index'))
@@ -308,17 +318,11 @@ def forgot_username():
 @login_required
 def dashboard():
     """User dashboard route"""
-    user_id = session.get('user_id')
-    if not user_id:
-        flash('Please log in to access the dashboard', 'danger')
-        return redirect(url_for('web.main.login'))
+    # Since we're using @login_required, current_user is guaranteed to be authenticated
+    # and we don't need to check session.get('user_id')
     
-    user = User.query.get(user_id)
-    if not user:
-        # If user doesn't exist in database, clear session and redirect to login
-        session.clear()
-        flash('User not found, please log in again', 'danger')
-        return redirect(url_for('web.main.login'))
+    # Get the user from current_user (already provided by Flask-Login)
+    user = current_user
         
     # Make sure user has an Ethereum address
     if not user.ethereum_address:
@@ -336,18 +340,18 @@ def dashboard():
             user.ethereum_address = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F"
     
     # Get recent transactions
-    recent_transactions = Transaction.query.filter_by(user_id=user_id)\
+    recent_transactions = Transaction.query.filter_by(user_id=user.id)\
         .order_by(Transaction.created_at.desc())\
         .limit(5).all()
     
     # Get transaction analytics
-    analytics = get_transaction_analytics(user_id, days=30)
+    analytics = get_transaction_analytics(user.id, days=30)
     
     # The get_transaction_analytics function now always returns a valid data structure
     # even when errors occur, so we don't need to check for None anymore
     
     # Log the analytics structure for debugging purposes
-    logger.debug(f"Analytics data for user {user_id}: {type(analytics)}, has {len(analytics.get('raw_data', []))} data points")
+    logger.debug(f"Analytics data for user {user.id}: {type(analytics)}, has {len(analytics.get('raw_data', []))} data points")
     
     # Ensure JSON serialization works with decimal values
     import json
@@ -403,7 +407,8 @@ def dashboard():
 @login_required
 def transactions():
     """Transaction history route"""
-    user_id = session.get('user_id')
+    # Since we're using @login_required, current_user is guaranteed to be authenticated
+    # Use current_user.id instead of session.get('user_id')
     
     # Get filters from query parameters
     transaction_type = request.args.get('type')
@@ -412,7 +417,7 @@ def transactions():
     end_date = request.args.get('end_date')
     
     # Base query
-    query = Transaction.query.filter_by(user_id=user_id)
+    query = Transaction.query.filter_by(user_id=current_user.id)
     
     # Apply filters
     if transaction_type:
@@ -458,7 +463,7 @@ def transaction_details(transaction_id):
     """Transaction details route"""
     from utils import format_currency
     
-    user_id = session.get('user_id')
+    # Use current_user.id instead of session.get('user_id')
     
     # Get transaction
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
@@ -468,7 +473,7 @@ def transaction_details(transaction_id):
         return redirect(url_for('web.main.transactions'))
     
     # Check if the transaction belongs to the user or user is admin
-    if transaction.user_id != user_id and session.get('role') != UserRole.ADMIN.value:
+    if transaction.user_id != current_user.id and current_user.role != UserRole.ADMIN:
         flash('You do not have permission to view this transaction', 'danger')
         return redirect(url_for('web.main.transactions'))
     
