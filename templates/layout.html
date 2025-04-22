@@ -92,7 +92,7 @@
                             <i class="fas fa-coins me-1"></i> NVC Token
                         </a>
                     </li>
-                    {% if session.get('role') == 'admin' %}
+                    {% if current_user.is_authenticated and current_user.role.name == 'ADMIN' %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-cog me-1"></i> Admin
@@ -141,7 +141,6 @@
 
                         </ul>
                     </li>
-                    {% endif %}
                     {% endif %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/main/api_docs' %}active{% endif %}" href="{{ url_for('web.main.api_docs') }}">
