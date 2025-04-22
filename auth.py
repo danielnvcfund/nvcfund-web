@@ -1,39 +1,31 @@
 import os
+import inspect
 import logging
 import secrets
 import string
 from datetime import datetime, timedelta
 from functools import wraps
-from flask import request, jsonify, session, redirect, url_for, flash
+from flask import request, jsonify, session, redirect, url_for, flash, current_app
 from flask_jwt_extended import create_access_token, verify_jwt_in_request, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import current_user, login_required as flask_login_required
 from app import db
 from models import User, UserRole
 from blockchain_utils import generate_ethereum_account
 
 logger = logging.getLogger(__name__)
 
-# Authentication decorators
-def login_required(f):
-    """Decorator to require login for route"""
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            flash('Please log in to access this page', 'warning')
-            return redirect(url_for('web.main.login', next=request.url))
-        return f(*args, **kwargs)
-    return decorated_function
+# We'll use Flask-Login's built-in login_required decorator
+login_required = flask_login_required
 
 def admin_required(f):
     """Decorator to require admin role for route"""
     @wraps(f)
+    @flask_login_required
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            flash('Please log in to access this page', 'warning')
-            return redirect(url_for('web.main.login', next=request.url))
-        
-        user = User.query.get(session['user_id'])
-        if not user or user.role != UserRole.ADMIN:
+        # User is already authenticated due to @flask_login_required
+        # Now check if they have admin role
+        if not current_user.is_authenticated or current_user.role != UserRole.ADMIN:
             flash('You do not have permission to access this page', 'danger')
             return redirect(url_for('web.main.index'))
         

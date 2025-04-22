@@ -50,6 +50,19 @@ def create_app():
         "pool_recycle": 300,
         "pool_pre_ping": True,
     }
+    
+    # Configure session
+    app.config["SESSION_COOKIE_SECURE"] = False  # Set to True in production with HTTPS
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    app.config["PERMANENT_SESSION_LIFETIME"] = 86400  # 24 hours
+    app.config["SESSION_TYPE"] = "filesystem"
+    
+    # Configure Flask-Login
+    app.config["REMEMBER_COOKIE_DURATION"] = 86400  # 24 hours
+    app.config["REMEMBER_COOKIE_SECURE"] = False  # Set to True in production with HTTPS
+    app.config["REMEMBER_COOKIE_HTTPONLY"] = True
+    app.config["REMEMBER_COOKIE_SAMESITE"] = "Lax"
 
     # Configure JWT
     app.config["JWT_SECRET_KEY"] = os.environ.get("SESSION_SECRET", "dev_secret_key_for_testing_only")  # Using same secret for simplicity
