@@ -1,32 +1,65 @@
-from app import app, db
-from models import User, Transaction, TransactionStatus, TransactionType
+"""
+Database Migration Script for NVC Banking Platform
+Used to update database schema with new fields
+"""
+import os
+import sys
+import logging
 from sqlalchemy import text
 
-def run_migration():
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Import the app context and db
+from app import app, db
+
+def run_migrations():
+    """Run database migrations"""
     with app.app_context():
-        # Add new columns to the User table
         try:
-            db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN IF NOT EXISTS external_customer_id VARCHAR(64)"))
-            db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN IF NOT EXISTS external_account_id VARCHAR(64)"))
-            db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN IF NOT EXISTS external_account_type VARCHAR(32)"))
-            db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN IF NOT EXISTS external_account_currency VARCHAR(3)"))
-            db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN IF NOT EXISTS external_account_status VARCHAR(16)"))
-            db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN IF NOT EXISTS last_sync TIMESTAMP"))
-            
-            # Add new columns to the Transaction table
-            db.session.execute(text("ALTER TABLE transaction ADD COLUMN IF NOT EXISTS external_id VARCHAR(64)"))
-            db.session.execute(text("ALTER TABLE transaction ADD COLUMN IF NOT EXISTS tx_metadata_json TEXT"))
-            
-            # Create indexes
-            db.session.execute(text("CREATE INDEX IF NOT EXISTS idx_user_external_customer_id ON \"user\" (external_customer_id)"))
-            db.session.execute(text("CREATE INDEX IF NOT EXISTS idx_user_external_account_id ON \"user\" (external_account_id)"))
-            db.session.execute(text("CREATE INDEX IF NOT EXISTS idx_transaction_external_id ON transaction (external_id)"))
-            
-            db.session.commit()
-            print("Migration completed successfully.")
+            # Add new user profile fields
+            migrate_user_profile_fields()
+            logger.info("Migrations completed successfully")
         except Exception as e:
-            db.session.rollback()
-            print(f"Error during migration: {e}")
+            logger.error(f"Migration error: {str(e)}")
+            sys.exit(1)
+            
+def migrate_user_profile_fields():
+    """Add profile fields to User model"""
+    logger.info("Adding user profile fields")
+    
+    # Check if any of the new columns already exist
+    with db.engine.connect() as conn:
+        result = conn.execute(text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'user' 
+            AND column_name = 'first_name'
+        """))
+        
+        # If first_name already exists, assume the migration was already done
+        if result.rowcount > 0:
+            logger.info("User profile fields already exist - skipping migration")
+            return
+        
+        # Add new columns to the user table
+        try:
+            conn.execute(text("""
+                ALTER TABLE "user" 
+                ADD COLUMN first_name VARCHAR(100),
+                ADD COLUMN last_name VARCHAR(100),
+                ADD COLUMN organization VARCHAR(150),
+                ADD COLUMN country VARCHAR(100),
+                ADD COLUMN phone VARCHAR(50),
+                ADD COLUMN newsletter BOOLEAN DEFAULT FALSE,
+                ADD COLUMN email_verified BOOLEAN DEFAULT FALSE
+            """))
+            conn.commit()
+            logger.info("User profile fields added successfully")
+        except Exception as e:
+            logger.error(f"Error adding user profile fields: {str(e)}")
+            raise
 
 if __name__ == "__main__":
-    run_migration()
+    run_migrations()

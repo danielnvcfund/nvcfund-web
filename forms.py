@@ -37,7 +37,18 @@ class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=4, max=64)])
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
-    password2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    
+    # Optional personal information fields
+    first_name = StringField('First Name', validators=[Optional()])
+    last_name = StringField('Last Name', validators=[Optional()])
+    organization = StringField('Organization/Company', validators=[Optional()])
+    country = StringField('Country', validators=[Optional()])
+    phone = StringField('Phone Number', validators=[Optional()])
+    
+    # Terms and newsletter
+    terms_agree = BooleanField('I agree to the Terms of Service and Privacy Policy', validators=[DataRequired()])
+    newsletter = BooleanField('Subscribe to newsletter', validators=[Optional()])
 
 class RequestResetForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])

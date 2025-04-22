@@ -229,23 +229,50 @@ def logout():
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
-    """User registration route"""
+    """User registration route with comprehensive signup process"""
     # If user is already logged in, redirect to dashboard
-    if 'user_id' in session:
+    if current_user.is_authenticated:
         return redirect(url_for('web.main.dashboard'))
         
     form = RegistrationForm()
     
     if form.validate_on_submit():
-        # Register user
-        user, error = register_user(form.username.data, form.email.data, form.password.data)
-        
-        if error:
-            flash(error, 'danger')
-            return render_template('login.html', register=True, form=form)
-        
-        flash('Registration successful! You can now log in.', 'success')
-        return redirect(url_for('web.main.login'))
+        try:
+            # Create user with basic info
+            user, error = register_user(form.username.data, form.email.data, form.password.data)
+            
+            if error:
+                flash(error, 'danger')
+                return render_template('register.html', form=form)
+            
+            # Update additional profile information
+            if user:
+                user.first_name = form.first_name.data
+                user.last_name = form.last_name.data
+                user.organization = form.organization.data
+                user.country = form.country.data
+                user.phone = form.phone.data
+                user.newsletter = form.newsletter.data
+                
+                # User has agreed to terms
+                if form.terms_agree.data:
+                    db.session.commit()
+                    
+                    # Here you would normally send a verification email
+                    # For now, just show a success message
+                    flash('Registration successful! You can now log in to your account.', 'success')
+                    return redirect(url_for('web.main.login'))
+                else:
+                    # This shouldn't happen due to form validation, but just in case
+                    db.session.rollback()
+                    flash('You must agree to the Terms of Service and Privacy Policy to register.', 'danger')
+            else:
+                flash('An error occurred during registration. Please try again.', 'danger')
+                
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Registration error: {str(e)}")
+            flash('An error occurred during registration. Please try again later.', 'danger')
     
     # If there were form validation errors or this is a GET request
     if form.errors and request.method == 'POST':
@@ -253,9 +280,8 @@ def register():
             for error in errors:
                 flash(f"{field}: {error}", 'danger')
     
-    # For compatibility with the current login.html template, we still use register=True
-    # but in the future, we can pass the form object directly
-    return render_template('login.html', register=True, form=form)
+    # Render the dedicated registration page
+    return render_template('register.html', form=form)
 
 @main.route('/reset_password_request', methods=['GET', 'POST'])
 def reset_request():

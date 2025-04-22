@@ -33,6 +33,15 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    # Personal information fields
+    first_name = db.Column(db.String(100))
+    last_name = db.Column(db.String(100))
+    organization = db.Column(db.String(150))
+    country = db.Column(db.String(100))
+    phone = db.Column(db.String(50))
+    newsletter = db.Column(db.Boolean, default=False)
+    email_verified = db.Column(db.Boolean, default=False)
+    
     # PHP banking integration fields
     external_customer_id = db.Column(db.String(64), index=True)
     external_account_id = db.Column(db.String(64), index=True)  
