@@ -4,72 +4,97 @@
 
 {% block content %}
 <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h1>
-        <div class="d-flex gap-2">
-            {% if user.username in ['admin', 'headadmin'] %}
-                <a href="{{ url_for('web.main.admin_dashboard') }}" class="btn btn-info">
-                    <i class="fas fa-user-shield me-1"></i> View Admin Dashboard
+    <!-- Dashboard Header with Welcome Message -->
+    <div class="bg-dark bg-opacity-10 rounded-3 mb-4 p-4 border border-1 border-primary border-opacity-25 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="display-6 fw-bold mb-1">
+                    <i class="fas fa-tachometer-alt me-2 text-primary"></i>Dashboard
+                </h1>
+                <p class="lead text-muted mb-0">Welcome back, {{ user.username }}!</p>
+            </div>
+            <div class="d-flex gap-2">
+                {% if user.username in ['admin', 'headadmin'] %}
+                    <a href="{{ url_for('web.main.admin_dashboard') }}" class="btn btn-info btn-lg shadow-sm">
+                        <i class="fas fa-user-shield me-1"></i> View Admin Dashboard
+                    </a>
+                {% endif %}
+                <a href="{{ url_for('web.main.new_payment') }}" class="btn btn-primary btn-lg shadow-sm">
+                    <i class="fas fa-credit-card me-1"></i> Make Payment
                 </a>
-            {% endif %}
-            <a href="{{ url_for('web.main.new_payment') }}" class="btn btn-primary">
-                <i class="fas fa-credit-card me-1"></i> Make Payment
-            </a>
+            </div>
         </div>
     </div>
 
     <!-- Analytics Data (Hidden) -->
-    <div id="analytics-data" class="d-none" data-analytics="{{ analytics_json|safe }}" data-jwt-token="{{ jwt_token }}"></div>
-    
-    <!-- Store JWT token in localStorage -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Store JWT token in localStorage from data attribute
-            const analyticsEl = document.getElementById('analytics-data');
-            if (analyticsEl && analyticsEl.dataset.jwtToken) {
-                const token = analyticsEl.dataset.jwtToken;
-                if (token && token.length > 10) { // Basic validation that it's not empty
-                    console.log('Storing JWT token from dashboard');
-                    localStorage.setItem('jwt_token', token);
-                    sessionStorage.setItem('jwt_token', token);
-                }
-            }
-        });
-    </script>
+    <div id="analytics-data" class="d-none" 
+         data-analytics="{{ analytics_json|safe }}" 
+         data-jwt-token="{{ jwt_token }}"
+         data-ethereum-address="{{ user.ethereum_address if user.ethereum_address else '' }}">
+    </div>
     
     <!-- Quick Stats -->
-    <div class="row">
-        <div class="col-md-3">
-            <div class="card dashboard-widget quick-stats-card bg-gradient">
-                <div class="card-body">
-                    <i class="fas fa-wallet icon"></i>
-                    <div class="value" id="blockchainBalance" data-address="{{ user.ethereum_address if user.ethereum_address else '' }}">
-                        {% if user.ethereum_address %}Loading...{% else %}No address{% endif %}
+    <div class="row g-4 mb-4">
+        <!-- ETH Balance Card -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card dashboard-widget quick-stats-card h-100 border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-wallet text-primary"></i>
+                        </div>
+                        <h3 class="h5 fw-bold mb-0">ETH Balance</h3>
                     </div>
-                    <div class="label">ETH Balance</div>
+                    <div class="value" id="blockchainBalance" data-address="{{ user.ethereum_address if user.ethereum_address else '' }}">
+                        {% if user.ethereum_address %}
+                            <div class="skeleton" style="width: 70%; height: 40px;"></div>
+                        {% else %}
+                            <span class="badge bg-secondary">No address</span>
+                        {% endif %}
+                    </div>
                     {% if user.ethereum_address %}
-                    <button class="btn btn-sm btn-outline-primary mt-2 btn-refresh" data-target="blockchainBalance">
-                        <i class="fas fa-sync-alt"></i> Refresh
+                    <button class="btn btn-sm btn-outline-primary mt-3 btn-refresh" data-target="blockchainBalance">
+                        <i class="fas fa-sync-alt me-1"></i> Refresh Balance
                     </button>
                     {% else %}
-                    <small class="text-muted">No Ethereum address assigned</small>
+                    <div class="alert alert-secondary mt-3 mb-0 p-2 small">
+                        <i class="fas fa-info-circle me-1"></i> No Ethereum address assigned to your account
+                    </div>
                     {% endif %}
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card dashboard-widget quick-stats-card bg-gradient">
-                <div class="card-body">
-                    <i class="fas fa-exchange-alt icon"></i>
+        
+        <!-- Recent Transactions Count Card -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card dashboard-widget quick-stats-card h-100 border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-exchange-alt text-info"></i>
+                        </div>
+                        <h3 class="h5 fw-bold mb-0">Transactions</h3>
+                    </div>
                     <div class="value">{{ recent_transactions|length }}</div>
-                    <div class="label">Recent Transactions</div>
+                    <div class="label">Recent transactions</div>
+                    
+                    <a href="{{ url_for('web.main.transactions') }}" class="btn btn-sm btn-outline-info mt-3">
+                        <i class="fas fa-list me-1"></i> View All
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card dashboard-widget quick-stats-card bg-gradient">
-                <div class="card-body">
-                    <i class="fas fa-check-circle icon"></i>
+        
+        <!-- Completed Transactions Card -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card dashboard-widget quick-stats-card h-100 border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-check-circle text-success"></i>
+                        </div>
+                        <h3 class="h5 fw-bold mb-0">Completed</h3>
+                    </div>
                     <div class="value">
                         {% set completed = namespace(count=0) %}
                         {% for tx in recent_transactions %}
@@ -79,14 +104,25 @@
                         {% endfor %}
                         {{ completed.count }}
                     </div>
-                    <div class="label">Completed</div>
+                    <div class="label">Successful transactions</div>
+                    
+                    <div class="progress mt-3" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: {% if recent_transactions %}{{ (completed.count / recent_transactions|length * 100)|round }}{% else %}0{% endif %}%"></div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card dashboard-widget quick-stats-card bg-gradient">
-                <div class="card-body">
-                    <i class="fas fa-spinner icon"></i>
+        
+        <!-- Pending Transactions Card -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card dashboard-widget quick-stats-card h-100 border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-spinner text-warning"></i>
+                        </div>
+                        <h3 class="h5 fw-bold mb-0">Pending</h3>
+                    </div>
                     <div class="value">
                         {% set pending = namespace(count=0) %}
                         {% for tx in recent_transactions %}
@@ -96,49 +132,68 @@
                         {% endfor %}
                         {{ pending.count }}
                     </div>
-                    <div class="label">Pending</div>
+                    <div class="label">Waiting for completion</div>
+                    
+                    <div class="progress mt-3" style="height: 8px;">
+                        <div class="progress-bar bg-warning" style="width: {% if recent_transactions %}{{ (pending.count / recent_transactions|length * 100)|round }}{% else %}0{% endif %}%"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Incomplete Transfers Section -->
-    {% set incomplete_count = namespace(count=0) %}
-    {% for tx in recent_transactions %}
-        {% if tx.status.value in ['pending', 'processing'] and tx.gateway and tx.gateway.name == 'NVC Global' %}
-            {% set incomplete_count.count = incomplete_count.count + 1 %}
-        {% endif %}
-    {% endfor %}
-    
-    {% if incomplete_count.count > 0 %}
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="card dashboard-widget">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Incomplete Transfers</h5>
+    <!-- Main Dashboard Sections Row -->
+    <div class="row g-4 mt-2">
+        <!-- Left Column (2/3) -->
+        <div class="col-lg-8">
+            <!-- Incomplete Transfers Section -->
+            {% set incomplete_count = namespace(count=0) %}
+            {% for tx in recent_transactions %}
+                {% if tx.status.value in ['pending', 'processing'] and tx.gateway and tx.gateway.name == 'NVC Global' %}
+                    {% set incomplete_count.count = incomplete_count.count + 1 %}
+                {% endif %}
+            {% endfor %}
+            
+            {% if incomplete_count.count > 0 %}
+            <div class="card dashboard-widget border-0 shadow mb-4">
+                <div class="card-header border-bottom border-warning border-2 bg-warning bg-opacity-10">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-warning text-dark p-2 me-3">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h5 class="mb-0 fw-bold">Incomplete Transfers</h5>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>ID</th>
+                                    <th class="ps-4">ID</th>
                                     <th>Amount</th>
                                     <th>Description</th>
                                     <th>Date</th>
-                                    <th>Action</th>
+                                    <th class="text-end pe-4">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for tx in recent_transactions %}
                                     {% if tx.status.value in ['pending', 'processing'] and tx.gateway and tx.gateway.name == 'NVC Global' %}
-                                    <tr>
-                                        <td><a href="{{ url_for('web.main.transaction_details', transaction_id=tx.transaction_id) }}">{{ tx.transaction_id[:8] }}...</a></td>
-                                        <td>{{ tx.amount }} {{ tx.currency }}</td>
-                                        <td>{{ tx.description }}</td>
-                                        <td>{{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <tr class="transaction-row">
+                                        <td class="ps-4">
+                                            <a href="{{ url_for('web.main.transaction_details', transaction_id=tx.transaction_id) }}" class="fw-medium">
+                                                {{ tx.transaction_id[:8] }}...
+                                            </a>
+                                        </td>
+                                        <td class="fw-semibold text-primary">{{ tx.amount }} {{ tx.currency }}</td>
                                         <td>
-                                            <a href="{{ url_for('web.main.bank_transfer_form', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-primary">
+                                            <span class="text-truncate d-inline-block" style="max-width: 200px;">
+                                                {{ tx.description or 'N/A' }}
+                                            </span>
+                                        </td>
+                                        <td>{{ tx.created_at.strftime('%b %d, %Y') }}</td>
+                                        <td class="text-end pe-4">
+                                            <a href="{{ url_for('web.main.bank_transfer_form', transaction_id=tx.transaction_id) }}" class="btn btn-primary btn-sm">
                                                 <i class="fas fa-university me-1"></i> Complete Transfer
                                             </a>
                                         </td>
@@ -149,142 +204,223 @@
                         </table>
                     </div>
                 </div>
+                {% if incomplete_count.count > 3 %}
+                <div class="card-footer text-center py-2">
+                    <a href="{{ url_for('web.main.transactions') }}?status=pending" class="text-primary fw-semibold">
+                        <i class="fas fa-list me-1"></i> View All {{ incomplete_count.count }} Incomplete Transfers
+                    </a>
+                </div>
+                {% endif %}
             </div>
-        </div>
-    </div>
-    {% endif %}
+            {% endif %}
 
-    <div class="row mt-4">
-        <!-- Recent Transactions -->
-        <div class="col-md-12 col-lg-6">
-            <div class="card dashboard-widget">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Recent Transactions</h5>
-                    <button class="btn btn-sm btn-outline-primary btn-refresh" data-target="recentTransactions">
-                        <i class="fas fa-sync-alt"></i> Refresh
-                    </button>
+            <!-- Recent Transactions -->
+            <div class="card dashboard-widget border-0 shadow mb-4">
+                <div class="card-header bg-dark bg-opacity-10 border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                                <i class="fas fa-exchange-alt text-primary"></i>
+                            </div>
+                            <h5 class="mb-0 fw-bold">Recent Transactions</h5>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary btn-refresh" data-target="recentTransactions">
+                                <i class="fas fa-sync-alt me-1"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>ID</th>
+                                    <th class="ps-4">ID</th>
                                     <th>Type</th>
                                     <th>Amount</th>
                                     <th>Status</th>
-                                    <th>Date</th>
+                                    <th class="text-end pe-4">Date</th>
                                 </tr>
                             </thead>
                             <tbody id="recentTransactions">
                                 {% if recent_transactions %}
-                                    {% for tx in recent_transactions %}
-                                    <tr>
-                                        <td><a href="{{ url_for('web.main.transaction_details', transaction_id=tx.transaction_id) }}">{{ tx.transaction_id[:8] }}...</a></td>
-                                        <td>{{ tx.transaction_type.value }}</td>
-                                        <td>{{ tx.amount }} {{ tx.currency }}</td>
+                                    {% for tx in recent_transactions[:5] %}
+                                    <tr class="transaction-row">
+                                        <td class="ps-4">
+                                            <a href="{{ url_for('web.main.transaction_details', transaction_id=tx.transaction_id) }}" class="fw-medium">
+                                                {{ tx.transaction_id[:8] }}...
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span class="badge rounded-pill 
+                                                {% if tx.transaction_type.value == 'payment' %}bg-primary bg-opacity-10 text-primary
+                                                {% elif tx.transaction_type.value == 'deposit' %}bg-success bg-opacity-10 text-success
+                                                {% elif tx.transaction_type.value == 'withdrawal' %}bg-warning bg-opacity-10 text-warning
+                                                {% elif tx.transaction_type.value == 'transfer' %}bg-info bg-opacity-10 text-info
+                                                {% else %}bg-secondary bg-opacity-10 text-secondary{% endif %}">
+                                                <i class="
+                                                    {% if tx.transaction_type.value == 'payment' %}fas fa-credit-card
+                                                    {% elif tx.transaction_type.value == 'deposit' %}fas fa-arrow-down
+                                                    {% elif tx.transaction_type.value == 'withdrawal' %}fas fa-arrow-up
+                                                    {% elif tx.transaction_type.value == 'transfer' %}fas fa-exchange-alt
+                                                    {% else %}fas fa-dot-circle{% endif %} me-1"></i>
+                                                {{ tx.transaction_type.value }}
+                                            </span>
+                                        </td>
+                                        <td class="fw-semibold {% if tx.transaction_type.value == 'withdrawal' %}text-danger{% else %}text-primary{% endif %}">
+                                            {% if tx.transaction_type.value == 'withdrawal' %}-{% endif %}{{ tx.amount }} {{ tx.currency }}
+                                        </td>
                                         <td>
                                             {% if tx.status.value == 'completed' %}
-                                                <span class="badge bg-success">{{ tx.status.value }}</span>
+                                                <span class="badge bg-success status-badge">
+                                                    <i class="fas fa-check-circle me-1"></i>{{ tx.status.value }}
+                                                </span>
                                             {% elif tx.status.value == 'pending' %}
-                                                <span class="badge bg-warning text-dark">{{ tx.status.value }}</span>
+                                                <span class="badge bg-warning text-dark status-badge">
+                                                    <i class="fas fa-clock me-1"></i>{{ tx.status.value }}
+                                                </span>
                                                 {% if tx.gateway and tx.gateway.name == 'NVC Global' %}
-                                                <a href="{{ url_for('web.main.bank_transfer_form', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-primary ms-1">
+                                                <a href="{{ url_for('web.main.bank_transfer_form', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-primary ms-1" title="Complete Transfer">
                                                     <i class="fas fa-university"></i>
                                                 </a>
                                                 {% endif %}
                                             {% elif tx.status.value == 'processing' %}
-                                                <span class="badge bg-info text-dark">{{ tx.status.value }}</span>
+                                                <span class="badge bg-info text-dark status-badge">
+                                                    <i class="fas fa-sync fa-spin me-1"></i>{{ tx.status.value }}
+                                                </span>
                                                 {% if tx.gateway and tx.gateway.name == 'NVC Global' %}
-                                                <a href="{{ url_for('web.main.bank_transfer_form', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-primary ms-1">
+                                                <a href="{{ url_for('web.main.bank_transfer_form', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-primary ms-1" title="Complete Transfer">
                                                     <i class="fas fa-university"></i>
                                                 </a>
                                                 {% endif %}
                                             {% elif tx.status.value == 'failed' %}
-                                                <span class="badge bg-danger">{{ tx.status.value }}</span>
+                                                <span class="badge bg-danger status-badge">
+                                                    <i class="fas fa-times-circle me-1"></i>{{ tx.status.value }}
+                                                </span>
                                             {% elif tx.status.value == 'refunded' %}
-                                                <span class="badge bg-secondary">{{ tx.status.value }}</span>
+                                                <span class="badge bg-secondary status-badge">
+                                                    <i class="fas fa-undo me-1"></i>{{ tx.status.value }}
+                                                </span>
                                             {% else %}
-                                                <span class="badge bg-secondary">{{ tx.status.value }}</span>
+                                                <span class="badge bg-secondary status-badge">
+                                                    <i class="fas fa-dot-circle me-1"></i>{{ tx.status.value }}
+                                                </span>
                                             {% endif %}
                                         </td>
-                                        <td>{{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td class="text-end pe-4 text-muted">{{ tx.created_at.strftime('%b %d, %Y') }}</td>
                                     </tr>
                                     {% endfor %}
                                 {% else %}
                                     <tr>
-                                        <td colspan="5" class="text-center">No transactions found</td>
+                                        <td colspan="5" class="text-center py-4">
+                                            <div class="d-flex flex-column align-items-center">
+                                                <i class="fas fa-receipt text-muted mb-2" style="font-size: 2rem;"></i>
+                                                <p class="text-muted mb-0">No transactions found</p>
+                                                <a href="{{ url_for('web.main.new_payment') }}" class="btn btn-sm btn-primary mt-2">
+                                                    <i class="fas fa-plus me-1"></i> Make First Payment
+                                                </a>
+                                            </div>
+                                        </td>
                                     </tr>
                                 {% endif %}
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div class="card-footer text-end">
-                    <a href="{{ url_for('web.main.transactions') }}" class="btn btn-sm btn-outline-primary">View All <i class="fas fa-arrow-right ms-1"></i></a>
+                <div class="card-footer bg-light d-flex justify-content-center py-3">
+                    <a href="{{ url_for('web.main.transactions') }}" class="btn btn-outline-primary px-4">
+                        <i class="fas fa-list me-1"></i> View All Transactions
+                    </a>
                 </div>
             </div>
         </div>
-
-        <!-- Account Information -->
-        <div class="col-md-12 col-lg-6">
-            <div class="card dashboard-widget mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-user-circle me-2"></i>Account Information</h5>
+        
+        <!-- Right Column (1/3) -->
+        <div class="col-lg-4">
+            <!-- Account Information -->
+            <div class="card dashboard-widget border-0 shadow mb-4">
+                <div class="card-header bg-dark bg-opacity-10 border-0">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                            <i class="fas fa-user-circle text-primary"></i>
+                        </div>
+                        <h5 class="mb-0 fw-bold">Account Information</h5>
+                    </div>
                 </div>
                 <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Username:</div>
-                        <div class="col-md-8">{{ user.username }}</div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Email:</div>
-                        <div class="col-md-8">{{ user.email }}</div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">ETH Address:</div>
-                        <div class="col-md-8">
-                            {% if user.ethereum_address %}
-                            <span class="ethereum-address">{{ user.ethereum_address }}</span>
-                            <a href="https://sepolia.etherscan.io/address/{{ user.ethereum_address }}" target="_blank" class="btn btn-sm btn-outline-info ms-2">
-                                <i class="fas fa-external-link-alt"></i>
-                            </a>
-                            {% else %}
-                            <span class="text-muted">No Ethereum address assigned</span>
-                            {% endif %}
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="user-avatar me-3 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                            {{ user.username[0].upper() }}
+                        </div>
+                        <div>
+                            <h5 class="mb-1">{{ user.username }}</h5>
+                            <p class="mb-0 text-muted">{{ user.email }}</p>
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Account Type:</div>
-                        <div class="col-md-8">
+                    
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center border-0 border-bottom">
+                            <span class="text-muted">ETH Address</span>
+                            <div>
+                                {% if user.ethereum_address %}
+                                <div class="d-flex align-items-center">
+                                    <span class="ethereum-address small me-2">{{ user.ethereum_address[:10] }}...{{ user.ethereum_address[-8:] }}</span>
+                                    <a href="https://sepolia.etherscan.io/address/{{ user.ethereum_address }}" target="_blank" class="btn btn-sm btn-outline-info" title="View on Etherscan">
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                </div>
+                                {% else %}
+                                <span class="badge bg-secondary">Not assigned</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center border-0 border-bottom">
+                            <span class="text-muted">Account Type</span>
                             {% if user.role %}
                                 <span class="badge bg-primary">{{ user.role.value }}</span>
                             {% else %}
                                 <span class="badge bg-secondary">Standard User</span>
                             {% endif %}
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 fw-bold">Created At:</div>
-                        <div class="col-md-8">{{ user.created_at.strftime('%Y-%m-%d') }}</div>
+                        
+                        <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center border-0">
+                            <span class="text-muted">Member Since</span>
+                            <span>{{ user.created_at.strftime('%b %d, %Y') }}</span>
+                        </div>
                     </div>
                 </div>
+                <div class="card-footer bg-light py-3 text-center">
+                    <a href="#" class="btn btn-outline-primary">
+                        <i class="fas fa-cog me-1"></i> Account Settings
+                    </a>
+                </div>
             </div>
-
+            
             <!-- API Key Info (for API users) -->
             {% if user.role and user.role.value == 'api' %}
-            <div class="card dashboard-widget mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-key me-2"></i>API Access</h5>
+            <div class="card dashboard-widget border-0 shadow mb-4">
+                <div class="card-header bg-dark bg-opacity-10 border-0">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                            <i class="fas fa-key text-primary"></i>
+                        </div>
+                        <h5 class="mb-0 fw-bold">API Access</h5>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle me-2"></i> Your API key is sensitive. Don't share it with anyone.
                     </div>
-                    <div class="input-group mb-3">
+                    <div class="input-group">
                         <input type="password" class="form-control" id="apiKey" value="{{ user.api_key }}" readonly>
-                        <button class="btn btn-outline-secondary" type="button" id="toggleApiKey">Show</button>
-                        <button class="btn btn-outline-secondary" type="button" id="copyApiKey">Copy</button>
+                        <button class="btn btn-outline-primary" type="button" id="toggleApiKey">
+                            <i class="fas fa-eye me-1"></i> Show
+                        </button>
+                        <button class="btn btn-outline-primary" type="button" id="copyApiKey">
+                            <i class="fas fa-copy me-1"></i> Copy
+                        </button>
                     </div>
                 </div>
             </div>
@@ -295,28 +431,43 @@
     <!-- Transaction Analytics -->
     <div class="row mt-4">
         <div class="col-md-12">
-            <div class="card dashboard-widget">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Transaction Analytics</h5>
+            <div class="card dashboard-widget border-0 shadow">
+                <div class="card-header bg-dark bg-opacity-10 border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                                <i class="fas fa-chart-line text-primary"></i>
+                            </div>
+                            <h5 class="mb-0 fw-bold">Transaction Analytics</h5>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" id="refreshAnalytics">
+                            <i class="fas fa-sync-alt me-1"></i> Refresh Charts
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-lg-8">
-                            <div class="chart-container">
-                                <canvas id="transactionsByDateChart" data-ethereum-address="{{ user_eth_address }}"></canvas>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="analytics-panel bg-light bg-opacity-50 p-3 rounded-3 h-100">
+                                <h6 class="fw-bold text-center mb-3">Transactions by Type</h6>
+                                <div class="chart-container position-relative" style="height: 220px;">
+                                    <canvas id="transactionsByTypeChart" data-ethereum-address="{{ user.ethereum_address }}"></canvas>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-lg-4">
-                            <div class="row">
-                                <div class="col-md-12 mb-4">
-                                    <div class="chart-container" style="height: 200px;">
-                                        <canvas id="transactionsByTypeChart" data-ethereum-address="{{ user_eth_address }}"></canvas>
-                                    </div>
+                        <div class="col-md-4">
+                            <div class="analytics-panel bg-light bg-opacity-50 p-3 rounded-3 h-100">
+                                <h6 class="fw-bold text-center mb-3">Transactions by Status</h6>
+                                <div class="chart-container position-relative" style="height: 220px;">
+                                    <canvas id="transactionsByStatusChart" data-ethereum-address="{{ user.ethereum_address }}"></canvas>
                                 </div>
-                                <div class="col-md-12">
-                                    <div class="chart-container" style="height: 200px;">
-                                        <canvas id="transactionsByStatusChart" data-ethereum-address="{{ user_eth_address }}"></canvas>
-                                    </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="analytics-panel bg-light bg-opacity-50 p-3 rounded-3 h-100">
+                                <h6 class="fw-bold text-center mb-3">Transactions by Date</h6>
+                                <div class="chart-container position-relative" style="height: 220px;">
+                                    <canvas id="transactionsByDateChart" data-ethereum-address="{{ user.ethereum_address }}"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -326,11 +477,48 @@
         </div>
     </div>
 </div>
+
+<!-- Add custom CSS for skeleton loading animation -->
+<style>
+.skeleton {
+    animation: skeleton-loading 1s linear infinite alternate;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: -100% 0;
+    }
+    100% {
+        background-position: 100% 0;
+    }
+}
+
+.transaction-row {
+    transition: all 0.2s ease;
+}
+
+.transaction-row:hover {
+    background-color: rgba(13, 110, 253, 0.04);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.05);
+}
+
+.status-badge {
+    transition: all 0.2s ease;
+}
+
+.status-badge:hover {
+    transform: scale(1.05);
+}
+</style>
 {% endblock %}
 
 {% block scripts %}
 <!-- Hidden data element for analytics data -->
-<div id="analytics-data" style="display: none;" data-analytics='{{ analytics_json }}' data-ethereum-address="{{ user_eth_address }}"></div>
+<div id="analytics-data" style="display: none;" data-analytics='{{ analytics_json }}' data-ethereum-address="{{ user.ethereum_address }}"></div>
 
 <script>
     // Toggle API key visibility
@@ -341,10 +529,10 @@
         toggleApiKey.addEventListener('click', function() {
             if (apiKeyField.type === 'password') {
                 apiKeyField.type = 'text';
-                toggleApiKey.textContent = 'Hide';
+                toggleApiKey.innerHTML = '<i class="fas fa-eye-slash me-1"></i> Hide';
             } else {
                 apiKeyField.type = 'password';
-                toggleApiKey.textContent = 'Show';
+                toggleApiKey.innerHTML = '<i class="fas fa-eye me-1"></i> Show';
             }
         });
     }
@@ -360,11 +548,19 @@
             apiKeyField.type = 'password';
             
             // Show temporary copied message
-            const originalText = copyApiKey.textContent;
-            copyApiKey.textContent = 'Copied!';
+            const originalText = copyApiKey.innerHTML;
+            copyApiKey.innerHTML = '<i class="fas fa-check me-1"></i> Copied!';
             setTimeout(() => {
-                copyApiKey.textContent = originalText;
+                copyApiKey.innerHTML = originalText;
             }, 2000);
+        });
+    }
+    
+    // Initialize the refresh analytics button
+    const refreshAnalyticsBtn = document.getElementById('refreshAnalytics');
+    if (refreshAnalyticsBtn) {
+        refreshAnalyticsBtn.addEventListener('click', function() {
+            initTransactionCharts();
         });
     }
 </script>
