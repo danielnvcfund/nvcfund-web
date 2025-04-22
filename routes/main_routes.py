@@ -827,8 +827,9 @@ def letter_of_credit_status(transaction_id):
     )
     
 @main.route('/payment/new', methods=['GET', 'POST'])
+@main.route('/payment/new/<transaction_id>', methods=['GET', 'POST'])
 @login_required
-def new_payment():
+def new_payment(transaction_id=None):
     """New payment route"""
     # Use current_user instead of getting user from session
     user = current_user
@@ -838,19 +839,15 @@ def new_payment():
     
     # Create form and populate gateway choices
     form = PaymentForm()
-    gateway_choices = [(g.id, g.name) for g in gateways]
-    form.gateway_id.choices = gateway_choices
     
-    # Generate a transaction ID for form recovery if we don't have one yet
-    transaction_id = form.transaction_id.data
-    if not transaction_id:
-        transaction_id = f"temp_{uuid.uuid4().hex}"
+    # If transaction_id provided, set it in the form
+    if transaction_id:
+        # Set transaction ID in the form
         form.transaction_id.data = transaction_id
-    
-    # Check if we have saved form data for this transaction
-    if request.method == 'GET':
+        
+        # Check if we have saved form data for this transaction
         saved_data = FormData.get_for_transaction(transaction_id, 'payment')
-        if saved_data:
+        if saved_data and request.method == 'GET':
             # Pre-fill the form with saved data
             logger.info(f"Loading saved payment form data for transaction {transaction_id}")
             
@@ -864,6 +861,16 @@ def new_payment():
                             logger.error(f"Error restoring field {field_name}: {str(e)}")
                             
             flash('Your previously entered information has been restored', 'info')
+    gateway_choices = [(g.id, g.name) for g in gateways]
+    form.gateway_id.choices = gateway_choices
+    
+    # Generate a transaction ID for form recovery if we don't have one yet
+    transaction_id = form.transaction_id.data
+    if not transaction_id:
+        transaction_id = f"temp_{uuid.uuid4().hex}"
+        form.transaction_id.data = transaction_id
+    
+    # We already handle form data loading when transaction_id is provided above
     
     if form.validate_on_submit():
         # Get gateway handler
