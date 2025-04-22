@@ -1177,7 +1177,11 @@ def admin_dashboard():
     
     # Get system-wide statistics for admin
     total_transaction_volume = db.session.query(func.sum(Transaction.amount)).scalar() or 0
-    active_users_count = db.session.query(func.count(User.id)).filter(User.last_login > (datetime.now() - timedelta(days=30))).scalar() or 0
+    # Since we don't have last_login field, count users with transactions in the last 30 days
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    active_users_count = db.session.query(func.count(func.distinct(Transaction.user_id))).filter(
+        Transaction.created_at > thirty_days_ago
+    ).scalar() or 0
     
     # Get gateway statistics
     payment_gateways = PaymentGateway.query.all()
