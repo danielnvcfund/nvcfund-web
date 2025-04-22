@@ -387,6 +387,84 @@ class FormData(db.Model):
             return None
     
     @classmethod
+    def get_for_transaction_admin(cls, transaction_id, form_type):
+        """
+        Get form data for any transaction (admin method)
+        This method allows admins to retrieve form data for any transaction
+        
+        Args:
+            transaction_id (str): The transaction ID
+            form_type (str): The type of form
+            
+        Returns:
+            dict: The form data and user details, or None if not found
+        """
+        # Find the most recent form data for this transaction
+        form_data = cls.query.filter_by(
+            transaction_id=transaction_id,
+            form_type=form_type
+        ).filter(
+            cls.expires_at > datetime.utcnow()
+        ).order_by(cls.created_at.desc()).first()
+        
+        if not form_data:
+            return None
+        
+        # Get user info
+        user = User.query.get(form_data.user_id)
+        user_info = {
+            'user_id': user.id,
+            'username': user.username,
+            'email': user.email
+        } if user else {'user_id': form_data.user_id}
+        
+        # Parse JSON
+        try:
+            form_data_dict = json.loads(form_data.form_data)
+            return {
+                'form_data': form_data_dict,
+                'user': user_info,
+                'created_at': form_data.created_at.isoformat(),
+                'expires_at': form_data.expires_at.isoformat()
+            }
+        except json.JSONDecodeError:
+            return None
+    
+    @classmethod
+    def get_all_for_user(cls, user_id):
+        """
+        Get all form data for a user
+        
+        Args:
+            user_id (int): The user ID
+            
+        Returns:
+            list: List of form data objects with transaction information
+        """
+        # Find all non-expired form data for this user
+        form_data_items = cls.query.filter_by(
+            user_id=user_id
+        ).filter(
+            cls.expires_at > datetime.utcnow()
+        ).order_by(cls.created_at.desc()).all()
+        
+        result = []
+        for item in form_data_items:
+            try:
+                data_dict = json.loads(item.form_data)
+                result.append({
+                    'transaction_id': item.transaction_id,
+                    'form_type': item.form_type,
+                    'created_at': item.created_at.isoformat(),
+                    'expires_at': item.expires_at.isoformat(),
+                    'form_data': data_dict
+                })
+            except json.JSONDecodeError:
+                continue
+                
+        return result
+    
+    @classmethod
     def cleanup_expired(cls):
         """Remove all expired form data"""
         expired = cls.query.filter(cls.expires_at < datetime.utcnow()).all()

@@ -905,6 +905,29 @@ def new_payment():
             flash(f"Payment failed: {result.get('error', 'Unknown error')}", 'danger')
             return render_template('payment_form.html', form=form, user=user)
     
+    # Always try to save the form data if there's anything entered in POST request
+    if request.method == 'POST' and form.transaction_id.data:
+        try:
+            # Create a dictionary of form data
+            form_data = {}
+            for field_name in dir(form):
+                if field_name.startswith('_') or field_name == 'meta':
+                    continue
+                    
+                field = getattr(form, field_name)
+                if hasattr(field, 'data'):
+                    # Convert to string for all data types to ensure JSON compatibility
+                    form_data[field_name] = str(field.data) if field.data is not None else None
+            
+            # Save form data
+            user_id = current_user.id
+            FormData.create_from_form(user_id, transaction_id, 'payment', form_data)
+            db.session.commit()
+            logger.info(f"Saved payment form data for transaction {transaction_id}")
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error saving form data: {str(e)}")
+    
     # If there were form validation errors
     if form.errors and request.method == 'POST':
         for field, errors in form.errors.items():
@@ -1089,6 +1112,38 @@ def payment_cancel():
 def privacy_policy():
     """Privacy policy route"""
     return render_template('privacy_policy.html')
+
+@main.route('/admin/incomplete-transactions', methods=['GET'])
+@login_required
+@admin_required
+def admin_incomplete_transactions():
+    """View incomplete transactions with saved form data - admin only"""
+    # Get all transactions with status PENDING or PROCESSING
+    pending_transactions = Transaction.query.filter(
+        Transaction.status.in_([TransactionStatus.PENDING, TransactionStatus.PROCESSING])
+    ).order_by(Transaction.created_at.desc()).all()
+    
+    # Get form data for each transaction
+    transaction_data = []
+    for transaction in pending_transactions:
+        # Try to get bank transfer form data
+        bank_transfer_data = FormData.get_for_transaction_admin(transaction.transaction_id, 'bank_transfer')
+        # Try to get payment form data
+        payment_data = FormData.get_for_transaction_admin(transaction.transaction_id, 'payment')
+        
+        # Add to results if we have form data
+        if bank_transfer_data or payment_data:
+            transaction_data.append({
+                'transaction': transaction,
+                'bank_transfer_data': bank_transfer_data,
+                'payment_data': payment_data
+            })
+    
+    return render_template(
+        'admin/incomplete_transactions.html', 
+        transaction_data=transaction_data,
+        now=datetime.utcnow()
+    )
 
 @main.route('/payment/test', methods=['GET', 'POST'])
 @login_required
