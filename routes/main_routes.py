@@ -1128,8 +1128,11 @@ def bank_transfer_form(transaction_id):
         flash('This transaction cannot be processed as a bank transfer', 'danger')
         return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
     
-    # Create the bank transfer form
-    form = BankTransferForm()
+    # Create the bank transfer form with transaction_id set
+    form = BankTransferForm(transaction_id=transaction_id)
+    
+    # Set the transaction ID in the form
+    form.transaction_id.data = transaction_id
     
     # Check if we have saved form data for this transaction
     saved_data = FormData.get_for_transaction(transaction_id, 'bank_transfer')
@@ -1279,9 +1282,10 @@ def process_bank_transfer():
     form = BankTransferForm()
     
     # First attempt to save form data for possible recovery
-    transaction_id = None
-    if form.transaction_id.data:
-        transaction_id = form.transaction_id.data
+    transaction_id = request.form.get('transaction_id')
+    if transaction_id:
+        # Ensure the transaction_id is set in the form
+        form.transaction_id.data = transaction_id
         try:
             # Create a dictionary of form data
             form_data = {}
