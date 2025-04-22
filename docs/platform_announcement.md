@@ -53,7 +53,7 @@ We have successfully developed and deployed the following cornerstone features:
 
 We invite you to register for the NVC Banking Platform and explore its capabilities firsthand. The registration process is simple and secure:
 
-1. Visit our platform at [https://nvcbanking.replit.app](https://nvcbanking.replit.app)
+1. Visit our platform at [https://f920fd48-8411-4b55-be56-d9897c1a4843-00-2pld4zn3afnhj.worf.replit.dev](https://f920fd48-8411-4b55-be56-d9897c1a4843-00-2pld4zn3afnhj.worf.replit.dev)
 2. Click the "Register" button in the top-right corner
 3. Complete the registration form with your information
 4. Verify your email address to activate your account
@@ -95,6 +95,6 @@ Sincerely,
 
 **Contact Information:**  
 Website: [nvcplatform.net](https://nvcplatform.net)  
-Platform: [nvcbanking.replit.app](https://nvcbanking.replit.app)  
+Platform: [f920fd48-8411-4b55-be56-d9897c1a4843-00-2pld4zn3afnhj.worf.replit.dev](https://f920fd48-8411-4b55-be56-d9897c1a4843-00-2pld4zn3afnhj.worf.replit.dev)  
 Email: partnerships@nvcplatform.net  
 Phone: +1 (555) 123-4567
