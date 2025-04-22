@@ -956,6 +956,9 @@ def switch_role():
     # Get the user
     user = current_user
     
+    # Get the current URL to return to after switching roles
+    next_url = request.args.get('next') or request.referrer or '/main/dashboard'
+    
     # Toggle the role between admin and user
     if user.role == UserRole.ADMIN:
         user.role = UserRole.USER
@@ -972,8 +975,12 @@ def switch_role():
     # Commit the change
     db.session.commit()
     
-    # Redirect to dashboard
-    return redirect(url_for('web.main.dashboard'))
+    # If admin role is true, always go to dashboard to ensure navigation
+    if user.role == UserRole.ADMIN:
+        return redirect('/main/dashboard')
+    else:
+        # In user role, always go to dashboard to ensure navigation
+        return redirect('/main/dashboard')
     
 @main.route('/terms_of_service')
 def terms_of_service():
