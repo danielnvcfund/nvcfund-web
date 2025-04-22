@@ -102,7 +102,7 @@
                     
                     <!-- Blockchain dropdown -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if request.path == '/main/blockchain_status' or request.path == '/main/nvctoken' %}active fw-bold{% endif %}" href="#" id="blockchainDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle {% if request.path == '/main/blockchain_status' or request.path == '/main/nvc_token_economics' %}active fw-bold{% endif %}" href="#" id="blockchainDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-link me-1"></i> Blockchain
                         </a>
                         <ul class="dropdown-menu dropdown-menu-animated" aria-labelledby="blockchainDropdown">
@@ -112,7 +112,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('web.main.nvctoken') }}">
+                                <a class="dropdown-item" href="{{ url_for('web.main.nvc_token_economics') }}">
                                     <i class="fas fa-coins me-1"></i> NVC Token
                                 </a>
                             </li>
