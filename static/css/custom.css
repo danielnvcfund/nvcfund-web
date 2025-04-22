@@ -1,211 +1,405 @@
-/* Custom CSS for nvcplatform.net banking platform */
+/* NVC Banking Platform - Enhanced UI CSS
+   Updated for better user experience, 2025 */
 
-/* Common styles */
-.ethereum-address {
-    font-family: monospace;
-    word-break: break-all;
+/* ==== Base Styling & Common Elements ==== */
+:root {
+    --primary-gradient: linear-gradient(135deg, var(--bs-primary) 0%, #2c7be5 100%);
+    --secondary-gradient: linear-gradient(135deg, var(--bs-dark) 0%, #2b3035 100%);
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    --card-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    --border-radius-lg: 10px;
+    --border-radius-md: 8px;
+    --border-radius-sm: 6px;
+    --animation-duration: 0.25s;
 }
 
-.transaction-hash {
-    font-family: monospace;
-    word-break: break-all;
-    cursor: pointer;
+body {
+    overflow-x: hidden;
 }
 
-.status-badge {
-    font-size: 0.85rem;
+.card {
+    border-radius: var(--border-radius-md);
+    transition: all var(--animation-duration) ease-in-out;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
 }
 
-/* Dashboard widgets */
-.dashboard-widget {
-    border-radius: 8px;
-    margin-bottom: 20px;
+.card:hover {
+    box-shadow: var(--card-hover-shadow);
+    transform: translateY(-3px);
 }
 
-.dashboard-widget .card-header {
+.card-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--secondary-gradient);
+    font-weight: 600;
+}
+
+/* Improved buttons */
+.btn {
+    border-radius: var(--border-radius-sm);
     font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: all 0.2s ease-in-out;
 }
 
-.dashboard-widget .card-body {
-    padding: 1.25rem;
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
 }
 
-.quick-stats-card .value {
-    font-size: 2rem;
-    font-weight: 500;
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.4);
 }
 
-.quick-stats-card .label {
-    font-size: 0.9rem;
-    opacity: 0.8;
+.btn-outline-primary {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
 }
 
-.quick-stats-card .icon {
-    font-size: 2.5rem;
-    opacity: 0.2;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-}
-
-/* Transaction styles */
-.transaction-row {
-    transition: background-color 0.2s;
-}
-
-.transaction-row:hover {
-    background-color: rgba(var(--bs-secondary-rgb), 0.05);
-}
-
-.transaction-details-section {
-    margin-bottom: 2rem;
-}
-
-.transaction-details-section h3 {
-    margin-bottom: 1rem;
-    font-size: 1.25rem;
-}
-
-/* Blockchain related styles */
-.blockchain-info {
-    background-color: rgba(var(--bs-info-rgb), 0.05);
-    border-left: 4px solid var(--bs-info);
-    padding: 15px;
-    border-radius: 4px;
-}
-
-.blockchain-transaction {
-    background-color: rgba(var(--bs-dark-rgb), 0.03);
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
-    transition: transform 0.2s;
-}
-
-.blockchain-transaction:hover {
+.btn-outline-primary:hover {
+    background: var(--primary-gradient);
     transform: translateY(-2px);
 }
 
-/* Payment form styles */
+/* Add animation to dropdown menus */
+.dropdown-menu-animated {
+    animation: dropdownFade 0.2s ease-in-out;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
+}
+
+@keyframes dropdownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-item {
+    border-radius: var(--border-radius-sm);
+    padding: 0.5rem 1rem;
+    transition: all 0.15s ease;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    transform: translateX(3px);
+}
+
+.dropdown-item:active {
+    background-color: var(--bs-primary);
+}
+
+.dropdown-divider {
+    margin: 0.5rem 0;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Common code elements */
+.ethereum-address, .transaction-hash, code, pre {
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    word-break: break-all;
+    border-radius: var(--border-radius-sm);
+    background-color: rgba(var(--bs-secondary-rgb), 0.1);
+    padding: 0.2em 0.4em;
+    font-size: 90%;
+}
+
+.transaction-hash {
+    cursor: pointer;
+    color: var(--bs-primary);
+}
+
+.transaction-hash:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+pre {
+    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: var(--border-radius-md);
+}
+
+/* Status indicators */
+.status-badge {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.35em 0.65em;
+    border-radius: 30px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+/* ==== Navigation Enhancements ==== */
+.navbar {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.nav-link {
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.nav-link.active {
+    background-color: rgba(var(--bs-primary-rgb), 0.15);
+    color: var(--bs-primary);
+}
+
+/* User avatar styling */
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    transition: all 0.2s ease;
+}
+
+/* ==== Dashboard Components ==== */
+.dashboard-widget {
+    border-radius: var(--border-radius-lg);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.dashboard-widget .card-header {
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+}
+
+.dashboard-widget .card-body {
+    padding: 1.5rem;
+}
+
+.quick-stats-card {
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.quick-stats-card .value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+.quick-stats-card .label {
+    font-size: 1rem;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+.quick-stats-card .icon {
+    font-size: 6rem;
+    opacity: 0.05;
+    position: absolute;
+    bottom: -1.5rem;
+    right: -1rem;
+    transform: rotate(-15deg);
+}
+
+/* Enhanced chart containers */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-bottom: 1.5rem;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    background-color: rgba(var(--bs-dark-rgb), 0.3);
+    padding: 1rem;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ==== Transaction Components ==== */
+.transaction-row {
+    transition: all 0.2s ease;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid transparent;
+}
+
+.transaction-row:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+    border-color: rgba(var(--bs-primary-rgb), 0.1);
+    transform: translateX(5px);
+}
+
+.transaction-details-section {
+    margin-bottom: 2.5rem;
+    padding: 1.5rem;
+    border-radius: var(--border-radius-md);
+    background-color: rgba(var(--bs-dark-rgb), 0.2);
+}
+
+.transaction-details-section h3 {
+    margin-bottom: 1.25rem;
+    font-size: 1.35rem;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.75rem;
+}
+
+/* ==== Blockchain Components ==== */
+.blockchain-info {
+    background-color: rgba(var(--bs-info-rgb), 0.05);
+    border-left: 4px solid var(--bs-info);
+    padding: 1.5rem;
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 1.5rem;
+}
+
+.blockchain-transaction {
+    background-color: rgba(var(--bs-dark-rgb), 0.05);
+    border-radius: var(--border-radius-md);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: all 0.25s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.blockchain-transaction:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: var(--card-hover-shadow);
+    border-color: rgba(var(--bs-primary-rgb), 0.2);
+}
+
+/* ==== Form & Input Enhancements ==== */
+/* Form fields styling */
+.form-control, .form-select {
+    border-radius: var(--border-radius-sm);
+    padding: 0.65rem 1rem;
+    background-color: rgba(var(--bs-dark-rgb), 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--bs-body-color);
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: rgba(var(--bs-primary-rgb), 0.5);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
+    background-color: rgba(var(--bs-dark-rgb), 0.4);
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+/* Payment method selection */
 .payment-method-card {
     cursor: pointer;
     border: 2px solid transparent;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    border-radius: var(--border-radius-md);
+    height: 100%;
 }
 
 .payment-method-card:hover {
     border-color: var(--bs-primary);
+    transform: translateY(-5px);
 }
 
 .payment-method-card.selected {
     border-color: var(--bs-primary);
-    background-color: rgba(var(--bs-primary-rgb), 0.05);
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
 }
 
 .payment-method-card .card-body {
-    padding: 1rem;
+    padding: 1.25rem;
 }
 
 .payment-method-card .payment-logo {
-    max-height: 40px;
-    opacity: 0.8;
+    max-height: 50px;
+    transition: opacity 0.2s ease;
 }
 
-/* Improve form select dropdown visibility */
-.form-select {
-    background-color: var(--bs-body-bg);
-    color: var(--bs-body-color);
-    border: 2px solid var(--bs-primary);
-    font-weight: 500;
-    padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+.payment-method-card:hover .payment-logo {
+    opacity: 1;
 }
 
-.form-select:focus {
-    border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.4);
-}
-
-/* Enhanced styling for select options */
-.form-select option {
-    background-color: var(--bs-dark);
-    color: white;
-    padding: 10px;
-    font-weight: 500;
-}
-
-/* Add a higher contrast indicator for the dropdown arrow */
+/* Enhanced select dropdowns */
 .form-select {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
     background-size: 16px 12px;
+    padding-right: 2.5rem;
 }
 
-/* Additional specific styling for payment form dropdowns */
-#payment-form .form-select {
-    background-color: rgba(var(--bs-primary-rgb), 0.15);
-    font-size: 1.05rem;
-    border-width: 2px;
-    border-color: var(--bs-primary);
-}
-
-#payment-form .form-select:focus {
-    background-color: rgba(var(--bs-primary-rgb), 0.25);
-}
-
-/* Card element styles for Stripe */
+/* Stripe elements styling */
 .StripeElement {
     box-sizing: border-box;
-    height: 40px;
-    padding: 10px 12px;
-    border: 1px solid rgba(var(--bs-secondary-rgb), 0.3);
-    border-radius: 4px;
-    background-color: var(--bs-body-bg);
-    transition: box-shadow 0.2s, border-color 0.2s;
+    height: 45px;
+    padding: 0.65rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-sm);
+    background-color: rgba(var(--bs-dark-rgb), 0.3);
+    transition: all 0.2s ease;
 }
 
 .StripeElement--focus {
-    border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+    border-color: rgba(var(--bs-primary-rgb), 0.5);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
 }
 
 .StripeElement--invalid {
     border-color: var(--bs-danger);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.15);
 }
 
-/* Chart containers */
-.chart-container {
-    position: relative;
-    height: 300px;
-    margin-bottom: 20px;
-}
-
-/* API documentation styles */
+/* ==== API Documentation Styles ==== */
 .api-endpoint {
-    margin-bottom: 30px;
-    border-bottom: 1px solid rgba(var(--bs-secondary-rgb), 0.2);
-    padding-bottom: 20px;
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid rgba(var(--bs-secondary-rgb), 0.1);
+    padding-bottom: 2rem;
 }
 
 .api-endpoint:last-child {
     border-bottom: none;
+    margin-bottom: 0;
 }
 
 .endpoint-url {
-    font-family: monospace;
-    background-color: rgba(var(--bs-dark-rgb), 0.1);
-    padding: 8px 12px;
-    border-radius: 4px;
-    margin-bottom: 15px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    background-color: rgba(var(--bs-dark-rgb), 0.2);
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 1.25rem;
     display: flex;
     align-items: center;
+    overflow-x: auto;
 }
 
 .http-method {
     font-weight: bold;
-    margin-right: 10px;
-    padding: 2px 8px;
-    border-radius: 4px;
+    margin-right: 1rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 30px;
     color: white;
 }
 
@@ -226,27 +420,29 @@
 }
 
 .api-parameters {
-    margin-bottom: 15px;
+    margin-bottom: 1.5rem;
 }
 
 .api-response {
-    background-color: rgba(var(--bs-dark-rgb), 0.05);
-    padding: 15px;
-    border-radius: 4px;
+    background-color: rgba(var(--bs-dark-rgb), 0.2);
+    padding: 1.25rem;
+    border-radius: var(--border-radius-sm);
     overflow-x: auto;
 }
 
 .api-response pre {
     margin-bottom: 0;
+    background-color: transparent;
+    padding: 0;
 }
 
-/* Animation for loading states */
+/* ==== Animations & Loading States ==== */
 @keyframes pulse {
     0% {
         opacity: 1;
     }
     50% {
-        opacity: 0.5;
+        opacity: 0.4;
     }
     100% {
         opacity: 1;
@@ -255,19 +451,88 @@
 
 .loading {
     animation: pulse 1.5s infinite;
+    position: relative;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
+.loading::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(var(--bs-primary-rgb), 0.15), transparent);
+    animation: loadingShimmer 1.5s infinite;
+    transform: translateX(-100%);
+}
+
+@keyframes loadingShimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Adding skeleton loading elements */
+.skeleton {
+    background: linear-gradient(90deg, rgba(var(--bs-dark-rgb), 0.2) 25%, rgba(var(--bs-dark-rgb), 0.5) 50%, rgba(var(--bs-dark-rgb), 0.2) 75%);
+    background-size: 200% 100%;
+    animation: skeletonLoading 1.5s infinite;
+    border-radius: var(--border-radius-sm);
+    height: 20px;
+    margin-bottom: 0.5rem;
+}
+
+@keyframes skeletonLoading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* ==== Responsive Adjustments ==== */
+@media (max-width: 992px) {
     .quick-stats-card .value {
-        font-size: 1.5rem;
+        font-size: 2rem;
     }
     
     .quick-stats-card .icon {
-        font-size: 2rem;
+        font-size: 4rem;
+    }
+    
+    .chart-container {
+        height: 280px;
+    }
+    
+    .navbar-collapse {
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    
+    .dropdown-menu {
+        border: none;
+        background-color: rgba(var(--bs-primary-rgb), 0.05);
+        box-shadow: none;
+        margin-left: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .quick-stats-card .value {
+        font-size: 1.75rem;
     }
     
     .chart-container {
         height: 250px;
+    }
+    
+    .endpoint-url {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .http-method {
+        margin-bottom: 0.5rem;
     }
 }

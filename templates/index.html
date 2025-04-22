@@ -3,79 +3,160 @@
 {% block title %}NVC Banking Platform - Blockchain-Enabled Banking{% endblock %}
 
 {% block content %}
-<div class="px-4 py-5 my-5 text-center">
-    <h1 class="display-5 fw-bold">Banking Platform with Blockchain Integration</h1>
-    <div class="col-lg-8 mx-auto">
-        <p class="lead mb-4">
-            Connect nvcplatform.net with financial institutions and payment gateways using Ethereum blockchain for secure, transparent settlements
-        </p>
-        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-            {% if session.get('user_id') %}
-            <a href="/main/dashboard" class="btn btn-primary btn-lg px-4 gap-3">
-                <i class="fas fa-tachometer-alt me-2"></i> Go to Dashboard
-            </a>
-            {% else %}
-            <a href="/main/login" class="btn btn-primary btn-lg px-4 gap-3">
-                <i class="fas fa-sign-in-alt me-2"></i> Sign In
-            </a>
-            <a href="/main/register" class="btn btn-outline-secondary btn-lg px-4">
-                <i class="fas fa-user-plus me-2"></i> Register
-            </a>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
-<div class="container py-5">
-    <div class="row g-4 py-5 row-cols-1 row-cols-md-3">
-        <div class="col d-flex align-items-start">
-            <div class="icon-square bg-primary text-white flex-shrink-0 me-3 p-3 rounded">
-                <i class="fas fa-university fa-2x"></i>
+<!-- Hero Section -->
+<div class="hero-section position-relative py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center py-5">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <h1 class="display-4 fw-bold mb-3">The Future of Banking, Powered by Blockchain</h1>
+                <p class="lead mb-4">
+                    Seamlessly connect nvcplatform.net with financial institutions and payment gateways using our secure, transparent blockchain settlement infrastructure.
+                </p>
+                <div class="d-grid gap-3 d-sm-flex">
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-primary btn-lg px-4 py-3 d-flex align-items-center">
+                        <i class="fas fa-tachometer-alt me-2"></i> 
+                        <span>Go to Dashboard</span>
+                    </a>
+                    <a href="{{ url_for('documentation.documentation_index') }}" class="btn btn-outline-light btn-lg px-4 py-3">
+                        <i class="fas fa-book me-2"></i> 
+                        <span>Documentation</span>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('web.main.login') }}" class="btn btn-primary btn-lg px-4 py-3 d-flex align-items-center">
+                        <i class="fas fa-sign-in-alt me-2"></i> 
+                        <span>Sign In</span>
+                    </a>
+                    <a href="{{ url_for('web.main.register') }}" class="btn btn-outline-light btn-lg px-4 py-3">
+                        <i class="fas fa-user-plus me-2"></i> 
+                        <span>Register</span>
+                    </a>
+                    {% endif %}
+                </div>
             </div>
-            <div>
-                <h2>Financial Institution Integration</h2>
-                <p>Connect seamlessly with banks, credit unions, and investment firms through standardized APIs for secure fund transfers.</p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <div class="icon-square bg-primary text-white flex-shrink-0 me-3 p-3 rounded">
-                <i class="fas fa-credit-card fa-2x"></i>
-            </div>
-            <div>
-                <h2>Payment Gateway Support</h2>
-                <p>Process payments through multiple gateways including Stripe, PayPal, and Coinbase with easy integration.</p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <div class="icon-square bg-primary text-white flex-shrink-0 me-3 p-3 rounded">
-                <i class="fas fa-link fa-2x"></i>
-            </div>
-            <div>
-                <h2>Blockchain Settlements</h2>
-                <p>Utilize Ethereum blockchain for transparent, secure, and immutable settlement of transactions between parties.</p>
+            <div class="col-lg-6">
+                <div class="card border-0 bg-dark bg-opacity-50 shadow p-4">
+                    <div class="px-4 py-4 text-center">
+                        <div class="display-5 mb-4">
+                            <i class="fas fa-exchange-alt text-primary"></i>
+                        </div>
+                        <h3 class="h3 fw-bold mb-3">Next-Gen Banking Platform</h3>
+                        <p class="lead mb-0">Built for the future of financial transactions with cutting-edge blockchain technology and traditional banking integration.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="container py-5 bg-dark bg-opacity-25 rounded-3">
-    <div class="row align-items-center">
-        <div class="col-md-6">
-            <h2 class="fw-bold mb-3">API-Driven Architecture</h2>
-            <p class="lead">Comprehensive API for integration with nvcplatform.net and other financial systems.</p>
-            <ul class="list-unstyled">
-                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> RESTful API endpoints for all functions</li>
-                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> JWT authentication for secure access</li>
-                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Comprehensive error handling</li>
-                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Real-time transaction status updates</li>
-            </ul>
-            <a href="/main/api_docs" class="btn btn-outline-light mt-3">
-                <i class="fas fa-book me-2"></i> Explore API Documentation
-            </a>
+<!-- Features Section -->
+<div class="container mb-5">
+    <div class="text-center mb-5">
+        <h2 class="display-6 fw-bold">Key Platform Features</h2>
+        <p class="lead text-muted">End-to-end solutions for all your banking and payment needs</p>
+    </div>
+    
+    <div class="row g-4 row-cols-1 row-cols-md-3">
+        <div class="col">
+            <div class="card h-100 border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="feature-icon bg-primary bg-gradient text-white rounded-circle p-3 mb-4" style="width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-university fa-2x"></i>
+                    </div>
+                    <h3 class="h4 fw-bold mb-3">Financial Institution Integration</h3>
+                    <p class="card-text">Connect seamlessly with banks, credit unions, and investment firms through standardized APIs for secure fund transfers.</p>
+                    <ul class="list-unstyled mt-4">
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Real-time account synchronization</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Rapid fund settlements</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i> Secure messaging protocols</li>
+                    </ul>
+                </div>
+            </div>
         </div>
-        <div class="col-md-6">
-            <div class="p-4 bg-dark rounded">
-                <pre class="text-light mb-0"><code>// Example API request
+        <div class="col">
+            <div class="card h-100 border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="feature-icon bg-primary bg-gradient text-white rounded-circle p-3 mb-4" style="width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-credit-card fa-2x"></i>
+                    </div>
+                    <h3 class="h4 fw-bold mb-3">Payment Gateway Support</h3>
+                    <p class="card-text">Process payments through multiple gateways including Stripe, PayPal, and our NVC Global Gateway with easy integration.</p>
+                    <ul class="list-unstyled mt-4">
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Multi-currency support</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Advanced fraud detection</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i> Seamless checkout experience</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="feature-icon bg-primary bg-gradient text-white rounded-circle p-3 mb-4" style="width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-link fa-2x"></i>
+                    </div>
+                    <h3 class="h4 fw-bold mb-3">Blockchain Settlements</h3>
+                    <p class="card-text">Utilize Ethereum blockchain for transparent, secure, and immutable settlement of transactions between parties.</p>
+                    <ul class="list-unstyled mt-4">
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Smart contract execution</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Multi-signature support</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i> NVC Token integration (NVCT)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Section -->
+<div class="bg-dark bg-opacity-25 py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <h2 class="display-6 fw-bold mb-4">API-Driven Architecture</h2>
+                <p class="lead">Comprehensive API for integration with nvcplatform.net and other financial systems.</p>
+                <div class="d-flex flex-column gap-3 mb-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary rounded p-2 me-3">
+                            <i class="fas fa-server text-white"></i>
+                        </div>
+                        <span>RESTful API endpoints for all functions</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary rounded p-2 me-3">
+                            <i class="fas fa-lock text-white"></i>
+                        </div>
+                        <span>JWT authentication for secure access</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary rounded p-2 me-3">
+                            <i class="fas fa-shield-alt text-white"></i>
+                        </div>
+                        <span>Comprehensive error handling</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary rounded p-2 me-3">
+                            <i class="fas fa-bolt text-white"></i>
+                        </div>
+                        <span>Real-time transaction status updates</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('web.main.api_docs') }}" class="btn btn-outline-light btn-lg px-4">
+                    <i class="fas fa-book me-2"></i> Explore API Documentation
+                </a>
+            </div>
+            <div class="col-lg-6">
+                <div class="card border-0 bg-dark shadow-lg">
+                    <div class="card-header border-0 bg-dark text-white d-flex align-items-center">
+                        <div class="me-2">
+                            <span class="badge rounded-circle bg-danger p-1">&nbsp;</span>
+                            <span class="badge rounded-circle bg-warning p-1">&nbsp;</span>
+                            <span class="badge rounded-circle bg-success p-1">&nbsp;</span>
+                        </div>
+                        <span class="small text-muted">api-request.js</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <pre class="text-light p-4 mb-0"><code>// Example API request
 fetch('/api/transactions', {
   method: 'GET',
   headers: {
@@ -84,64 +165,148 @@ fetch('/api/transactions', {
   }
 })
 .then(response => response.json())
-.then(data => console.log(data));</code></pre>
+.then(data => {
+  // Process transaction data
+  console.log(data);
+});</code></pre>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="container py-5">
-    <div class="row align-items-center g-5">
-        <div class="col-md-6">
-            <h2 class="fw-bold mb-3">Secure Blockchain Settlements</h2>
-            <p>All settlements are processed through Ethereum blockchain, providing:</p>
-            <div class="d-flex flex-column gap-3">
-                <div class="d-flex align-items-center">
-                    <div class="feature-icon bg-primary bg-gradient p-2 rounded-circle me-3">
-                        <i class="fas fa-shield-alt text-white"></i>
-                    </div>
-                    <div>
-                        <h4 class="fw-semibold mb-0">Enhanced Security</h4>
-                        <p class="text-muted">Cryptographically secure transactions</p>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center">
-                    <div class="feature-icon bg-primary bg-gradient p-2 rounded-circle me-3">
-                        <i class="fas fa-eye text-white"></i>
-                    </div>
-                    <div>
-                        <h4 class="fw-semibold mb-0">Full Transparency</h4>
-                        <p class="text-muted">Verifiable transaction history</p>
+<!-- Blockchain Section -->
+<div class="container mb-5">
+    <div class="row align-items-center">
+        <div class="col-lg-6 mb-4 mb-lg-0 order-lg-2">
+            <h2 class="display-6 fw-bold mb-4">Secure Blockchain Settlements</h2>
+            <p class="lead mb-4">All settlements are processed through Ethereum blockchain, providing unprecedented security and transparency.</p>
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 bg-dark bg-opacity-10 p-3">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="feature-icon bg-primary text-white rounded p-2 me-3">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h4 class="h5 fw-bold mb-0">Enhanced Security</h4>
+                        </div>
+                        <p class="card-text small">Cryptographically secure transactions with immutable ledger records.</p>
                     </div>
                 </div>
-                <div class="d-flex align-items-center">
-                    <div class="feature-icon bg-primary bg-gradient p-2 rounded-circle me-3">
-                        <i class="fas fa-file-contract text-white"></i>
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 bg-dark bg-opacity-10 p-3">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="feature-icon bg-primary text-white rounded p-2 me-3">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <h4 class="h5 fw-bold mb-0">Full Transparency</h4>
+                        </div>
+                        <p class="card-text small">Complete verifiable transaction history accessible at any time.</p>
                     </div>
-                    <div>
-                        <h4 class="fw-semibold mb-0">Smart Contracts</h4>
-                        <p class="text-muted">Automated settlement execution</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 bg-dark bg-opacity-10 p-3">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="feature-icon bg-primary text-white rounded p-2 me-3">
+                                <i class="fas fa-file-contract"></i>
+                            </div>
+                            <h4 class="h5 fw-bold mb-0">Smart Contracts</h4>
+                        </div>
+                        <p class="card-text small">Automated settlement execution with customizable business logic.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 bg-dark bg-opacity-10 p-3">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="feature-icon bg-primary text-white rounded p-2 me-3">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <h4 class="h5 fw-bold mb-0">NVC Token</h4>
+                        </div>
+                        <p class="card-text small">USD-pegged stablecoin for seamless value transfer across systems.</p>
                     </div>
                 </div>
             </div>
+            <a href="{{ url_for('web.main.blockchain') }}" class="btn btn-primary px-4 py-2">
+                <i class="fas fa-link me-2"></i> Explore Blockchain Features
+            </a>
         </div>
-        <div class="col-md-6">
-            <div class="blockchain-info p-4">
-                <h4 class="mb-3"><i class="fas fa-info-circle me-2"></i> How It Works</h4>
-                <ol>
-                    <li class="mb-2">Users initiate a payment or settlement transaction</li>
-                    <li class="mb-2">Our platform securely processes the transaction</li>
-                    <li class="mb-2">Settlement is confirmed on the Ethereum blockchain</li>
-                    <li class="mb-2">Both parties receive verification of the transfer</li>
-                    <li class="mb-2">Transaction details are permanently recorded</li>
-                </ol>
-                <div class="text-center mt-3">
-                    <a href="/main/blockchain" class="btn btn-outline-primary">
-                        <i class="fas fa-link me-2"></i> Learn More
-                    </a>
+        <div class="col-lg-6 order-lg-1">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-4"><i class="fas fa-info-circle text-primary me-2"></i> How Blockchain Settlements Work</h4>
+                    <div class="d-flex mb-3">
+                        <div class="bg-dark bg-opacity-10 rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <span class="fw-bold">1</span>
+                        </div>
+                        <div>
+                            <h5 class="h6 fw-bold">Initiate Transaction</h5>
+                            <p class="small text-muted">Users initiate a payment or settlement transaction</p>
+                        </div>
+                    </div>
+                    <div class="d-flex mb-3">
+                        <div class="bg-dark bg-opacity-10 rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <span class="fw-bold">2</span>
+                        </div>
+                        <div>
+                            <h5 class="h6 fw-bold">Secure Processing</h5>
+                            <p class="small text-muted">Our platform securely processes the transaction</p>
+                        </div>
+                    </div>
+                    <div class="d-flex mb-3">
+                        <div class="bg-dark bg-opacity-10 rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <span class="fw-bold">3</span>
+                        </div>
+                        <div>
+                            <h5 class="h6 fw-bold">Blockchain Confirmation</h5>
+                            <p class="small text-muted">Settlement is confirmed on the Ethereum blockchain</p>
+                        </div>
+                    </div>
+                    <div class="d-flex mb-3">
+                        <div class="bg-dark bg-opacity-10 rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <span class="fw-bold">4</span>
+                        </div>
+                        <div>
+                            <h5 class="h6 fw-bold">Verification</h5>
+                            <p class="small text-muted">Both parties receive verification of the transfer</p>
+                        </div>
+                    </div>
+                    <div class="d-flex">
+                        <div class="bg-dark bg-opacity-10 rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <span class="fw-bold">5</span>
+                        </div>
+                        <div>
+                            <h5 class="h6 fw-bold">Permanent Record</h5>
+                            <p class="small text-muted">Transaction details are permanently recorded</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- CTA Section -->
+<div class="bg-primary bg-gradient text-white text-center py-5 mb-0">
+    <div class="container">
+        <h2 class="display-6 fw-bold mb-3">Start Your Financial Integration Journey Today</h2>
+        <p class="lead mb-4">Join the growing network of financial institutions, payment providers, and businesses using our platform</p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-light btn-lg px-4 py-3 text-primary">
+                <i class="fas fa-tachometer-alt me-2"></i> Go to Dashboard
+            </a>
+            {% else %}
+            <a href="{{ url_for('web.main.register') }}" class="btn btn-light btn-lg px-4 py-3 text-primary">
+                <i class="fas fa-user-plus me-2"></i> Create Free Account
+            </a>
+            {% endif %}
+            <a href="{{ url_for('documentation.documentation_index') }}" class="btn btn-outline-light btn-lg px-4 py-3">
+                <i class="fas fa-book me-2"></i> Read Documentation
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
 {% endblock %}

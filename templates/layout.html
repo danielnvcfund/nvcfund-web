@@ -21,12 +21,12 @@
     {% block head_scripts %}{% endblock %}
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-university me-2"></i>
-                NVC Banking Platform
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i class="fas fa-university me-2 text-primary"></i>
+                <span class="fw-bold">NVC Banking Platform</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -36,30 +36,46 @@
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
                         {% if current_user.role == 'ADMIN' %}
-                        <a class="nav-link {% if request.path == '/main/admin-dashboard' %}active{% endif %}" href="/main/admin-dashboard">
+                        <a class="nav-link {% if request.path == '/main/admin-dashboard' %}active fw-bold{% endif %}" href="{{ url_for('web.main.admin_dashboard') }}">
                             <i class="fas fa-user-shield me-1"></i> Admin Dashboard
                         </a>
                         {% else %}
-                        <a class="nav-link {% if request.path == '/main/dashboard' %}active{% endif %}" href="/main/dashboard">
+                        <a class="nav-link {% if request.path == '/main/dashboard' %}active fw-bold{% endif %}" href="{{ url_for('web.main.dashboard') }}">
                             <i class="fas fa-tachometer-alt me-1"></i> Dashboard
                         </a>
                         {% endif %}
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/main/transactions' %}active{% endif %}" href="/main/transactions">
+                    
+                    <!-- Transactions dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.path == '/main/transactions' or request.path == '/main/payment/new' %}active fw-bold{% endif %}" href="#" id="transactionsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-exchange-alt me-1"></i> Transactions
                         </a>
+                        <ul class="dropdown-menu dropdown-menu-animated" aria-labelledby="transactionsDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.transactions') }}">
+                                    <i class="fas fa-list-alt me-1"></i> View Transactions
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.new_payment') }}">
+                                    <i class="fas fa-credit-card me-1"></i> Make Payment
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.test_payment') }}">
+                                    <i class="fas fa-flask me-1"></i> Test Payment
+                                </a>
+                            </li>
+                        </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/main/payment/new' %}active{% endif %}" href="/main/payment/new">
-                            <i class="fas fa-credit-card me-1"></i> Make Payment
-                        </a>
-                    </li>
+                    
+                    <!-- SWIFT Banking dropdown -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if '/swift/' in request.path %}active{% endif %}" href="#" id="swiftDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle {% if '/swift/' in request.path %}active fw-bold{% endif %}" href="#" id="swiftDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-university me-1"></i> SWIFT Banking
                         </a>
-                        <ul class="dropdown-menu" aria-labelledby="swiftDropdown">
+                        <ul class="dropdown-menu dropdown-menu-animated" aria-labelledby="swiftDropdown">
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('web.swift.new_letter_of_credit') }}">
                                     <i class="fas fa-file-contract me-1"></i> Letter of Credit (MT760)
@@ -83,28 +99,34 @@
                             </li>
                         </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/main/payment/test' %}active{% endif %}" href="/main/payment/test">
-                            <i class="fas fa-flask me-1"></i> Test Payment
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/main/blockchain' %}active{% endif %}" href="/main/blockchain">
+                    
+                    <!-- Blockchain dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.path == '/main/blockchain' or request.path == '/main/nvctoken' %}active fw-bold{% endif %}" href="#" id="blockchainDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-link me-1"></i> Blockchain
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/main/nvctoken' %}active{% endif %}" href="/main/nvctoken">
-                            <i class="fas fa-coins me-1"></i> NVC Token
-                        </a>
+                        <ul class="dropdown-menu dropdown-menu-animated" aria-labelledby="blockchainDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.blockchain') }}">
+                                    <i class="fas fa-cubes me-1"></i> Blockchain Status
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.nvctoken') }}">
+                                    <i class="fas fa-coins me-1"></i> NVC Token
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     {% endif %}
+                    
+                    <!-- Admin dropdown for admins only -->
                     {% if current_user.is_authenticated and current_user.role.value == 'admin' %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle bg-danger bg-opacity-25 rounded px-2" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-cog me-1"></i> Admin
                         </a>
-                        <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                        <ul class="dropdown-menu dropdown-menu-animated" aria-labelledby="adminDropdown">
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('web.main.index') }}">
                                     <i class="fas fa-users me-1"></i> User Management
@@ -131,7 +153,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="/main/admin/incomplete-transactions">
+                                <a class="dropdown-item" href="{{ url_for('web.main.incomplete_transactions') }}">
                                     <i class="fas fa-tasks me-1"></i> Incomplete Transactions
                                 </a>
                             </li>
@@ -141,35 +163,50 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="/main/php-bridge-docs">
+                                <a class="dropdown-item" href="{{ url_for('web.main.php_bridge_docs') }}">
                                     <i class="fas fa-exchange-alt me-1"></i> PHP Bridge Docs
                                 </a>
                             </li>
-
                         </ul>
                     </li>
                     {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/main/api_docs' %}active{% endif %}" href="{{ url_for('web.main.api_docs') }}">
-                            <i class="fas fa-book me-1"></i> API Docs
+                    
+                    <!-- Documentation dropdown always visible -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.path == '/main/api_docs' or '/documentation' in request.path %}active fw-bold{% endif %}" href="#" id="docsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-book me-1"></i> Resources
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if '/documentation' in request.path %}active{% endif %}" href="{{ url_for('documentation.documentation_index') }}">
-                            <i class="fas fa-file-alt me-1"></i> Documentation
-                        </a>
+                        <ul class="dropdown-menu dropdown-menu-animated" aria-labelledby="docsDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('documentation.documentation_index') }}">
+                                    <i class="fas fa-file-alt me-1"></i> Documentation
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.api_docs') }}">
+                                    <i class="fas fa-code me-1"></i> API Reference
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
+                
+                <!-- User account section -->
                 <ul class="navbar-nav">
                     {% if current_user.is_authenticated %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user-circle me-1"></i> {{ current_user.username }}
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="user-avatar me-2 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                {{ current_user.username[0].upper() }}
+                            </div>
+                            <span>{{ current_user.username }}</span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-animated" aria-labelledby="userDropdown">
                             <li><h6 class="dropdown-header">Signed in as</h6></li>
-                            <li><a class="dropdown-item" href="#">{{ current_user.username }}</a></li>
+                            <li><a class="dropdown-item fw-bold" href="#">{{ current_user.username }}</a></li>
                             <li><hr class="dropdown-divider"></li>
+                            
+                            <!-- Role switching options -->
                             {% if current_user.role.value == 'admin' %}
                             <li><a class="dropdown-item" href="{{ url_for('web.main.dashboard') }}">
                                 <i class="fas fa-tachometer-alt me-1"></i> User Dashboard
@@ -179,18 +216,21 @@
                                 <i class="fas fa-user-shield me-1"></i> Admin Dashboard
                             </a></li>
                             {% endif %}
+                            
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('web.main.logout') }}">Sign out</a></li>
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('web.main.logout') }}">
+                                <i class="fas fa-sign-out-alt me-1"></i> Sign out
+                            </a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/main/login' %}active{% endif %}" href="{{ url_for('web.main.login') }}">
+                        <a class="nav-link btn btn-sm btn-outline-primary px-3 me-2 {% if request.path == '/main/login' %}active{% endif %}" href="{{ url_for('web.main.login') }}">
                             <i class="fas fa-sign-in-alt me-1"></i> Sign In
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/main/register' %}active{% endif %}" href="{{ url_for('web.main.register') }}">
+                        <a class="nav-link btn btn-sm btn-primary px-3 {% if request.path == '/main/register' %}active{% endif %}" href="{{ url_for('web.main.register') }}">
                             <i class="fas fa-user-plus me-1"></i> Register
                         </a>
                     </li>
@@ -200,13 +240,24 @@
         </div>
     </nav>
 
-    <!-- Flash Messages -->
+    <!-- Flash Messages with improved styling -->
     <div class="container mt-3">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                        <div class="d-flex align-items-center">
+                            {% if category == 'success' %}
+                                <i class="fas fa-check-circle text-success me-2 fa-lg"></i>
+                            {% elif category == 'danger' %}
+                                <i class="fas fa-exclamation-circle text-danger me-2 fa-lg"></i>
+                            {% elif category == 'warning' %}
+                                <i class="fas fa-exclamation-triangle text-warning me-2 fa-lg"></i>
+                            {% elif category == 'info' %}
+                                <i class="fas fa-info-circle text-info me-2 fa-lg"></i>
+                            {% endif %}
+                            <div>{{ message }}</div>
+                        </div>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 {% endfor %}
@@ -217,33 +268,43 @@
         <div id="alert-container"></div>
     </div>
 
-    <!-- Main Content -->
+    <!-- Main Content with card styling for content blocks -->
     <main class="container my-4">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Smart Connectivity Status Sidebar was removed as requested -->
-
-    <!-- Footer -->
-    <footer class="footer mt-auto py-3 bg-dark">
+    <!-- Improved Footer with more information and better organization -->
+    <footer class="footer mt-auto py-4 bg-dark bg-opacity-50">
         <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <p class="text-muted mb-1">&copy; 2023 NVC Banking Platform</p>
-                    <p class="text-muted small">Ethereum-powered banking platform for secure digital settlements</p>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <h5 class="text-white mb-3">NVC Banking Platform</h5>
+                    <p class="text-muted mb-1">&copy; 2025 NVC Global</p>
+                    <p class="text-muted small">Ethereum-powered banking platform for secure digital settlements and financial institution integration</p>
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <a href="{{ url_for('documentation.documentation_index') }}" class="text-muted me-3">Documentation</a>
-                    <a href="{{ url_for('web.main.api_docs') }}" class="text-muted me-3">API Documentation</a>
-                    <a href="{{ url_for('web.main.terms_of_service') }}" class="text-muted me-3">Terms of Service</a>
-                    <a href="{{ url_for('web.main.privacy_policy') }}" class="text-muted">Privacy Policy</a>
+                <div class="col-md-4">
+                    <h5 class="text-white mb-3">Resources</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{{ url_for('documentation.documentation_index') }}" class="text-muted text-decoration-none"><i class="fas fa-file-alt me-2"></i>Documentation</a></li>
+                        <li class="mb-2"><a href="{{ url_for('web.main.api_docs') }}" class="text-muted text-decoration-none"><i class="fas fa-code me-2"></i>API Reference</a></li>
+                        <li class="mb-2"><a href="{{ url_for('web.main.terms_of_service') }}" class="text-muted text-decoration-none"><i class="fas fa-gavel me-2"></i>Terms of Service</a></li>
+                        <li><a href="{{ url_for('web.main.privacy_policy') }}" class="text-muted text-decoration-none"><i class="fas fa-shield-alt me-2"></i>Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="text-white mb-3">Contact</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="https://nvcplatform.net" class="text-muted text-decoration-none"><i class="fas fa-globe me-2"></i>nvcplatform.net</a></li>
+                        <li class="mb-2"><a href="mailto:partnerships@nvcplatform.net" class="text-muted text-decoration-none"><i class="fas fa-envelope me-2"></i>partnerships@nvcplatform.net</a></li>
+                        <li><a href="tel:+15551234567" class="text-muted text-decoration-none"><i class="fas fa-phone me-2"></i>+1 (555) 123-4567</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS Bundle with latest version -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Common Scripts -->
     {% block scripts %}{% endblock %}
