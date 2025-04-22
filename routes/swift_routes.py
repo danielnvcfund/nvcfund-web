@@ -179,12 +179,9 @@ def fund_transfer_status(transaction_id):
 @login_required
 def cancel_message(transaction_id):
     """Cancel a pending SWIFT message"""
-    # Check if user is authenticated - explicitly check session to prevent login redirection issues
-    user_id = session.get('user_id')
-    if not user_id:
-        flash('Please log in to access this page.', 'info')
-        return redirect(url_for('web.main.login', next=request.url))
-        
+    # Flask-Login's login_required decorator ensures the user is authenticated
+    # We can safely use current_user
+    
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
     if not transaction:
         flash('Transaction not found.', 'danger')
@@ -213,12 +210,9 @@ def cancel_message(transaction_id):
 @login_required
 def cancel_transfer(transaction_id):
     """Cancel a pending SWIFT fund transfer"""
-    # Check if user is authenticated - explicitly check session to prevent login redirection issues
-    user_id = session.get('user_id')
-    if not user_id:
-        flash('Please log in to access this page.', 'info')
-        return redirect(url_for('web.main.login', next=request.url))
-        
+    # Flask-Login's login_required decorator ensures the user is authenticated
+    # We can safely use current_user
+    
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
     if not transaction:
         flash('Transaction not found.', 'danger')
@@ -247,11 +241,9 @@ def cancel_transfer(transaction_id):
 @login_required
 def api_swift_status(transaction_id):
     """API endpoint to get SWIFT message status"""
-    # Check if user is authenticated - explicitly check session to prevent login redirection issues
-    user_id = session.get('user_id')
-    if not user_id:
-        return jsonify({'success': False, 'error': 'Authentication required'})
-        
+    # Flask-Login's login_required decorator ensures the user is authenticated
+    # We can safely use current_user
+    
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
     if not transaction:
         return jsonify({'success': False, 'error': 'Transaction not found'})

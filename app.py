@@ -51,8 +51,8 @@ def create_app():
         "pool_pre_ping": True,
     }
     
-    # Configure session
-    app.config["SESSION_COOKIE_SECURE"] = False  # Set to True in production with HTTPS
+    # Configure session 
+    app.config["SESSION_COOKIE_SECURE"] = os.environ.get('REPLIT_DEPLOYMENT') == 'true'  # Auto-detect if we need secure cookies
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
     app.config["PERMANENT_SESSION_LIFETIME"] = 86400  # 24 hours
@@ -60,7 +60,7 @@ def create_app():
     
     # Configure Flask-Login
     app.config["REMEMBER_COOKIE_DURATION"] = 86400  # 24 hours
-    app.config["REMEMBER_COOKIE_SECURE"] = False  # Set to True in production with HTTPS
+    app.config["REMEMBER_COOKIE_SECURE"] = os.environ.get('REPLIT_DEPLOYMENT') == 'true'  # Auto-detect if we need secure cookies
     app.config["REMEMBER_COOKIE_HTTPONLY"] = True
     app.config["REMEMBER_COOKIE_SAMESITE"] = "Lax"
 
