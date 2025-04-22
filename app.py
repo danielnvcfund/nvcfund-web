@@ -52,17 +52,21 @@ def create_app():
     }
     
     # Configure session 
-    app.config["SESSION_COOKIE_SECURE"] = os.environ.get('REPLIT_DEPLOYMENT') == 'true'  # Auto-detect if we need secure cookies
+    app.config["SESSION_COOKIE_SECURE"] = False  # Allow non-HTTPS for development
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-    app.config["PERMANENT_SESSION_LIFETIME"] = 86400  # 24 hours
+    app.config["PERMANENT_SESSION_LIFETIME"] = 2592000  # 30 days
     app.config["SESSION_TYPE"] = "filesystem"
+    # Make sessions permanent by default
+    app.config["SESSION_PERMANENT"] = True
     
     # Configure Flask-Login
     app.config["REMEMBER_COOKIE_DURATION"] = 86400  # 24 hours
-    app.config["REMEMBER_COOKIE_SECURE"] = os.environ.get('REPLIT_DEPLOYMENT') == 'true'  # Auto-detect if we need secure cookies
+    app.config["REMEMBER_COOKIE_SECURE"] = False  # Allow non-HTTPS for development
     app.config["REMEMBER_COOKIE_HTTPONLY"] = True
     app.config["REMEMBER_COOKIE_SAMESITE"] = "Lax"
+    app.config["LOGIN_DISABLED"] = False
+    app.config["SESSION_PROTECTION"] = "strong"
 
     # Configure JWT
     app.config["JWT_SECRET_KEY"] = os.environ.get("SESSION_SECRET", "dev_secret_key_for_testing_only")  # Using same secret for simplicity

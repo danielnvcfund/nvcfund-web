@@ -146,7 +146,11 @@ def login():
     """User login route"""
     # Use Flask-Login's current_user to check if user is already logged in
     if current_user.is_authenticated:
-        return redirect(url_for('web.main.dashboard'))
+        # Redirect based on role
+        if current_user.role == UserRole.ADMIN:
+            return redirect(url_for('web.main.admin_dashboard'))
+        else:
+            return redirect(url_for('web.main.dashboard'))
         
     form = LoginForm()
     
@@ -161,6 +165,9 @@ def login():
         from flask_login import login_user
         login_user(user, remember=True)
         
+        # Make sure session is permanent
+        session.permanent = True
+        
         # Also maintain session for backward compatibility
         session['user_id'] = user.id
         session['username'] = user.username
@@ -169,12 +176,17 @@ def login():
         # Generate JWT token for API access
         from auth import generate_jwt_token
         jwt_token = generate_jwt_token(user.id)
+        session['jwt_token'] = jwt_token  # Also store in session
         
         flash(f'Welcome back, {user.username}!', 'success')
         
         # We need to pass the JWT token to the template/client for API calls
         # We'll set it in a special template that will store it in localStorage and redirect
-        response = make_response(render_template('store_token.html', jwt_token=jwt_token, redirect_url=request.args.get('next') or url_for('web.main.dashboard')))
+        next_url = request.args.get('next')
+        dashboard_url = url_for('web.main.admin_dashboard') if user.role == UserRole.ADMIN else url_for('web.main.dashboard')
+        response = make_response(render_template('store_token.html', 
+                                                 jwt_token=jwt_token, 
+                                                 redirect_url=next_url or dashboard_url))
         return response
     
     # If there were form validation errors
@@ -196,9 +208,19 @@ def logout():
     # Also clear session for backward compatibility
     session.clear()
     
+    # Ensure cookies are cleared
+    response = make_response(render_template('clear_token.html', redirect_url=url_for('web.main.index')))
+    
+    # Expire the session cookie
+    response.delete_cookie('session')
+    
+    # Expire the remember_token cookie
+    response.delete_cookie('remember_token')
+    
     flash('You have been logged out', 'info')
+    
     # Render a template that clears the JWT token from storage before redirecting
-    return render_template('clear_token.html', redirect_url=url_for('web.main.index'))
+    return response
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
