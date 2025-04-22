@@ -474,8 +474,13 @@ def transaction_details(transaction_id):
     
     # Check if the transaction belongs to the user or user is admin
     if transaction.user_id != current_user.id and current_user.role != UserRole.ADMIN:
-        flash('You do not have permission to view this transaction', 'danger')
-        return redirect(url_for('web.main.transactions'))
+        flash('Transaction not found or you do not have permission to access it', 'danger')
+        return render_template('error.html', 
+                               error_title="Access Denied", 
+                               error_message="Transaction not found or you do not have permission to access it")
+    
+    # Log successful access for debugging
+    logger.debug(f"User {current_user.id} ({current_user.username}) accessed transaction {transaction_id}")
     
     # Get blockchain transaction if available
     blockchain_tx = None

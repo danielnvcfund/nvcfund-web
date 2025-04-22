@@ -10,14 +10,15 @@
             <div class="col-md-8">
                 <div class="card shadow-sm">
                     <div class="card-header bg-danger text-white">
-                        <h4 class="mb-0">Error Occurred</h4>
+                        <h4 class="mb-0">{{ error_title|default('Error Occurred') }}</h4>
                     </div>
                     <div class="card-body">
                         <div class="alert alert-danger">
-                            {{ error }}
+                            {{ error_message|default(error) }}
                         </div>
-                        <p>Sorry, an error occurred while processing your request. Our technical team has been notified.</p>
+                        <p>Sorry, an error occurred while processing your request.</p>
                         <a href="/" class="btn btn-primary">Return to Home</a>
+                        <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-secondary">Go to Dashboard</a>
                     </div>
                 </div>
             </div>
