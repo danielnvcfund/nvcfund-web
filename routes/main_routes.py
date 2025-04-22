@@ -958,34 +958,25 @@ def api_docs():
 @main.route('/switch-role')
 @login_required
 def switch_role():
-    """Switch between admin and user roles for demonstration purposes"""
+    """
+    This route is replaced with direct navigation between dashboards.
+    It's maintained for backward compatibility.
+    """
     # Get the user
     user = current_user
     
-    # Get the current URL to return to after switching roles
-    next_url = request.args.get('next') or request.referrer or '/main/dashboard'
-    
-    # Toggle the role between admin and user
+    # Instead of toggling role, just redirect to the appropriate dashboard
+    # based on current role
     if user.role == UserRole.ADMIN:
-        user.role = UserRole.USER
-        flash('Switched to User role', 'success')
+        # If already admin, show user dashboard
+        return redirect(url_for('web.main.dashboard'))
     else:
-        # Only allow switching to admin if the current account has admin capabilities
-        # This is for demo purposes only; in production we'd check a permission flag
+        # If user has admin privileges, show admin dashboard
         if user.username in ['admin', 'headadmin']:
-            user.role = UserRole.ADMIN
-            flash('Switched to Admin role', 'success')
+            return redirect(url_for('web.main.admin_dashboard'))
         else:
             flash('Your account does not have admin privileges', 'danger')
-    
-    # Commit the change
-    db.session.commit()
-    
-    # Redirect to the appropriate dashboard based on role
-    if user.role == UserRole.ADMIN:
-        return redirect(url_for('web.main.admin_dashboard'))
-    else:
-        return redirect(url_for('web.main.dashboard'))
+            return redirect(url_for('web.main.dashboard'))
     
 @main.route('/terms_of_service')
 def terms_of_service():
