@@ -977,7 +977,7 @@ def switch_role():
     
     # Redirect to the appropriate dashboard based on role
     if user.role == UserRole.ADMIN:
-        return redirect('/admin-dashboard')
+        return redirect('/main/admin-dashboard')
     else:
         return redirect('/main/dashboard')
     
@@ -1152,7 +1152,7 @@ def privacy_policy():
     """Privacy policy route"""
     return render_template('privacy_policy.html')
 
-@main.route('/admin-dashboard')
+@main.route('/admin-dashboard', endpoint='admin_dashboard')
 @login_required
 @admin_required
 def admin_dashboard():

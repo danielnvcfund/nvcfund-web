@@ -36,7 +36,7 @@
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
                         {% if current_user.role == 'ADMIN' %}
-                        <a class="nav-link {% if request.path == '/admin-dashboard' %}active{% endif %}" href="/admin-dashboard">
+                        <a class="nav-link {% if request.path == '/main/admin-dashboard' %}active{% endif %}" href="/main/admin-dashboard">
                             <i class="fas fa-user-shield me-1"></i> Admin Dashboard
                         </a>
                         {% else %}
