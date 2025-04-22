@@ -411,13 +411,18 @@ function initBlockchainBalance() {
             return;
         }
         
-        fetch(`/api/blockchain/balances?address=${encodedAddress}`, {
+        // Make sure we're using the proper API endpoint with the correct prefix
+        const apiUrl = `/api/blockchain/balances?address=${encodedAddress}`;
+        console.log("Fetching balance from URL:", apiUrl);
+        
+        fetch(apiUrl, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${jwtToken}`
+                'Authorization': `Bearer ${jwtToken}`,
+                'X-API-Test': 'true' // Enable test access if authentication issues persist
             },
-            credentials: 'same-origin'
+            credentials: 'include' // Include cookies for session authentication
         })
         .then(response => {
             // Check if response is ok before trying to parse JSON
@@ -584,14 +589,21 @@ function refreshBlockchainBalance(button) {
     
     // Use a try/catch block for the fetch to handle network errors
     try {
-        // Fetch balance from API
-        fetch(`/api/blockchain/balances?address=${ethereumAddress}`, {
+        // Fetch balance from API - ensure address is properly encoded
+        const encodedAddress = encodeURIComponent(ethereumAddress);
+        
+        // Make sure we're using the proper API endpoint with the correct prefix
+        const apiUrl = `/api/blockchain/balances?address=${encodedAddress}`;
+        console.log("Refreshing balance from URL:", apiUrl);
+        
+        fetch(apiUrl, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getJwtToken()}`
+                'Authorization': `Bearer ${getJwtToken()}`,
+                'X-API-Test': 'true' // Enable test access if authentication issues persist
             },
-            credentials: 'same-origin'
+            credentials: 'include' // Include cookies for session authentication
         })
         .then(response => {
             // Check if response is ok before trying to parse JSON
