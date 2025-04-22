@@ -21,6 +21,7 @@ from forms import (
     InvitationForm, AcceptInvitationForm, TestPaymentForm, BankTransferForm, LetterOfCreditForm
 )
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import func
 
 from app import db
 from models import (
@@ -323,6 +324,11 @@ def dashboard():
     
     # Get the user from current_user (already provided by Flask-Login)
     user = current_user
+    
+    # If the user is an admin, make sure they still see the regular user dashboard
+    # instead of being redirected to the admin dashboard
+    # Temporarily store original role to display correct UI elements
+    original_role = user.role
         
     # Make sure user has an Ethereum address
     if not user.ethereum_address:
@@ -1169,8 +1175,19 @@ def admin_dashboard():
         Transaction.status.in_([TransactionStatus.PENDING, TransactionStatus.PROCESSING])
     ).order_by(Transaction.created_at.desc()).all()
     
-    # Get transaction analytics
-    analytics = get_transaction_analytics(user.id, days=30)
+    # Get system-wide statistics for admin
+    total_transaction_volume = db.session.query(func.sum(Transaction.amount)).scalar() or 0
+    active_users_count = db.session.query(func.count(User.id)).filter(User.last_login > (datetime.now() - timedelta(days=30))).scalar() or 0
+    
+    # Get gateway statistics
+    payment_gateways = PaymentGateway.query.all()
+    gateway_usage = {}
+    for gateway in payment_gateways:
+        count = Transaction.query.filter_by(gateway_id=gateway.id).count()
+        gateway_usage[gateway.name] = count
+    
+    # Get transaction analytics for all users (admin view)
+    analytics = get_transaction_analytics(None, days=30)  # None means get analytics for all users
     
     # Ensure JSON serialization works with decimal values
     import json
@@ -1211,7 +1228,11 @@ def admin_dashboard():
         recent_transactions=recent_transactions,
         pending_transactions=pending_transactions,
         analytics_json=analytics_json,
-        jwt_token=jwt_token
+        jwt_token=jwt_token,
+        total_transaction_volume=total_transaction_volume,
+        active_users_count=active_users_count,
+        gateway_usage=gateway_usage,
+        payment_gateways=payment_gateways
     )
 
 @main.route('/admin/incomplete-transactions', methods=['GET'])

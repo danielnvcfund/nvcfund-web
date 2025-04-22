@@ -122,6 +122,24 @@
                                 <span class="status-value"><span class="badge bg-success">Connected</span></span>
                             </div>
                         </div>
+                        <div class="col-6">
+                            <div class="system-status-item">
+                                <span class="status-label">Total Registered Users</span>
+                                <span class="status-value">{{ all_users|length }}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="system-status-item">
+                                <span class="status-label">Active Users (30 days)</span>
+                                <span class="status-value">{{ active_users_count }}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="system-status-item">
+                                <span class="status-label">Transaction Volume</span>
+                                <span class="status-value">${{ "%.2f"|format(total_transaction_volume) }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
