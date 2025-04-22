@@ -416,8 +416,14 @@ def transactions():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
     
-    # Base query
-    query = Transaction.query.filter_by(user_id=current_user.id)
+    # Base query - allow admins to see all transactions
+    is_admin = current_user.role == UserRole.ADMIN if hasattr(current_user, 'role') else False
+    logger.debug(f"Transactions listing - User ID: {current_user.id}, Role: {current_user.role}, Is admin: {is_admin}")
+    
+    if is_admin:
+        query = Transaction.query  # Admin can see all transactions
+    else:
+        query = Transaction.query.filter_by(user_id=current_user.id)  # Regular users see only their own
     
     # Apply filters
     if transaction_type:
@@ -454,7 +460,8 @@ def transactions():
         'transactions.html',
         transactions=transactions,
         transaction_types=TransactionType,
-        transaction_statuses=TransactionStatus
+        transaction_statuses=TransactionStatus,
+        is_admin=is_admin
     )
 
 @main.route('/transaction/<transaction_id>')
@@ -473,7 +480,13 @@ def transaction_details(transaction_id):
         return redirect(url_for('web.main.transactions'))
     
     # Check if the transaction belongs to the user or user is admin
-    if transaction.user_id != current_user.id and current_user.role != UserRole.ADMIN:
+    is_admin = current_user.role == UserRole.ADMIN if hasattr(current_user, 'role') else False
+    is_owner = transaction.user_id == current_user.id if hasattr(current_user, 'id') else False
+    
+    logger.debug(f"Transaction access check - User ID: {current_user.id}, Role: {current_user.role}, " +
+                 f"Transaction owner ID: {transaction.user_id}, Is admin: {is_admin}, Is owner: {is_owner}")
+    
+    if not is_owner and not is_admin:
         flash('Transaction not found or you do not have permission to access it', 'danger')
         return render_template('error.html', 
                                error_title="Access Denied", 
@@ -509,7 +522,9 @@ def transaction_details(transaction_id):
         transaction=transaction,
         blockchain_tx=blockchain_tx,
         formatted_amount=formatted_amount,
-        formatted_currency=formatted_currency
+        formatted_currency=formatted_currency,
+        is_admin=is_admin,
+        is_owner=is_owner
     )
 
 @main.route('/blockchain')
