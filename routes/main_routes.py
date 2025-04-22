@@ -944,7 +944,7 @@ def new_payment(transaction_id=None):
     # GET request or form validation failed, show payment form
     return render_template('payment_form.html', form=form, user=user, gateways=gateways)
 
-@main.route('/api_docs')
+@main.route('/api-docs')
 def api_docs():
     """API documentation route"""
     return render_template('api_docs.html')
@@ -977,9 +977,9 @@ def switch_role():
     
     # Redirect to the appropriate dashboard based on role
     if user.role == UserRole.ADMIN:
-        return redirect('/main/admin-dashboard')
+        return redirect(url_for('web.main.admin_dashboard'))
     else:
-        return redirect('/main/dashboard')
+        return redirect(url_for('web.main.dashboard'))
     
 @main.route('/terms_of_service')
 def terms_of_service():
