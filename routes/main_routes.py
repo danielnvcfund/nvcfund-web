@@ -1152,7 +1152,7 @@ def privacy_policy():
     """Privacy policy route"""
     return render_template('privacy_policy.html')
 
-@main.route('/admin-dashboard', endpoint='admin_dashboard')
+@main.route('/admin-dashboard')
 @login_required
 @admin_required
 def admin_dashboard():

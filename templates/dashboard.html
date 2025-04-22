@@ -16,7 +16,7 @@
                 </a>
             {% elif user.username in ['admin', 'headadmin'] %}
                 <a href="/main/switch-role" class="btn btn-secondary">
-                    <i class="fas fa-exchange-alt me-1"></i> Switch to Admin View
+                    <i class="fas fa-exchange-alt me-1"></i> Switch to Admin Role
                 </a>
             {% endif %}
             <a href="{{ url_for('web.main.new_payment') }}" class="btn btn-primary">
