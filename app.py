@@ -87,12 +87,23 @@ def create_app():
     # Set debug mode to True
     app.config['DEBUG'] = True
     
-    # Global error handler
+    # Global error handlers
     @app.errorhandler(Exception)
     def handle_exception(e):
         """Global exception handler to log errors"""
         app.logger.error(f"Unhandled exception: {str(e)}", exc_info=True)
         return render_template('error.html', error=str(e)), 500
+        
+    @app.errorhandler(404)
+    def page_not_found(e):
+        """Custom 404 error handler"""
+        app.logger.error(f"404 error: {str(e)}")
+        return render_template(
+            'error.html', 
+            error="The requested page could not be found.", 
+            code=404, 
+            title="Page Not Found"
+        ), 404
     
     # Add direct routes to handle common paths
     @app.route('/')
