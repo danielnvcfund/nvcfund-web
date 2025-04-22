@@ -981,21 +981,23 @@ def api_docs():
 @login_required
 def switch_role():
     """
-    This route is replaced with direct navigation between dashboards.
-    It's maintained for backward compatibility.
+    Switch role without session invalidation.
+    Determines which dashboard to show based on current location.
     """
-    # Get the user
+    # Get the user and referer
     user = current_user
+    referer = request.referrer or ""
     
-    # Instead of toggling role, just redirect to the appropriate dashboard
-    # based on current role
-    if user.role == UserRole.ADMIN:
-        # If already admin, show user dashboard
+    # Determine which dashboard to redirect to based on the current page
+    if 'admin-dashboard' in referer:
+        # User is currently in admin dashboard, switch to user dashboard
+        logger.info(f"User {user.username} switching from admin to user dashboard")
         return redirect(url_for('web.main.dashboard'))
     else:
-        # If user has admin privileges, show admin dashboard
-        if user.username in ['admin', 'headadmin']:
-            return redirect(url_for('web.main.admin_dashboard'))
+        # User is in user dashboard or elsewhere, check if they should see admin dashboard
+        if user.role == UserRole.ADMIN or user.username in ['admin', 'headadmin']:
+            logger.info(f"User {user.username} switching from user to admin dashboard")
+            return redirect(url_for('web.main.admin_dashboard')) 
         else:
             flash('Your account does not have admin privileges', 'danger')
             return redirect(url_for('web.main.dashboard'))

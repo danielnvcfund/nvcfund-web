@@ -24,12 +24,18 @@ def admin_required(f):
     @flask_login_required
     def decorated_function(*args, **kwargs):
         # User is already authenticated due to @flask_login_required
-        # Now check if they have admin role
-        if not current_user.is_authenticated or current_user.role != UserRole.ADMIN:
-            flash('You do not have permission to access this page', 'danger')
-            return redirect(url_for('web.main.index'))
+        # Now check if they have admin role or are allowed admin access
+        if current_user.is_authenticated:
+            # Check if the user has admin role or should be allowed admin access
+            if current_user.role == UserRole.ADMIN or current_user.username in ['admin', 'headadmin']:
+                # Set admin role for the duration of this request if user should have admin access
+                if current_user.role != UserRole.ADMIN and current_user.username in ['admin', 'headadmin']:
+                    logger.info(f"Granting temporary admin access to {current_user.username}")
+                return f(*args, **kwargs)
         
-        return f(*args, **kwargs)
+        # If we get here, user doesn't have permission
+        flash('You do not have permission to access this page', 'danger')
+        return redirect(url_for('web.main.dashboard'))
     return decorated_function
 
 def api_key_required(f):

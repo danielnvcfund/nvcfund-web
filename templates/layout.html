@@ -165,9 +165,15 @@
                             <li><h6 class="dropdown-header">Signed in as</h6></li>
                             <li><a class="dropdown-item" href="#">{{ current_user.username }}</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/main/switch-role">
-                                <i class="fas fa-exchange-alt me-1"></i> Switch to {{ 'User' if current_user.role.value == 'admin' else 'Admin' }} Role
+                            {% if current_user.role.value == 'admin' %}
+                            <li><a class="dropdown-item" href="{{ url_for('web.main.dashboard') }}">
+                                <i class="fas fa-tachometer-alt me-1"></i> User Dashboard
                             </a></li>
+                            {% elif current_user.username in ['admin', 'headadmin'] %}
+                            <li><a class="dropdown-item" href="{{ url_for('web.main.admin_dashboard') }}">
+                                <i class="fas fa-user-shield me-1"></i> Admin Dashboard
+                            </a></li>
+                            {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('web.main.logout') }}">Sign out</a></li>
                         </ul>
