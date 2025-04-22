@@ -26,4 +26,5 @@ dependencies = [
     "pdfkit>=1.0.0",
     "weasyprint>=65.1",
     "trafilatura>=2.0.0",
+    "markdown>=3.8",
 ]
