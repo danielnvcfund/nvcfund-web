@@ -141,6 +141,11 @@ def index():
     """Homepage route"""
     return render_template('index.html')
 
+@main.route('/quick-access')
+def quick_access():
+    """Quick access page for registration and documentation"""
+    return render_template('quick_access.html')
+
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     """User login route"""
