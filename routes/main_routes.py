@@ -948,6 +948,32 @@ def new_payment(transaction_id=None):
 def api_docs():
     """API documentation route"""
     return render_template('api_docs.html')
+
+@main.route('/switch-role')
+@login_required
+def switch_role():
+    """Switch between admin and user roles for demonstration purposes"""
+    # Get the user
+    user = current_user
+    
+    # Toggle the role between admin and user
+    if user.role == UserRole.ADMIN:
+        user.role = UserRole.USER
+        flash('Switched to User role', 'success')
+    else:
+        # Only allow switching to admin if the current account has admin capabilities
+        # This is for demo purposes only; in production we'd check a permission flag
+        if user.username in ['admin', 'headadmin']:
+            user.role = UserRole.ADMIN
+            flash('Switched to Admin role', 'success')
+        else:
+            flash('Your account does not have admin privileges', 'danger')
+    
+    # Commit the change
+    db.session.commit()
+    
+    # Redirect to dashboard
+    return redirect(url_for('web.main.dashboard'))
     
 @main.route('/terms_of_service')
 def terms_of_service():
