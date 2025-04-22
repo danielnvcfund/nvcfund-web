@@ -1,0 +1,153 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Documentation{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0">Administrator Documentation</h2>
+                    <a href="{{ url_for('documentation.documentation_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to General Docs
+                    </a>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        Administrative guides and technical references for platform administrators and developers.
+                    </p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-lock me-2"></i>
+                        These documents contain sensitive information and are restricted to administrators only.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- PDF Documents -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>
+                        <i class="far fa-file-pdf me-2"></i>
+                        Technical Documentation
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if pdf_files %}
+                        <div class="list-group">
+                            {% for pdf in pdf_files %}
+                                <a href="{{ pdf.url }}" class="list-group-item list-group-item-action" target="_blank">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">{{ pdf.name }}</h5>
+                                        <small><i class="fas fa-external-link-alt"></i></small>
+                                    </div>
+                                    <small class="text-muted">PDF Document</small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No PDF documents available at this time.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Markdown Documents -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>
+                        <i class="far fa-file-alt me-2"></i>
+                        Admin Guides & References
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if md_files %}
+                        <div class="list-group">
+                            {% for md in md_files %}
+                                <a href="{{ md.url }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">{{ md.name }}</h5>
+                                        <small><i class="fas fa-chevron-right"></i></small>
+                                    </div>
+                                    <small class="text-muted">Online Guide</small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No admin guides available at this time.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3>
+                        <i class="fas fa-code me-2"></i>
+                        Technical Resources
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h4>Blockchain Resources</h4>
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Settlement Contract</strong>
+                                            <div class="small text-muted">Ethereum smart contract for settlement operations</div>
+                                        </div>
+                                        <a href="/main/blockchain" class="btn btn-sm btn-outline-primary">View Details</a>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>API Documentation</strong>
+                                            <div class="small text-muted">XRP and blockchain API reference</div>
+                                        </div>
+                                        <a href="/api/docs" class="btn btn-sm btn-outline-primary">View Docs</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h4>System Administration</h4>
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>System Status</strong>
+                                            <div class="small text-muted">Server and infrastructure status</div>
+                                        </div>
+                                        <a href="/admin/system-status" class="btn btn-sm btn-outline-primary">Check Status</a>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>User Management</strong>
+                                            <div class="small text-muted">User and permission administration</div>
+                                        </div>
+                                        <a href="/admin/users" class="btn btn-sm btn-outline-primary">Manage Users</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

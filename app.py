@@ -183,6 +183,10 @@ def create_app():
         from routes import api_blueprint, web_blueprint
         app.register_blueprint(api_blueprint)
         app.register_blueprint(web_blueprint)
+        
+        # Register Documentation routes
+        from routes.documentation_routes import documentation_bp
+        app.register_blueprint(documentation_bp)
 
         # Create PHP test integration user
         try:
