@@ -613,12 +613,11 @@ def blockchain_status():
     etherscan_url = 'https://sepolia.etherscan.io' if network_id == '11155111' else 'https://etherscan.io'
     
     # User roles and addresses
-    is_admin = session.get('role') == UserRole.ADMIN.value
+    is_admin = current_user.role == UserRole.ADMIN
     is_owner = False  # This would be set if the user is an owner of the MultiSig wallet
     
-    # Get the user's ethereum address
-    user_id = session.get('user_id')
-    current_user = User.query.get(user_id)
+    # Get the user from Flask-Login's current_user
+    # Since we're using @login_required, current_user is guaranteed to be authenticated
     
     # Make sure user has an Ethereum address
     if current_user and not current_user.ethereum_address:
@@ -687,7 +686,7 @@ def blockchain_status():
                 logger.info(f"Created token contract object from DB with address: {token_contract_obj.address}")
     
     # Generate a JWT token for blockchain API access
-    jwt_token = generate_jwt_token(user_id)
+    jwt_token = generate_jwt_token(current_user.id)
     
     # Prepare template variables
     return render_template(
@@ -737,11 +736,11 @@ def issue_letter_of_credit():
         # Import SWIFT service
         from swift_integration import SwiftService
         
-        user_id = session.get('user_id')
+        # Use current_user.id instead of session.get('user_id')
         
         # Call the SWIFT service to create the letter of credit
         success, message, transaction = SwiftService.create_standby_letter_of_credit(
-            user_id=user_id,
+            user_id=current_user.id,
             receiver_institution_id=form.receiver_institution_id.data,
             amount=form.amount.data,
             currency=form.currency.data,
@@ -772,10 +771,10 @@ def letter_of_credit_status(transaction_id):
     # Import SWIFT service
     from swift_integration import SwiftService
     
-    user_id = session.get('user_id')
+    # Use current_user.id instead of session.get('user_id')
     
     # First ensure the transaction belongs to the current user
-    transaction = Transaction.query.filter_by(transaction_id=transaction_id, user_id=user_id).first()
+    transaction = Transaction.query.filter_by(transaction_id=transaction_id, user_id=current_user.id).first()
     
     if not transaction:
         flash('Transaction not found or you do not have permission to access it', 'danger')
@@ -811,8 +810,8 @@ def letter_of_credit_status(transaction_id):
 @login_required
 def new_payment():
     """New payment route"""
-    user_id = session.get('user_id')
-    user = User.query.get(user_id)
+    # Use current_user instead of getting user from session
+    user = current_user
     
     # Get available payment gateways
     gateways = PaymentGateway.query.filter_by(is_active=True).all()
@@ -835,7 +834,7 @@ def new_payment():
             float(form.amount.data), 
             form.currency.data, 
             form.description.data or 'Payment from nvcplatform.net', 
-            user_id
+            current_user.id
         )
         
         if result.get('success'):
@@ -1052,8 +1051,8 @@ def privacy_policy():
 @admin_required
 def test_payment():
     """Test payment integration route - admin only"""
-    user_id = session.get('user_id')
-    user = User.query.get(user_id)
+    # Use current_user instead of getting user from session
+    user = current_user
     
     # Get available payment gateways
     gateways = PaymentGateway.query.filter_by(is_active=True).all()
@@ -1065,14 +1064,14 @@ def test_payment():
     
     # Get recent test transactions
     test_transactions = Transaction.query.filter(
-        Transaction.user_id == user_id,
+        Transaction.user_id == current_user.id,
         Transaction.description.like('%Test payment%')
     ).order_by(Transaction.created_at.desc()).limit(10).all()
     
     if form.validate_on_submit():
         # Import the test payment handler to process the test payment
         from test_payment_handler import process_test_payment
-        return process_test_payment(form, user_id)
+        return process_test_payment(form, current_user.id)
     
     # If there were form validation errors
     if form.errors and request.method == 'POST':
