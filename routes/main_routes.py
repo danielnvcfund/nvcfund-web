@@ -1175,9 +1175,12 @@ def privacy_policy():
 
 @main.route('/admin-dashboard')
 @login_required
-@admin_required
 def admin_dashboard():
-    """Admin dashboard route"""
+    """Admin dashboard route - only accessible to admin users or special users"""
+    # Check if user has admin access
+    if not current_user.role == UserRole.ADMIN and current_user.username not in ['admin', 'headadmin']:
+        flash('You do not have permission to access the admin dashboard', 'danger')
+        return redirect(url_for('web.main.dashboard'))
     # Get user and all users
     user = current_user
     all_users = User.query.all()
@@ -1256,9 +1259,12 @@ def admin_dashboard():
 
 @main.route('/admin/incomplete-transactions', methods=['GET'])
 @login_required
-@admin_required
 def admin_incomplete_transactions():
     """View incomplete transactions with saved form data - admin only"""
+    # Check if user has admin access
+    if not current_user.role == UserRole.ADMIN and current_user.username not in ['admin', 'headadmin']:
+        flash('You do not have permission to access the admin dashboard', 'danger')
+        return redirect(url_for('web.main.dashboard'))
     # Get all transactions with status PENDING or PROCESSING
     pending_transactions = Transaction.query.filter(
         Transaction.status.in_([TransactionStatus.PENDING, TransactionStatus.PROCESSING])
@@ -1288,9 +1294,12 @@ def admin_incomplete_transactions():
 
 @main.route('/payment/test', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def test_payment():
     """Test payment integration route - admin only"""
+    # Check if user has admin access
+    if not current_user.role == UserRole.ADMIN and current_user.username not in ['admin', 'headadmin']:
+        flash('You do not have permission to access the test payment page', 'danger')
+        return redirect(url_for('web.main.dashboard'))
     # Use current_user instead of getting user from session
     user = current_user
     
