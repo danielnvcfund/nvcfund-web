@@ -5,6 +5,7 @@ This script converts HTML files to PDF format using WeasyPrint.
 """
 
 import os
+import sys
 import weasyprint
 
 def generate_pdf(html_file, pdf_file):
@@ -24,7 +25,14 @@ if __name__ == "__main__":
     # Ensure we're in the docs directory
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     
-    # Generate PDFs
-    generate_pdf("blockchain_vs_swift.html", "blockchain_vs_swift.pdf")
+    # Check if specific files are passed as arguments
+    if len(sys.argv) > 2:
+        html_file = sys.argv[1]
+        pdf_file = sys.argv[2]
+        generate_pdf(html_file, pdf_file)
+    else:
+        # Generate default PDFs
+        generate_pdf("blockchain_vs_swift.html", "blockchain_vs_swift.pdf")
+        generate_pdf("payment_operations_guide.html", "payment_operations_guide.pdf")
     
     print("All PDFs generated successfully.")
