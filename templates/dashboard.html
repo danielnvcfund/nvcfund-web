@@ -7,13 +7,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h1>
         <div class="d-flex gap-2">
-            {% if user.role.value == 'admin' %}
+            {% if user.username in ['admin', 'headadmin'] %}
                 <a href="{{ url_for('web.main.admin_dashboard') }}" class="btn btn-info">
-                    <i class="fas fa-user-shield me-1"></i> Admin Dashboard
-                </a>
-            {% elif user.username in ['admin', 'headadmin'] %}
-                <a href="{{ url_for('web.main.admin_dashboard') }}" class="btn btn-info">
-                    <i class="fas fa-user-shield me-1"></i> Switch to Admin View
+                    <i class="fas fa-user-shield me-1"></i> View Admin Dashboard
                 </a>
             {% endif %}
             <a href="{{ url_for('web.main.new_payment') }}" class="btn btn-primary">
