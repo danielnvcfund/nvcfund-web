@@ -841,6 +841,30 @@ def new_payment():
     gateway_choices = [(g.id, g.name) for g in gateways]
     form.gateway_id.choices = gateway_choices
     
+    # Generate a transaction ID for form recovery if we don't have one yet
+    transaction_id = form.transaction_id.data
+    if not transaction_id:
+        transaction_id = f"temp_{uuid.uuid4().hex}"
+        form.transaction_id.data = transaction_id
+    
+    # Check if we have saved form data for this transaction
+    if request.method == 'GET':
+        saved_data = FormData.get_for_transaction(transaction_id, 'payment')
+        if saved_data:
+            # Pre-fill the form with saved data
+            logger.info(f"Loading saved payment form data for transaction {transaction_id}")
+            
+            for field_name, value in saved_data.items():
+                if hasattr(form, field_name):
+                    field = getattr(form, field_name)
+                    if value is not None:
+                        try:
+                            field.data = value
+                        except Exception as e:
+                            logger.error(f"Error restoring field {field_name}: {str(e)}")
+                            
+            flash('Your previously entered information has been restored', 'info')
+    
     if form.validate_on_submit():
         # Get gateway handler
         try:

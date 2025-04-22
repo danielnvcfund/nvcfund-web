@@ -101,6 +101,7 @@ class TestPaymentForm(FlaskForm):
     submit = SubmitField('Submit Payment')
 
 class PaymentForm(FlaskForm):
+    transaction_id = HiddenField('Transaction ID', validators=[Optional()])
     amount = FloatField('Amount', validators=[DataRequired()])
     currency = SelectField('Currency', choices=[('USD', 'USD'), ('EUR', 'EUR'), ('GBP', 'GBP'), ('ETH', 'ETH'), ('XRP', 'XRP')], validators=[DataRequired()])
     transaction_type = SelectField('Transaction Type', choices=[], validators=[DataRequired()])
