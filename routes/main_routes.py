@@ -1081,7 +1081,11 @@ def test_payment():
 @login_required
 def bank_transfer_form(transaction_id):
     """Bank transfer form route for NVC Global payments"""
-    user = current_user
+    # Flask-Login's @login_required should ensure current_user is authenticated
+    # But we'll add an extra check to be safe
+    if not current_user.is_authenticated:
+        flash('Please log in to access this page', 'warning')
+        return redirect(url_for('web.main.login', next=request.path))
     
     # Get the transaction
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
@@ -1242,6 +1246,11 @@ def bank_transfer_form(transaction_id):
 @login_required
 def process_bank_transfer():
     """Process a bank transfer form submission"""
+    # Ensure user is authenticated
+    if not current_user.is_authenticated:
+        flash('Please log in to access this page', 'warning')
+        return redirect(url_for('web.main.login', next=request.path))
+    
     # Get the form data
     form = BankTransferForm()
     
