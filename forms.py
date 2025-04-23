@@ -242,7 +242,10 @@ class LetterOfCreditForm(FlaskForm):
             
 class SwiftFundTransferForm(FlaskForm):
     """Form for creating a SWIFT MT103/MT202 fund transfer"""
-    receiver_institution_id = SelectField('Receiving Institution', coerce=int, validators=[DataRequired()])
+    receiver_institution_id = SelectField('Receiving Institution ID', coerce=int, validators=[DataRequired()])
+    receiver_institution_name = StringField('Receiving Institution Name', 
+                                          validators=[DataRequired(), Length(min=2, max=100)],
+                                          description="The full name of the receiving institution")
     amount = FloatField('Amount', validators=[DataRequired()])
     currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
     beneficiary_customer = TextAreaField('Beneficiary Details', 

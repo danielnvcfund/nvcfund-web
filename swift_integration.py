@@ -339,9 +339,31 @@ class SwiftService:
             raise
     
     @staticmethod
-    def create_swift_fund_transfer(user_id, receiver_institution_id, amount, currency, ordering_customer, beneficiary_customer, details_of_payment, is_financial_institution=False):
+    def create_swift_fund_transfer(user_id, receiver_institution_id, receiver_institution_name=None, amount=0, currency='USD', ordering_customer='', beneficiary_customer='', details_of_payment='', is_financial_institution=False):
         """Create a new SWIFT fund transfer (MT103 or MT202)"""
         try:
+            # Get the institution from the database
+            institution = FinancialInstitution.query.get(receiver_institution_id)
+            
+            # Store the provided institution name in the institution's metadata
+            if institution and receiver_institution_name:
+                try:
+                    metadata = json.loads(institution.metadata_json) if institution.metadata_json else {}
+                except json.JSONDecodeError:
+                    metadata = {}
+                
+                # Add or update the custom_name field
+                if 'swift' not in metadata:
+                    metadata['swift'] = {}
+                    
+                metadata['swift']['custom_name'] = receiver_institution_name
+                
+                # Save the updated metadata
+                institution.metadata_json = json.dumps(metadata)
+                db.session.commit()
+                
+                logger.info(f"Updated institution {institution.id} with custom name: {receiver_institution_name}")
+            
             # Create either MT103 or MT202 message based on is_financial_institution flag
             if is_financial_institution:
                 message = MT202(

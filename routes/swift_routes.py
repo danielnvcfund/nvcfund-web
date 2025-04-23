@@ -86,6 +86,7 @@ def new_fund_transfer():
             transaction = SwiftService.create_swift_fund_transfer(
                 user_id=user_id,  # Use the user_id from session instead of current_user
                 receiver_institution_id=form.receiver_institution_id.data,
+                receiver_institution_name=form.receiver_institution_name.data,
                 amount=form.amount.data,
                 currency=form.currency.data,
                 ordering_customer=form.ordering_customer.data,

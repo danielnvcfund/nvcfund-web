@@ -60,10 +60,10 @@
             </div>
             
             <div class="row mb-3">
-              <div class="col-md-8">
+              <div class="col-md-6">
                 <div class="form-group">
-                  <label class="form-label">{{ form.receiver_institution_id.label }}</label>
-                  {{ form.receiver_institution_id(class="form-select") }}
+                  <label class="form-label required">{{ form.receiver_institution_id.label }}</label>
+                  {{ form.receiver_institution_id(class="form-select", required=True) }}
                   {% if form.receiver_institution_id.errors %}
                     <div class="invalid-feedback d-block">
                       {% for error in form.receiver_institution_id.errors %}
@@ -73,10 +73,27 @@
                   {% endif %}
                 </div>
               </div>
-              <div class="col-md-4">
+              <div class="col-md-6">
                 <div class="form-group">
-                  <label class="form-label">{{ form.currency.label }}</label>
-                  {{ form.currency(class="form-select") }}
+                  <label class="form-label required">{{ form.receiver_institution_name.label }}</label>
+                  {{ form.receiver_institution_name(class="form-control", required=True, placeholder="Enter full institution name") }}
+                  {% if form.receiver_institution_name.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.receiver_institution_name.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Enter the full legal name of the receiving institution</small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="form-label required">{{ form.currency.label }}</label>
+                  {{ form.currency(class="form-select", required=True) }}
                   {% if form.currency.errors %}
                     <div class="invalid-feedback d-block">
                       {% for error in form.currency.errors %}
@@ -85,6 +102,8 @@
                     </div>
                   {% endif %}
                 </div>
+              </div>
+              <div class="col-md-6">
               </div>
             </div>
             
@@ -200,6 +219,7 @@
       const formData = new FormData(form);
       const data = {
         receiver_institution_id: formData.get('receiver_institution_id'),
+        receiver_institution_name: formData.get('receiver_institution_name'),
         amount: formData.get('amount'),
         currency: formData.get('currency'),
         ordering_customer: formData.get('ordering_customer'),
