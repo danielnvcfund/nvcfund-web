@@ -5,11 +5,12 @@ fund transfers, and free format messages.
 """
 import json
 from datetime import datetime
+import re
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, session
 from flask_login import login_required, current_user
 
-from models import db, Transaction, TransactionType, TransactionStatus
+from models import db, Transaction, TransactionType, TransactionStatus, FinancialInstitution
 from forms import LetterOfCreditForm, SwiftFundTransferForm, SwiftFreeFormatMessageForm
 from swift_integration import SwiftService
 
@@ -237,6 +238,130 @@ def cancel_transfer(transaction_id):
         flash(f'Error cancelling fund transfer: {str(e)}', 'danger')
     
     return redirect(url_for('web.swift.fund_transfer_status', transaction_id=transaction.transaction_id))
+
+@swift.route('/messages')
+@login_required
+def swift_messages():
+    """View all SWIFT messages"""
+    # Get all SWIFT-related transactions for the current user
+    swift_transactions = Transaction.query.filter(
+        Transaction.user_id == current_user.id,
+        Transaction.transaction_type.in_([
+            TransactionType.SWIFT_FUND_TRANSFER,
+            TransactionType.SWIFT_INSTITUTION_TRANSFER,
+            TransactionType.SWIFT_LETTER_OF_CREDIT,
+            TransactionType.SWIFT_FREE_FORMAT
+        ])
+    ).order_by(Transaction.created_at.desc()).all()
+    
+    # Create a list of message objects with additional data
+    messages = []
+    for tx in swift_transactions:
+        # Parse metadata
+        try:
+            metadata = json.loads(tx.tx_metadata_json) if tx.tx_metadata_json else {}
+        except json.JSONDecodeError:
+            metadata = {}
+        
+        # Get institution name
+        institution_name = ""
+        if 'receiver_institution_id' in metadata:
+            institution = FinancialInstitution.query.get(metadata.get('receiver_institution_id'))
+            if institution:
+                institution_name = institution.name
+        elif 'receiver_institution_name' in metadata:
+            institution_name = metadata.get('receiver_institution_name')
+        
+        # Determine if it's a financial institution transfer
+        is_financial_institution = False
+        if tx.transaction_type == TransactionType.SWIFT_INSTITUTION_TRANSFER:
+            is_financial_institution = True
+        elif 'is_financial_institution' in metadata:
+            is_financial_institution = bool(metadata.get('is_financial_institution'))
+        
+        messages.append({
+            'transaction': tx,
+            'institution_name': institution_name,
+            'is_financial_institution': is_financial_institution,
+            'metadata': metadata
+        })
+    
+    return render_template('swift_messages.html', messages=messages)
+
+@swift.route('/message/view/<transaction_id>')
+@login_required
+def view_swift_message(transaction_id):
+    """View a SWIFT message in formatted form"""
+    transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+    if not transaction or transaction.user_id != current_user.id:
+        flash('Transaction not found or access denied.', 'danger')
+        return redirect(url_for('web.swift.swift_messages'))
+    
+    # Check if it's a SWIFT message
+    if transaction.transaction_type not in [
+        TransactionType.SWIFT_FUND_TRANSFER,
+        TransactionType.SWIFT_INSTITUTION_TRANSFER,
+        TransactionType.SWIFT_LETTER_OF_CREDIT,
+        TransactionType.SWIFT_FREE_FORMAT
+    ]:
+        flash('This transaction is not a SWIFT message.', 'warning')
+        return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
+    
+    # Parse metadata
+    try:
+        metadata = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
+    except json.JSONDecodeError:
+        metadata = {}
+    
+    # Get institution name
+    institution_name = ""
+    if 'receiver_institution_id' in metadata:
+        institution = FinancialInstitution.query.get(metadata.get('receiver_institution_id'))
+        if institution:
+            institution_name = institution.name
+    elif 'receiver_institution_name' in metadata:
+        institution_name = metadata.get('receiver_institution_name')
+    
+    # Get message details based on transaction type
+    if transaction.transaction_type == TransactionType.SWIFT_FUND_TRANSFER:
+        message_type = "MT103"
+        ordering_customer = metadata.get('ordering_customer', '')
+        beneficiary_customer = metadata.get('beneficiary_customer', '')
+        details_of_payment = metadata.get('details_of_payment', '')
+    elif transaction.transaction_type == TransactionType.SWIFT_INSTITUTION_TRANSFER:
+        message_type = "MT202"
+        ordering_customer = metadata.get('ordering_customer', '')
+        beneficiary_customer = metadata.get('beneficiary_customer', '')
+        details_of_payment = metadata.get('details_of_payment', '')
+    elif transaction.transaction_type == TransactionType.SWIFT_LETTER_OF_CREDIT:
+        message_type = "MT760"
+        ordering_customer = metadata.get('beneficiary', '')
+        beneficiary_customer = institution_name
+        details_of_payment = metadata.get('terms_and_conditions', '')
+    else:  # SWIFT_FREE_FORMAT
+        message_type = "MT799"
+        ordering_customer = ''
+        beneficiary_customer = institution_name
+        details_of_payment = metadata.get('message_body', '')
+    
+    # Generate a receiver BIC from institution name
+    if institution_name:
+        # Sanitize name and generate BIC-like code
+        receiver_bic = re.sub(r'[^A-Z0-9]', '', institution_name.upper()[:8])
+        receiver_bic = receiver_bic.ljust(8, 'X')
+    else:
+        receiver_bic = "BANKXXXX"
+    
+    return render_template(
+        'swift_message_view.html',
+        transaction=transaction,
+        message_type=message_type,
+        institution_name=institution_name,
+        ordering_customer=ordering_customer,
+        beneficiary_customer=beneficiary_customer,
+        details_of_payment=details_of_payment,
+        receiver_bic=receiver_bic
+    )
 
 @swift.route('/api/swift/status/<transaction_id>')
 @login_required

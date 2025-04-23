@@ -1,0 +1,153 @@
+{% extends "layout.html" %}
+
+{% block title %}SWIFT Messages | NVC Platform{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <h2 class="mb-4"><i class="bi bi-envelope-paper"></i> SWIFT Messages</h2>
+      
+      <div class="card mb-4 shadow">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h3 class="h5 mb-0">Your SWIFT Messages</h3>
+          <a href="{{ url_for('web.swift.new_fund_transfer') }}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-circle"></i> New SWIFT Transfer
+          </a>
+        </div>
+        <div class="card-body">
+          {% if messages %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Reference</th>
+                  <th>Type</th>
+                  <th>Institution</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for message in messages %}
+                <tr>
+                  <td>{{ message.transaction.transaction_id }}</td>
+                  <td>
+                    {% if message.is_financial_institution %}
+                    <span class="badge bg-info">MT202</span>
+                    {% else %}
+                    <span class="badge bg-primary">MT103</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ message.institution_name }}</td>
+                  <td>{{ message.transaction.amount }} {{ message.transaction.currency }}</td>
+                  <td>{{ message.transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                  <td>
+                    {% if message.transaction.status == 'PENDING' %}
+                    <span class="badge bg-warning text-dark">Pending</span>
+                    {% elif message.transaction.status == 'COMPLETED' %}
+                    <span class="badge bg-success">Completed</span>
+                    {% elif message.transaction.status == 'FAILED' %}
+                    <span class="badge bg-danger">Failed</span>
+                    {% elif message.transaction.status == 'CANCELLED' %}
+                    <span class="badge bg-secondary">Cancelled</span>
+                    {% else %}
+                    <span class="badge bg-light text-dark">{{ message.transaction.status }}</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="btn-group">
+                      <a href="{{ url_for('web.swift.view_swift_message', transaction_id=message.transaction.transaction_id) }}" 
+                         class="btn btn-sm btn-outline-primary" title="View SWIFT Message">
+                        <i class="bi bi-file-text"></i>
+                      </a>
+                      <a href="{{ url_for('web.swift.fund_transfer_status', transaction_id=message.transaction.transaction_id) }}" 
+                         class="btn btn-sm btn-outline-info" title="View Transfer Status">
+                        <i class="bi bi-info-circle"></i>
+                      </a>
+                      {% if message.transaction.status == 'PENDING' %}
+                      <button type="button" class="btn btn-sm btn-outline-danger" 
+                              data-bs-toggle="modal" data-bs-target="#cancelModal{{ message.transaction.id }}"
+                              title="Cancel Transfer">
+                        <i class="bi bi-x-circle"></i>
+                      </button>
+                      {% endif %}
+                    </div>
+                    
+                    <!-- Cancel Modal -->
+                    {% if message.transaction.status == 'PENDING' %}
+                    <div class="modal fade" id="cancelModal{{ message.transaction.id }}" tabindex="-1" 
+                         aria-labelledby="cancelModalLabel{{ message.transaction.id }}" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="cancelModalLabel{{ message.transaction.id }}">
+                              Cancel SWIFT Transfer
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <p>Are you sure you want to cancel this SWIFT transfer?</p>
+                            <p><strong>Reference:</strong> {{ message.transaction.transaction_id }}</p>
+                            <p><strong>Amount:</strong> {{ message.transaction.amount }} {{ message.transaction.currency }}</p>
+                            <p class="text-danger mb-0">This action cannot be undone.</p>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <form action="{{ url_for('web.swift.cancel_transfer', transaction_id=message.transaction.transaction_id) }}" method="post">
+                              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                              <button type="submit" class="btn btn-danger">Cancel Transfer</button>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-5">
+            <i class="bi bi-envelope-x display-4 text-muted mb-3"></i>
+            <h4>No SWIFT Messages Found</h4>
+            <p class="text-muted">You haven't created any SWIFT fund transfers yet.</p>
+            <a href="{{ url_for('web.swift.new_fund_transfer') }}" class="btn btn-primary mt-3">
+              <i class="bi bi-plus-circle me-1"></i> Create New SWIFT Transfer
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="card shadow">
+        <div class="card-header bg-light">
+          <h3 class="h5 mb-0">About SWIFT Messages</h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3 mb-md-0">
+              <div class="d-flex align-items-center mb-2">
+                <span class="badge bg-primary me-2">MT103</span>
+                <h6 class="mb-0">Customer Credit Transfer</h6>
+              </div>
+              <p class="small">Used for transferring funds to individual customers and businesses. Contains detailed sender and recipient information.</p>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex align-items-center mb-2">
+                <span class="badge bg-info me-2">MT202</span>
+                <h6 class="mb-0">Financial Institution Transfer</h6>
+              </div>
+              <p class="small">Used for bank-to-bank transfers. Typically for high-value transactions with faster processing times.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
