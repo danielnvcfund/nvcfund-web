@@ -400,6 +400,9 @@ function initBlockchainBalance() {
     
     // Use a try/catch block for the fetch to handle network errors
     try {
+        // Display loading state
+        balanceEl.innerHTML = '<span class="text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Fetching balance...</span>';
+        
         // Fetch balance from API - ensure address is properly encoded
         const encodedAddress = encodeURIComponent(ethereumAddress);
         console.log(`Fetching balance for address: ${encodedAddress} with token ${jwtToken.substring(0, 10)}...`);
@@ -407,7 +410,7 @@ function initBlockchainBalance() {
         // First, check if the address has a proper format
         if (!ethereumAddress || !ethereumAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
             console.error("Invalid Ethereum address format:", ethereumAddress);
-            balanceEl.textContent = "Invalid address format";
+            balanceEl.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Invalid address format</span>';
             return;
         }
         
@@ -433,16 +436,31 @@ function initBlockchainBalance() {
         })
         .then(data => {
             if (data.success) {
-                balanceEl.textContent = `${data.balance_eth} ETH`;
-                console.log(`Balance for ${data.address}: ${data.balance_eth} ETH`);
+                // Successfully received balance data
+                balanceEl.innerHTML = `<span class="text-success fw-bold">${data.balance_eth} ETH</span>`;
+                if (data.token_balance && data.token_balance > 0) {
+                    balanceEl.innerHTML += `<br><small class="text-muted">${data.token_balance} NVCT</small>`;
+                }
+                console.log(`Balance for ${data.address}: ${data.balance_eth} ETH, ${data.token_balance || 0} NVCT`);
             } else {
+                // API returned unsuccessful status
                 console.warn('API returned unsuccessful status:', data.error || 'No specific error');
-                balanceEl.textContent = 'Balance unavailable';
+                const errorMessage = data.error || 'Balance unavailable';
+                balanceEl.innerHTML = `<span class="text-warning"><i class="fas fa-exclamation-triangle me-2"></i>${errorMessage}</span>`;
             }
         })
         .catch(error => {
             console.error('Error fetching blockchain balance:', error);
-            balanceEl.textContent = 'Error fetching balance';
+            // Show a more user-friendly error message
+            if (error.message.includes('status: 500')) {
+                balanceEl.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Blockchain service unavailable</span>`;
+            } else if (error.message.includes('status: 401') || error.message.includes('status: 403')) {
+                balanceEl.innerHTML = `<span class="text-danger"><i class="fas fa-lock me-2"></i>Authentication error</span>`;
+            } else if (error.message.includes('status: 404')) {
+                balanceEl.innerHTML = `<span class="text-warning"><i class="fas fa-search me-2"></i>Blockchain API not found</span>`;
+            } else {
+                balanceEl.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Connection error</span>`;
+            }
         });
     } catch (error) {
         console.error('Exception during fetch setup:', error);
@@ -614,16 +632,32 @@ function refreshBlockchainBalance(button) {
         })
         .then(data => {
             if (data.success) {
-                balanceEl.textContent = `${data.balance_eth} ETH`;
+                // Successfully received balance data
+                balanceEl.innerHTML = `<span class="text-success fw-bold">${data.balance_eth} ETH</span>`;
+                if (data.token_balance && data.token_balance > 0) {
+                    balanceEl.innerHTML += `<br><small class="text-muted">${data.token_balance} NVCT</small>`;
+                }
+                console.log(`Balance for ${data.address}: ${data.balance_eth} ETH, ${data.token_balance || 0} NVCT`);
             } else {
+                // API returned unsuccessful status
                 console.warn('API returned unsuccessful status:', data.error || 'No specific error');
-                balanceEl.textContent = 'Balance unavailable';
+                const errorMessage = data.error || 'Balance unavailable';
+                balanceEl.innerHTML = `<span class="text-warning"><i class="fas fa-exclamation-triangle me-2"></i>${errorMessage}</span>`;
             }
             resetButton(button);
         })
         .catch(error => {
             console.error('Error fetching blockchain balance:', error);
-            balanceEl.textContent = 'Error fetching balance';
+            // Show a more user-friendly error message
+            if (error.message.includes('status: 500')) {
+                balanceEl.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Blockchain service unavailable</span>`;
+            } else if (error.message.includes('status: 401') || error.message.includes('status: 403')) {
+                balanceEl.innerHTML = `<span class="text-danger"><i class="fas fa-lock me-2"></i>Authentication error</span>`;
+            } else if (error.message.includes('status: 404')) {
+                balanceEl.innerHTML = `<span class="text-warning"><i class="fas fa-search me-2"></i>Blockchain API not found</span>`;
+            } else {
+                balanceEl.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Connection error</span>`;
+            }
             resetButton(button);
         });
     } catch (error) {
