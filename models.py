@@ -57,23 +57,23 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
 class TransactionStatus(enum.Enum):
-    PENDING = "pending"
-    PROCESSING = "processing"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    REFUNDED = "refunded"
-    CANCELLED = "cancelled"
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    REFUNDED = "REFUNDED"
+    CANCELLED = "CANCELLED"
 
 class TransactionType(enum.Enum):
-    DEPOSIT = "deposit"
-    WITHDRAWAL = "withdrawal"
-    TRANSFER = "transfer"
-    PAYMENT = "payment"
-    SETTLEMENT = "settlement"
-    SWIFT_LETTER_OF_CREDIT = "swift_letter_of_credit"  # For SWIFT MT760 Letters of Credit
-    SWIFT_FUND_TRANSFER = "swift_fund_transfer"        # For SWIFT MT103 customer fund transfers
-    SWIFT_INSTITUTION_TRANSFER = "swift_institution_transfer"  # For SWIFT MT202 financial institution transfers
-    SWIFT_FREE_FORMAT = "swift_free_format"            # For SWIFT MT799 free format messages
+    DEPOSIT = "DEPOSIT"
+    WITHDRAWAL = "WITHDRAWAL"
+    TRANSFER = "TRANSFER"
+    PAYMENT = "PAYMENT"
+    SETTLEMENT = "SETTLEMENT"
+    SWIFT_LETTER_OF_CREDIT = "SWIFT_LETTER_OF_CREDIT"  # For SWIFT MT760 Letters of Credit
+    SWIFT_FUND_TRANSFER = "SWIFT_FUND_TRANSFER"        # For SWIFT MT103 customer fund transfers
+    SWIFT_INSTITUTION_TRANSFER = "SWIFT_INSTITUTION_TRANSFER"  # For SWIFT MT202 financial institution transfers
+    SWIFT_FREE_FORMAT = "SWIFT_FREE_FORMAT"            # For SWIFT MT799 free format messages
 
 class GatewayType(enum.Enum):
     STRIPE = "stripe"
