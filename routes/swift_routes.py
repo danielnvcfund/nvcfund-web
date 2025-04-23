@@ -87,16 +87,16 @@ def new_fund_transfer():
     
     if form.validate_on_submit():
         try:
-            # Create the fund transfer
+            # Create the fund transfer with proper handling of None values
             transaction = SwiftService.create_swift_fund_transfer(
                 user_id=user_id,  # Use the user_id from session instead of current_user
                 receiver_institution_id=form.receiver_institution_id.data,
-                receiver_institution_name=form.receiver_institution_name.data,
-                amount=form.amount.data,
-                currency=form.currency.data,
-                ordering_customer=form.ordering_customer.data,
-                beneficiary_customer=form.beneficiary_customer.data,
-                details_of_payment=form.details_of_payment.data,
+                receiver_institution_name=form.receiver_institution_name.data or '',
+                amount=form.amount.data or 0,
+                currency=form.currency.data or 'USD',
+                ordering_customer=form.ordering_customer.data or '',
+                beneficiary_customer=form.beneficiary_customer.data or '',
+                details_of_payment=form.details_of_payment.data or '',
                 is_financial_institution=bool(form.is_financial_institution.data)
             )
             
@@ -146,14 +146,36 @@ def message_status(transaction_id):
         flash('Transaction not found.', 'danger')
         return redirect(url_for('web.main.dashboard'))
     
-    # Determine which status check to use based on transaction type
-    if transaction.transaction_type == TransactionType.SWIFT_LETTER_OF_CREDIT:
+    # Get the transaction type safely
+    tx_type = None
+    try:
+        if hasattr(transaction.transaction_type, 'value'):
+            tx_type = transaction.transaction_type.value
+        elif hasattr(transaction.transaction_type, 'name'):
+            tx_type = transaction.transaction_type.name
+        else:
+            tx_type = str(transaction.transaction_type)
+    except Exception as e:
+        logger.error(f"Error determining transaction type: {str(e)}")
+    
+    # Try to determine message type from metadata first
+    message_type = None
+    try:
+        if transaction.tx_metadata_json:
+            metadata = json.loads(transaction.tx_metadata_json)
+            if 'message_type' in metadata:
+                message_type = metadata['message_type']
+    except Exception as e:
+        logger.error(f"Error parsing transaction metadata: {str(e)}")
+    
+    # Determine which status check to use based on transaction type or metadata
+    if message_type == 'MT760' or (tx_type and 'letter_of_credit' in str(tx_type).lower()):
         status_data = SwiftService.get_letter_of_credit_status(transaction.id)
         template = 'letter_of_credit_status.html'
-    elif transaction.transaction_type in [TransactionType.SWIFT_FUND_TRANSFER, TransactionType.SWIFT_INSTITUTION_TRANSFER]:
+    elif message_type in ['MT103', 'MT202'] or (tx_type and ('fund_transfer' in str(tx_type).lower() or 'institution_transfer' in str(tx_type).lower())):
         status_data = SwiftService.get_fund_transfer_status(transaction.id)
         template = 'swift_fund_transfer_status.html'
-    elif transaction.transaction_type == TransactionType.SWIFT_FREE_FORMAT:
+    elif message_type == 'MT799' or (tx_type and 'free_format' in str(tx_type).lower()):
         status_data = SwiftService.get_free_format_message_status(transaction.id)
         template = 'swift_message_status.html'
     else:
@@ -193,9 +215,30 @@ def cancel_message(transaction_id):
         flash('Transaction not found.', 'danger')
         return redirect(url_for('web.main.dashboard'))
     
-    if transaction.transaction_type != TransactionType.SWIFT_FREE_FORMAT:
-        flash('This transaction is not a SWIFT message.', 'warning')
-        return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
+    # Check if this is a SWIFT free format message
+    tx_type = None
+    try:
+        if hasattr(transaction.transaction_type, 'value'):
+            tx_type = transaction.transaction_type.value
+        elif hasattr(transaction.transaction_type, 'name'):
+            tx_type = transaction.transaction_type.name
+        else:
+            tx_type = str(transaction.transaction_type)
+        
+        # Check if message type is in metadata
+        message_type = None
+        if transaction.tx_metadata_json:
+            metadata = json.loads(transaction.tx_metadata_json)
+            if 'message_type' in metadata:
+                message_type = metadata['message_type']
+                
+        if not (message_type == 'MT799' or (tx_type and 'free_format' in str(tx_type).lower())):
+            flash('This transaction is not a SWIFT free format message.', 'warning')
+            return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
+    except Exception as e:
+        logger.error(f"Error determining transaction type: {str(e)}")
+        flash('Error determining transaction type.', 'danger')
+        return redirect(url_for('web.main.dashboard'))
     
     if transaction.status != TransactionStatus.PENDING:
         flash('Only pending messages can be cancelled.', 'warning')
@@ -258,12 +301,39 @@ def swift_messages():
         Transaction.user_id == current_user.id
     ).order_by(Transaction.created_at.desc()).all()
     
-    # Filter transactions by examining metadata for SWIFT content
+    # Get all transactions with SWIFT in their type string
+    swift_type_transactions = []
+    payment_type_transactions = []
+
+    # First separate transactions by type to avoid enum comparison issues
     for tx in all_user_transactions:
         try:
-            # Check for description hints first (since we have some PAYMENT transactions)
+            # Get the transaction type value safely
+            tx_type = None
+            if hasattr(tx.transaction_type, 'value'):
+                tx_type = tx.transaction_type.value
+            elif hasattr(tx.transaction_type, 'name'):
+                tx_type = tx.transaction_type.name
+            else:
+                tx_type = str(tx.transaction_type)
+                
+            # Add to appropriate list
+            if isinstance(tx_type, str) and 'swift' in tx_type.lower():
+                swift_type_transactions.append(tx)
+            elif tx_type == 'PAYMENT' or tx_type == 'payment':
+                payment_type_transactions.append(tx)
+        except Exception as e:
+            logger.error(f"Error determining transaction type: {str(e)}")
+
+    # Add all transactions with SWIFT in their type
+    swift_transactions.extend(swift_type_transactions)
+    
+    # For PAYMENT transactions, check if they could be SWIFT
+    for tx in payment_type_transactions:
+        try:
+            # Check for description hints first
             if tx.description and ('SWIFT' in tx.description or 'Letter of Credit' in tx.description or 
-                                  'Fund Transfer' in tx.description or 'Financial Institution Transfer' in tx.description):
+                                'Fund Transfer' in tx.description or 'Financial Institution Transfer' in tx.description):
                 swift_transactions.append(tx)
                 continue
                 
@@ -286,32 +356,17 @@ def swift_messages():
                 except json.JSONDecodeError:
                     # Malformed JSON, just skip this check
                     pass
-            
-            # Also check by transaction type (for properly typed transactions)
-            if tx.transaction_type in [
-                TransactionType.SWIFT_FUND_TRANSFER,
-                TransactionType.SWIFT_INSTITUTION_TRANSFER,
-                TransactionType.SWIFT_LETTER_OF_CREDIT,
-                TransactionType.SWIFT_FREE_FORMAT
-            ] or (hasattr(tx.transaction_type, 'value') and tx.transaction_type.value in [
-                'swift_fund_transfer',
-                'swift_institution_transfer',
-                'swift_letter_of_credit',
-                'swift_free_format'
-            ]):
-                swift_transactions.append(tx)
                 
             # Special handling for PHP integration transactions that use PAYMENT type
             # but might be SWIFT transfers - check based on institution_id being set
-            if tx.transaction_type == TransactionType.PAYMENT and tx.institution_id is not None:
+            if tx.institution_id is not None:
                 institution = FinancialInstitution.query.get(tx.institution_id)
                 if institution and 'bank' in institution.name.lower():
                     swift_transactions.append(tx)
                     continue
-                
         except Exception as e:
-            logger.error(f"Error processing transaction {tx.id}: {str(e)}")
-            continue
+            logger.error(f"Error processing potential SWIFT transaction: {str(e)}")
+            # Continue to next transaction
     
     # Create a list of message objects with additional data
     messages = []
@@ -358,16 +413,32 @@ def view_swift_message(transaction_id):
     
     # Check if it's a SWIFT message
     try:
-        # First, check description for SWIFT hints
         is_swift_message = False
-        if transaction.description and ('SWIFT' in transaction.description or 'Letter of Credit' in transaction.description or 
-                              'Fund Transfer' in transaction.description or 'Financial Institution Transfer' in transaction.description):
+        
+        # Get the transaction type value safely
+        tx_type = None
+        if hasattr(transaction.transaction_type, 'value'):
+            tx_type = transaction.transaction_type.value
+        elif hasattr(transaction.transaction_type, 'name'):
+            tx_type = transaction.transaction_type.name
+        else:
+            tx_type = str(transaction.transaction_type)
+            
+        # Check if this is a SWIFT transaction type
+        if isinstance(tx_type, str) and 'swift' in tx_type.lower():
+            is_swift_message = True
+        
+        # If not a SWIFT type, check description for SWIFT hints
+        if not is_swift_message and transaction.description and ('SWIFT' in transaction.description or 
+                              'Letter of Credit' in transaction.description or 
+                              'Fund Transfer' in transaction.description or 
+                              'Financial Institution Transfer' in transaction.description):
             is_swift_message = True
             
         # Then check metadata for SWIFT-specific data
-        if not is_swift_message:
+        if not is_swift_message and transaction.tx_metadata_json:
             try:
-                metadata = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
+                metadata = json.loads(transaction.tx_metadata_json)
                 if 'message_type' in metadata and metadata['message_type'] in ['MT103', 'MT202', 'MT760', 'MT799']:
                     is_swift_message = True
                 # Check for references that follow SWIFT formats
@@ -379,19 +450,9 @@ def view_swift_message(transaction_id):
                     is_swift_message = True
             except (json.JSONDecodeError, AttributeError):
                 pass
-        
-        # Then check by transaction type if needed
-        if not is_swift_message:
-            if hasattr(transaction.transaction_type, 'value') and transaction.transaction_type.value in [
-                'swift_fund_transfer',
-                'swift_institution_transfer',
-                'swift_letter_of_credit',
-                'swift_free_format'
-            ]:
-                is_swift_message = True
                 
         # Special case for PAYMENT type with institution ID (possible PHP integration)
-        if not is_swift_message and transaction.transaction_type == TransactionType.PAYMENT and transaction.institution_id is not None:
+        if not is_swift_message and (tx_type == 'PAYMENT' or tx_type == 'payment') and transaction.institution_id is not None:
             institution = FinancialInstitution.query.get(transaction.institution_id)
             if institution and 'bank' in institution.name.lower():
                 is_swift_message = True
@@ -509,20 +570,40 @@ def api_swift_status(transaction_id):
     except Exception as e:
         logger.error(f"Error parsing transaction metadata: {str(e)}")
     
+    # Get the transaction type value safely
+    tx_type = None
+    try:
+        if hasattr(transaction.transaction_type, 'value'):
+            tx_type = transaction.transaction_type.value
+        elif hasattr(transaction.transaction_type, 'name'):
+            tx_type = transaction.transaction_type.name
+        else:
+            tx_type = str(transaction.transaction_type)
+    except Exception as e:
+        logger.error(f"Error determining transaction type: {str(e)}")
+    
     # Determine which status check to use based on transaction type or metadata
-    if transaction.transaction_type == TransactionType.SWIFT_LETTER_OF_CREDIT or message_type == 'MT760':
+    if message_type == 'MT760' or (tx_type and 'letter_of_credit' in str(tx_type).lower()):
         status_data = SwiftService.get_letter_of_credit_status(transaction.id)
-    elif transaction.transaction_type in [TransactionType.SWIFT_FUND_TRANSFER, TransactionType.SWIFT_INSTITUTION_TRANSFER] or message_type in ['MT103', 'MT202']:
+    elif message_type in ['MT103', 'MT202'] or (tx_type and ('fund_transfer' in str(tx_type).lower() or 'institution_transfer' in str(tx_type).lower())):
         status_data = SwiftService.get_fund_transfer_status(transaction.id)
-    elif transaction.transaction_type == TransactionType.SWIFT_FREE_FORMAT or message_type == 'MT799':
+    elif message_type == 'MT799' or (tx_type and 'free_format' in str(tx_type).lower()):
         status_data = SwiftService.get_free_format_message_status(transaction.id)
     else:
         # If we can't determine the type, use a generic status check
         try:
             # Provide a generic status based on transaction status
+            status_value = None
+            if hasattr(transaction.status, 'value'):
+                status_value = transaction.status.value
+            elif hasattr(transaction.status, 'name'):
+                status_value = transaction.status.name
+            else:
+                status_value = str(transaction.status)
+                
             status_data = {
                 'success': True,
-                'status': transaction.status.value if hasattr(transaction.status, 'value') else str(transaction.status),
+                'status': status_value,
                 'timestamp': datetime.utcnow().isoformat(),
                 'details': 'Transaction status retrieved successfully'
             }
