@@ -4,6 +4,7 @@ Routes for handling SWIFT messaging functionality including standby letters of c
 fund transfers, and free format messages.
 """
 import json
+import logging
 from datetime import datetime
 import re
 
@@ -13,6 +14,9 @@ from flask_login import login_required, current_user
 from models import db, Transaction, TransactionType, TransactionStatus, FinancialInstitution
 from forms import LetterOfCreditForm, SwiftFundTransferForm, SwiftFreeFormatMessageForm
 from swift_integration import SwiftService
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 swift = Blueprint('swift', __name__)
 
@@ -244,16 +248,42 @@ def cancel_transfer(transaction_id):
 def swift_messages():
     """View all SWIFT messages"""
     # Get all SWIFT-related transactions for the current user
-    # Use string values directly as a workaround for the database enum issue
-    swift_transactions = Transaction.query.filter(
-        Transaction.user_id == current_user.id,
-        Transaction.transaction_type.in_([
-            'swift_fund_transfer',
-            'swift_institution_transfer',
-            'swift_letter_of_credit',
-            'swift_free_format'
-        ])
+    # Check for both enum and string values to handle different transaction creation methods
+    
+    # First, let's look for transactions with SWIFT-related metadata
+    swift_transactions = []
+    
+    # Get all transactions for the current user
+    all_user_transactions = Transaction.query.filter(
+        Transaction.user_id == current_user.id
     ).order_by(Transaction.created_at.desc()).all()
+    
+    # Filter transactions by examining metadata for SWIFT content
+    for tx in all_user_transactions:
+        try:
+            # Check if this is a SWIFT transaction based on metadata
+            if tx.tx_metadata_json:
+                metadata = json.loads(tx.tx_metadata_json)
+                if 'message_type' in metadata and metadata['message_type'] in ['MT103', 'MT202', 'MT760', 'MT799']:
+                    swift_transactions.append(tx)
+                    continue
+            
+            # Also check by transaction type (for properly typed transactions)
+            if tx.transaction_type in [
+                TransactionType.SWIFT_FUND_TRANSFER,
+                TransactionType.SWIFT_INSTITUTION_TRANSFER,
+                TransactionType.SWIFT_LETTER_OF_CREDIT,
+                TransactionType.SWIFT_FREE_FORMAT
+            ] or (hasattr(tx.transaction_type, 'value') and tx.transaction_type.value in [
+                'swift_fund_transfer',
+                'swift_institution_transfer',
+                'swift_letter_of_credit',
+                'swift_free_format'
+            ]):
+                swift_transactions.append(tx)
+        except Exception as e:
+            logger.error(f"Error processing transaction {tx.id}: {str(e)}")
+            continue
     
     # Create a list of message objects with additional data
     messages = []
@@ -299,14 +329,33 @@ def view_swift_message(transaction_id):
         return redirect(url_for('web.swift.swift_messages'))
     
     # Check if it's a SWIFT message
-    if transaction.transaction_type.value not in [
-        'swift_fund_transfer',
-        'swift_institution_transfer',
-        'swift_letter_of_credit',
-        'swift_free_format'
-    ]:
-        flash('This transaction is not a SWIFT message.', 'warning')
-        return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
+    try:
+        # First, check metadata for SWIFT-specific data
+        is_swift_message = False
+        try:
+            metadata = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
+            if 'message_type' in metadata and metadata['message_type'] in ['MT103', 'MT202', 'MT760', 'MT799']:
+                is_swift_message = True
+        except (json.JSONDecodeError, AttributeError):
+            pass
+        
+        # Then check by transaction type if needed
+        if not is_swift_message:
+            if hasattr(transaction.transaction_type, 'value') and transaction.transaction_type.value in [
+                'swift_fund_transfer',
+                'swift_institution_transfer',
+                'swift_letter_of_credit',
+                'swift_free_format'
+            ]:
+                is_swift_message = True
+        
+        if not is_swift_message:
+            flash('This transaction is not a SWIFT message.', 'warning')
+            return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
+    except Exception as e:
+        logger.error(f"Error checking if transaction is SWIFT message: {str(e)}")
+        flash('Error processing transaction data.', 'danger')
+        return redirect(url_for('web.swift.swift_messages'))
     
     # Parse metadata
     try:
@@ -375,14 +424,35 @@ def api_swift_status(transaction_id):
     if not transaction:
         return jsonify({'success': False, 'error': 'Transaction not found'})
     
-    # Determine which status check to use based on transaction type
-    if transaction.transaction_type == TransactionType.SWIFT_LETTER_OF_CREDIT:
+    # Try to determine message type from metadata first
+    message_type = None
+    try:
+        if transaction.tx_metadata_json:
+            metadata = json.loads(transaction.tx_metadata_json)
+            if 'message_type' in metadata:
+                message_type = metadata['message_type']
+    except Exception as e:
+        logger.error(f"Error parsing transaction metadata: {str(e)}")
+    
+    # Determine which status check to use based on transaction type or metadata
+    if transaction.transaction_type == TransactionType.SWIFT_LETTER_OF_CREDIT or message_type == 'MT760':
         status_data = SwiftService.get_letter_of_credit_status(transaction.id)
-    elif transaction.transaction_type in [TransactionType.SWIFT_FUND_TRANSFER, TransactionType.SWIFT_INSTITUTION_TRANSFER]:
+    elif transaction.transaction_type in [TransactionType.SWIFT_FUND_TRANSFER, TransactionType.SWIFT_INSTITUTION_TRANSFER] or message_type in ['MT103', 'MT202']:
         status_data = SwiftService.get_fund_transfer_status(transaction.id)
-    elif transaction.transaction_type == TransactionType.SWIFT_FREE_FORMAT:
+    elif transaction.transaction_type == TransactionType.SWIFT_FREE_FORMAT or message_type == 'MT799':
         status_data = SwiftService.get_free_format_message_status(transaction.id)
     else:
-        return jsonify({'success': False, 'error': 'Not a SWIFT message transaction'})
+        # If we can't determine the type, use a generic status check
+        try:
+            # Provide a generic status based on transaction status
+            status_data = {
+                'success': True,
+                'status': transaction.status.value if hasattr(transaction.status, 'value') else str(transaction.status),
+                'timestamp': datetime.utcnow().isoformat(),
+                'details': 'Transaction status retrieved successfully'
+            }
+        except Exception as e:
+            logger.error(f"Error generating generic status: {str(e)}")
+            status_data = {'success': False, 'error': 'Could not determine transaction type or status'}
         
     return jsonify(status_data)
