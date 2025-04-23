@@ -7,8 +7,9 @@ import json
 import logging
 from datetime import datetime
 import re
-
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, session
+import io
+from weasyprint import HTML
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, session, send_file, make_response
 from flask_login import login_required, current_user
 
 from models import db, Transaction, TransactionType, TransactionStatus, FinancialInstitution
@@ -569,6 +570,164 @@ def view_swift_message(transaction_id):
         details_of_payment=details_of_payment,
         receiver_bic=receiver_bic
     )
+
+@swift.route('/download_swift_pdf/<transaction_id>')
+@login_required
+def download_swift_pdf(transaction_id):
+    """Generate and download a PDF version of the SWIFT message"""
+    transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+    if not transaction or transaction.user_id != current_user.id:
+        flash('Transaction not found or access denied.', 'danger')
+        return redirect(url_for('web.swift.swift_messages'))
+    
+    # Extract message details
+    try:
+        # Get metadata
+        metadata = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
+        
+        # Determine message type
+        message_type = None
+        if 'message_type' in metadata:
+            message_type = metadata['message_type']
+        elif 'is_financial_institution' in metadata and metadata['is_financial_institution']:
+            message_type = 'MT202'
+        else:
+            # Default to MT103 for fund transfers
+            tx_type = str(transaction.transaction_type).lower()
+            if 'institution_transfer' in tx_type:
+                message_type = 'MT202'
+            elif 'fund_transfer' in tx_type:
+                message_type = 'MT103'
+            elif 'letter_of_credit' in tx_type:
+                message_type = 'MT760'
+            elif 'free_format' in tx_type:
+                message_type = 'MT799'
+            else:
+                message_type = 'MT103'  # Default
+        
+        # Get institution name
+        institution_name = ""
+        if 'receiver_institution_name' in metadata:
+            institution_name = metadata['receiver_institution_name']
+        elif 'institution_name' in metadata:
+            institution_name = metadata['institution_name']
+        elif 'receiver_institution_id' in metadata and metadata['receiver_institution_id']:
+            # Look up institution from database
+            institution = FinancialInstitution.query.get(metadata['receiver_institution_id'])
+            if institution:
+                institution_name = institution.name
+                
+        # Get customer details
+        ordering_customer = metadata.get('ordering_customer', 'NVC GLOBAL CUSTOMER')
+        beneficiary_customer = metadata.get('beneficiary_customer', 'BENEFICIARY CUSTOMER')
+        details_of_payment = metadata.get('details_of_payment', 'Payment for services')
+        receiver_bic = metadata.get('receiver_bic', 'RECVBANXXX')
+        
+        # Generate PDF content
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>SWIFT {message_type} - {transaction.transaction_id}</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                .header {{ text-align: center; margin-bottom: 30px; }}
+                .header h1 {{ color: #333366; }}
+                .logo {{ text-align: center; margin-bottom: 20px; }}
+                .swift-box {{ border: 1px solid #ccc; padding: 15px; margin-bottom: 30px; 
+                           font-family: 'Courier New', monospace; white-space: pre-wrap; }}
+                .details {{ margin-bottom: 30px; }}
+                .details h2 {{ color: #333366; font-size: 18px; margin-bottom: 10px; }}
+                .detail-row {{ margin-bottom: 10px; }}
+                .detail-label {{ font-weight: bold; width: 180px; display: inline-block; }}
+                .footer {{ text-align: center; font-size: 12px; color: #666; margin-top: 30px; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>SWIFT {message_type} Message</h1>
+                <p>Transaction Reference: {transaction.transaction_id}</p>
+            </div>
+            
+            <div class="swift-box">
+{{1:F01NVCGGLOBALXXX0000000000}}{{2:I{message_type}{receiver_bic}XXXXN}}{{4:
+:20:{transaction.transaction_id}
+:23B:CRED
+:32A:{transaction.created_at.strftime('%y%m%d')}{transaction.currency}{transaction.amount}
+"""
+        
+        # Add different fields based on message type
+        if message_type == "MT103":
+            html += f""":50K:{ordering_customer}
+:59:{beneficiary_customer}
+"""
+        else:
+            html += f""":53A:{ordering_customer}
+:58A:{beneficiary_customer}
+"""
+            
+        html += f""":70:{details_of_payment}
+:71A:SHA
+-}}
+            </div>
+            
+            <div class="details">
+                <h2>Transaction Details</h2>
+                <div class="detail-row">
+                    <span class="detail-label">Reference:</span> {transaction.transaction_id}
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Date:</span> {transaction.created_at.strftime('%Y-%m-%d %H:%M:%S')}
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Amount:</span> {transaction.amount} {transaction.currency}
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span> {transaction.status.name if hasattr(transaction.status, 'name') else transaction.status}
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Receiving Institution:</span> {institution_name}
+                </div>
+            </div>
+            
+            <div class="details">
+                <h2>Message Information</h2>
+                <div class="detail-row">
+                    <span class="detail-label">Message Type:</span> {message_type} - {
+                        "Customer Credit Transfer" if message_type == "MT103" else
+                        "Financial Institution Transfer" if message_type == "MT202" else
+                        "Standby Letter of Credit" if message_type == "MT760" else
+                        "Free Format Message" if message_type == "MT799" else "SWIFT Message"
+                    }
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>Generated by NVC Banking Platform on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+                <p>This document is for informational purposes only and is not a legal document.</p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Generate PDF
+        pdf_file = io.BytesIO()
+        HTML(string=html).write_pdf(pdf_file)
+        pdf_file.seek(0)
+        
+        # Return the PDF as a download
+        return send_file(
+            pdf_file,
+            download_name=f"SWIFT_{message_type}_{transaction.transaction_id}.pdf",
+            as_attachment=True,
+            mimetype='application/pdf'
+        )
+        
+    except Exception as e:
+        logger.error(f"Error generating PDF: {str(e)}")
+        flash(f'Error generating PDF: {str(e)}', 'danger')
+        return redirect(url_for('web.swift.view_swift_message', transaction_id=transaction.transaction_id))
 
 @swift.route('/api/swift/status/<transaction_id>')
 @login_required
