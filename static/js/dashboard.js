@@ -451,16 +451,66 @@ function initBlockchainBalance() {
         })
         .catch(error => {
             console.error('Error fetching blockchain balance:', error);
-            // Show a more user-friendly error message
-            if (error.message.includes('status: 500')) {
-                balanceEl.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Blockchain service unavailable</span>`;
-            } else if (error.message.includes('status: 401') || error.message.includes('status: 403')) {
-                balanceEl.innerHTML = `<span class="text-danger"><i class="fas fa-lock me-2"></i>Authentication error</span>`;
-            } else if (error.message.includes('status: 404')) {
-                balanceEl.innerHTML = `<span class="text-warning"><i class="fas fa-search me-2"></i>Blockchain API not found</span>`;
-            } else {
-                balanceEl.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Connection error</span>`;
+            
+            // Parse error response if available
+            let errorMessage = 'Connection error';
+            let statusClass = 'text-danger';
+            let icon = 'exclamation-circle';
+            
+            try {
+                // Try to parse the response if it's a JSON error response
+                if (error.message.includes('status:')) {
+                    const statusCode = parseInt(error.message.match(/status: (\d+)/)[1]);
+                    
+                    switch (statusCode) {
+                        case 400:
+                            errorMessage = 'Invalid request';
+                            statusClass = 'text-warning';
+                            icon = 'exclamation-triangle';
+                            break;
+                        case 401:
+                        case 403:
+                            errorMessage = 'Authentication required';
+                            statusClass = 'text-danger';
+                            icon = 'lock';
+                            break;
+                        case 404:
+                            errorMessage = 'Blockchain API not found';
+                            statusClass = 'text-warning';
+                            icon = 'search';
+                            break;
+                        case 500:
+                            errorMessage = 'Blockchain service error';
+                            statusClass = 'text-danger';
+                            icon = 'server';
+                            break;
+                        case 503:
+                            errorMessage = 'Blockchain network unavailable';
+                            statusClass = 'text-danger';
+                            icon = 'plug';
+                            break;
+                        default:
+                            errorMessage = `Error (${statusCode})`;
+                            break;
+                    }
+                } else if (error.response && error.response.data) {
+                    // Try to extract user_message if available in response
+                    const data = error.response.data;
+                    if (data.user_message) {
+                        errorMessage = data.user_message;
+                    } else if (data.error) {
+                        errorMessage = data.error;
+                    }
+                }
+            } catch (e) {
+                console.warn('Error parsing error response:', e);
             }
+            
+            // Display user-friendly error message with icon
+            balanceEl.innerHTML = `<span class="${statusClass}"><i class="fas fa-${icon} me-2"></i>${errorMessage}</span>`;
+            
+            // Add a small note with technical info for debug purposes
+            balanceEl.innerHTML += `<div class="small text-muted mt-1">Try refreshing or check network connection</div>`;
         });
     } catch (error) {
         console.error('Exception during fetch setup:', error);
@@ -648,16 +698,67 @@ function refreshBlockchainBalance(button) {
         })
         .catch(error => {
             console.error('Error fetching blockchain balance:', error);
-            // Show a more user-friendly error message
-            if (error.message.includes('status: 500')) {
-                balanceEl.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Blockchain service unavailable</span>`;
-            } else if (error.message.includes('status: 401') || error.message.includes('status: 403')) {
-                balanceEl.innerHTML = `<span class="text-danger"><i class="fas fa-lock me-2"></i>Authentication error</span>`;
-            } else if (error.message.includes('status: 404')) {
-                balanceEl.innerHTML = `<span class="text-warning"><i class="fas fa-search me-2"></i>Blockchain API not found</span>`;
-            } else {
-                balanceEl.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Connection error</span>`;
+            
+            // Parse error response if available
+            let errorMessage = 'Connection error';
+            let statusClass = 'text-danger';
+            let icon = 'exclamation-circle';
+            
+            try {
+                // Try to parse the response if it's a JSON error response
+                if (error.message.includes('status:')) {
+                    const statusCode = parseInt(error.message.match(/status: (\d+)/)[1]);
+                    
+                    switch (statusCode) {
+                        case 400:
+                            errorMessage = 'Invalid request';
+                            statusClass = 'text-warning';
+                            icon = 'exclamation-triangle';
+                            break;
+                        case 401:
+                        case 403:
+                            errorMessage = 'Authentication required';
+                            statusClass = 'text-danger';
+                            icon = 'lock';
+                            break;
+                        case 404:
+                            errorMessage = 'Blockchain API not found';
+                            statusClass = 'text-warning';
+                            icon = 'search';
+                            break;
+                        case 500:
+                            errorMessage = 'Blockchain service error';
+                            statusClass = 'text-danger';
+                            icon = 'server';
+                            break;
+                        case 503:
+                            errorMessage = 'Blockchain network unavailable';
+                            statusClass = 'text-danger';
+                            icon = 'plug';
+                            break;
+                        default:
+                            errorMessage = `Error (${statusCode})`;
+                            break;
+                    }
+                } else if (error.response && error.response.data) {
+                    // Try to extract user_message if available in response
+                    const data = error.response.data;
+                    if (data.user_message) {
+                        errorMessage = data.user_message;
+                    } else if (data.error) {
+                        errorMessage = data.error;
+                    }
+                }
+            } catch (e) {
+                console.warn('Error parsing error response:', e);
             }
+            
+            // Display user-friendly error message with icon
+            balanceEl.innerHTML = `<span class="${statusClass}"><i class="fas fa-${icon} me-2"></i>${errorMessage}</span>`;
+            
+            // Add a small note with technical info for debug purposes
+            balanceEl.innerHTML += `<div class="small text-muted mt-1">Try refreshing or check network connection</div>`;
+            
             resetButton(button);
         });
     } catch (error) {
