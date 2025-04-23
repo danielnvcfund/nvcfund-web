@@ -41,24 +41,19 @@
             <!-- Transfer Type Selection -->
             <div class="mb-4">
               <label class="form-label fw-bold">Transfer Type</label>
-              <div class="btn-group w-100" role="group">
+              <div class="btn-group w-100 transfer-type-container" role="group">
                 {% for subfield in form.is_financial_institution %}
-                <input type="radio" class="btn-check" name="{{ form.is_financial_institution.name }}" 
+                <input type="radio" class="btn-check transfer-type-radio" name="{{ form.is_financial_institution.name }}" 
                        id="{{ subfield.id }}" value="{{ subfield.data }}" 
-                       {% if loop.index0 == 0 %}checked{% endif %}
-                       required>
+                       {% if loop.index0 == 0 %}checked{% endif %}>
                 <label class="btn btn-outline-primary" for="{{ subfield.id }}">
                   {{ subfield.label }}
                 </label>
                 {% endfor %}
               </div>
-              {% if form.is_financial_institution.errors %}
-                <div class="invalid-feedback d-block">
-                  {% for error in form.is_financial_institution.errors %}
-                    {{ error }}
-                  {% endfor %}
-                </div>
-              {% endif %}
+              <!-- Hidden input to ensure the form always has a transfer type value -->
+              <input type="hidden" id="transfer-type-hidden" name="{{ form.is_financial_institution.name }}" value="0">
+              <div class="text-danger mt-1 d-none" id="transfer-type-error">This field is required.</div>
             </div>
             
             <!-- Institution Information -->
@@ -295,6 +290,31 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
+  // Handle transfer type radio buttons
+  const transferTypeRadios = document.querySelectorAll('.transfer-type-radio');
+  const transferTypeHidden = document.getElementById('transfer-type-hidden');
+  const transferTypeError = document.getElementById('transfer-type-error');
+  
+  // Ensure at least one radio button is checked
+  let hasCheckedRadio = false;
+  transferTypeRadios.forEach(radio => {
+    if (radio.checked) {
+      hasCheckedRadio = true;
+      transferTypeHidden.value = radio.value;
+    }
+    
+    radio.addEventListener('change', function() {
+      transferTypeHidden.value = this.value;
+      transferTypeError.classList.add('d-none');
+    });
+  });
+  
+  // If no radio is checked, ensure the default is set
+  if (!hasCheckedRadio && transferTypeRadios.length > 0) {
+    transferTypeRadios[0].checked = true;
+    transferTypeHidden.value = transferTypeRadios[0].value;
+  }
+
   // Auto-populate institution name when institution is selected
   const institutionSelect = document.getElementById('{{ form.receiver_institution_id.id }}');
   const institutionNameInput = document.getElementById('{{ form.receiver_institution_name.id }}');
@@ -373,7 +393,6 @@ document.addEventListener('DOMContentLoaded', function() {
   backButton.parentNode.insertBefore(saveButton, backButton.nextSibling);
   
   // Update form fields based on transfer type
-  const transferTypeRadios = document.querySelectorAll('input[name="is_financial_institution"]');
   transferTypeRadios.forEach(radio => {
     radio.addEventListener('change', function() {
       const isFinancialInstitution = this.value === '1';
