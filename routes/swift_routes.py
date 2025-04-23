@@ -244,13 +244,14 @@ def cancel_transfer(transaction_id):
 def swift_messages():
     """View all SWIFT messages"""
     # Get all SWIFT-related transactions for the current user
+    # Use string values directly as a workaround for the database enum issue
     swift_transactions = Transaction.query.filter(
         Transaction.user_id == current_user.id,
         Transaction.transaction_type.in_([
-            TransactionType.SWIFT_FUND_TRANSFER,
-            TransactionType.SWIFT_INSTITUTION_TRANSFER,
-            TransactionType.SWIFT_LETTER_OF_CREDIT,
-            TransactionType.SWIFT_FREE_FORMAT
+            'swift_fund_transfer',
+            'swift_institution_transfer',
+            'swift_letter_of_credit',
+            'swift_free_format'
         ])
     ).order_by(Transaction.created_at.desc()).all()
     
@@ -298,11 +299,11 @@ def view_swift_message(transaction_id):
         return redirect(url_for('web.swift.swift_messages'))
     
     # Check if it's a SWIFT message
-    if transaction.transaction_type not in [
-        TransactionType.SWIFT_FUND_TRANSFER,
-        TransactionType.SWIFT_INSTITUTION_TRANSFER,
-        TransactionType.SWIFT_LETTER_OF_CREDIT,
-        TransactionType.SWIFT_FREE_FORMAT
+    if transaction.transaction_type.value not in [
+        'swift_fund_transfer',
+        'swift_institution_transfer',
+        'swift_letter_of_credit',
+        'swift_free_format'
     ]:
         flash('This transaction is not a SWIFT message.', 'warning')
         return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
