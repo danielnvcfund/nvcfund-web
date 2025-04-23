@@ -18,7 +18,8 @@ import high_availability
 from forms import (
     LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, ForgotUsernameForm,
     PaymentForm, TransferForm, BlockchainTransactionForm, FinancialInstitutionForm, PaymentGatewayForm,
-    InvitationForm, AcceptInvitationForm, TestPaymentForm, BankTransferForm, LetterOfCreditForm
+    InvitationForm, AcceptInvitationForm, TestPaymentForm, BankTransferForm, LetterOfCreditForm,
+    ClientRegistrationForm
 )
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import func
@@ -282,6 +283,94 @@ def register():
     
     # Render the dedicated registration page
     return render_template('register.html', form=form)
+
+@main.route('/client-registration', methods=['GET', 'POST'])
+def client_registration():
+    """Client registration route with detailed business and banking information"""
+    # If user is already logged in, redirect to dashboard
+    if current_user.is_authenticated:
+        return redirect(url_for('web.main.dashboard'))
+        
+    form = ClientRegistrationForm()
+    
+    # Check for invite code in URL parameters
+    invite_code = request.args.get('invite_code')
+    if invite_code:
+        form.invite_code.data = invite_code
+        
+        # Get the invitation if it exists
+        invitation = get_invitation_by_code(invite_code)
+        if invitation and invitation.invitation_type == InvitationType.CLIENT and invitation.is_valid():
+            # Pre-fill email field if we have it
+            form.email.data = invitation.email
+    
+    if form.validate_on_submit():
+        try:
+            # Create user with basic info
+            user, error = register_user(form.username.data, form.email.data, form.password.data, role=UserRole.USER)
+            
+            if error:
+                flash(error, 'danger')
+                return render_template('client_registration.html', form=form)
+            
+            # Update additional profile information
+            if user:
+                # Client personal details
+                user.first_name = form.first_name.data
+                user.last_name = form.last_name.data
+                user.organization = form.organization.data
+                user.country = form.country.data
+                user.phone = form.phone.data
+                user.newsletter = form.newsletter.data
+                
+                # Create Ethereum wallet for the user
+                if not user.ethereum_address:
+                    try:
+                        address, private_key = generate_ethereum_account()
+                        user.ethereum_address = address
+                        user.ethereum_private_key = private_key
+                    except Exception as e:
+                        logger.error(f"Error creating Ethereum wallet: {str(e)}")
+                
+                # User has agreed to terms
+                if form.terms_agree.data:
+                    # Process invitation if an invite code was provided
+                    if form.invite_code.data:
+                        success, invite_error = accept_invitation(form.invite_code.data, user)
+                        if invite_error:
+                            logger.warning(f"Invitation acceptance issue: {invite_error}")
+                    
+                    db.session.commit()
+                    
+                    # Send welcome email to client
+                    try:
+                        from email_service import send_client_welcome_email
+                        send_client_welcome_email(user)
+                    except Exception as email_error:
+                        logger.error(f"Error sending welcome email: {str(email_error)}")
+                    
+                    flash('Client registration successful! You can now log in to your account.', 'success')
+                    return redirect(url_for('web.main.login'))
+                else:
+                    # This shouldn't happen due to form validation, but just in case
+                    db.session.rollback()
+                    flash('You must agree to the Terms of Service and Privacy Policy to register.', 'danger')
+            else:
+                flash('An error occurred during registration. Please try again.', 'danger')
+                
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Client registration error: {str(e)}")
+            flash('An error occurred during registration. Please try again later.', 'danger')
+    
+    # If there were form validation errors or this is a GET request
+    if form.errors and request.method == 'POST':
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
+    
+    # Render the dedicated client registration page
+    return render_template('client_registration.html', form=form)
 
 @main.route('/reset_password_request', methods=['GET', 'POST'])
 def reset_request():

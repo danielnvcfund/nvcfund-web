@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SelectField, TextAreaField, HiddenField, FloatField, DateField, SubmitField, RadioField, validators
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional
 from datetime import datetime, timedelta
-from models import FinancialInstitution, TransactionType
+from models import FinancialInstitution, TransactionType, InvitationType
 import json
 
 # Helper functions for forms
@@ -125,6 +125,82 @@ class PaymentForm(FlaskForm):
         # Dynamically load transaction types from the Enum
         self.transaction_type.choices = [(t.name, t.value) for t in TransactionType]
 
+class ClientRegistrationForm(FlaskForm):
+    """Form for client registration"""
+    # Basic account information
+    username = StringField('Username', validators=[DataRequired(), Length(min=4, max=64)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    
+    # Client details
+    first_name = StringField('First Name', validators=[DataRequired()])
+    last_name = StringField('Last Name', validators=[DataRequired()])
+    organization = StringField('Organization/Company', validators=[Optional()])
+    country = SelectField('Country', choices=[
+        ('', 'Select your country'),
+        ('US', 'United States'),
+        ('GB', 'United Kingdom'),
+        ('CA', 'Canada'),
+        ('AU', 'Australia'),
+        ('DE', 'Germany'),
+        ('FR', 'France'),
+        ('JP', 'Japan'),
+        ('CH', 'Switzerland'),
+        ('SG', 'Singapore'),
+        ('AE', 'United Arab Emirates'),
+        # Add more countries as needed
+    ], validators=[DataRequired()])
+    phone = StringField('Phone Number', validators=[DataRequired()])
+    
+    # Business details
+    business_type = SelectField('Business Type', choices=[
+        ('', 'Select business type (if applicable)'),
+        ('individual', 'Individual'),
+        ('sole_proprietorship', 'Sole Proprietorship'),
+        ('partnership', 'Partnership'),
+        ('llc', 'Limited Liability Company (LLC)'),
+        ('corporation', 'Corporation'),
+        ('nonprofit', 'Non-profit Organization'),
+        ('government', 'Government Entity'),
+        ('other', 'Other')
+    ], validators=[Optional()])
+    tax_id = StringField('Tax ID / EIN', validators=[Optional()])
+    business_address = TextAreaField('Business Address', validators=[Optional()])
+    website = StringField('Website', validators=[Optional()])
+    
+    # Banking preferences
+    preferred_currency = SelectField('Preferred Currency', choices=[
+        ('USD', 'USD - US Dollar'),
+        ('EUR', 'EUR - Euro'),
+        ('GBP', 'GBP - British Pound'),
+        ('CHF', 'CHF - Swiss Franc'),
+        ('JPY', 'JPY - Japanese Yen'),
+        ('CAD', 'CAD - Canadian Dollar'),
+        ('AUD', 'AUD - Australian Dollar'),
+        ('CNY', 'CNY - Chinese Yuan')
+    ], validators=[DataRequired()])
+    
+    # Agreement and opt-ins
+    terms_agree = BooleanField('I agree to the Terms of Service and Privacy Policy', validators=[DataRequired()])
+    newsletter = BooleanField('I would like to receive updates about new features and services', default=True)
+    
+    # Optional invite code
+    invite_code = StringField('Invitation Code (if any)', validators=[Optional()])
+    
+    # Reference information
+    referral_source = SelectField('How did you hear about us?', choices=[
+        ('', 'Select an option'),
+        ('search', 'Search Engine'),
+        ('social', 'Social Media'),
+        ('referral', 'Referred by Someone'),
+        ('advertisement', 'Advertisement'),
+        ('news', 'News Article'),
+        ('other', 'Other')
+    ], validators=[Optional()])
+    
+    submit = SubmitField('Complete Registration')
+    
 class BankTransferForm(FlaskForm):
     transaction_id = HiddenField('Transaction ID', validators=[Optional()])
     
