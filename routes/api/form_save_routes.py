@@ -22,19 +22,37 @@ form_save = Blueprint('form_save', __name__, url_prefix='/api')
 def save_form_data():
     """Save form data for the current user"""
     try:
+        # Log that we're attempting to save form data
+        logger.info(f"Attempting to save form data for user {current_user.id}")
+        
         # Get request data
         data = request.get_json()
         if not data:
+            logger.warning("No JSON data provided in request")
             return jsonify({'success': False, 'error': 'No data provided'}), 400
             
         form_name = data.get('form_name')
         form_data = data.get('form_data')
         
+        logger.info(f"Received form data for form: {form_name}")
+        
         if not form_name or not form_data:
+            logger.warning(f"Missing required fields: form_name={form_name}, form_data present={form_data is not None}")
             return jsonify({'success': False, 'error': 'Missing required fields'}), 400
             
+        # Ensure data is JSON serializable
+        try:
+            json.dumps(form_data)
+        except (TypeError, ValueError) as e:
+            logger.error(f"Form data is not JSON serializable: {str(e)}")
+            return jsonify({'success': False, 'error': 'Form data is not JSON serializable'}), 400
+            
+        # Make sure institution name is included
+        if form_name == 'swift_fund_transfer_form' and 'receiver_institution_name' in form_data:
+            logger.info(f"Institution name in form data: {form_data['receiver_institution_name']}")
+        
         # Save form data
-        FormData.save_form_data(
+        form_data_obj = FormData.save_form_data(
             user_id=current_user.id,
             form_type=form_name,
             form_data=form_data,
@@ -43,7 +61,7 @@ def save_form_data():
         )
         
         db.session.commit()
-        logger.info(f"Form data saved for user {current_user.id}, form {form_name}")
+        logger.info(f"Form data saved successfully for user {current_user.id}, form {form_name}")
         
         return jsonify({'success': True, 'message': 'Form data saved successfully'})
     except Exception as e:

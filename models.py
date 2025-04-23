@@ -312,7 +312,7 @@ class FormData(db.Model):
     """
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    transaction_id = db.Column(db.String(64), nullable=False, index=True)
+    transaction_id = db.Column(db.String(64), nullable=True, index=True)  # Can be null for draft forms
     form_type = db.Column(db.String(64), nullable=False)  # e.g., 'bank_transfer'
     form_data = db.Column(db.Text, nullable=False)  # JSON serialized form data
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -480,3 +480,59 @@ class FormData(db.Model):
         for item in expired:
             db.session.delete(item)
         db.session.commit()
+        
+    @classmethod
+    def save_form_data(cls, user_id, form_type, form_data, transaction_id=None, expires_at=None):
+        """
+        Save or update form data without requiring a transaction ID (for drafts)
+        
+        Args:
+            user_id (int): The user ID
+            form_type (str): The type of form
+            form_data (dict): The form data
+            transaction_id (str, optional): The transaction ID if exists
+            expires_at (datetime, optional): Expiry time, defaults to 24 hours
+            
+        Returns:
+            FormData: The new or updated FormData object
+        """
+        # Convert form data to JSON
+        form_data_json = json.dumps(form_data)
+        
+        # Set default expiry time if not provided
+        if expires_at is None:
+            expires_at = datetime.utcnow() + timedelta(hours=24)
+            
+        # If transaction_id is provided, check if we have an existing record
+        if transaction_id:
+            existing = cls.query.filter_by(
+                user_id=user_id,
+                transaction_id=transaction_id,
+                form_type=form_type
+            ).first()
+        else:
+            # If no transaction_id (draft form), find by user_id and form_type
+            existing = cls.query.filter_by(
+                user_id=user_id,
+                transaction_id=None,  # Only find draft forms with no transaction ID
+                form_type=form_type
+            ).order_by(cls.created_at.desc()).first()
+        
+        if existing:
+            # Update existing record
+            existing.form_data = form_data_json
+            existing.expires_at = expires_at
+            existing.created_at = datetime.utcnow()
+            return existing
+            
+        # Create new record
+        form_data_obj = cls(
+            user_id=user_id,
+            transaction_id=transaction_id,  # Can be None for draft
+            form_type=form_type,
+            form_data=form_data_json,
+            expires_at=expires_at
+        )
+        
+        db.session.add(form_data_obj)
+        return form_data_obj

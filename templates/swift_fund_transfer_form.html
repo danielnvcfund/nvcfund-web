@@ -67,9 +67,9 @@
               </div>
               <div class="card-body">
                 <div class="row g-3">
-                  <div class="col-md-6">
+                  <div class="col-md-12 mb-3">
                     <label for="{{ form.receiver_institution_id.id }}" class="form-label required">Institution ID</label>
-                    {{ form.receiver_institution_id(class="form-select", required=True) }}
+                    {{ form.receiver_institution_id(class="form-select institution-select", required=True) }}
                     {% if form.receiver_institution_id.errors %}
                       <div class="invalid-feedback d-block">
                         {% for error in form.receiver_institution_id.errors %}
@@ -78,9 +78,9 @@
                       </div>
                     {% endif %}
                   </div>
-                  <div class="col-md-6">
+                  <div class="col-md-12">
                     <label for="{{ form.receiver_institution_name.id }}" class="form-label required">Full Legal Name</label>
-                    {{ form.receiver_institution_name(class="form-control", required=True, placeholder="Enter complete institution name") }}
+                    {{ form.receiver_institution_name(class="form-control institution-name", required=True, placeholder="Enter complete institution name") }}
                     {% if form.receiver_institution_name.errors %}
                       <div class="invalid-feedback d-block">
                         {% for error in form.receiver_institution_name.errors %}
@@ -138,7 +138,7 @@
               <div class="card-body">
                 <div class="mb-3">
                   <label for="{{ form.ordering_customer.id }}" class="form-label sender-label required">Sender Details</label>
-                  {{ form.ordering_customer(class="form-control", rows=3, required=True, placeholder="Enter sender details including name, account number, and address") }}
+                  {{ form.ordering_customer(class="form-control", rows=2, required=True, placeholder="Enter sender details including name, account number, and address") }}
                   {% if form.ordering_customer.errors %}
                     <div class="invalid-feedback d-block">
                       {% for error in form.ordering_customer.errors %}
@@ -151,7 +151,7 @@
                 
                 <div class="mb-3">
                   <label for="{{ form.beneficiary_customer.id }}" class="form-label recipient-label required">Recipient Details</label>
-                  {{ form.beneficiary_customer(class="form-control", rows=3, required=True, placeholder="Enter recipient details including name, account number, and address") }}
+                  {{ form.beneficiary_customer(class="form-control", rows=2, required=True, placeholder="Enter recipient details including name, account number, and address") }}
                   {% if form.beneficiary_customer.errors %}
                     <div class="invalid-feedback d-block">
                       {% for error in form.beneficiary_customer.errors %}

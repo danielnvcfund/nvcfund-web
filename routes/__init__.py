@@ -10,6 +10,7 @@ from routes.api.xrp_routes import xrp_api
 from routes.api.ha_routes import ha_api
 from routes.api.status_routes import status_bp
 from routes.api.form_data_routes import form_data
+from routes.api.form_save_routes import form_save
 from routes.high_availability_routes import ha_web
 from routes.main_routes import main
 from routes.swift_routes import swift
@@ -30,6 +31,7 @@ api_blueprint.register_blueprint(ha_api, url_prefix='/v1/ha')
 api_blueprint.register_blueprint(status_bp)
 api_blueprint.register_blueprint(php_bridge, url_prefix='/php-bridge')
 api_blueprint.register_blueprint(form_data)
+api_blueprint.register_blueprint(form_save)
 
 # Register Web route blueprints
 web_blueprint.register_blueprint(ha_web, url_prefix='/ha')
