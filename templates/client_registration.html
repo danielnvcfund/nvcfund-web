@@ -1,0 +1,585 @@
+{% extends 'layout.html' %}
+
+{% block title %}Client Registration - NVC Banking Platform{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+    .form-step {
+        display: none;
+    }
+    .form-step.active {
+        display: block;
+    }
+    .step-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+    .step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+        padding-bottom: 10px;
+    }
+    .step:not(:last-child):after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        background-color: var(--bs-secondary);
+        top: 25px;
+        left: 50%;
+    }
+    .step-number {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: var(--bs-secondary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        font-weight: bold;
+        position: relative;
+        z-index: 5;
+    }
+    .step.active .step-number {
+        background-color: var(--bs-primary);
+    }
+    .step.completed .step-number {
+        background-color: var(--bs-success);
+    }
+    .step-title {
+        font-size: 0.9rem;
+    }
+    .password-strength {
+        height: 5px;
+        margin-top: 10px;
+        background-color: #e9ecef;
+        border-radius: 3px;
+    }
+    .password-strength div {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.3s;
+    }
+    .password-feedback {
+        margin-top: 5px;
+        font-size: 0.85rem;
+    }
+    .terms-container {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: rgba(0,0,0,0.05);
+        border-radius: 5px;
+    }
+    .form-control, .form-select {
+        border-width: 2px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.25rem rgba(74, 111, 255, 0.25);
+    }
+    .section-title {
+        margin-top: 20px;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--bs-border-color);
+        color: var(--bs-primary);
+    }
+    .help-tooltip {
+        cursor: pointer;
+        color: var(--bs-info);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow border-0 rounded-lg mb-4">
+                <div class="card-header bg-primary text-white py-3">
+                    <h3 class="text-center mb-0"><i class="fas fa-user-plus me-2"></i>Client Registration</h3>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Step Indicators -->
+                    <div class="step-indicator mb-4">
+                        <div class="step active" id="step1-indicator">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Account Details</div>
+                        </div>
+                        <div class="step" id="step2-indicator">
+                            <div class="step-number">2</div>
+                            <div class="step-title">Client Information</div>
+                        </div>
+                        <div class="step" id="step3-indicator">
+                            <div class="step-number">3</div>
+                            <div class="step-title">Business Details</div>
+                        </div>
+                        <div class="step" id="step4-indicator">
+                            <div class="step-number">4</div>
+                            <div class="step-title">Banking & Finalization</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Registration Form -->
+                    <form method="POST" action="{{ url_for('web.main.client_registration') }}" id="client-registration-form">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Step 1: Account Details -->
+                        <div class="form-step active" id="step1">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    {{ form.username(class="form-control", required=true, minlength=4, maxlength=64, spellcheck="true", autocorrect="on") }}
+                                </div>
+                                <div class="form-text">Choose a unique username (4-64 characters)</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    {{ form.email(class="form-control", required=true, spellcheck="true", autocorrect="on") }}
+                                </div>
+                                <div class="form-text">We'll send a verification link to this email</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    {{ form.password(class="form-control", required=true, minlength=8) }}
+                                    <span class="input-group-text password-toggle" role="button">
+                                        <i class="fas fa-eye"></i>
+                                    </span>
+                                </div>
+                                <div class="password-strength">
+                                    <div id="password-strength-bar"></div>
+                                </div>
+                                <div class="password-feedback text-muted" id="password-feedback">Password must be at least 8 characters</div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="confirm_password" class="form-label">Confirm Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    {{ form.confirm_password(class="form-control", required=true) }}
+                                </div>
+                                <div id="password-match-feedback" class="form-text"></div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn btn-primary next-step">Next: Client Information <i class="fas fa-arrow-right ms-2"></i></button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 2: Client Information -->
+                        <div class="form-step" id="step2">
+                            <h5 class="section-title"><i class="fas fa-user me-2"></i>Personal Information</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="first_name" class="form-label">First Name</label>
+                                    {{ form.first_name(class="form-control", required=true, spellcheck="true", autocorrect="on") }}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="last_name" class="form-label">Last Name</label>
+                                    {{ form.last_name(class="form-control", required=true, spellcheck="true", autocorrect="on") }}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="organization" class="form-label">Organization/Company</label>
+                                {{ form.organization(class="form-control", spellcheck="true", autocorrect="on") }}
+                                <div class="form-text">Your company or organization name (if applicable)</div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="country" class="form-label">Country</label>
+                                    {{ form.country(class="form-select", required=true) }}
+                                </div>
+                                
+                                <div class="col-md-6 mb-4">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    {{ form.phone(class="form-control", required=true, spellcheck="true", autocorrect="on") }}
+                                    <div class="form-text">Include country code (e.g., +1 for US)</div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary prev-step"><i class="fas fa-arrow-left me-2"></i> Back</button>
+                                <button type="button" class="btn btn-primary next-step">Next: Business Details <i class="fas fa-arrow-right ms-2"></i></button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 3: Business Details -->
+                        <div class="form-step" id="step3">
+                            <h5 class="section-title"><i class="fas fa-building me-2"></i>Business Information</h5>
+                            
+                            <div class="mb-3">
+                                <label for="business_type" class="form-label">Business Type</label>
+                                {{ form.business_type(class="form-select") }}
+                                <div class="form-text">Select the type that best describes your business</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="tax_id" class="form-label">Tax ID / EIN</label>
+                                {{ form.tax_id(class="form-control") }}
+                                <div class="form-text">For businesses in the US, enter your EIN (optional)</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="business_address" class="form-label">Business Address</label>
+                                {{ form.business_address(class="form-control", rows=3) }}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="website" class="form-label">Website</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-globe"></i></span>
+                                    {{ form.website(class="form-control", placeholder="https://") }}
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary prev-step"><i class="fas fa-arrow-left me-2"></i> Back</button>
+                                <button type="button" class="btn btn-primary next-step">Next: Banking & Finalization <i class="fas fa-arrow-right ms-2"></i></button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 4: Banking & Finalization -->
+                        <div class="form-step" id="step4">
+                            <h5 class="section-title"><i class="fas fa-university me-2"></i>Banking Preferences</h5>
+                            
+                            <div class="mb-3">
+                                <label for="preferred_currency" class="form-label">Preferred Currency</label>
+                                {{ form.preferred_currency(class="form-select", required=true) }}
+                                <div class="form-text">This will be your default currency for transactions</div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="invite_code" class="form-label">Invitation Code (if any)</label>
+                                {{ form.invite_code(class="form-control") }}
+                                <div class="form-text">Enter an invitation code if you received one</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="referral_source" class="form-label">How did you hear about us?</label>
+                                {{ form.referral_source(class="form-select") }}
+                            </div>
+                            
+                            <h5 class="section-title"><i class="fas fa-file-contract me-2"></i>Terms and Agreements</h5>
+                            
+                            <div class="terms-container mb-3">
+                                <h5>Client Terms of Service</h5>
+                                <p>By creating a client account on the NVC Banking Platform, you agree to the following terms:</p>
+                                <ul>
+                                    <li>You will comply with all applicable laws and regulations, including anti-money laundering (AML) and know-your-customer (KYC) requirements.</li>
+                                    <li>You will provide accurate information during registration and keep your account information up to date.</li>
+                                    <li>You are responsible for maintaining the confidentiality of your account credentials.</li>
+                                    <li>You will not use the platform for any illegal or unauthorized purpose.</li>
+                                    <li>We may send you occasional service-related emails regarding your transactions and account.</li>
+                                    <li>You understand that blockchain transactions are irreversible and we cannot recover funds sent to incorrect addresses.</li>
+                                </ul>
+                                <h5>Privacy Policy</h5>
+                                <p>The NVC Banking Platform is committed to protecting your privacy:</p>
+                                <ul>
+                                    <li>We collect personal information to provide and improve our services.</li>
+                                    <li>Your financial data is encrypted and securely stored.</li>
+                                    <li>We do not sell or rent your personal information to third parties.</li>
+                                    <li>We may share information with trusted partners to facilitate transactions.</li>
+                                    <li>We comply with relevant data protection regulations.</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                {{ form.terms_agree(class="form-check-input", required=true) }}
+                                <label class="form-check-label" for="terms_agree">I agree to the Client Terms of Service and Privacy Policy</label>
+                            </div>
+                            
+                            <div class="mb-4 form-check">
+                                {{ form.newsletter(class="form-check-input") }}
+                                <label class="form-check-label" for="newsletter">I would like to receive updates about new features and services (optional)</label>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary prev-step"><i class="fas fa-arrow-left me-2"></i> Back</button>
+                                <button type="submit" class="btn btn-success"><i class="fas fa-check-circle me-2"></i> Complete Client Registration</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer bg-light py-3">
+                    <div class="text-center">Already have an account? <a href="{{ url_for('web.main.login') }}">Sign In</a></div>
+                </div>
+            </div>
+            
+            <!-- Platform Benefits -->
+            <div class="card shadow border-0 rounded-lg">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-shield-alt me-2"></i>Benefits of Client Registration</h5>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Access to NVC Banking Platform's complete suite of financial services</li>
+                                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> SWIFT messaging capabilities for global transfers</li>
+                                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Multiple payment gateway options (Stripe, PayPal, NVC Global)</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Blockchain-powered transaction security</li>
+                                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> NVC Token (NVCT) for easy digital asset management</li>
+                                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Integration with global financial institutions</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Step navigation
+    const steps = document.querySelectorAll('.form-step');
+    const stepIndicators = document.querySelectorAll('.step');
+    const nextButtons = document.querySelectorAll('.next-step');
+    const prevButtons = document.querySelectorAll('.prev-step');
+    
+    // Move to next step
+    nextButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Get current step
+            const currentStep = document.querySelector('.form-step.active');
+            const currentIndex = Array.from(steps).indexOf(currentStep);
+            
+            // Validate current step fields
+            const fieldsValid = validateStepFields(currentStep);
+            
+            if (fieldsValid) {
+                // Hide current step
+                currentStep.classList.remove('active');
+                stepIndicators[currentIndex].classList.add('completed');
+                
+                // Show next step
+                steps[currentIndex + 1].classList.add('active');
+                stepIndicators[currentIndex + 1].classList.add('active');
+                
+                // Scroll to top of form
+                document.getElementById('client-registration-form').scrollIntoView();
+            }
+        });
+    });
+    
+    // Move to previous step
+    prevButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Get current step
+            const currentStep = document.querySelector('.form-step.active');
+            const currentIndex = Array.from(steps).indexOf(currentStep);
+            
+            // Hide current step
+            currentStep.classList.remove('active');
+            stepIndicators[currentIndex].classList.remove('active');
+            
+            // Show previous step
+            steps[currentIndex - 1].classList.add('active');
+            stepIndicators[currentIndex - 1].classList.add('active');
+            
+            // Scroll to top of form
+            document.getElementById('client-registration-form').scrollIntoView();
+        });
+    });
+    
+    // Password strength meter
+    const passwordInput = document.getElementById('password');
+    const passwordStrengthBar = document.getElementById('password-strength-bar');
+    const passwordFeedback = document.getElementById('password-feedback');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    const passwordMatchFeedback = document.getElementById('password-match-feedback');
+    
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        const strength = calculatePasswordStrength(password);
+        
+        // Update strength bar
+        passwordStrengthBar.style.width = strength.percentage + '%';
+        passwordStrengthBar.style.backgroundColor = strength.color;
+        
+        // Update feedback text
+        passwordFeedback.textContent = strength.message;
+        passwordFeedback.style.color = strength.color;
+        
+        // Check if passwords match
+        if (confirmPasswordInput.value) {
+            checkPasswordMatch();
+        }
+    });
+    
+    confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+    
+    function checkPasswordMatch() {
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        
+        if (!confirmPassword) {
+            passwordMatchFeedback.textContent = '';
+            return;
+        }
+        
+        if (password === confirmPassword) {
+            passwordMatchFeedback.textContent = 'Passwords match';
+            passwordMatchFeedback.style.color = '#198754'; // Bootstrap success color
+        } else {
+            passwordMatchFeedback.textContent = 'Passwords do not match';
+            passwordMatchFeedback.style.color = '#dc3545'; // Bootstrap danger color
+        }
+    }
+    
+    function calculatePasswordStrength(password) {
+        // Empty password
+        if (!password) {
+            return {
+                percentage: 0,
+                color: '#dc3545',
+                message: 'Password must be at least 8 characters'
+            };
+        }
+        
+        let strength = 0;
+        let feedback = [];
+        
+        // Length check
+        if (password.length < 8) {
+            feedback.push('Password must be at least 8 characters');
+        } else {
+            strength += 25;
+            
+            // Additional length points
+            if (password.length > 12) {
+                strength += 10;
+            }
+        }
+        
+        // Complexity checks
+        if (/[A-Z]/.test(password)) {
+            strength += 15;
+        } else {
+            feedback.push('Add uppercase letters');
+        }
+        
+        if (/[a-z]/.test(password)) {
+            strength += 15;
+        } else {
+            feedback.push('Add lowercase letters');
+        }
+        
+        if (/[0-9]/.test(password)) {
+            strength += 15;
+        } else {
+            feedback.push('Add numbers');
+        }
+        
+        if (/[^A-Za-z0-9]/.test(password)) {
+            strength += 20;
+        } else {
+            feedback.push('Add special characters');
+        }
+        
+        // Cap strength at 100%
+        strength = Math.min(strength, 100);
+        
+        // Determine color and message
+        let color, message;
+        
+        if (strength < 30) {
+            color = '#dc3545'; // Bootstrap danger
+            message = feedback[0] || 'Password is very weak';
+        } else if (strength < 60) {
+            color = '#ffc107'; // Bootstrap warning
+            message = feedback[0] || 'Password is moderate';
+        } else if (strength < 80) {
+            color = '#0dcaf0'; // Bootstrap info
+            message = 'Password is good';
+        } else {
+            color = '#198754'; // Bootstrap success
+            message = 'Password is strong';
+        }
+        
+        return {
+            percentage: strength,
+            color: color,
+            message: message
+        };
+    }
+    
+    // Password toggle visibility
+    const passwordToggle = document.querySelector('.password-toggle');
+    passwordToggle.addEventListener('click', function() {
+        const passwordType = passwordInput.type;
+        passwordInput.type = passwordType === 'password' ? 'text' : 'password';
+        
+        // Update icon
+        const icon = this.querySelector('i');
+        icon.className = passwordType === 'password' ? 'fas fa-eye-slash' : 'fas fa-eye';
+    });
+    
+    // Form validation helper
+    function validateStepFields(step) {
+        const requiredFields = step.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('is-invalid');
+                
+                // Add event listener to remove invalid class when user types
+                field.addEventListener('input', function() {
+                    this.classList.remove('is-invalid');
+                }, { once: true });
+            }
+        });
+        
+        // Specific validation for step 1
+        if (step.id === 'step1') {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (password.length < 8) {
+                isValid = false;
+                passwordInput.classList.add('is-invalid');
+                passwordFeedback.textContent = 'Password must be at least 8 characters';
+                passwordFeedback.style.color = '#dc3545';
+            }
+            
+            if (password !== confirmPassword) {
+                isValid = false;
+                confirmPasswordInput.classList.add('is-invalid');
+                passwordMatchFeedback.textContent = 'Passwords do not match';
+                passwordMatchFeedback.style.color = '#dc3545';
+            }
+        }
+        
+        return isValid;
+    }
+});
+</script>
+{% endblock %}

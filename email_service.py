@@ -259,6 +259,52 @@ def send_invitation_email(invitation, invitation_url):
         html_content=html_content
     )
 
+def send_client_welcome_email(user):
+    """
+    Send welcome email to new client accounts
+    
+    Args:
+        user: User object with email and username
+        
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    dashboard_url = url_for('web.main.dashboard', _external=True)
+    
+    subject = "Welcome to NVC Banking Platform - Client Account"
+    html_content = f"""
+    <html>
+        <body>
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+                <h2 style="color: #4A6FFF;">Welcome to NVC Banking Platform!</h2>
+                <p>Hello {user.first_name or user.username},</p>
+                <p>Thank you for creating a client account with NVC Banking Platform. We're excited to have you on board!</p>
+                <p>Your client account provides you with access to our complete suite of financial services:</p>
+                <ul>
+                    <li>Process secure blockchain-based transactions</li>
+                    <li>Access SWIFT messaging capabilities</li>
+                    <li>Use multiple payment gateways including Stripe, PayPal, and NVC Global</li>
+                    <li>Manage your digital assets with NVC Tokens (NVCT)</li>
+                    <li>Connect with global financial institutions</li>
+                    <li>Monitor your transactions in real-time</li>
+                </ul>
+                <div style="text-align: center; margin: 25px 0;">
+                    <a href="{dashboard_url}" style="background-color: #4A6FFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Go to Your Dashboard</a>
+                </div>
+                <p>We've created an Ethereum wallet for your account that you can use for digital asset transactions.</p>
+                <p>If you have any questions, please don't hesitate to contact our support team.</p>
+                <p>Regards,<br>The NVC Banking Platform Team</p>
+            </div>
+        </body>
+    </html>
+    """
+    
+    return send_email(
+        to_email=user.email,
+        subject=subject,
+        html_content=html_content
+    )
+
 def send_transaction_confirmation_email(user, transaction):
     """
     Send transaction confirmation email
