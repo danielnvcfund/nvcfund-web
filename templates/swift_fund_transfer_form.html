@@ -45,7 +45,8 @@
                 {% for subfield in form.is_financial_institution %}
                 <input type="radio" class="btn-check" name="{{ form.is_financial_institution.name }}" 
                        id="{{ subfield.id }}" value="{{ subfield.data }}" 
-                       {% if loop.index0 == 0 %}checked{% endif %}>
+                       {% if loop.index0 == 0 %}checked{% endif %}
+                       required>
                 <label class="btn btn-outline-primary" for="{{ subfield.id }}">
                   {{ subfield.label }}
                 </label>
