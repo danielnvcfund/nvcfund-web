@@ -261,12 +261,31 @@ def swift_messages():
     # Filter transactions by examining metadata for SWIFT content
     for tx in all_user_transactions:
         try:
+            # Check for description hints first (since we have some PAYMENT transactions)
+            if tx.description and ('SWIFT' in tx.description or 'Letter of Credit' in tx.description or 
+                                  'Fund Transfer' in tx.description or 'Financial Institution Transfer' in tx.description):
+                swift_transactions.append(tx)
+                continue
+                
             # Check if this is a SWIFT transaction based on metadata
             if tx.tx_metadata_json:
-                metadata = json.loads(tx.tx_metadata_json)
-                if 'message_type' in metadata and metadata['message_type'] in ['MT103', 'MT202', 'MT760', 'MT799']:
-                    swift_transactions.append(tx)
-                    continue
+                try:
+                    metadata = json.loads(tx.tx_metadata_json)
+                    if ('message_type' in metadata and metadata['message_type'] in ['MT103', 'MT202', 'MT760', 'MT799']):
+                        swift_transactions.append(tx)
+                        continue
+                    # Check for references that follow SWIFT formats
+                    if 'reference' in metadata and any(metadata['reference'].startswith(prefix) 
+                            for prefix in ['FT', 'IT', 'LC', 'FM']):
+                        swift_transactions.append(tx)
+                        continue
+                    # Check for receiver institution which indicates SWIFT message
+                    if 'receiver_institution' in metadata or 'receiving_institution' in metadata:
+                        swift_transactions.append(tx)
+                        continue
+                except json.JSONDecodeError:
+                    # Malformed JSON, just skip this check
+                    pass
             
             # Also check by transaction type (for properly typed transactions)
             if tx.transaction_type in [
@@ -281,6 +300,15 @@ def swift_messages():
                 'swift_free_format'
             ]):
                 swift_transactions.append(tx)
+                
+            # Special handling for PHP integration transactions that use PAYMENT type
+            # but might be SWIFT transfers - check based on institution_id being set
+            if tx.transaction_type == TransactionType.PAYMENT and tx.institution_id is not None:
+                institution = FinancialInstitution.query.get(tx.institution_id)
+                if institution and 'bank' in institution.name.lower():
+                    swift_transactions.append(tx)
+                    continue
+                
         except Exception as e:
             logger.error(f"Error processing transaction {tx.id}: {str(e)}")
             continue
@@ -330,14 +358,27 @@ def view_swift_message(transaction_id):
     
     # Check if it's a SWIFT message
     try:
-        # First, check metadata for SWIFT-specific data
+        # First, check description for SWIFT hints
         is_swift_message = False
-        try:
-            metadata = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
-            if 'message_type' in metadata and metadata['message_type'] in ['MT103', 'MT202', 'MT760', 'MT799']:
-                is_swift_message = True
-        except (json.JSONDecodeError, AttributeError):
-            pass
+        if transaction.description and ('SWIFT' in transaction.description or 'Letter of Credit' in transaction.description or 
+                              'Fund Transfer' in transaction.description or 'Financial Institution Transfer' in transaction.description):
+            is_swift_message = True
+            
+        # Then check metadata for SWIFT-specific data
+        if not is_swift_message:
+            try:
+                metadata = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
+                if 'message_type' in metadata and metadata['message_type'] in ['MT103', 'MT202', 'MT760', 'MT799']:
+                    is_swift_message = True
+                # Check for references that follow SWIFT formats
+                elif 'reference' in metadata and any(metadata['reference'].startswith(prefix) 
+                        for prefix in ['FT', 'IT', 'LC', 'FM']):
+                    is_swift_message = True
+                # Check for receiver institution which indicates SWIFT message
+                elif 'receiver_institution' in metadata or 'receiving_institution' in metadata:
+                    is_swift_message = True
+            except (json.JSONDecodeError, AttributeError):
+                pass
         
         # Then check by transaction type if needed
         if not is_swift_message:
@@ -347,6 +388,12 @@ def view_swift_message(transaction_id):
                 'swift_letter_of_credit',
                 'swift_free_format'
             ]:
+                is_swift_message = True
+                
+        # Special case for PAYMENT type with institution ID (possible PHP integration)
+        if not is_swift_message and transaction.transaction_type == TransactionType.PAYMENT and transaction.institution_id is not None:
+            institution = FinancialInstitution.query.get(transaction.institution_id)
+            if institution and 'bank' in institution.name.lower():
                 is_swift_message = True
         
         if not is_swift_message:
@@ -372,27 +419,55 @@ def view_swift_message(transaction_id):
     elif 'receiver_institution_name' in metadata:
         institution_name = metadata.get('receiver_institution_name')
     
+    # Try to determine message type from metadata first
+    message_type = None
+    if 'message_type' in metadata:
+        message_type = metadata['message_type']  # MT103, MT202, etc.
+    
     # Get message details based on transaction type
-    if transaction.transaction_type == TransactionType.SWIFT_FUND_TRANSFER:
+    if transaction.transaction_type == TransactionType.SWIFT_FUND_TRANSFER or message_type == 'MT103':
         message_type = "MT103"
         ordering_customer = metadata.get('ordering_customer', '')
         beneficiary_customer = metadata.get('beneficiary_customer', '')
         details_of_payment = metadata.get('details_of_payment', '')
-    elif transaction.transaction_type == TransactionType.SWIFT_INSTITUTION_TRANSFER:
+    elif transaction.transaction_type == TransactionType.SWIFT_INSTITUTION_TRANSFER or message_type == 'MT202':
         message_type = "MT202"
         ordering_customer = metadata.get('ordering_customer', '')
         beneficiary_customer = metadata.get('beneficiary_customer', '')
         details_of_payment = metadata.get('details_of_payment', '')
-    elif transaction.transaction_type == TransactionType.SWIFT_LETTER_OF_CREDIT:
+    elif transaction.transaction_type == TransactionType.SWIFT_LETTER_OF_CREDIT or message_type == 'MT760':
         message_type = "MT760"
         ordering_customer = metadata.get('beneficiary', '')
         beneficiary_customer = institution_name
         details_of_payment = metadata.get('terms_and_conditions', '')
-    else:  # SWIFT_FREE_FORMAT
+    elif transaction.transaction_type == TransactionType.SWIFT_FREE_FORMAT or message_type == 'MT799':
         message_type = "MT799"
         ordering_customer = ''
         beneficiary_customer = institution_name
         details_of_payment = metadata.get('message_body', '')
+    else:
+        # Fallback for PAYMENT or other types: Determine from description or defaults
+        if 'Fund Transfer' in transaction.description:
+            message_type = "MT103"
+            ordering_customer = metadata.get('ordering_customer', current_user.first_name + ' ' + current_user.last_name if current_user.first_name else current_user.username)
+            beneficiary_customer = metadata.get('beneficiary_customer', 'Beneficiary')
+            details_of_payment = metadata.get('details_of_payment', transaction.description)
+        elif 'Institution Transfer' in transaction.description:
+            message_type = "MT202"
+            ordering_customer = metadata.get('ordering_customer', 'NVC Global Banking')
+            beneficiary_customer = institution_name or 'Receiving Institution'
+            details_of_payment = metadata.get('details_of_payment', transaction.description)
+        elif 'Letter of Credit' in transaction.description:
+            message_type = "MT760"
+            ordering_customer = metadata.get('beneficiary', current_user.first_name + ' ' + current_user.last_name if current_user.first_name else current_user.username)
+            beneficiary_customer = institution_name or 'Beneficiary Institution'
+            details_of_payment = metadata.get('terms_and_conditions', transaction.description)
+        else:
+            # Default to MT103 if can't determine
+            message_type = "MT103"
+            ordering_customer = current_user.first_name + ' ' + current_user.last_name if current_user.first_name else current_user.username
+            beneficiary_customer = institution_name or 'Beneficiary'
+            details_of_payment = transaction.description
     
     # Generate a receiver BIC from institution name
     if institution_name:

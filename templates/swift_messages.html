@@ -35,10 +35,30 @@
                 <tr>
                   <td>{{ message.transaction.transaction_id }}</td>
                   <td>
-                    {% if message.is_financial_institution %}
-                    <span class="badge bg-info">MT202</span>
+                    {% if message.metadata and message.metadata.message_type %}
+                      {% if message.metadata.message_type == 'MT103' %}
+                        <span class="badge bg-primary">MT103</span>
+                      {% elif message.metadata.message_type == 'MT202' %}
+                        <span class="badge bg-info">MT202</span>
+                      {% elif message.metadata.message_type == 'MT760' %}
+                        <span class="badge bg-success">MT760</span>
+                      {% elif message.metadata.message_type == 'MT799' %}
+                        <span class="badge bg-secondary">MT799</span>
+                      {% else %}
+                        <span class="badge bg-light text-dark">{{ message.metadata.message_type }}</span>
+                      {% endif %}
+                    {% elif message.transaction.transaction_type == 'SWIFT_FUND_TRANSFER' %}
+                      <span class="badge bg-primary">MT103</span>
+                    {% elif message.transaction.transaction_type == 'SWIFT_INSTITUTION_TRANSFER' %}
+                      <span class="badge bg-info">MT202</span>
+                    {% elif message.transaction.transaction_type == 'SWIFT_LETTER_OF_CREDIT' %}
+                      <span class="badge bg-success">MT760</span>
+                    {% elif message.transaction.transaction_type == 'SWIFT_FREE_FORMAT' %}
+                      <span class="badge bg-secondary">MT799</span>
+                    {% elif message.is_financial_institution %}
+                      <span class="badge bg-info">MT202</span>
                     {% else %}
-                    <span class="badge bg-primary">MT103</span>
+                      <span class="badge bg-primary">MT103</span>
                     {% endif %}
                   </td>
                   <td>{{ message.institution_name }}</td>
