@@ -289,25 +289,169 @@ pre {
 }
 
 /* ==== Form & Input Enhancements ==== */
-/* Form fields styling */
+/* Form fields styling with enhanced contrast */
 .form-control, .form-select {
     border-radius: var(--border-radius-sm);
-    padding: 0.65rem 1rem;
-    background-color: rgba(var(--bs-dark-rgb), 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.75rem 1rem;
+    background-color: rgba(var(--bs-dark-rgb), 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.2);
     color: var(--bs-body-color);
     transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.form-control:hover, .form-select:hover {
+    border-color: rgba(255, 255, 255, 0.35);
+    background-color: rgba(var(--bs-dark-rgb), 0.25);
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: rgba(var(--bs-primary-rgb), 0.5);
-    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
-    background-color: rgba(var(--bs-dark-rgb), 0.4);
+    border-color: rgba(var(--bs-primary-rgb), 0.7);
+    box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.25), 0 2px 8px rgba(0, 0, 0, 0.2);
+    background-color: rgba(var(--bs-dark-rgb), 0.3);
+}
+
+/* Validation style improvements */
+.form-control.is-invalid, .form-select.is-invalid,
+.was-validated .form-control:invalid, .was-validated .form-select:invalid {
+    border-color: var(--bs-danger);
+    background-color: rgba(var(--bs-danger-rgb), 0.05);
+    box-shadow: 0 0 0 3px rgba(var(--bs-danger-rgb), 0.15);
+}
+
+.form-control.is-invalid:focus, .form-select.is-invalid:focus,
+.was-validated .form-control:invalid:focus, .was-validated .form-select:invalid:focus {
+    border-color: var(--bs-danger);
+    box-shadow: 0 0 0 3px rgba(var(--bs-danger-rgb), 0.25);
+}
+
+.invalid-feedback {
+    color: var(--bs-danger);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    display: block;
 }
 
 .form-label {
+    font-weight: 600;
+    margin-bottom: 0.65rem;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.01em;
+    position: relative;
+    padding-bottom: 0.35rem;
+}
+
+/* Add subtle indicator for required fields */
+.form-label-required {
+    color: rgba(255, 255, 255, 1);
+}
+
+.form-label-required::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 2.5rem;
+    height: 2px;
+    background: linear-gradient(90deg, var(--bs-primary), transparent);
+    border-radius: 2px;
+}
+
+/* Add asterisk for required fields */
+label.required::after {
+    content: "*";
+    color: var(--bs-primary);
+    margin-left: 0.25rem;
+    position: relative;
+    top: -2px;
+}
+
+/* Form field help text */
+.form-text {
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+/* Improved form group styling for clearer visual separation */
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+/* Enhanced styling for checkboxes and radio buttons */
+.form-check {
+    padding-left: 1.8rem;
+    margin-bottom: 0.75rem;
+}
+
+.form-check-input {
+    width: 1.3em;
+    height: 1.3em;
+    margin-top: 0.15em;
+    margin-left: -1.8rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background-color: rgba(var(--bs-dark-rgb), 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-check-input:checked {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.form-check-input:focus {
+    border-color: rgba(var(--bs-primary-rgb), 0.6);
+    box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.2);
+}
+
+.form-check-label {
     font-weight: 500;
-    margin-bottom: 0.5rem;
+    cursor: pointer;
+}
+
+/* Custom radio button styling */
+.form-check-input[type="radio"] {
+    border-radius: 50%;
+}
+
+.form-check-input[type="radio"]:checked {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3ccircle fill='%23fff' cx='10' cy='10' r='5'/%3e%3c/svg%3e");
+    background-size: 70% 70%;
+}
+
+/* Custom checkbox styling */
+.form-check-input[type="checkbox"]:checked {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+    background-size: 70% 70%;
+}
+
+/* Form field with icons */
+.input-group {
+    border-radius: var(--border-radius-sm);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.input-group-text {
+    background-color: rgba(var(--bs-primary-rgb), 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-right: none;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.input-group .form-control {
+    border-left: none;
+}
+
+.input-group:focus-within {
+    box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.25), 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.input-group:focus-within .input-group-text,
+.input-group:focus-within .form-control {
+    border-color: rgba(var(--bs-primary-rgb), 0.7);
 }
 
 /* Payment method selection */
@@ -351,25 +495,32 @@ pre {
     padding-right: 2.5rem;
 }
 
-/* Stripe elements styling */
+/* Stripe elements styling with enhanced contrast */
 .StripeElement {
     box-sizing: border-box;
-    height: 45px;
-    padding: 0.65rem 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    height: 50px;
+    padding: 0.75rem 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--border-radius-sm);
-    background-color: rgba(var(--bs-dark-rgb), 0.3);
+    background-color: rgba(var(--bs-dark-rgb), 0.2);
     transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.StripeElement:hover {
+    border-color: rgba(255, 255, 255, 0.35);
+    background-color: rgba(var(--bs-dark-rgb), 0.25);
 }
 
 .StripeElement--focus {
-    border-color: rgba(var(--bs-primary-rgb), 0.5);
-    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
+    border-color: rgba(var(--bs-primary-rgb), 0.7);
+    box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.25), 0 2px 8px rgba(0, 0, 0, 0.2);
+    background-color: rgba(var(--bs-dark-rgb), 0.3);
 }
 
 .StripeElement--invalid {
     border-color: var(--bs-danger);
-    box-shadow: 0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.15);
+    box-shadow: 0 0 0 3px rgba(var(--bs-danger-rgb), 0.25);
 }
 
 /* ==== API Documentation Styles ==== */
