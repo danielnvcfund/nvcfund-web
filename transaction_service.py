@@ -20,7 +20,8 @@ def create_transaction(
     currency: str,
     transaction_type: Union[str, TransactionType],
     description: Optional[str] = None,
-    send_email: bool = True
+    send_email: bool = True,
+    metadata: Optional[Dict[str, Any]] = None
 ) -> Tuple[Optional[Transaction], Optional[str]]:
     """
     Create a new transaction record
@@ -32,6 +33,7 @@ def create_transaction(
         transaction_type (str): Transaction type
         description (str, optional): Transaction description
         send_email (bool): Whether to send confirmation email
+        metadata (dict, optional): Additional transaction metadata
         
     Returns:
         Tuple[Transaction, Optional[str]]: Transaction object and error message if any
