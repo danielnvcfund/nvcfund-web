@@ -267,9 +267,30 @@ def cancel_transfer(transaction_id):
         flash('Transaction not found.', 'danger')
         return redirect(url_for('web.main.dashboard'))
     
-    if transaction.transaction_type not in [TransactionType.SWIFT_FUND_TRANSFER, TransactionType.SWIFT_INSTITUTION_TRANSFER]:
-        flash('This transaction is not a SWIFT fund transfer.', 'warning')
-        return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
+    # Check if this is a SWIFT fund transfer
+    tx_type = None
+    try:
+        if hasattr(transaction.transaction_type, 'value'):
+            tx_type = transaction.transaction_type.value
+        elif hasattr(transaction.transaction_type, 'name'):
+            tx_type = transaction.transaction_type.name
+        else:
+            tx_type = str(transaction.transaction_type)
+        
+        # Check if message type is in metadata
+        message_type = None
+        if transaction.tx_metadata_json:
+            metadata = json.loads(transaction.tx_metadata_json)
+            if 'message_type' in metadata:
+                message_type = metadata['message_type']
+                
+        if not (message_type in ['MT103', 'MT202'] or (tx_type and ('fund_transfer' in str(tx_type).lower() or 'institution_transfer' in str(tx_type).lower()))):
+            flash('This transaction is not a SWIFT fund transfer.', 'warning')
+            return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
+    except Exception as e:
+        logger.error(f"Error determining transaction type: {str(e)}")
+        flash('Error determining transaction type.', 'danger')
+        return redirect(url_for('web.main.dashboard'))
     
     if transaction.status != TransactionStatus.PENDING:
         flash('Only pending transfers can be cancelled.', 'warning')
