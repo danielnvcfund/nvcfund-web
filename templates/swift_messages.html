@@ -32,7 +32,7 @@
               </thead>
               <tbody>
                 {% for message in messages %}
-                <tr>
+                <tr class="message-row" data-href="{{ url_for('web.swift.view_swift_message', transaction_id=message.transaction.transaction_id) }}" style="cursor: pointer;">
                   <td>{{ message.transaction.transaction_id }}</td>
                   <td>
                     {% if message.metadata and message.metadata.message_type %}
@@ -77,7 +77,7 @@
                     <span class="badge bg-light text-dark">{{ message.transaction.status }}</span>
                     {% endif %}
                   </td>
-                  <td>
+                  <td onclick="event.stopPropagation();">
                     <div class="btn-group">
                       <a href="{{ url_for('web.swift.view_swift_message', transaction_id=message.transaction.transaction_id) }}" 
                          class="btn btn-sm btn-outline-primary" title="View SWIFT Message">
@@ -170,4 +170,16 @@
     </div>
   </div>
 </div>
+
+<script>
+  // Make rows clickable in SWIFT messages table
+  document.addEventListener('DOMContentLoaded', function() {
+    const messageRows = document.querySelectorAll('.message-row');
+    messageRows.forEach(row => {
+      row.addEventListener('click', function() {
+        window.location.href = this.dataset.href;
+      });
+    });
+  });
+</script>
 {% endblock %}
