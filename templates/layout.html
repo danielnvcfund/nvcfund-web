@@ -173,6 +173,16 @@
                                 </a>
                             </li>
                             <li>
+                                <a class="dropdown-item" href="{{ url_for('admin.list_api_keys') }}">
+                                    <i class="fas fa-key me-1"></i> API Key Management
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('admin.create_saint_crowm_bank_key') }}">
+                                    <i class="fas fa-building-columns me-1"></i> Saint Crowm Bank Setup
+                                </a>
+                            </li>
+                            <li>
                                 <a class="dropdown-item" href="{{ url_for('web.main.php_bridge_docs') }}">
                                     <i class="fas fa-exchange-alt me-1"></i> PHP Bridge Docs
                                 </a>
