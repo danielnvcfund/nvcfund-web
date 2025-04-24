@@ -48,12 +48,15 @@ def get_exchange_rate():
     rate = exchange.get_exchange_rate()
     
     if rate is not None:
+        pair_info = exchange.get_token_pair_info()
+        timestamp = pair_info.get("timestamp") if pair_info else None
+        
         return jsonify({
             "status": "success",
             "from_token": "AFD1",
             "to_token": "NVCT",
             "rate": float(rate),
-            "timestamp": exchange.get_token_pair_info().get("timestamp") if exchange.get_token_pair_info() else None
+            "timestamp": timestamp
         }), 200
     else:
         return jsonify({
@@ -203,15 +206,15 @@ def get_trade_history():
     # Format local trades
     formatted_local_trades = []
     for trade in local_trades:
-        additional_data = json.loads(trade.additional_data) if trade.additional_data else {}
+        metadata = json.loads(trade.tx_metadata_json) if trade.tx_metadata_json else {}
         
         formatted_local_trades.append({
             "transaction_id": trade.transaction_id,
-            "external_transaction_id": additional_data.get("external_transaction_id"),
-            "from_token": additional_data.get("from_token", trade.currency),
-            "to_token": additional_data.get("to_token"),
-            "from_amount": float(additional_data.get("from_amount", trade.amount)),
-            "to_amount": float(additional_data.get("to_amount", 0)),
+            "external_transaction_id": trade.external_id,
+            "from_token": metadata.get("from_token", trade.currency),
+            "to_token": metadata.get("to_token"),
+            "from_amount": float(metadata.get("from_amount", trade.amount)),
+            "to_amount": float(metadata.get("to_amount", 0)),
             "status": trade.status.name,
             "timestamp": trade.created_at.isoformat(),
             "description": trade.description

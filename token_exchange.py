@@ -292,12 +292,11 @@ def create_exchange_transaction(
             transaction_id=f"EXCHANGE-{external_transaction_id}",
             transaction_type=TransactionType.TOKEN_EXCHANGE,
             amount=float(from_amount),
-            fee=0,  # Fees might be handled by the institutional dashboard
             currency=from_token,
             description=f"Exchange {from_amount} {from_token} for {to_amount} {to_token}",
             status=TransactionStatus.COMPLETED,
-            recipient_info=f"Exchanged for {to_token}",
-            additional_data=json.dumps({
+            external_id=external_transaction_id,
+            tx_metadata_json=json.dumps({
                 "from_token": from_token,
                 "to_token": to_token,
                 "from_amount": str(from_amount),
