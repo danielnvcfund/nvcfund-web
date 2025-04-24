@@ -152,8 +152,8 @@
                                     </td>
                                     <td>
                                         <div class="btn-group">
-                                            <a href="{{ url_for('admin_api_keys.edit_partner_api_key', key_id=api_key.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                                            <form method="POST" action="{{ url_for('admin_api_keys.toggle_partner_api_key', key_id=api_key.id) }}" style="display: inline;">
+                                            <a href="{{ url_for('admin.edit_partner_api_key', key_id=api_key.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                            <form method="POST" action="{{ url_for('admin.toggle_partner_api_key', key_id=api_key.id) }}" style="display: inline;">
                                                 {{ form.hidden_tag() }}
                                                 <button type="submit" class="btn btn-sm btn-outline-{% if api_key.is_active %}warning{% else %}success{% endif %}">
                                                     {% if api_key.is_active %}Deactivate{% else %}Activate{% endif %}
