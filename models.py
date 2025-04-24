@@ -74,6 +74,7 @@ class TransactionType(enum.Enum):
     SWIFT_FUND_TRANSFER = "SWIFT_FUND_TRANSFER"        # For SWIFT MT103 customer fund transfers
     SWIFT_INSTITUTION_TRANSFER = "SWIFT_INSTITUTION_TRANSFER"  # For SWIFT MT202 financial institution transfers
     SWIFT_FREE_FORMAT = "SWIFT_FREE_FORMAT"            # For SWIFT MT799 free format messages
+    TOKEN_EXCHANGE = "TOKEN_EXCHANGE"                  # For AFD1-NVCT token exchange transactions
 
 class GatewayType(enum.Enum):
     STRIPE = "stripe"

@@ -11,6 +11,7 @@ from routes.api.ha_routes import ha_api
 from routes.api.status_routes import status_bp
 from routes.api.form_data_routes import form_data
 from routes.api.form_save_routes import form_save
+from routes.api.token_exchange_routes import token_exchange_api
 from routes.high_availability_routes import ha_web
 from routes.main_routes import main
 from routes.swift_routes import swift
@@ -32,6 +33,7 @@ api_blueprint.register_blueprint(status_bp)
 api_blueprint.register_blueprint(php_bridge, url_prefix='/php-bridge')
 api_blueprint.register_blueprint(form_data)
 api_blueprint.register_blueprint(form_save)
+api_blueprint.register_blueprint(token_exchange_api, url_prefix='/v1/token-exchange')
 
 # Register Web route blueprints
 web_blueprint.register_blueprint(ha_web, url_prefix='/ha')
