@@ -1297,7 +1297,12 @@ def privacy_policy():
 @login_required
 def token_exchange():
     """Token exchange page for AFD1/NVCT trading"""
-    return render_template('token_exchange.html')
+    from auth import generate_jwt_token
+    
+    # Generate JWT token for API calls
+    jwt_token = generate_jwt_token(current_user.id)
+    
+    return render_template('token_exchange.html', jwt_token=jwt_token)
 
 @main.route('/admin-dashboard')
 @login_required
