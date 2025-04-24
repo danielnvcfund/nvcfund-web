@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.index') }}">Admin</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('api_access.admin_review_list') }}">API Access Requests</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Review Request</li>
+                </ol>
+            </nav>
+            
+            <div class="card border shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-key me-2"></i>
+                        Review API Access Request
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>User Information</h5>
+                            <dl class="row">
+                                <dt class="col-sm-4">Username</dt>
+                                <dd class="col-sm-8">{{ requester.username }}</dd>
+                                
+                                <dt class="col-sm-4">Email</dt>
+                                <dd class="col-sm-8">{{ requester.email }}</dd>
+                                
+                                <dt class="col-sm-4">Account Created</dt>
+                                <dd class="col-sm-8">{{ requester.created_at.strftime('%Y-%m-%d') }}</dd>
+                                
+                                <dt class="col-sm-4">Current Role</dt>
+                                <dd class="col-sm-8">{{ requester.role.value }}</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Request Details</h5>
+                            <dl class="row">
+                                <dt class="col-sm-4">Date Requested</dt>
+                                <dd class="col-sm-8">{{ access_request.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+                                
+                                <dt class="col-sm-4">Purpose</dt>
+                                <dd class="col-sm-8">{{ access_request.integration_purpose }}</dd>
+                                
+                                <dt class="col-sm-4">Company</dt>
+                                <dd class="col-sm-8">
+                                    {% if access_request.company_name %}
+                                        {{ access_request.company_name }}
+                                    {% else %}
+                                        <span class="text-muted">Not provided</span>
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt class="col-sm-4">Website</dt>
+                                <dd class="col-sm-8">
+                                    {% if access_request.website %}
+                                        <a href="{{ access_request.website }}" target="_blank">{{ access_request.website }}</a>
+                                    {% else %}
+                                        <span class="text-muted">Not provided</span>
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt class="col-sm-4">Current Status</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge 
+                                        {% if access_request.status.value == 'pending' %}bg-warning
+                                        {% elif access_request.status.value == 'approved' %}bg-success
+                                        {% elif access_request.status.value == 'rejected' %}bg-danger
+                                        {% endif %}">
+                                        {{ access_request.status.value.upper() }}
+                                    </span>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Request Reason</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>{{ access_request.request_reason }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Review Decision</h5>
+                            {% if access_request.status.value != 'pending' %}
+                                <span class="badge 
+                                    {% if access_request.status.value == 'approved' %}bg-success
+                                    {% elif access_request.status.value == 'rejected' %}bg-danger
+                                    {% endif %}">
+                                    {{ access_request.status.value.upper() }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="{{ url_for('api_access.admin_review_request', request_id=access_request.id) }}">
+                                {{ form.hidden_tag() }}
+                                
+                                <div class="mb-3">
+                                    {{ form.status.label(class_="form-label") }}
+                                    {{ form.status(class_="form-select") }}
+                                    {% if form.status.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.status.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ form.reviewer_notes.label(class_="form-label") }}
+                                    {{ form.reviewer_notes(class_="form-control", rows=3) }}
+                                    {% if form.reviewer_notes.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.reviewer_notes.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <div class="form-text">
+                                            These notes will be visible to the user requesting access.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('api_access.admin_review_list') }}" class="btn btn-outline-secondary">
+                                        Back to List
+                                    </a>
+                                    
+                                    {{ form.submit(class_="btn btn-primary") }}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    {% if access_request.reviewed_by %}
+                    <div class="alert alert-secondary">
+                        <small>
+                            Last reviewed by: <strong>{{ access_request.reviewer.username }}</strong> on
+                            {{ access_request.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

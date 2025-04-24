@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Request API Access</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <h5 class="alert-heading">API Access Information</h5>
+                        <p>API access allows developers to integrate with our platform programmatically.
+                        Once approved, you will be able to create and manage your own API keys.</p>
+                        <hr>
+                        <p class="mb-0">All API access requests are reviewed by administrators and may take 1-2 business days to process.</p>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('api_access.request_access') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.integration_purpose.label(class_="form-label") }}
+                            {{ form.integration_purpose(class_="form-select") }}
+                            {% if form.integration_purpose.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.integration_purpose.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.request_reason.label(class_="form-label") }}
+                            {{ form.request_reason(class_="form-control", rows=5) }}
+                            {% if form.request_reason.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.request_reason.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="form-text">
+                                    Please explain why you need API access and how you plan to use it.
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.company_name.label(class_="form-label") }}
+                            {{ form.company_name(class_="form-control") }}
+                            {% if form.company_name.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.company_name.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="form-text">Optional: Company or organization name (if applicable)</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.website.label(class_="form-label") }}
+                            {{ form.website(class_="form-control", placeholder="https://") }}
+                            {% if form.website.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.website.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="form-text">Optional: Your company or project website</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                {{ form.terms_agree(class_="form-check-input") }}
+                                {{ form.terms_agree.label(class_="form-check-label") }}
+                                {% if form.terms_agree.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.terms_agree.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class_="btn btn-primary") }}
+                            <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

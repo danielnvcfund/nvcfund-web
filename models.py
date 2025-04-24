@@ -622,3 +622,5 @@ class PartnerApiKey(db.Model):
         db.session.commit()
         
         return partner_key
+
+
