@@ -72,33 +72,38 @@
                         </div>
                     </div>
                     
-                    <!-- API Key Management Section (HIGHLIGHTED) -->
-                    <div class="mt-4 mb-3">
-                        <div class="alert alert-primary d-flex align-items-center" role="alert">
-                            <i class="fas fa-info-circle fa-lg me-3"></i>
-                            <div>
-                                <strong>API Key Management:</strong> Use these tools to create and manage API keys for partner integrations, including Saint Crowm Bank.
+                    <!-- Development & Integration Tools -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card border-info mb-3">
+                                <div class="card-header bg-info bg-opacity-10 border-info">
+                                    <h5 class="mb-0"><i class="fas fa-code me-2"></i>Developer & Integration Tools</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>Manage system integrations and developer resources for financial partners.</p>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <a href="{{ url_for('admin.list_api_keys') }}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                                <i class="fas fa-key fa-2x mb-2"></i>
+                                                <span>API Key Management</span>
+                                            </a>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <a href="{{ url_for('admin.create_saint_crowm_bank_key') }}" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                                <i class="fas fa-building-columns fa-2x mb-2"></i>
+                                                <span>Saint Crowm Bank Setup</span>
+                                            </a>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <a href="{{ url_for('admin.api_keys_menu') }}" class="btn btn-outline-secondary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                                <i class="fas fa-cogs fa-2x mb-2"></i>
+                                                <span>API Keys Dashboard</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <a href="{{ url_for('admin.list_api_keys') }}" class="btn btn-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
-                                <i class="fas fa-key fa-2x mb-2"></i>
-                                <span>API Key Management</span>
-                            </a>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <a href="{{ url_for('admin.create_saint_crowm_bank_key') }}" class="btn btn-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
-                                <i class="fas fa-building-columns fa-2x mb-2"></i>
-                                <span>Saint Crowm Bank Setup</span>
-                            </a>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <a href="{{ url_for('admin.api_keys_menu') }}" class="btn btn-secondary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
-                                <i class="fas fa-cogs fa-2x mb-2"></i>
-                                <span>API Keys Dashboard</span>
-                            </a>
                         </div>
                     </div>
                 </div>
