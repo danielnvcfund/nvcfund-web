@@ -15,6 +15,7 @@ from routes.api.token_exchange_routes import token_exchange_api
 from routes.high_availability_routes import ha_web
 from routes.main_routes import main
 from routes.swift_routes import swift
+from routes.api_access_routes import api_access_bp
 
 # Import PHP Bridge routes
 from api_bridge import php_bridge

@@ -372,6 +372,37 @@ class SwiftFreeFormatMessageForm(FlaskForm):
             swift_institutions = FinancialInstitution.query.filter_by(is_active=True).all()
         
         self.receiver_institution_id.choices = [(i.id, i.name) for i in swift_institutions]
+class ApiAccessRequestForm(FlaskForm):
+    """Form for requesting API access"""
+    request_reason = TextAreaField("Why do you need API access?", validators=[
+        DataRequired(),
+        Length(min=20, max=500, message="Please provide at least 20 characters explaining your need for API access")
+    ])
+    integration_purpose = SelectField("Primary purpose of integration", validators=[DataRequired()], choices=[
+        ("payment_processing", "Payment Processing"),
+        ("account_management", "Account Management"),
+        ("data_analytics", "Data Analytics"),
+        ("reporting", "Reporting and Dashboards"),
+        ("automation", "Workflow Automation"),
+        ("other", "Other (please specify in your request reason)")
+    ])
+    company_name = StringField("Company/Organization Name", validators=[Optional(), Length(max=128)])
+    website = StringField("Website", validators=[Optional(), Length(max=256)])
+    terms_agree = BooleanField("I agree to use the API according to the terms of service", validators=[
+        DataRequired(message="You must agree to the terms of service")
+    ])
+    submit = SubmitField("Submit Request")
+    
+class ApiAccessReviewForm(FlaskForm):
+    """Form for admins to review API access requests"""
+    status = SelectField("Decision", validators=[DataRequired()], choices=[
+        ("pending", "Keep Pending"),
+        ("approved", "Approve"),
+        ("rejected", "Reject")
+    ])
+    reviewer_notes = TextAreaField("Notes", validators=[Optional(), Length(max=500)])
+    submit = SubmitField("Submit Review")
+
 class PartnerApiKeyForm(FlaskForm):
     """Form for creating and editing partner API keys"""
     partner_name = StringField("Partner/Institution Name", validators=[DataRequired(), Length(min=2, max=128)])

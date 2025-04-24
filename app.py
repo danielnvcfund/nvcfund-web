@@ -180,9 +180,10 @@ def create_app():
         import routes
         
         # Import and register blueprints
-        from routes import api_blueprint, web_blueprint
+        from routes import api_blueprint, web_blueprint, api_access_bp
         app.register_blueprint(api_blueprint)
         app.register_blueprint(web_blueprint)
+        app.register_blueprint(api_access_bp)
         
         # Register Documentation routes
         from routes.documentation_routes import documentation_bp
