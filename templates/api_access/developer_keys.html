@@ -1,0 +1,299 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">My API Keys</li>
+                </ol>
+            </nav>
+            
+            <div class="card border shadow-sm mb-4">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-key me-2"></i>
+                        My API Keys
+                    </h4>
+                    <a href="#" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#newApiKeyModal">
+                        <i class="fas fa-plus-circle me-1"></i> Create New Key
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Developer API Access</h5>
+                        <p>As a developer, you can create and manage your own API keys for integration with the NVC Banking Platform.</p>
+                        <hr>
+                        <p class="mb-0">Remember to keep your API keys secure and never share them publicly.</p>
+                    </div>
+                    
+                    {% if api_keys %}
+                        <div class="table-responsive">
+                            <table class="table table-hover border">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Key</th>
+                                        <th>Created</th>
+                                        <th>Last Used</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for key in api_keys %}
+                                        <tr>
+                                            <td class="fw-medium">{{ key.name }}</td>
+                                            <td>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="password" class="form-control api-key-field" value="{{ key.key }}" readonly>
+                                                    <button class="btn btn-outline-secondary toggle-key-visibility" type="button">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-secondary copy-key" type="button" data-key="{{ key.key }}">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td>{{ key.created_at.strftime('%Y-%m-%d') }}</td>
+                                            <td>
+                                                {% if key.last_used %}
+                                                    {{ key.last_used.strftime('%Y-%m-%d') }}
+                                                {% else %}
+                                                    <span class="text-muted">Never</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if key.active %}
+                                                    <span class="badge bg-success">Active</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button type="button" class="btn btn-outline-primary" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#editKeyModal" 
+                                                            data-key-id="{{ key.id }}"
+                                                            data-key-name="{{ key.name }}">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-danger"
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#deleteKeyModal"
+                                                            data-key-id="{{ key.id }}"
+                                                            data-key-name="{{ key.name }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center my-5 py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-key fa-3x text-muted"></i>
+                            </div>
+                            <h5 class="mb-3">No API Keys Created Yet</h5>
+                            <p class="text-muted mb-4">
+                                Create your first API key to start integrating with the NVC Banking Platform.
+                            </p>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newApiKeyModal">
+                                <i class="fas fa-plus-circle me-1"></i> Create API Key
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card border shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-book me-2"></i>
+                        API Documentation
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p>Refer to our API documentation for detailed information on endpoints, authentication, and integration examples.</p>
+                    <a href="{{ url_for('web.main.api_docs') }}" class="btn btn-primary">
+                        <i class="fas fa-external-link-alt me-1"></i> View API Documentation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New API Key Modal -->
+<div class="modal fade" id="newApiKeyModal" tabindex="-1" aria-labelledby="newApiKeyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="newApiKeyModalLabel">Create New API Key</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('api_access.create_api_key') }}" method="POST">
+                <div class="modal-body">
+                    {{ form.csrf_token }}
+                    <div class="mb-3">
+                        <label for="api_key_name" class="form-label">API Key Name</label>
+                        <input type="text" class="form-control" id="api_key_name" name="name" required placeholder="e.g., Development, Testing, Production">
+                        <div class="form-text">Give your API key a descriptive name to help you identify its purpose.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="api_key_description" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="api_key_description" name="description" rows="3" placeholder="What will you use this API key for?"></textarea>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="agreement" name="agreement" required>
+                        <label class="form-check-label" for="agreement">
+                            I agree to store this API key securely and will not share it publicly.
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Create API Key</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit API Key Modal -->
+<div class="modal fade" id="editKeyModal" tabindex="-1" aria-labelledby="editKeyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editKeyModalLabel">Edit API Key</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('api_access.update_api_key') }}" method="POST">
+                <div class="modal-body">
+                    {{ form.csrf_token }}
+                    <input type="hidden" id="edit_key_id" name="key_id">
+                    <div class="mb-3">
+                        <label for="edit_key_name" class="form-label">API Key Name</label>
+                        <input type="text" class="form-control" id="edit_key_name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_key_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="edit_key_description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="edit_key_active" name="active" checked>
+                        <label class="form-check-label" for="edit_key_active">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete API Key Modal -->
+<div class="modal fade" id="deleteKeyModal" tabindex="-1" aria-labelledby="deleteKeyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteKeyModalLabel">Delete API Key</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('api_access.delete_api_key') }}" method="POST">
+                <div class="modal-body">
+                    {{ form.csrf_token }}
+                    <input type="hidden" id="delete_key_id" name="key_id">
+                    <p>Are you sure you want to delete the API key "<span id="delete_key_name" class="fw-bold"></span>"?</p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        This action cannot be undone. Any applications using this key will no longer be able to access the API.
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="confirm_delete" name="confirm_delete" required>
+                        <label class="form-check-label" for="confirm_delete">
+                            I understand that this action is permanent and cannot be undone.
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete API Key</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle API key visibility
+        document.querySelectorAll('.toggle-key-visibility').forEach(button => {
+            button.addEventListener('click', function() {
+                const inputField = this.closest('.input-group').querySelector('.api-key-field');
+                const icon = this.querySelector('i');
+                
+                if (inputField.type === 'password') {
+                    inputField.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    inputField.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        });
+        
+        // Copy API key to clipboard
+        document.querySelectorAll('.copy-key').forEach(button => {
+            button.addEventListener('click', function() {
+                const key = this.getAttribute('data-key');
+                navigator.clipboard.writeText(key).then(() => {
+                    // Show temporary tooltip
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-copy"></i>';
+                    }, 2000);
+                });
+            });
+        });
+        
+        // Set up edit modal data
+        const editKeyModal = document.getElementById('editKeyModal');
+        if (editKeyModal) {
+            editKeyModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const keyId = button.getAttribute('data-key-id');
+                const keyName = button.getAttribute('data-key-name');
+                
+                document.getElementById('edit_key_id').value = keyId;
+                document.getElementById('edit_key_name').value = keyName;
+            });
+        }
+        
+        // Set up delete modal data
+        const deleteKeyModal = document.getElementById('deleteKeyModal');
+        if (deleteKeyModal) {
+            deleteKeyModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const keyId = button.getAttribute('data-key-id');
+                const keyName = button.getAttribute('data-key-name');
+                
+                document.getElementById('delete_key_id').value = keyId;
+                document.getElementById('delete_key_name').textContent = keyName;
+            });
+        }
+    });
+</script>
+{% endblock %}
