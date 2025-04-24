@@ -37,9 +37,12 @@ def health_check():
 
 @token_exchange_api.route('/exchange-rate', methods=['GET'])
 @api_key_required
-def get_exchange_rate():
+def get_exchange_rate(user=None):
     """
     Get exchange rate between AFD1 and NVCT
+    
+    Args:
+        user: User object injected by the api_key_required decorator
     
     Returns:
         JSON: Exchange rate information
@@ -66,10 +69,13 @@ def get_exchange_rate():
 
 @token_exchange_api.route('/token-pair-info', methods=['GET'])
 @api_key_required
-def token_pair_info():
+def token_pair_info(user=None):
     """
     Get information about the AFD1-NVCT token pair
     
+    Args:
+        user: User object injected by the api_key_required decorator
+        
     Returns:
         JSON: Token pair information
     """
