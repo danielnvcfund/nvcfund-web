@@ -49,7 +49,14 @@ document.addEventListener('DOMContentLoaded', function () {
         exchangeRateElement.textContent = 'Loading...';
         rateTimestampElement.textContent = 'Retrieving latest rate';
 
-        fetch('/api/v1/token-exchange/exchange-rate')
+        // Get JWT token from the page (assuming it's stored in a data attribute or similar)
+        const jwtToken = document.querySelector('meta[name="jwt-token"]')?.getAttribute('content');
+        
+        fetch('/api/v1/token-exchange/exchange-rate', {
+            headers: {
+                'Authorization': jwtToken ? `Bearer ${jwtToken}` : ''
+            }
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -87,8 +94,15 @@ document.addEventListener('DOMContentLoaded', function () {
      * Fetch user token balances
      */
     function fetchBalances() {
+        // Get JWT token from the page
+        const jwtToken = document.querySelector('meta[name="jwt-token"]')?.getAttribute('content');
+        
         // Fetch AFD1 balance
-        fetch('/api/v1/token-exchange/token-balance?token=AFD1')
+        fetch('/api/v1/token-exchange/token-balance?token=AFD1', {
+            headers: {
+                'Authorization': jwtToken ? `Bearer ${jwtToken}` : ''
+            }
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -112,7 +126,11 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
         // Fetch NVCT balance
-        fetch('/api/v1/token-exchange/token-balance?token=NVCT')
+        fetch('/api/v1/token-exchange/token-balance?token=NVCT', {
+            headers: {
+                'Authorization': jwtToken ? `Bearer ${jwtToken}` : ''
+            }
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -219,11 +237,15 @@ document.addEventListener('DOMContentLoaded', function () {
         // Disable form and show spinner
         setFormLoading(true);
         
+        // Get JWT token from the page
+        const jwtToken = document.querySelector('meta[name="jwt-token"]')?.getAttribute('content');
+        
         // Execute trade
         fetch('/api/v1/token-exchange/execute-trade', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': jwtToken ? `Bearer ${jwtToken}` : ''
             },
             body: JSON.stringify({
                 from_token: fromToken,
@@ -274,7 +296,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const rows = transactionHistory.querySelectorAll('tr:not(#history-loading)');
         rows.forEach(row => row.remove());
         
-        fetch('/api/v1/token-exchange/trade-history')
+        // Get JWT token from the page
+        const jwtToken = document.querySelector('meta[name="jwt-token"]')?.getAttribute('content');
+        
+        fetch('/api/v1/token-exchange/trade-history', {
+            headers: {
+                'Authorization': jwtToken ? `Bearer ${jwtToken}` : ''
+            }
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
