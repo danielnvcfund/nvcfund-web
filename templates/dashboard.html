@@ -495,6 +495,53 @@
                 </div>
             </div>
             {% endif %}
+            
+            <!-- Developer Tools (for DEVELOPER role users) -->
+            {% if user.role and user.role.value == 'DEVELOPER' %}
+            <div class="card dashboard-widget border-0 shadow mb-4">
+                <div class="card-header bg-dark bg-opacity-10 border-0">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                            <i class="fas fa-code text-primary"></i>
+                        </div>
+                        <h5 class="mb-0 fw-bold">Developer Tools</h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-info-circle me-2"></i> You have developer privileges to create and manage API keys.
+                    </div>
+                    
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center border-0 border-bottom">
+                            <span class="fw-medium">API Keys</span>
+                            <a href="{{ url_for('api_access.developer_keys') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-key me-1"></i> Manage Keys
+                            </a>
+                        </div>
+                        
+                        <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center border-0 border-bottom">
+                            <span class="fw-medium">Developer Documentation</span>
+                            <a href="{{ url_for('documentation.index') }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-book me-1"></i> View Docs
+                            </a>
+                        </div>
+                        
+                        <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center border-0">
+                            <span class="fw-medium">Support</span>
+                            <a href="mailto:developer-support@nvcplatform.net" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-question-circle me-1"></i> Get Help
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light py-3 text-center">
+                    <a href="{{ url_for('api_access.developer_keys') }}" class="btn btn-primary">
+                        <i class="fas fa-key me-1"></i> Manage My API Keys
+                    </a>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 

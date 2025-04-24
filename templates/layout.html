@@ -204,7 +204,7 @@
                     
                     <!-- Documentation dropdown always visible -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if request.path == '/main/api_docs' or '/documentation' in request.path %}active fw-bold{% endif %}" href="#" id="docsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle {% if request.path == '/main/api_docs' or '/documentation' in request.path or '/api-access' in request.path %}active fw-bold{% endif %}" href="#" id="docsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-book me-1"></i> Resources
                         </a>
                         <ul class="dropdown-menu dropdown-menu-animated" aria-labelledby="docsDropdown">
@@ -218,6 +218,21 @@
                                     <i class="fas fa-code me-1"></i> API Reference
                                 </a>
                             </li>
+                            {% if current_user.is_authenticated and current_user.role.value != 'DEVELOPER' %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('api_access.request_access') }}">
+                                    <i class="fas fa-key me-1"></i> Request API Access
+                                </a>
+                            </li>
+                            {% elif current_user.is_authenticated and current_user.role.value == 'DEVELOPER' %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('api_access.developer_keys') }}">
+                                    <i class="fas fa-key me-1"></i> Manage API Keys
+                                </a>
+                            </li>
+                            {% endif %}
                         </ul>
                     </li>
                 </ul>
@@ -249,11 +264,14 @@
                             {% endif %}
                             
                             <!-- Developer tools section -->
-                            {% if current_user.role.value == 'developer' %}
+                            {% if current_user.role.value == 'DEVELOPER' %}
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Developer Tools</h6></li>
+                            <li><a class="dropdown-item" href="{{ url_for('api_access.developer_keys') }}">
+                                <i class="fas fa-key me-1"></i> Manage API Keys
+                            </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('api_access.access_status') }}">
-                                <i class="fas fa-code me-1"></i> My API Access
+                                <i class="fas fa-user-check me-1"></i> API Access Status
                             </a></li>
                             {% else %}
                             <li><hr class="dropdown-divider"></li>
