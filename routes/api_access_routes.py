@@ -7,7 +7,7 @@ and for admins to review those requests.
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app import db, csrf
-from models import ApiAccessRequest, ApiAccessRequestStatus, User, UserRole, PartnerApiKey, PartnerApiKeyType, PartnerApiKeyAccessLevel
+from models import User, UserRole, ApiAccessRequest, ApiAccessRequestStatus, PartnerApiKey, PartnerApiKeyType, PartnerApiKeyAccessLevel
 from forms import ApiAccessRequestForm, ApiAccessReviewForm
 from auth import admin_required
 import logging

@@ -574,6 +574,7 @@ class PartnerApiKeyType(enum.Enum):
     TOKEN_PROVIDER = "token_provider" 
     PAYMENT_PROCESSOR = "payment_processor"
     DATA_PROVIDER = "data_provider"
+    DEVELOPER = "developer"
     OTHER = "other"
 
 
@@ -590,6 +591,10 @@ class PartnerApiKey(db.Model):
     last_used = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    
+    # Relationship to User model
+    user = db.relationship('User', backref=db.backref('partner_api_keys', lazy=True))
     
     @classmethod
     def generate_api_key(cls) -> str:
