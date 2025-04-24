@@ -10,6 +10,7 @@ class UserRole(enum.Enum):
     ADMIN = "admin"
     USER = "user"
     API = "api"
+    DEVELOPER = "developer"
 
 class PartnerType(enum.Enum):
     FINANCIAL_INSTITUTION = "Financial Institution"
@@ -259,6 +260,28 @@ class BusinessPartner(db.Model):
     description = db.Column(db.String(256))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class ApiAccessRequestStatus(enum.Enum):
+    PENDING = "pending"
+    APPROVED = "approved" 
+    REJECTED = "rejected"
+
+class ApiAccessRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    request_reason = db.Column(db.Text, nullable=False)
+    integration_purpose = db.Column(db.String(256), nullable=False)
+    company_name = db.Column(db.String(128))
+    website = db.Column(db.String(256))
+    status = db.Column(db.Enum(ApiAccessRequestStatus), default=ApiAccessRequestStatus.PENDING)
+    reviewed_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    reviewer_notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', foreign_keys=[user_id], backref=db.backref('api_access_requests', lazy=True))
+    reviewer = db.relationship('User', foreign_keys=[reviewed_by])
 
 class Webhook(db.Model):
     id = db.Column(db.Integer, primary_key=True)
