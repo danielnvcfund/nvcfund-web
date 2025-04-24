@@ -372,3 +372,22 @@ class SwiftFreeFormatMessageForm(FlaskForm):
             swift_institutions = FinancialInstitution.query.filter_by(is_active=True).all()
         
         self.receiver_institution_id.choices = [(i.id, i.name) for i in swift_institutions]
+class PartnerApiKeyForm(FlaskForm):
+    """Form for creating and editing partner API keys"""
+    partner_name = StringField("Partner/Institution Name", validators=[DataRequired(), Length(min=2, max=128)])
+    partner_email = StringField("Contact Email", validators=[DataRequired(), Email()])
+    partner_type = SelectField("Partner Type", validators=[DataRequired()], choices=[
+        ("financial_institution", "Financial Institution"),
+        ("token_provider", "Token Provider"),
+        ("payment_processor", "Payment Processor"),
+        ("data_provider", "Data Provider"),
+        ("other", "Other")
+    ])
+    access_level = SelectField("Access Level", validators=[DataRequired()], choices=[
+        ("read", "Read Only"),
+        ("read_write", "Read & Write"),
+        ("full", "Full Access")
+    ])
+    description = TextAreaField("Description", validators=[Optional(), Length(max=500)])
+    is_active = BooleanField("Active", default=True)
+    submit = SubmitField("Save")
