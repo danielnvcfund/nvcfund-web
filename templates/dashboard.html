@@ -33,6 +33,35 @@
          data-ethereum-address="{{ user.ethereum_address if user.ethereum_address else '' }}">
     </div>
     
+    <!-- Admin Tools Panel - Only visible to admin users -->
+    {% if current_user.username in ['admin', 'headadmin'] %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary bg-gradient text-white border-0 shadow">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">
+                        <i class="fas fa-tools me-2"></i> Admin Tools
+                    </h4>
+                    <p class="card-text mb-3">
+                        Manage API keys for platform integrations with financial partners and institutions.
+                    </p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="/admin/api-keys" class="btn btn-light">
+                            <i class="fas fa-key me-2"></i> API Key Management
+                        </a>
+                        <a href="/admin/api-keys/saint-crowm-bank/create" class="btn btn-light">
+                            <i class="fas fa-building-columns me-2"></i> Saint Crowm Bank Setup
+                        </a>
+                        <a href="/admin/api-keys-menu" class="btn btn-light">
+                            <i class="fas fa-cog me-2"></i> API Keys Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
     <!-- Quick Stats -->
     <div class="row g-4 mb-4">
         <!-- ETH Balance Card -->
