@@ -192,9 +192,8 @@ def create_app():
         from routes.admin import admin
         app.register_blueprint(admin)
         
-        # Register Admin API Keys routes
-        from routes.admin.api_key_routes import admin_api_keys
-        app.register_blueprint(admin_api_keys, url_prefix='/admin/api-keys')
+        # Admin API Keys routes are registered through the admin blueprint
+        # No need to register them separately
 
         # Create PHP test integration user
         try:
