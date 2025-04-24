@@ -1312,7 +1312,9 @@ def api_key_management():
         flash('You do not have permission to access API Key Management', 'danger')
         return redirect(url_for('web.main.dashboard'))
     
-    return redirect('/admin/api-keys')
+    # Fix URL routing to properly use blueprint namespaces
+    from routes.admin import admin
+    return redirect(url_for('admin.list_api_keys'))
 
 @main.route('/admin-dashboard')
 @login_required
