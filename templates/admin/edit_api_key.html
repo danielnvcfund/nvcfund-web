@@ -1,22 +1,21 @@
 {% extends 'layout.html' %}
 
-{% block title %}Partner API Key Management{% endblock %}
+{% block title %}Edit Partner API Key{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <div class="row">
         <div class="col">
-            <h1 class="mb-4">Partner API Key Management</h1>
+            <h1 class="mb-4">Edit Partner API Key</h1>
             
             {% include 'flash_messages.html' %}
             
-            <!-- API Key Creation Form -->
-            <div class="card mb-4">
+            <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">Create New API Key</h5>
+                    <h5 class="mb-0">Edit API Key for {{ partner_key.partner_name }}</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('admin.create_partner_api_key') }}">
+                    <form method="POST">
                         {{ form.hidden_tag() }}
                         
                         <div class="row mb-3">
@@ -96,79 +95,30 @@
                         
                         <div class="d-flex">
                             {{ form.submit(class="btn btn-primary me-2") }}
-                            <a href="{{ url_for('admin.create_saint_crowm_bank_key') }}" class="btn btn-success">
-                                Create Saint Crowm Bank API Key
-                            </a>
+                            <a href="{{ url_for('admin.list_api_keys') }}" class="btn btn-secondary">Cancel</a>
                         </div>
                     </form>
                 </div>
             </div>
             
-            <!-- Newly Created API Key Alert (if applicable) -->
-            {% if show_new_key %}
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <h4 class="alert-heading">API Key Created Successfully!</h4>
-                <p>New API key for <strong>{{ new_key.partner_name }}</strong> has been created.</p>
-                <hr>
-                <p class="mb-0">API Key: <strong>{{ new_key.api_key }}</strong></p>
-                <p class="mb-0"><small>Keep this key secure. It will only be shown once.</small></p>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            {% endif %}
-            
-            <!-- API Keys Table -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Existing API Keys</h5>
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">API Key Information</h5>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Partner Name</th>
-                                    <th>Type</th>
-                                    <th>Access Level</th>
-                                    <th>Created</th>
-                                    <th>Last Used</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for api_key in api_keys %}
-                                <tr>
-                                    <td>{{ api_key.partner_name }}</td>
-                                    <td>{{ api_key.partner_type.value }}</td>
-                                    <td>{{ api_key.access_level.value }}</td>
-                                    <td>{{ api_key.created_at.strftime('%Y-%m-%d') }}</td>
-                                    <td>{% if api_key.last_used %}{{ api_key.last_used.strftime('%Y-%m-%d %H:%M') }}{% else %}Never{% endif %}</td>
-                                    <td>
-                                        {% if api_key.is_active %}
-                                        <span class="badge bg-success">Active</span>
-                                        {% else %}
-                                        <span class="badge bg-danger">Inactive</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <a href="{{ url_for('admin.edit_partner_api_key', key_id=api_key.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                                            <form method="POST" action="{{ url_for('admin.toggle_partner_api_key', key_id=api_key.id) }}" style="display: inline;">
-                                                {{ form.hidden_tag() }}
-                                                <button type="submit" class="btn btn-sm btn-outline-{% if api_key.is_active %}warning{% else %}success{% endif %}">
-                                                    {% if api_key.is_active %}Deactivate{% else %}Activate{% endif %}
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="7" class="text-center">No API keys found</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="alert alert-warning">
+                        <strong>Note:</strong> API keys cannot be viewed after creation. If the key is lost, you will need to create a new one.
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>API Key ID:</strong> {{ partner_key.id }}</p>
+                            <p><strong>Created:</strong> {{ partner_key.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Last Updated:</strong> {{ partner_key.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                            <p><strong>Last Used:</strong> {% if partner_key.last_used %}{{ partner_key.last_used.strftime('%Y-%m-%d %H:%M:%S') }}{% else %}Never{% endif %}</p>
+                        </div>
                     </div>
                 </div>
             </div>
