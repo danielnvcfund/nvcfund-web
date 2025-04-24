@@ -1,0 +1,153 @@
+{% extends "layout.html" %}
+
+{% block title %}Token Exchange - AFD1/NVCT{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-3">Token Exchange</h1>
+            <p class="lead">Exchange AFD1 and NVCT tokens with competitive rates.</p>
+        </div>
+    </div>
+
+    <!-- Exchange Rate Card -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Current Exchange Rate</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0" id="exchange-rate">Loading...</h2>
+                            <p class="text-muted" id="rate-timestamp">Retrieving latest rate</p>
+                        </div>
+                        <div>
+                            <span class="badge bg-success p-2">AFD1-NVCT</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Your Token Balances</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="balance-box p-3 border rounded">
+                                <h3 class="mb-0" id="afd1-balance">Loading...</h3>
+                                <p class="text-muted mb-0">AFD1</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="balance-box p-3 border rounded">
+                                <h3 class="mb-0" id="nvct-balance">Loading...</h3>
+                                <p class="text-muted mb-0">NVCT</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exchange Form -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Exchange Tokens</h5>
+                </div>
+                <div class="card-body">
+                    <form id="exchange-form">
+                        <div class="mb-3">
+                            <label for="from-token" class="form-label">From Token</label>
+                            <select class="form-select" id="from-token" required>
+                                <option value="AFD1">AFD1</option>
+                                <option value="NVCT">NVCT</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="to-token" class="form-label">To Token</label>
+                            <select class="form-select" id="to-token" required>
+                                <option value="NVCT">NVCT</option>
+                                <option value="AFD1">AFD1</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="amount" placeholder="0.00" step="0.01" min="0" required>
+                                <span class="input-group-text" id="amount-token">AFD1</span>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">You will receive</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="to-amount" placeholder="0.00" readonly>
+                                <span class="input-group-text" id="to-amount-token">NVCT</span>
+                            </div>
+                        </div>
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <span id="exchange-info">Enter an amount to see the conversion.</span>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" id="exchange-button">
+                                <span id="exchange-button-text">Exchange Tokens</span>
+                                <span id="exchange-spinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Transaction History</h5>
+                    <button id="refresh-history" class="btn btn-sm btn-light">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transaction-history">
+                                <tr id="history-loading">
+                                    <td colspan="5" class="text-center">Loading transaction history...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="no-transactions" class="text-center d-none">
+                        <p class="text-muted">No transactions found.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/token_exchange.js') }}"></script>
+{% endblock %}
