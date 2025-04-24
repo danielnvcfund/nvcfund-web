@@ -43,11 +43,21 @@
                         <i class="fas fa-tools me-2"></i> Admin Tools
                     </h4>
                     <p class="card-text mb-3">
+                        <span class="badge bg-warning text-dark me-2"><i class="fas fa-star me-1"></i> New</span>
                         Manage API keys for platform integrations with financial partners and institutions.
                     </p>
+                    
+                    <!-- Primary API Key Management Button -->
+                    <div class="mb-3">
+                        <a href="{{ url_for('web.main.api_key_management') }}" class="btn btn-warning btn-lg w-100 fw-bold text-dark shadow">
+                            <i class="fas fa-key me-2"></i> API Key Management Portal
+                        </a>
+                    </div>
+                    
+                    <!-- Additional Options -->
                     <div class="d-flex flex-wrap gap-2">
                         <a href="/admin/api-keys" class="btn btn-light">
-                            <i class="fas fa-key me-2"></i> API Key Management
+                            <i class="fas fa-key me-2"></i> List All API Keys
                         </a>
                         <a href="/admin/api-keys/saint-crowm-bank/create" class="btn btn-light">
                             <i class="fas fa-building-columns me-2"></i> Saint Crowm Bank Setup

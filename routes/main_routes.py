@@ -1304,6 +1304,16 @@ def token_exchange():
     
     return render_template('token_exchange.html', jwt_token=jwt_token)
 
+@main.route('/api-key-management')
+@login_required
+def api_key_management():
+    """Direct link to API Key Management - only accessible to admin users"""
+    if current_user.username not in ['admin', 'headadmin'] and current_user.role != UserRole.ADMIN:
+        flash('You do not have permission to access API Key Management', 'danger')
+        return redirect(url_for('web.main.dashboard'))
+    
+    return redirect('/admin/api-keys')
+
 @main.route('/admin-dashboard')
 @login_required
 def admin_dashboard():
