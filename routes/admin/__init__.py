@@ -18,12 +18,12 @@ admin.register_blueprint(admin_api_keys)
 @admin.route('/api-keys')
 def list_api_keys():
     """Redirect to the API keys list page"""
-    return redirect(url_for('admin_api_keys.api_keys_list'))
+    return redirect(url_for('admin.admin_api_keys.api_keys_list'))
 
 @admin.route('/api-keys/saint-crowm-bank/create')
 def create_saint_crowm_bank_key():
     """Redirect to the Saint Crowm Bank key creation page"""
-    return redirect(url_for('admin_api_keys.create_saint_crowm_bank_key'))
+    return redirect(url_for('admin.admin_api_keys.create_saint_crowm_bank_key'))
 
 @admin.route('/api-keys-menu')
 @login_required
