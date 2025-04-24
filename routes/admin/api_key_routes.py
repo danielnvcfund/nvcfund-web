@@ -19,7 +19,7 @@ admin_api_keys = Blueprint('admin_api_keys', __name__, url_prefix='/admin/api-ke
 @admin_api_keys.route('/')
 @login_required
 @admin_required
-def list_api_keys():
+def api_keys_list():
     """List all partner API keys"""
     # Get all API keys
     api_keys = PartnerApiKey.query.order_by(PartnerApiKey.created_at.desc()).all()
@@ -99,7 +99,7 @@ def toggle_partner_api_key(key_id):
     status = "activated" if partner_key.is_active else "deactivated"
     flash(f"API key for {partner_key.partner_name} {status}", "success")
     
-    return redirect(url_for('admin.list_api_keys'))
+    return redirect(url_for('admin.api_keys_list'))
 
 @admin_api_keys.route('/edit/<int:key_id>', methods=['GET', 'POST'])
 @login_required
@@ -125,7 +125,7 @@ def edit_partner_api_key(key_id):
             logger.info(f"Updated partner API key for {partner_key.partner_name}")
             flash(f"API key for {partner_key.partner_name} updated", "success")
             
-            return redirect(url_for('admin.list_api_keys'))
+            return redirect(url_for('admin.api_keys_list'))
             
         except Exception as e:
             db.session.rollback()
@@ -162,4 +162,4 @@ def create_saint_crowm_bank_key():
         logger.error(f"Error creating Saint Crowm Bank API key: {str(e)}")
         flash(f"Error creating API key: {str(e)}", "danger")
         
-        return redirect(url_for('admin.list_api_keys'))
+        return redirect(url_for('admin.api_keys_list'))
