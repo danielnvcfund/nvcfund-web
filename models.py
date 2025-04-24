@@ -281,7 +281,7 @@ class ApiAccessRequest(db.Model):
     
     # Relationships
     user = db.relationship('User', foreign_keys=[user_id], backref=db.backref('api_access_requests', lazy=True))
-    reviewer = db.relationship('User', foreign_keys=[reviewed_by])
+    reviewer = db.relationship('User', foreign_keys=[reviewed_by], backref=db.backref('reviewed_requests', lazy=True))
 
 class Webhook(db.Model):
     id = db.Column(db.Integer, primary_key=True)
