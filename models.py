@@ -1,5 +1,6 @@
 import enum
 import json
+import secrets
 from datetime import datetime, timedelta
 from app import db
 from flask_login import UserMixin

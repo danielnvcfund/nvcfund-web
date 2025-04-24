@@ -1,0 +1,249 @@
+{% extends "layout.html" %}
+
+{% block title %}Partner API Key Management{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+    .api-key-card {
+        transition: all 0.2s ease;
+    }
+    .api-key-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    .key-value {
+        font-family: monospace;
+        background-color: rgba(0, 0, 0, 0.05);
+        border-radius: 4px;
+        padding: 8px;
+        word-break: break-all;
+    }
+    .badge-partner {
+        background-color: var(--bs-purple);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-3">
+                <i class="fas fa-key me-2"></i> 
+                Partner API Key Management
+            </h1>
+            <p class="lead">Create and manage API keys for external institutions and partners to integrate with the NVC Banking Platform.</p>
+        </div>
+    </div>
+
+    <!-- Create New API Key -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Create New Partner API Key</h5>
+                </div>
+                <div class="card-body">
+                    <form id="new-api-key-form" method="post" action="{{ url_for('web.admin.create_partner_api_key') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="partner_name" class="form-label">Partner/Institution Name</label>
+                            <input type="text" class="form-control" id="partner_name" name="partner_name" required>
+                            <div class="form-text">The name of the partner institution (e.g., "Saint Crowm Bank")</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="partner_email" class="form-label">Contact Email</label>
+                            <input type="email" class="form-control" id="partner_email" name="partner_email" required>
+                            <div class="form-text">Primary contact email for the partner</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="partner_type" class="form-label">Partner Type</label>
+                            <select class="form-select" id="partner_type" name="partner_type" required>
+                                <option value="financial_institution">Financial Institution</option>
+                                <option value="token_provider">Token Provider</option>
+                                <option value="payment_processor">Payment Processor</option>
+                                <option value="data_provider">Data Provider</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="access_level" class="form-label">Access Level</label>
+                            <select class="form-select" id="access_level" name="access_level" required>
+                                <option value="read">Read Only</option>
+                                <option value="read_write">Read & Write</option>
+                                <option value="full">Full Access</option>
+                            </select>
+                            <div class="form-text">Determines the level of API access for this partner</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                            <div class="form-text">Optional description of this integration</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_active" name="is_active" checked>
+                            <label class="form-check-label" for="is_active">Active</label>
+                            <div class="form-text">Deactivate to temporarily disable this API key</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-2"></i> Generate API Key
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing API Keys -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Active Partner API Keys</h5>
+                    <button id="refresh-keys" class="btn btn-sm btn-light">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if api_keys|length > 0 %}
+                    <div class="row">
+                        {% for key in api_keys %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 api-key-card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h5 class="card-title mb-0">{{ key.partner_name }}</h5>
+                                        <span class="badge badge-partner">{{ key.partner_type|replace('_', ' ')|title }}</span>
+                                    </div>
+                                    
+                                    <p class="card-text text-muted small mb-2">{{ key.description }}</p>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small">API Key</label>
+                                        <div class="key-value">{{ key.api_key }}</div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <small class="text-muted">Created: {{ key.created_at.strftime('%Y-%m-%d') }}</small>
+                                        <div>
+                                            <a href="{{ url_for('web.admin.edit_partner_api_key', key_id=key.id) }}" class="btn btn-sm btn-outline-primary me-2">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            
+                                            <form method="post" action="{{ url_for('web.admin.toggle_partner_api_key', key_id=key.id) }}" class="d-inline">
+                                                {{ form.hidden_tag() }}
+                                                <button type="submit" class="btn btn-sm {% if key.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+                                                    <i class="fas {% if key.is_active %}fa-ban{% else %}fa-check{% endif %}"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="fas fa-key fa-3x text-muted"></i>
+                        </div>
+                        <h5>No Partner API Keys Yet</h5>
+                        <p class="text-muted">Create your first partner API key using the form above.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Key Created Modal -->
+{% if show_new_key %}
+<div class="modal fade" id="newApiKeyModal" tabindex="-1" aria-labelledby="newApiKeyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="newApiKeyModalLabel">API Key Generated Successfully</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Important:</strong> Copy this API key now! It won't be shown again.
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">API Key for {{ new_key.partner_name }}</label>
+                    <div class="key-value p-3 mb-2">{{ new_key.api_key }}</div>
+                    <div class="d-grid">
+                        <button class="btn btn-outline-primary btn-sm" id="copyApiKey" data-key="{{ new_key.api_key }}">
+                            <i class="fas fa-copy me-1"></i> Copy to Clipboard
+                        </button>
+                    </div>
+                </div>
+                
+                <p class="mb-2"><strong>API Endpoint:</strong></p>
+                <div class="key-value p-2 mb-3">https://api.nvcplatform.net/v1</div>
+                
+                <p class="mb-0"><strong>Integration Instructions:</strong></p>
+                <ol class="mt-2">
+                    <li>Include this API key in the Authorization header</li>
+                    <li>Format: <code>Authorization: Bearer {your_api_key}</code></li>
+                    <li>Refer to the API documentation for available endpoints</li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('documentation.api_docs') }}" class="btn btn-primary">View API Documentation</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if show_new_key %}
+    // Show the modal when a new key is created
+    var newApiKeyModal = new bootstrap.Modal(document.getElementById('newApiKeyModal'));
+    newApiKeyModal.show();
+    
+    // Copy API key button
+    const copyBtn = document.getElementById('copyApiKey');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+            const key = this.getAttribute('data-key');
+            navigator.clipboard.writeText(key).then(function() {
+                copyBtn.innerHTML = '<i class="fas fa-check me-1"></i> Copied!';
+                setTimeout(function() {
+                    copyBtn.innerHTML = '<i class="fas fa-copy me-1"></i> Copy to Clipboard';
+                }, 2000);
+            });
+        });
+    }
+    {% endif %}
+    
+    // Refresh button
+    const refreshBtn = document.getElementById('refresh-keys');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            window.location.reload();
+        });
+    }
+});
+</script>
+{% endblock %}
