@@ -189,6 +189,11 @@
                                 </a>
                             </li>
                             <li>
+                                <a class="dropdown-item" href="{{ url_for('api_access.admin_review_list') }}">
+                                    <i class="fas fa-user-check me-1"></i> API Access Requests
+                                </a>
+                            </li>
+                            <li>
                                 <a class="dropdown-item" href="{{ url_for('web.main.php_bridge_docs') }}">
                                     <i class="fas fa-exchange-alt me-1"></i> PHP Bridge Docs
                                 </a>
@@ -240,6 +245,20 @@
                             {% elif current_user.username in ['admin', 'headadmin'] %}
                             <li><a class="dropdown-item" href="{{ url_for('web.main.admin_dashboard') }}">
                                 <i class="fas fa-user-shield me-1"></i> Admin Dashboard
+                            </a></li>
+                            {% endif %}
+                            
+                            <!-- Developer tools section -->
+                            {% if current_user.role.value == 'developer' %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Developer Tools</h6></li>
+                            <li><a class="dropdown-item" href="{{ url_for('api_access.access_status') }}">
+                                <i class="fas fa-code me-1"></i> My API Access
+                            </a></li>
+                            {% else %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('api_access.request_access') }}">
+                                <i class="fas fa-key me-1"></i> Request API Access
                             </a></li>
                             {% endif %}
                             
