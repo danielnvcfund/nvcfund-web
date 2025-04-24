@@ -16,7 +16,7 @@
                     <h5 class="mb-0">Create New API Key</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('admin.create_partner_api_key') }}">
+                    <form method="POST" action="{{ url_for('admin_api_keys.create_partner_api_key') }}">
                         {{ form.hidden_tag() }}
                         
                         <div class="row mb-3">
@@ -96,7 +96,7 @@
                         
                         <div class="d-flex">
                             {{ form.submit(class="btn btn-primary me-2") }}
-                            <a href="{{ url_for('admin.create_saint_crowm_bank_key') }}" class="btn btn-success">
+                            <a href="{{ url_for('admin_api_keys.create_saint_crowm_bank_key') }}" class="btn btn-success">
                                 Create Saint Crowm Bank API Key
                             </a>
                         </div>
@@ -152,8 +152,8 @@
                                     </td>
                                     <td>
                                         <div class="btn-group">
-                                            <a href="{{ url_for('admin.edit_partner_api_key', key_id=api_key.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                                            <form method="POST" action="{{ url_for('admin.toggle_partner_api_key', key_id=api_key.id) }}" style="display: inline;">
+                                            <a href="{{ url_for('admin_api_keys.edit_partner_api_key', key_id=api_key.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                            <form method="POST" action="{{ url_for('admin_api_keys.toggle_partner_api_key', key_id=api_key.id) }}" style="display: inline;">
                                                 {{ form.hidden_tag() }}
                                                 <button type="submit" class="btn btn-sm btn-outline-{% if api_key.is_active %}warning{% else %}success{% endif %}">
                                                     {% if api_key.is_active %}Deactivate{% else %}Activate{% endif %}
