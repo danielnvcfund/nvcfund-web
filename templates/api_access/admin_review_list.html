@@ -1,135 +1,113 @@
 {% extends "layout.html" %}
 
+{% block title %}Review API Access Requests{% endblock %}
+
 {% block content %}
-<div class="container py-5">
+<div class="container-fluid mt-4">
     <div class="row">
         <div class="col-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('admin.index') }}">Admin</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Admin</a></li>
                     <li class="breadcrumb-item active" aria-current="page">API Access Requests</li>
                 </ol>
             </nav>
             
-            <div class="card border shadow mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-key me-2"></i>
-                        API Access Request Management
-                    </h4>
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h2 class="h4 mb-0">API Access Requests</h2>
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Admin Dashboard
+                    </a>
                 </div>
+                
                 <div class="card-body">
-                    <h5 class="card-title mb-4">Pending Requests</h5>
-                    
                     {% if pending_requests %}
-                    <div class="table-responsive mb-5">
-                        <table class="table table-hover border">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Date</th>
-                                    <th>User</th>
-                                    <th>Purpose</th>
-                                    <th>Company</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for request in pending_requests %}
-                                <tr class="table-warning">
-                                    <td>{{ request.created_at.strftime('%Y-%m-%d') }}</td>
-                                    <td>
-                                        <strong>{{ request.user.username }}</strong><br>
-                                        <small class="text-muted">{{ request.user.email }}</small>
-                                    </td>
-                                    <td>{{ request.integration_purpose }}</td>
-                                    <td>
-                                        {% if request.company_name %}
-                                            {{ request.company_name }}
-                                            {% if request.website %}
-                                                <br><small><a href="{{ request.website }}" target="_blank">Website</a></small>
-                                            {% endif %}
-                                        {% else %}
-                                            <span class="text-muted">N/A</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{{ url_for('api_access.admin_review_request', request_id=request.id) }}" 
-                                           class="btn btn-sm btn-primary">
-                                            Review
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                        <h3 class="h5 mb-3 border-bottom pb-2">Pending Requests ({{ pending_requests|length }})</h3>
+                        <div class="table-responsive mb-4">
+                            <table class="table table-hover table-striped">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Request Date</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Purpose</th>
+                                        <th>Company</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for request in pending_requests %}
+                                    {% set user = request.user if request.user else {"username": "Unknown", "email": "Unknown"} %}
+                                    <tr>
+                                        <td>{{ request.created_at.strftime('%Y-%m-%d') }}</td>
+                                        <td>{{ user.username }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>{{ request.integration_purpose }}</td>
+                                        <td>{{ request.company_name or 'N/A' }}</td>
+                                        <td>
+                                            <a href="{{ url_for('api_access.admin_review_request', request_id=request.id) }}" 
+                                               class="btn btn-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i> Review
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     {% else %}
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        No pending API access requests at this time.
-                    </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> No pending API access requests.
+                        </div>
                     {% endif %}
                     
-                    <h5 class="card-title mb-4">Recently Processed Requests</h5>
-                    
                     {% if other_requests %}
-                    <div class="table-responsive">
-                        <table class="table table-hover border">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Date</th>
-                                    <th>User</th>
-                                    <th>Purpose</th>
-                                    <th>Status</th>
-                                    <th>Reviewed By</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for request in other_requests %}
-                                <tr {% if request.status.value == 'approved' %}class="table-success"
-                                    {% elif request.status.value == 'rejected' %}class="table-danger"
-                                    {% endif %}>
-                                    <td>{{ request.created_at.strftime('%Y-%m-%d') }}</td>
-                                    <td>
-                                        <strong>{{ request.user.username }}</strong><br>
-                                        <small class="text-muted">{{ request.user.email }}</small>
-                                    </td>
-                                    <td>{{ request.integration_purpose }}</td>
-                                    <td>
-                                        <span class="badge 
-                                            {% if request.status.value == 'approved' %}bg-success
-                                            {% elif request.status.value == 'rejected' %}bg-danger
-                                            {% endif %}">
-                                            {{ request.status.value.upper() }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {% if request.reviewer %}
-                                            {{ request.reviewer.username }}
-                                            <br>
-                                            <small class="text-muted">{{ request.updated_at.strftime('%Y-%m-%d') }}</small>
-                                        {% else %}
-                                            <span class="text-muted">N/A</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{{ url_for('api_access.admin_review_request', request_id=request.id) }}" 
-                                           class="btn btn-sm btn-outline-secondary">
-                                            View
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                        <h3 class="h5 mb-3 border-bottom pb-2">Recent Processed Requests</h3>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Request Date</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Status</th>
+                                        <th>Reviewed</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for request in other_requests %}
+                                    {% set user = request.user if request.user else {"username": "Unknown", "email": "Unknown"} %}
+                                    <tr>
+                                        <td>{{ request.created_at.strftime('%Y-%m-%d') }}</td>
+                                        <td>{{ user.username }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>
+                                            {% if request.status.value == 'approved' %}
+                                                <span class="badge bg-success">Approved</span>
+                                            {% elif request.status.value == 'rejected' %}
+                                                <span class="badge bg-danger">Rejected</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ request.status.value|capitalize }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ request.updated_at.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            <a href="{{ url_for('api_access.admin_review_request', request_id=request.id) }}" 
+                                               class="btn btn-outline-secondary btn-sm">
+                                                <i class="fas fa-eye me-1"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     {% else %}
-                    <div class="alert alert-secondary">
-                        <i class="fas fa-info-circle me-2"></i>
-                        No processed API access requests in the system.
-                    </div>
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i> No processed API access requests.
+                        </div>
                     {% endif %}
                 </div>
             </div>

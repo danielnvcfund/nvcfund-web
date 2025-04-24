@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SelectField, TextAreaField, HiddenField, FloatField, DateField, SubmitField, RadioField, validators
-from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional
+from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional, URL
 from datetime import datetime, timedelta
-from models import FinancialInstitution, TransactionType, InvitationType
+from models import FinancialInstitution, TransactionType, InvitationType, ApiAccessRequestStatus
 import json
 
 # Helper functions for forms
