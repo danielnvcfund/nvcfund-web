@@ -34,7 +34,7 @@
     </div>
     
     <!-- Developer Tools Panel - Only visible to users with Developer role -->
-    {% if current_user.role.value == 'developer' %}
+    {% if current_user.role.value == 'DEVELOPER' %}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card bg-success bg-gradient text-white border-0 shadow">
@@ -44,14 +44,14 @@
                     </h4>
                     <p class="card-text mb-3">
                         <span class="badge bg-light text-dark me-2"><i class="fas fa-code me-1"></i> API</span>
-                        Manage your API keys and access tokens for integrating with the NVC Banking Platform.
+                        Manage your API keys and access developer resources.
                     </p>
                     
                     <div class="d-flex flex-wrap gap-2">
-                        <a href="{{ url_for('api_access.access_status') }}" class="btn btn-light">
-                            <i class="fas fa-key me-1"></i> My API Keys
+                        <a href="{{ url_for('api_access.developer_keys') }}" class="btn btn-warning">
+                            <i class="fas fa-key me-1"></i> Manage API Keys
                         </a>
-                        <a href="{{ url_for('web.main.api_docs') }}" class="btn btn-outline-light">
+                        <a href="{{ url_for('web.main.api_docs') }}" class="btn btn-light">
                             <i class="fas fa-book me-1"></i> API Documentation
                         </a>
                         <a href="{{ url_for('documentation.documentation_index') }}" class="btn btn-outline-light">
@@ -74,27 +74,19 @@
                         <i class="fas fa-tools me-2"></i> Admin Tools
                     </h4>
                     <p class="card-text mb-3">
-                        <span class="badge bg-warning text-dark me-2"><i class="fas fa-star me-1"></i> New</span>
-                        Manage API keys for platform integrations with financial partners and institutions.
+                        Admin functions for platform management and monitoring.
                     </p>
                     
-                    <!-- Primary API Key Management Button -->
-                    <div class="mb-3">
-                        <a href="{{ url_for('web.main.api_key_management') }}" class="btn btn-warning btn-lg w-100 fw-bold text-dark shadow">
-                            <i class="fas fa-key me-2"></i> API Key Management Portal
-                        </a>
-                    </div>
-                    
-                    <!-- Additional Options -->
+                    <!-- Admin Options - No API Keys on main dashboard -->
                     <div class="d-flex flex-wrap gap-2">
-                        <a href="/admin/api-keys" class="btn btn-light">
-                            <i class="fas fa-key me-2"></i> List All API Keys
+                        <a href="{{ url_for('web.main.admin_dashboard') }}" class="btn btn-warning">
+                            <i class="fas fa-user-shield me-2"></i> Admin Dashboard
                         </a>
-                        <a href="/admin/api-keys/saint-crowm-bank/create" class="btn btn-light">
-                            <i class="fas fa-building-columns me-2"></i> Saint Crowm Bank Setup
+                        <a href="{{ url_for('web.main.user_management') }}" class="btn btn-light">
+                            <i class="fas fa-users me-2"></i> User Management
                         </a>
-                        <a href="/admin/api-keys-menu" class="btn btn-light">
-                            <i class="fas fa-cog me-2"></i> API Keys Dashboard
+                        <a href="{{ url_for('web.main.system_status') }}" class="btn btn-light">
+                            <i class="fas fa-server me-2"></i> System Status
                         </a>
                     </div>
                 </div>
