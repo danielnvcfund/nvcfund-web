@@ -1293,6 +1293,12 @@ def privacy_policy():
     """Privacy policy route"""
     return render_template('privacy_policy.html')
 
+@main.route('/token-exchange')
+@login_required
+def token_exchange():
+    """Token exchange page for AFD1/NVCT trading"""
+    return render_template('token_exchange.html')
+
 @main.route('/admin-dashboard')
 @login_required
 def admin_dashboard():
