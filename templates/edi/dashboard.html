@@ -9,7 +9,8 @@
       <h1 class="mb-4">Electronic Data Interchange Dashboard</h1>
       
       <div class="alert alert-info">
-        <i class="fas fa-info-circle"></i> EDI enables standardized electronic fund transfers with financial institutions.
+        <i class="fas fa-info-circle"></i> EDI enables standardized electronic fund transfers with financial institutions. 
+        <a href="{{ url_for('documentation.view_markdown_document', filename='edi_guide.md') }}" class="alert-link">View our comprehensive EDI integration guide</a> for detailed information.
       </div>
     </div>
   </div>
@@ -48,6 +49,9 @@
             </a>
             <a href="{{ url_for('web.main.transactions') }}?type=EDI_PAYMENT" class="list-group-item list-group-item-action">
               <i class="fas fa-exchange-alt"></i> Create EDI Transaction
+            </a>
+            <a href="{{ url_for('documentation.view_markdown_document', filename='edi_guide.md') }}" class="list-group-item list-group-item-action">
+              <i class="fas fa-book"></i> EDI Integration Guide
             </a>
           </div>
         </div>
