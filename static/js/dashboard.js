@@ -19,6 +19,15 @@ function getAnalyticsData() {
         
         if (analyticsElement && analyticsElement.dataset && analyticsElement.dataset.analytics) {
             try {
+                console.log('Found analytics data in element. Length:', analyticsElement.dataset.analytics.length);
+                console.log('Analytics data preview:', analyticsElement.dataset.analytics.substring(0, 100));
+                
+                // Check if the data starts with expected characters
+                if (!analyticsElement.dataset.analytics.startsWith('{')) {
+                    console.warn('Analytics data does not start with {, it starts with:', 
+                        analyticsElement.dataset.analytics.substring(0, 5));
+                }
+                
                 return JSON.parse(analyticsElement.dataset.analytics);
             } catch (e) {
                 console.error('Error parsing analytics data JSON:', e);

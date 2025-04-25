@@ -626,9 +626,6 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- Hidden data element for analytics data -->
-<div id="analytics-data" style="display: none;" data-analytics='{{ analytics_json }}' data-ethereum-address="{{ user.ethereum_address }}"></div>
-
 <script>
     // Toggle API key visibility
     const toggleApiKey = document.getElementById('toggleApiKey');
