@@ -43,10 +43,13 @@ def dashboard():
     loan_count = TreasuryLoan.query.count()
     
     # Get total balances by currency
-    balances_by_currency = db.session.query(
+    balances_query = db.session.query(
         TreasuryAccount.currency,
         func.sum(TreasuryAccount.current_balance).label('total_balance')
     ).group_by(TreasuryAccount.currency).all()
+    
+    # Convert query result to a dictionary for the template
+    balances_by_currency = {currency: float(balance) for currency, balance in balances_query}
     
     # Get accounts with low balance warnings
     low_balance_accounts = TreasuryAccount.query.filter(
