@@ -159,8 +159,10 @@
                             {% endif %}
                         </ul>
                     </li>
+                    {% endif %}
                     
                     <!-- Treasury Management dropdown -->
+                    {% if current_user.is_authenticated %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if '/treasury/' in request.path %}active fw-bold{% endif %}" href="#" id="treasuryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-university me-1"></i> Treasury
