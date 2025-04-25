@@ -27,7 +27,12 @@ def documentation_index():
     try:
         for filename in os.listdir(docs_dir):
             if filename.endswith('.pdf'):
-                name = filename[:-4].replace('_', ' ').title()
+                # Custom name for NVC EDI Guide
+                if filename == 'nvc_electronic_data_interchange_guide.pdf':
+                    name = 'NVC Electronic Data Interchange Guide'
+                else:
+                    name = filename[:-4].replace('_', ' ').title()
+                
                 pdf_files.append({
                     'name': name,
                     'filename': filename,

@@ -135,7 +135,7 @@ if __name__ == "__main__":
     # Set file paths
     current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     markdown_file = os.path.join(current_dir, 'docs', 'edi_guide.md')
-    output_pdf = os.path.join(current_dir, 'docs', 'edi_guide.pdf')
+    output_pdf = os.path.join(current_dir, 'docs', 'nvc_electronic_data_interchange_guide.pdf')
     
     # Convert markdown to PDF
     convert_markdown_to_pdf(markdown_file, output_pdf)
