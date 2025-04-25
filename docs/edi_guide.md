@@ -1,5 +1,6 @@
+# NVC GLOBAL BANKING PLATFORM
 # Electronic Data Interchange (EDI) Integration Guide
-## NVC Global Banking Platform
+## CONFIDENTIAL | INSTITUTIONAL PARTNER DOCUMENTATION
 
 ## Table of Contents
 1. [Introduction to Financial EDI](#introduction-to-financial-edi)
@@ -83,20 +84,43 @@ The NVC Global Banking Platform serves as a central hub for financial EDI proces
 5. **Corporate Partners**: Supply chain and business partner connectivity
 6. **Blockchain Networks**: Integration with Ethereum and XRP Ledger for digital settlement options
 
-### Architecture Overview
+### NVC Global EDI Architecture Overview
 
 ```
-┌─────────────────┐     ┌──────────────────┐     ┌────────────────────┐
-│ Partner Systems │◄────┤ Secure Transport │◄────┤ EDI Processing     │
-│                 │     │ (SFTP/AS2/API)   │     │ Module             │
-└─────────────────┘     └──────────────────┘     └────────────────────┘
-                                                          ▲
-                                                          │
-                                                          ▼
-┌─────────────────┐     ┌──────────────────┐     ┌────────────────────┐
-│ Settlement      │◄────┤ Transaction      │◄────┤ NVC Global         │
-│ Networks        │     │ Processing       │     │ Banking Platform   │
-└─────────────────┘     └──────────────────┘     └────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        EXTERNAL PARTNER SYSTEMS                              │
+├───────────────────┬───────────────────────────┬───────────────────────────┬─┘
+│  Financial        │  Payment                  │  Regulatory               │
+│  Institutions     │  Processors              │  Agencies                 │
+└────────┬──────────┴──────────────┬────────────┴────────────┬──────────────┘
+         │                         │                         │
+         ▼                         ▼                         ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│                        SECURE TRANSPORT LAYER                              │
+├────────────────────┬─────────────────────────┬───────────────────────────┬─┘
+│  SFTP              │  AS2                    │  API Gateway              │
+│  File Transfer     │  Secure Messaging       │  REST/JSON Services       │
+└────────┬───────────┴──────────────┬──────────┴────────────┬───────────────┘
+         │                          │                        │
+         └──────────────────────────┼────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│                        NVC GLOBAL CORE PLATFORM                            │
+├────────────────────┬─────────────────────────┬───────────────────────────┬─┘
+│  EDI Processing    │  Transaction            │  Security &               │
+│  Module            │  Management             │  Compliance               │
+└────────┬───────────┴──────────────┬──────────┴────────────┬───────────────┘
+         │                          │                        │
+         └──────────────────────────┼────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│                        SETTLEMENT NETWORKS                                 │
+├────────────────────┬─────────────────────────┬───────────────────────────┬─┘
+│  Traditional       │  Blockchain Networks    │  Global Payment           │
+│  Banking Rails     │  (ETH/XRP)              │  Systems                  │
+└────────────────────┴─────────────────────────┴───────────────────────────┘
 ```
 
 ## Getting Started with EDI
