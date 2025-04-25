@@ -1,0 +1,389 @@
+{% extends 'layout.html' %}
+
+{% block title %}Treasury Management{% endblock %}
+
+{% block styles %}
+<style>
+  .card-kpi {
+    border-left: 4px solid var(--bs-primary);
+  }
+  .card-kpi.inflow {
+    border-left-color: var(--bs-success);
+  }
+  .card-kpi.outflow {
+    border-left-color: var(--bs-danger);
+  }
+  .chart-container {
+    height: 300px;
+  }
+  .account-balance-pill {
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+  }
+  .investment-card, .loan-card {
+    margin-bottom: 1rem;
+    transition: all 0.2s ease-in-out;
+  }
+  .investment-card:hover, .loan-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  .upcoming-item {
+    border-left: 3px solid var(--bs-info);
+    padding-left: 10px;
+    margin-bottom: 10px;
+  }
+  .upcoming-item.warning {
+    border-left-color: var(--bs-warning);
+  }
+  .upcoming-item.danger {
+    border-left-color: var(--bs-danger);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Treasury Management Dashboard</h1>
+        <div>
+          <a href="{{ url_for('treasury.account_list') }}" class="btn btn-outline-primary me-2">
+            <i class="fas fa-university me-1"></i> Accounts
+          </a>
+          <a href="{{ url_for('treasury.investment_list') }}" class="btn btn-outline-success me-2">
+            <i class="fas fa-chart-line me-1"></i> Investments
+          </a>
+          <a href="{{ url_for('treasury.loan_list') }}" class="btn btn-outline-info me-2">
+            <i class="fas fa-money-bill-wave me-1"></i> Loans
+          </a>
+          <a href="{{ url_for('treasury.transaction_list') }}" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-exchange-alt me-1"></i> Transactions
+          </a>
+          <a href="{{ url_for('treasury.cash_flow_list') }}" class="btn btn-outline-dark">
+            <i class="fas fa-calendar-alt me-1"></i> Cash Flow
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Summary Cards -->
+  <div class="row mb-4">
+    {% for currency, balance in balances_by_currency.items() %}
+    <div class="col-md-3 mb-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">Total Balance ({{ currency }})</h6>
+          <h3 class="mb-0">{{ "%.2f"|format(balance) }}</h3>
+          <small class="text-muted">Across {{ accounts|selectattr('currency', 'equalto', currency)|list|length }} accounts</small>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    
+    <!-- Placeholder for other KPIs -->
+    <div class="col-md-3 mb-3">
+      <div class="card h-100 shadow-sm card-kpi inflow">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">Active Investments</h6>
+          <h3 class="mb-0">{{ maturing_investments|length }}</h3>
+          <small class="text-muted">{{ maturing_investments|selectattr('status', 'equalto', 'COMPLETED')|list|length }} in progress</small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="card h-100 shadow-sm card-kpi outflow">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">Active Loans</h6>
+          <h3 class="mb-0">{{ upcoming_loans|length }}</h3>
+          <small class="text-muted">{{ upcoming_loans|selectattr('status', 'equalto', 'active')|list|length }} requiring payments</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts and Account Summary -->
+  <div class="row mb-4">
+    <!-- Account Balances Chart -->
+    <div class="col-lg-7 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">Account Balances</h5>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="accountBalancesChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Cash Flow Forecast -->
+    <div class="col-lg-5 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">30-Day Cash Flow Forecast</h5>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="cashFlowForecastChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account List, Recent Transactions, and Upcoming Events -->
+  <div class="row">
+    <!-- Account List -->
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Treasury Accounts</h5>
+          <a href="{{ url_for('treasury.new_account') }}" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus"></i>
+          </a>
+        </div>
+        <div class="card-body">
+          <div class="list-group">
+            {% for account in accounts %}
+            <a href="{{ url_for('treasury.view_account', account_id=account.id) }}" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-1">{{ account.name }}</h6>
+                  <small class="text-muted">{{ account.account_type.value|title }}</small>
+                </div>
+                <h6 class="mb-0">{{ account.currency }} {{ "%.2f"|format(account.current_balance) }}</h6>
+              </div>
+              
+              <div class="mt-2">
+                {% if account.minimum_balance is not none and account.current_balance < account.minimum_balance %}
+                <span class="badge bg-danger account-balance-pill">Below Minimum</span>
+                {% endif %}
+                
+                {% if account.target_balance is not none %}
+                  {% if account.current_balance >= account.target_balance %}
+                  <span class="badge bg-success account-balance-pill">At Target</span>
+                  {% else %}
+                  <span class="badge bg-warning account-balance-pill">Below Target</span>
+                  {% endif %}
+                {% endif %}
+                
+                {% if account.maximum_balance is not none and account.current_balance > account.maximum_balance %}
+                <span class="badge bg-warning account-balance-pill">Exceeds Maximum</span>
+                {% endif %}
+              </div>
+            </a>
+            {% else %}
+            <div class="alert alert-info mb-0">
+              No treasury accounts have been created yet.
+              <a href="{{ url_for('treasury.new_account') }}" class="alert-link">Create one now</a>.
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Recent Transactions -->
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Recent Transactions</h5>
+          <a href="{{ url_for('treasury.new_transaction') }}" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus"></i>
+          </a>
+        </div>
+        <div class="card-body">
+          <div class="list-group">
+            {% for transaction in recent_transactions %}
+            <a href="{{ url_for('treasury.view_transaction', transaction_id=transaction.id) }}" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">{{ transaction.transaction_type.value|replace('_', ' ')|title }}</h6>
+                <small>{{ transaction.created_at.strftime('%Y-%m-%d') }}</small>
+              </div>
+              <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                  {% if transaction.from_account %}
+                    From: {{ transaction.from_account.name }}
+                  {% endif %}
+                  {% if transaction.to_account %}
+                    To: {{ transaction.to_account.name }}
+                  {% endif %}
+                </small>
+                <span class="badge {% if transaction.status.name == 'COMPLETED' %}bg-success{% elif transaction.status.name == 'PENDING' %}bg-warning{% else %}bg-secondary{% endif %}">
+                  {{ transaction.currency }} {{ "%.2f"|format(transaction.amount) }}
+                </span>
+              </div>
+            </a>
+            {% else %}
+            <div class="alert alert-info mb-0">
+              No treasury transactions have been recorded yet.
+              <a href="{{ url_for('treasury.new_transaction') }}" class="alert-link">Create one now</a>.
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Upcoming Events -->
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">Upcoming Events (30 Days)</h5>
+        </div>
+        <div class="card-body">
+          <h6 class="mb-3">Loan Payments</h6>
+          {% for loan in upcoming_loans %}
+          <div class="upcoming-item {% if (loan.next_payment_date - now).days <= 7 %}danger{% elif (loan.next_payment_date - now).days <= 14 %}warning{% endif %}">
+            <div class="d-flex justify-content-between">
+              <div>
+                <strong>{{ loan.loan_id }}</strong>
+                <div><small>Due: {{ loan.next_payment_date.strftime('%Y-%m-%d') }}</small></div>
+              </div>
+              <div class="text-end">
+                <strong>{{ loan.currency }} {{ "%.2f"|format(loan.next_payment_amount) }}</strong>
+                <div>
+                  <a href="{{ url_for('treasury.make_loan_payment', loan_id=loan.id) }}" class="btn btn-sm btn-outline-primary">Pay Now</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <p class="text-muted">No upcoming loan payments</p>
+          {% endfor %}
+          
+          <hr>
+          
+          <h6 class="mb-3">Maturing Investments</h6>
+          {% for investment in maturing_investments %}
+          <div class="upcoming-item {% if (investment.maturity_date - now).days <= 7 %}danger{% elif (investment.maturity_date - now).days <= 14 %}warning{% endif %}">
+            <div class="d-flex justify-content-between">
+              <div>
+                <strong>{{ investment.investment_id }}</strong>
+                <div><small>Matures: {{ investment.maturity_date.strftime('%Y-%m-%d') }}</small></div>
+              </div>
+              <div class="text-end">
+                <strong>{{ investment.currency }} {{ "%.2f"|format(investment.calculate_maturity_value()) }}</strong>
+                <div><small>Initial: {{ investment.currency }} {{ "%.2f"|format(investment.amount) }}</small></div>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <p class="text-muted">No maturing investments</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Current date for template
+  window.now = new Date();
+  
+  // Account Balances Chart
+  const accountBalancesCtx = document.getElementById('accountBalancesChart').getContext('2d');
+  
+  // Prepare data
+  const accountData = {{ accounts|map(attribute='name')|list|tojson }};
+  const accountBalances = {{ accounts|map(attribute='current_balance')|list|tojson }};
+  const accountTypes = {{ accounts|map(attribute='account_type.value')|list|tojson }};
+  
+  // Generate colors based on account types
+  const accountColors = accountTypes.map(type => {
+    switch(type) {
+      case 'operating': return '#0d6efd';  // primary
+      case 'reserve': return '#6f42c1';    // purple
+      case 'investment': return '#20c997'; // teal
+      case 'payroll': return '#fd7e14';    // orange
+      case 'tax': return '#dc3545';        // danger
+      case 'debt_service': return '#6c757d'; // secondary
+      default: return '#0dcaf0';           // info
+    }
+  });
+  
+  new Chart(accountBalancesCtx, {
+    type: 'bar',
+    data: {
+      labels: accountData,
+      datasets: [{
+        label: 'Account Balance',
+        data: accountBalances,
+        backgroundColor: accountColors,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      },
+      responsive: true,
+      maintainAspectRatio: false
+    }
+  });
+  
+  // Cash Flow Forecast Chart
+  const cashFlowCtx = document.getElementById('cashFlowForecastChart').getContext('2d');
+  
+  // Fetch cash flow data from API
+  fetch('{{ url_for("treasury.api_cash_flow_forecast") }}')
+    .then(response => response.json())
+    .then(data => {
+      const dates = data.map(item => item.date);
+      const inflows = data.map(item => item.inflow);
+      const outflows = data.map(item => item.outflow);
+      
+      new Chart(cashFlowCtx, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [
+            {
+              label: 'Inflows',
+              data: inflows,
+              backgroundColor: 'rgba(40, 167, 69, 0.2)',
+              borderColor: 'rgba(40, 167, 69, 1)',
+              borderWidth: 2,
+              fill: true
+            },
+            {
+              label: 'Outflows',
+              data: outflows,
+              backgroundColor: 'rgba(220, 53, 69, 0.2)',
+              borderColor: 'rgba(220, 53, 69, 1)',
+              borderWidth: 2,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          },
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    })
+    .catch(error => {
+      console.error('Error fetching cash flow data:', error);
+      // Display fallback message
+      document.getElementById('cashFlowForecastChart').parentNode.innerHTML = 
+        '<div class="alert alert-warning">Failed to load cash flow forecast data.</div>';
+    });
+});
+</script>
+{% endblock %}

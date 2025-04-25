@@ -1,8 +1,12 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SelectField, TextAreaField, HiddenField, FloatField, DateField, SubmitField, RadioField, validators
-from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional, URL
+from wtforms import StringField, PasswordField, BooleanField, SelectField, TextAreaField, HiddenField, FloatField, DateField, SubmitField, RadioField, validators, IntegerField, DecimalField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional, URL, NumberRange
 from datetime import datetime, timedelta
-from models import FinancialInstitution, TransactionType, InvitationType, ApiAccessRequestStatus
+from models import (
+    FinancialInstitution, TransactionType, InvitationType, ApiAccessRequestStatus,
+    TreasuryAccountType, InvestmentType, TreasuryTransactionType, 
+    CashFlowDirection, RecurrenceType, LoanType, InterestType, PaymentFrequency
+)
 import json
 
 # Helper functions for forms
@@ -470,3 +474,158 @@ class EDITransactionForm(FlaskForm):
     
     description = TextAreaField("Description/Notes", validators=[Optional(), Length(max=500)])
     submit = SubmitField("Process Transaction")
+
+# Treasury Management System Forms
+class TreasuryAccountForm(FlaskForm):
+    """Form for creating or editing a treasury account"""
+    name = StringField('Account Name', validators=[DataRequired(), Length(max=128)])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=256)])
+    account_type = SelectField('Account Type', validators=[DataRequired()], choices=[
+        (t.name, t.value.title()) for t in TreasuryAccountType
+    ])
+    institution_id = SelectField('Financial Institution', validators=[DataRequired()], coerce=int)
+    account_number = StringField('Account Number', validators=[Optional(), Length(max=64)])
+    currency = SelectField('Currency', validators=[DataRequired()], choices=get_currency_choices())
+    initial_balance = FloatField('Initial Balance', validators=[DataRequired()], default=0.0)
+    target_balance = FloatField('Target Balance', validators=[Optional()])
+    minimum_balance = FloatField('Minimum Balance', validators=[Optional()], default=0.0)
+    maximum_balance = FloatField('Maximum Balance', validators=[Optional()])
+    submit = SubmitField('Save Account')
+    
+    def validate_initial_balance(self, field):
+        """Validate initial balance is not negative"""
+        if field.data < 0:
+            raise ValidationError('Initial balance cannot be negative')
+            
+    def validate_target_balance(self, field):
+        """Validate target balance if provided"""
+        if field.data is not None and field.data < 0:
+            raise ValidationError('Target balance cannot be negative')
+
+class TreasuryInvestmentForm(FlaskForm):
+    """Form for creating an investment"""
+    account_id = SelectField('Source Account', validators=[DataRequired()], coerce=int)
+    investment_type = SelectField('Investment Type', validators=[DataRequired()], choices=[
+        (t.name, t.value.replace('_', ' ').title()) for t in InvestmentType
+    ])
+    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
+    currency = SelectField('Currency', validators=[DataRequired()], choices=get_currency_choices())
+    interest_rate = FloatField('Interest Rate (%)', validators=[Optional()], default=0.0)
+    start_date = DateField('Start Date', validators=[DataRequired()], default=datetime.utcnow)
+    maturity_date = DateField('Maturity Date', validators=[DataRequired()])
+    institution_id = SelectField('Financial Institution', validators=[DataRequired()], coerce=int)
+    description = TextAreaField('Description', validators=[Optional(), Length(max=256)])
+    is_active = BooleanField('Investment is Active', default=True)
+    submit = SubmitField('Create Investment')
+    
+    def validate_maturity_date(self, field):
+        """Validate maturity date is after start date"""
+        if self.start_date.data and field.data <= self.start_date.data:
+            raise ValidationError('Maturity date must be after start date')
+            
+    def validate_interest_rate(self, field):
+        """Validate interest rate is not negative"""
+        if field.data is not None and field.data < 0:
+            raise ValidationError('Interest rate cannot be negative')
+
+class TreasuryTransactionForm(FlaskForm):
+    """Form for creating a treasury transaction"""
+    from_account_id = SelectField('From Account', validators=[DataRequired()], coerce=int)
+    to_account_id = SelectField('To Account', validators=[DataRequired()], coerce=int)
+    transaction_type = SelectField('Transaction Type', validators=[DataRequired()], choices=[
+        (t.name, t.value.replace('_', ' ').title()) for t in TreasuryTransactionType
+    ])
+    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
+    currency = SelectField('Currency', validators=[DataRequired()], choices=get_currency_choices())
+    exchange_rate = FloatField('Exchange Rate', validators=[Optional()], default=1.0)
+    reference_number = StringField('Reference Number', validators=[Optional(), Length(max=64)])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=256)])
+    memo = TextAreaField('Memo / Notes', validators=[Optional()])
+    submit = SubmitField('Create Transaction')
+    
+    def validate_to_account_id(self, field):
+        """Validate to_account is different from from_account"""
+        if field.data == self.from_account_id.data and field.data != 0:
+            raise ValidationError('Source and destination accounts cannot be the same')
+
+class CashFlowForecastForm(FlaskForm):
+    """Form for creating a cash flow forecast"""
+    account_id = SelectField('Account', validators=[DataRequired()], coerce=int)
+    direction = SelectField('Direction', validators=[DataRequired()], choices=[
+        (d.name, d.value.title()) for d in CashFlowDirection
+    ])
+    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
+    currency = SelectField('Currency', validators=[DataRequired()], choices=get_currency_choices())
+    transaction_date = DateField('Transaction Date', validators=[DataRequired()], default=datetime.utcnow)
+    recurrence_type = SelectField('Recurrence', validators=[DataRequired()], choices=[
+        (r.name, r.value.title()) for r in RecurrenceType
+    ], default=RecurrenceType.NONE.name)
+    recurrence_end_date = DateField('Recurrence End Date', validators=[Optional()])
+    source_description = StringField('Source / Recipient', validators=[DataRequired(), Length(max=256)])
+    category = StringField('Category', validators=[Optional(), Length(max=128)])
+    probability = FloatField('Probability (%)', validators=[Optional()], default=100.0)
+    notes = TextAreaField('Notes', validators=[Optional()])
+    submit = SubmitField('Save Cash Flow')
+    
+    def validate_probability(self, field):
+        """Validate probability is between 0 and 100"""
+        if field.data < 0 or field.data > 100:
+            raise ValidationError('Probability must be between 0 and 100')
+            
+    def validate_recurrence_end_date(self, field):
+        """Validate recurrence end date if provided"""
+        if self.recurrence_type.data != RecurrenceType.NONE.name and field.data is None:
+            raise ValidationError('Recurrence end date is required for recurring cash flows')
+        if field.data and self.transaction_date.data and field.data <= self.transaction_date.data:
+            raise ValidationError('Recurrence end date must be after transaction date')
+
+class TreasuryLoanForm(FlaskForm):
+    """Form for creating a treasury loan"""
+    account_id = SelectField('Associated Account', validators=[DataRequired()], coerce=int)
+    loan_type = SelectField('Loan Type', validators=[DataRequired()], choices=[
+        (t.name, t.value.replace('_', ' ').title()) for t in LoanType
+    ])
+    principal_amount = FloatField('Principal Amount', validators=[DataRequired(), NumberRange(min=0.01)])
+    currency = SelectField('Currency', validators=[DataRequired()], choices=get_currency_choices())
+    interest_type = SelectField('Interest Type', validators=[DataRequired()], choices=[
+        (t.name, t.value.title()) for t in InterestType
+    ])
+    interest_rate = FloatField('Interest Rate (%)', validators=[DataRequired(), NumberRange(min=0)])
+    reference_rate = StringField('Reference Rate', validators=[Optional(), Length(max=64)])
+    margin = FloatField('Margin (%)', validators=[Optional()])
+    start_date = DateField('Start Date', validators=[DataRequired()], default=datetime.utcnow)
+    maturity_date = DateField('Maturity Date', validators=[DataRequired()])
+    payment_frequency = SelectField('Payment Frequency', validators=[DataRequired()], choices=[
+        (f.name, f.value.replace('_', ' ').title()) for f in PaymentFrequency
+    ])
+    first_payment_date = DateField('First Payment Date', validators=[DataRequired()])
+    payment_amount = FloatField('Payment Amount', validators=[Optional()])
+    lender_institution_id = SelectField('Lender Institution', validators=[DataRequired()], coerce=int)
+    status = SelectField('Status', validators=[DataRequired()], choices=[
+        ('pending', 'Pending'),
+        ('active', 'Active'),
+        ('paid', 'Paid'),
+        ('defaulted', 'Defaulted')
+    ], default='active')
+    description = TextAreaField('Description', validators=[Optional(), Length(max=256)])
+    collateral_description = TextAreaField('Collateral Description', validators=[Optional()])
+    submit = SubmitField('Create Loan')
+    
+    def validate_maturity_date(self, field):
+        """Validate maturity date is after start date"""
+        if self.start_date.data and field.data <= self.start_date.data:
+            raise ValidationError('Maturity date must be after start date')
+            
+    def validate_first_payment_date(self, field):
+        """Validate first payment date is after start date"""
+        if self.start_date.data and field.data < self.start_date.data:
+            raise ValidationError('First payment date must be on or after start date')
+        if self.maturity_date.data and field.data > self.maturity_date.data:
+            raise ValidationError('First payment date must be before maturity date')
+
+class TreasuryLoanPaymentForm(FlaskForm):
+    """Form for making a loan payment"""
+    payment_amount = FloatField('Payment Amount', validators=[DataRequired(), NumberRange(min=0.01)])
+    payment_date = DateField('Payment Date', validators=[DataRequired()], default=datetime.utcnow)
+    notes = TextAreaField('Notes', validators=[Optional()])
+    submit = SubmitField('Record Payment')
