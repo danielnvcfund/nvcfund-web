@@ -581,6 +581,8 @@ class CashFlowForecastForm(FlaskForm):
 
 class TreasuryLoanForm(FlaskForm):
     """Form for creating a treasury loan"""
+    name = StringField('Loan Name', validators=[DataRequired(), Length(max=128)])
+    loan_id = StringField('Loan ID', validators=[Optional(), Length(max=64)])
     account_id = SelectField('Associated Account', validators=[DataRequired()], coerce=int)
     loan_type = SelectField('Loan Type', validators=[DataRequired()], choices=[
         (t.name, t.value.replace('_', ' ').title()) for t in LoanType

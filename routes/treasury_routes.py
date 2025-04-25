@@ -650,38 +650,43 @@ def new_loan():
             form.currency.data = account.currency
     
     if form.validate_on_submit():
-        # Generate a unique loan ID
-        loan_id = f"LOAN-{generate_unique_id()}"
+        # Use provided loan ID or generate a unique one
+        loan_id = form.loan_id.data if form.loan_id.data else f"LOAN-{generate_unique_id()}"
+        
+        # Get the financial institution data
+        lender_institution = FinancialInstitution.query.get(form.lender_institution_id.data)
         
         loan = TreasuryLoan(
             loan_id=loan_id,
             account_id=form.account_id.data,
             loan_type=form.loan_type.data,
-            lender_name=form.lender_name.data,
             principal_amount=form.principal_amount.data,
             outstanding_amount=form.principal_amount.data,
             currency=form.currency.data,
-            interest_rate=form.interest_rate.data,
             interest_type=form.interest_type.data,
-            term_months=form.term_months.data,
+            interest_rate=form.interest_rate.data,
+            reference_rate=form.reference_rate.data,
+            margin=form.margin.data,
             payment_frequency=form.payment_frequency.data,
             start_date=form.start_date.data,
             maturity_date=form.maturity_date.data,
-            next_payment_date=form.next_payment_date.data,
-            next_payment_amount=form.next_payment_amount.data,
+            next_payment_date=form.first_payment_date.data,
+            next_payment_amount=form.payment_amount.data,
+            lender_institution_id=form.lender_institution_id.data,
             description=form.description.data,
-            status='active',
-            created_by_id=current_user.id
+            collateral_description=form.collateral_description.data,
+            status=LoanStatus(form.status.data)
         )
         
         # Create loan disbursement transaction
+        lender_name = lender_institution.name if lender_institution else "Unknown Lender"
         transaction = TreasuryTransaction(
             transaction_id=f"TXN-{loan_id}",
             transaction_type=TreasuryTransactionType.LOAN_DISBURSEMENT,
             to_account_id=form.account_id.data,
             amount=form.principal_amount.data,
             currency=form.currency.data,
-            description=f"Loan disbursement: {form.loan_type.data.value} from {form.lender_name.data}",
+            description=f"Loan disbursement: {form.loan_type.data.value} from {lender_name}",
             reference_number=loan_id,
             status=TransactionStatus.PENDING,
             created_by_id=current_user.id
