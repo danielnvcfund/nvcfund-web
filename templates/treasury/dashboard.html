@@ -385,13 +385,12 @@ document.addEventListener('DOMContentLoaded', function() {
           maintainAspectRatio: false
         }
       });
-    })
-    .catch(error => {
-      console.error('Error fetching cash flow data:', error);
-      // Display fallback message
-      document.getElementById('cashFlowForecastChart').parentNode.innerHTML = 
-        '<div class="alert alert-warning">Failed to load cash flow forecast data.</div>';
-    });
+      
+      // Error handling if the chart fails to load
+      if (!cashFlowCtx) {
+        console.error('Error finding cash flow chart canvas');
+        // Display fallback message if needed
+      }
 });
 </script>
 {% endblock %}
