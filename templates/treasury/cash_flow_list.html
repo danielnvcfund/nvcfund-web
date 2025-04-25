@@ -297,7 +297,9 @@ document.addEventListener('DOMContentLoaded', function() {
   updateCalendar();
   
   // In a real implementation, we would load actual cash flow data via an API call
-  fetch('{{ url_for("treasury.api_cash_flow_events") }}')
+  // Temporarily commenting out this API call until the endpoint is implemented
+  /*
+  fetch('{{ url_for("treasury.cash_flow_list") }}')
     .then(response => response.json())
     .then(data => {
       // Process and display the cash flow events
@@ -306,6 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
     .catch(error => {
       console.error('Error loading cash flow data:', error);
     });
+  */
 });
 </script>
 {% endblock %}
