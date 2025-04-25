@@ -201,11 +201,11 @@
               
               <div class="col-md-4">
                 <div class="form-group">
-                  {{ form.next_payment_date.label(class="form-label") }}
-                  {{ form.next_payment_date(class="form-control", type="date") }}
-                  {% if form.next_payment_date.errors %}
+                  {{ form.first_payment_date.label(class="form-label") }}
+                  {{ form.first_payment_date(class="form-control", type="date") }}
+                  {% if form.first_payment_date.errors %}
                   <div class="text-danger">
-                    {% for error in form.next_payment_date.errors %}
+                    {% for error in form.first_payment_date.errors %}
                     <small>{{ error }}</small>
                     {% endfor %}
                   </div>
@@ -215,41 +215,27 @@
             </div>
             
             <div class="row mb-3">
-              <div class="col-md-4">
-                <div class="form-group">
-                  {{ form.term_years.label(class="form-label") }}
-                  {{ form.term_years(class="form-control") }}
-                  {% if form.term_years.errors %}
-                  <div class="text-danger">
-                    {% for error in form.term_years.errors %}
-                    <small>{{ error }}</small>
-                    {% endfor %}
-                  </div>
-                  {% endif %}
-                </div>
-              </div>
-              
-              <div class="col-md-4">
-                <div class="form-group">
-                  {{ form.term_months.label(class="form-label") }}
-                  {{ form.term_months(class="form-control") }}
-                  {% if form.term_months.errors %}
-                  <div class="text-danger">
-                    {% for error in form.term_months.errors %}
-                    <small>{{ error }}</small>
-                    {% endfor %}
-                  </div>
-                  {% endif %}
-                </div>
-              </div>
-              
-              <div class="col-md-4">
+              <div class="col-md-6">
                 <div class="form-group">
                   {{ form.payment_amount.label(class="form-label") }}
                   {{ form.payment_amount(class="form-control") }}
                   {% if form.payment_amount.errors %}
                   <div class="text-danger">
                     {% for error in form.payment_amount.errors %}
+                    <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form.status.label(class="form-label") }}
+                  {{ form.status(class="form-select") }}
+                  {% if form.status.errors %}
+                  <div class="text-danger">
+                    {% for error in form.status.errors %}
                     <small>{{ error }}</small>
                     {% endfor %}
                   </div>
@@ -277,11 +263,11 @@
             <div class="row mb-3">
               <div class="col-md-6">
                 <div class="form-group">
-                  {{ form.lender.label(class="form-label") }}
-                  {{ form.lender(class="form-control") }}
-                  {% if form.lender.errors %}
+                  {{ form.lender_institution_id.label(class="form-label") }}
+                  {{ form.lender_institution_id(class="form-select") }}
+                  {% if form.lender_institution_id.errors %}
                   <div class="text-danger">
-                    {% for error in form.lender.errors %}
+                    {% for error in form.lender_institution_id.errors %}
                     <small>{{ error }}</small>
                     {% endfor %}
                   </div>
@@ -291,11 +277,11 @@
               
               <div class="col-md-6">
                 <div class="form-group">
-                  {{ form.collateral.label(class="form-label") }}
-                  {{ form.collateral(class="form-control") }}
-                  {% if form.collateral.errors %}
+                  {{ form.collateral_description.label(class="form-label") }}
+                  {{ form.collateral_description(class="form-control", rows=3) }}
+                  {% if form.collateral_description.errors %}
                   <div class="text-danger">
-                    {% for error in form.collateral.errors %}
+                    {% for error in form.collateral_description.errors %}
                     <small>{{ error }}</small>
                     {% endfor %}
                   </div>
@@ -331,37 +317,17 @@
     }
   });
   
-  // Calculate loan maturity date based on term
-  function calculateMaturityDate() {
-    const startDateStr = document.getElementById('start_date').value;
-    if (!startDateStr) return;
-    
-    const startDate = new Date(startDateStr);
-    const years = parseInt(document.getElementById('term_years').value) || 0;
-    const months = parseInt(document.getElementById('term_months').value) || 0;
-    
-    if (years === 0 && months === 0) return;
-    
-    const maturityDate = new Date(startDate);
-    maturityDate.setFullYear(maturityDate.getFullYear() + years);
-    maturityDate.setMonth(maturityDate.getMonth() + months);
-    
-    document.getElementById('maturity_date').valueAsDate = maturityDate;
-  }
-  
-  document.getElementById('start_date').addEventListener('change', calculateMaturityDate);
-  document.getElementById('term_years').addEventListener('change', calculateMaturityDate);
-  document.getElementById('term_months').addEventListener('change', calculateMaturityDate);
+
   
   // Set initial payment date
   document.getElementById('start_date').addEventListener('change', function() {
-    if (document.getElementById('next_payment_date').value === '') {
+    if (document.getElementById('first_payment_date').value === '') {
       const startDate = new Date(this.value);
       if (startDate) {
         // Default to one month after start date for first payment
         const nextPaymentDate = new Date(startDate);
         nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
-        document.getElementById('next_payment_date').valueAsDate = nextPaymentDate;
+        document.getElementById('first_payment_date').valueAsDate = nextPaymentDate;
       }
     }
   });

@@ -144,14 +144,12 @@ def new_account():
             description=form.description.data,
             account_number=form.account_number.data,
             currency=form.currency.data,
-            initial_balance=form.initial_balance.data,
             current_balance=form.initial_balance.data,
             available_balance=form.initial_balance.data,
             target_balance=form.target_balance.data,
             minimum_balance=form.minimum_balance.data,
             maximum_balance=form.maximum_balance.data,
-            is_active=True,
-            created_by_id=current_user.id
+            is_active=True
         )
         
         if form.institution_id.data > 0:
