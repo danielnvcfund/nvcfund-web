@@ -849,6 +849,7 @@ class PaymentFrequency(enum.Enum):
 class TreasuryLoan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     loan_id = db.Column(db.String(64), unique=True, nullable=False)
+    name = db.Column(db.String(128), nullable=False)
     account_id = db.Column(db.Integer, db.ForeignKey('treasury_account.id'))
     loan_type = db.Column(db.Enum(LoanType), nullable=False)
     principal_amount = db.Column(db.Float, nullable=False)
