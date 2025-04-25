@@ -554,6 +554,9 @@ def dashboard():
             'raw_data': []
         })
     
+    # Log a sample of the analytics JSON for debugging
+    logger.debug(f"Analytics JSON sample (first 100 chars): {analytics_json[:100] if analytics_json else 'None'}")
+    
     # Generate a fresh JWT token for the user
     jwt_token = generate_jwt_token(user.id)
     

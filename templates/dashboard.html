@@ -33,6 +33,14 @@
          data-ethereum-address="{{ user.ethereum_address if user.ethereum_address else '' }}">
     </div>
     
+    <!-- Debug Info - Hidden in Production -->
+    <script>
+        // Log analytics data length and sample to debug
+        console.log("Dashboard template loading. Analytics data length:", 
+                    "{{ analytics_json|length }}", 
+                    "JWT token length:", "{{ jwt_token|length if jwt_token else 0 }}");
+    </script>
+    
     <!-- Developer Tools Panel - Only visible to users with Developer role -->
     {% if current_user.role.value == 'developer' %}
     <div class="row mb-4">
@@ -65,7 +73,7 @@
     {% endif %}
     
     <!-- Admin Tools Panel - Only visible to admin users -->
-    {% if current_user.username in ['admin', 'headadmin'] %}
+    {% if current_user.role.value == 'admin' or current_user.role == 'admin' %}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card bg-primary bg-gradient text-white border-0 shadow">
@@ -82,7 +90,7 @@
                         <a href="{{ url_for('web.main.admin_dashboard') }}" class="btn btn-warning">
                             <i class="fas fa-user-shield me-2"></i> Admin Dashboard
                         </a>
-                        <a href="{{ url_for('web.main.admin_dashboard') }}" class="btn btn-light">
+                        <a href="{{ url_for('web.main.user_list') }}" class="btn btn-light">
                             <i class="fas fa-users me-2"></i> User Management
                         </a>
                         <a href="{{ url_for('web.main.blockchain_status') }}" class="btn btn-light">
