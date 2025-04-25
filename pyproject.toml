@@ -27,4 +27,9 @@ dependencies = [
     "weasyprint>=65.1",
     "trafilatura>=2.0.0",
     "markdown>=3.8",
+    "pycryptodome>=3.22.0",
+    "paramiko>=3.5.1",
+    "pysftp>=0.2.9",
+    "bots-ediint>=3.3.1",
+    "crypto>=1.4.1",
 ]
