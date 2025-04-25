@@ -63,6 +63,23 @@ main = Blueprint('main', __name__)
 
 # Web Routes for User Interface
 
+@main.route('/users')
+@login_required
+def user_list():
+    """User list page - only accessible to admin users"""
+    # Check if user has admin access
+    if not current_user.role == UserRole.ADMIN and current_user.username not in ['admin', 'headadmin']:
+        flash('You do not have permission to access the user list', 'danger')
+        return redirect(url_for('web.main.dashboard'))
+    
+    # Get all users
+    all_users = User.query.all()
+    
+    return render_template(
+        'admin/user_list.html',
+        users=all_users
+    )
+
 @main.route('/nvctoken')
 def nvc_token_economics():
     """NVC Token economics preview page"""
