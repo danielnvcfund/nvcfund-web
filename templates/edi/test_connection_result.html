@@ -1,0 +1,178 @@
+{% extends "layout.html" %}
+
+{% block title %}EDI Test Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">
+                    <i class="fas fa-vial me-2 text-warning"></i> EDI Test Results
+                </h1>
+                <div>
+                    <a href="{{ url_for('edi.test_edi_connection', partner_id=partner.partner_id) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-redo me-1"></i> Run Another Test
+                    </a>
+                    <a href="{{ url_for('edi.partner_list') }}" class="btn btn-outline-primary ms-2">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Partners
+                    </a>
+                </div>
+            </div>
+            
+            <div class="alert {{ 'alert-success' if success else 'alert-danger' }} mb-4">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas {{ 'fa-check-circle' if success else 'fa-times-circle' }} fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="alert-heading">
+                            {{ 'Success' if success else 'Failed' }}
+                        </h5>
+                        <p class="mb-0">
+                            {% if success %}
+                                Test EDI message generated successfully for {{ partner.name }}.
+                            {% else %}
+                                Failed to generate EDI message for {{ partner.name }}.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-code me-2"></i> EDI Message
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-muted mb-3">
+                        <strong>Format:</strong> {{ partner.edi_format.value }}
+                        <span class="ms-3">
+                            <strong>Type:</strong> {{ transaction.transaction_type.value if transaction else 'Unknown' }}
+                        </span>
+                        <span class="ms-3">
+                            <strong>Reference:</strong> {{ transaction.reference_number if transaction else 'Unknown' }}
+                        </span>
+                    </div>
+                    
+                    {% if edi_message %}
+                    <div class="bg-dark text-light p-3 rounded">
+                        <pre class="mb-0" style="white-space: pre-wrap;"><code>{{ edi_message }}</code></pre>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        No EDI message was generated.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-building me-2"></i> Partner Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Partner ID:</th>
+                            <td>{{ partner.partner_id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Name:</th>
+                            <td>{{ partner.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Routing Number:</th>
+                            <td>{{ partner.routing_number or 'Not specified' }}</td>
+                        </tr>
+                        <tr>
+                            <th>EDI Format:</th>
+                            <td>{{ partner.edi_format.value }}</td>
+                        </tr>
+                        <tr>
+                            <th>Connection Type:</th>
+                            <td>{{ partner.connection_type }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                {% if partner.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i> Test Transaction
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if transaction %}
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Transaction ID:</th>
+                            <td>{{ transaction.transaction_id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Reference:</th>
+                            <td>{{ transaction.reference_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>Type:</th>
+                            <td>{{ transaction.transaction_type.value }}</td>
+                        </tr>
+                        <tr>
+                            <th>Amount:</th>
+                            <td>{{ transaction.amount }} {{ transaction.currency }}</td>
+                        </tr>
+                        <tr>
+                            <th>Description:</th>
+                            <td>{{ transaction.description }}</td>
+                        </tr>
+                        <tr>
+                            <th>Created:</th>
+                            <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        </tr>
+                    </table>
+                    {% else %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        No transaction information available.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('edi.edi_dashboard') }}" class="btn btn-primary">
+                <i class="fas fa-arrow-left me-1"></i> Return to EDI Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
