@@ -80,6 +80,10 @@ class TransactionType(enum.Enum):
     EDI_PAYMENT = "EDI_PAYMENT"                        # For Electronic Data Interchange payments
     EDI_ACH_TRANSFER = "EDI_ACH_TRANSFER"              # For ACH transfers via EDI
     EDI_WIRE_TRANSFER = "EDI_WIRE_TRANSFER"            # For wire transfers via EDI
+    TREASURY_TRANSFER = "TREASURY_TRANSFER"            # For treasury management transfers
+    TREASURY_INVESTMENT = "TREASURY_INVESTMENT"        # For treasury investments
+    TREASURY_LOAN = "TREASURY_LOAN"                    # For treasury loans
+    TREASURY_DEBT_REPAYMENT = "TREASURY_DEBT_REPAYMENT"  # For treasury debt repayments
 
 class GatewayType(enum.Enum):
     STRIPE = "stripe"
@@ -632,3 +636,286 @@ class PartnerApiKey(db.Model):
         return partner_key
 
 
+# Treasury Management System Models
+class TreasuryAccountType(enum.Enum):
+    OPERATING = "operating"
+    INVESTMENT = "investment"
+    RESERVE = "reserve"
+    PAYROLL = "payroll"
+    TAX = "tax"
+    DEBT_SERVICE = "debt_service"
+    
+class TreasuryAccount(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), nullable=False)
+    description = db.Column(db.String(256))
+    account_type = db.Column(db.Enum(TreasuryAccountType), nullable=False)
+    institution_id = db.Column(db.Integer, db.ForeignKey('financial_institution.id'))
+    account_number = db.Column(db.String(64))
+    currency = db.Column(db.String(3), default="USD")
+    current_balance = db.Column(db.Float, default=0.0)
+    target_balance = db.Column(db.Float)
+    minimum_balance = db.Column(db.Float, default=0.0)
+    maximum_balance = db.Column(db.Float)
+    available_balance = db.Column(db.Float, default=0.0)
+    organization_id = db.Column(db.Integer)  # For multi-organization support
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_reconciled = db.Column(db.DateTime)
+    
+    # Relationships
+    institution = db.relationship('FinancialInstitution', backref=db.backref('treasury_accounts', lazy=True))
+    
+    def update_balance(self, amount, transaction_type=None):
+        """Update account balance based on transaction type"""
+        if transaction_type in [TransactionType.DEPOSIT, TransactionType.TREASURY_TRANSFER]:
+            self.current_balance += amount
+            self.available_balance += amount
+        elif transaction_type in [TransactionType.WITHDRAWAL]:
+            self.current_balance -= amount
+            self.available_balance -= amount
+        
+    def is_within_limits(self):
+        """Check if account balance is within defined limits"""
+        if self.minimum_balance is not None and self.current_balance < self.minimum_balance:
+            return False
+        if self.maximum_balance is not None and self.current_balance > self.maximum_balance:
+            return False
+        return True
+
+class InvestmentType(enum.Enum):
+    CERTIFICATE_OF_DEPOSIT = "certificate_of_deposit"
+    MONEY_MARKET = "money_market"
+    TREASURY_BILL = "treasury_bill"
+    BOND = "bond"
+    COMMERCIAL_PAPER = "commercial_paper"
+    OVERNIGHT_INVESTMENT = "overnight_investment"
+    TIME_DEPOSIT = "time_deposit"
+    
+class CashFlowDirection(enum.Enum):
+    INFLOW = "inflow"
+    OUTFLOW = "outflow"
+    
+class RecurrenceType(enum.Enum):
+    NONE = "none"
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
+    QUARTERLY = "quarterly"
+    ANNUAL = "annual"
+
+class TreasuryInvestment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    investment_id = db.Column(db.String(64), unique=True, nullable=False)
+    account_id = db.Column(db.Integer, db.ForeignKey('treasury_account.id'))
+    investment_type = db.Column(db.Enum(InvestmentType), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(3), default="USD")
+    interest_rate = db.Column(db.Float)
+    start_date = db.Column(db.DateTime, nullable=False)
+    maturity_date = db.Column(db.DateTime, nullable=False)
+    institution_id = db.Column(db.Integer, db.ForeignKey('financial_institution.id'))
+    status = db.Column(db.Enum(TransactionStatus), default=TransactionStatus.PENDING)
+    description = db.Column(db.String(256))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    account = db.relationship('TreasuryAccount', backref=db.backref('investments', lazy=True))
+    institution = db.relationship('FinancialInstitution', backref=db.backref('investments', lazy=True))
+    
+    def calculate_maturity_value(self):
+        """Calculate the value at maturity based on interest rate"""
+        if not self.interest_rate:
+            return self.amount
+            
+        days = (self.maturity_date - self.start_date).days
+        annual_rate = self.interest_rate / 100
+        
+        # Simple interest calculation
+        interest = self.amount * annual_rate * (days / 365)
+        return self.amount + interest
+
+class CashFlowForecast(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    account_id = db.Column(db.Integer, db.ForeignKey('treasury_account.id'))
+    direction = db.Column(db.Enum(CashFlowDirection), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(3), default="USD")
+    transaction_date = db.Column(db.DateTime, nullable=False)
+    recurrence_type = db.Column(db.Enum(RecurrenceType), default=RecurrenceType.NONE)
+    recurrence_end_date = db.Column(db.DateTime)
+    source_description = db.Column(db.String(256))
+    category = db.Column(db.String(128))
+    probability = db.Column(db.Float, default=100.0)  # Percentage probability of occurring
+    forecast_type = db.Column(db.String(64), default="projected")  # projected or actual
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    account = db.relationship('TreasuryAccount', backref=db.backref('cash_flow_forecasts', lazy=True))
+
+class TreasuryTransactionType(enum.Enum):
+    INTERNAL_TRANSFER = "internal_transfer"
+    EXTERNAL_TRANSFER = "external_transfer"
+    INVESTMENT_PURCHASE = "investment_purchase"
+    INVESTMENT_MATURITY = "investment_maturity"
+    LOAN_PAYMENT = "loan_payment"
+    INTEREST_PAYMENT = "interest_payment"
+    FEE_PAYMENT = "fee_payment"
+    
+class TreasuryTransaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    transaction_id = db.Column(db.String(64), unique=True, nullable=False)
+    from_account_id = db.Column(db.Integer, db.ForeignKey('treasury_account.id'))
+    to_account_id = db.Column(db.Integer, db.ForeignKey('treasury_account.id'))
+    transaction_type = db.Column(db.Enum(TreasuryTransactionType), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(3), default="USD")
+    exchange_rate = db.Column(db.Float, default=1.0)
+    status = db.Column(db.Enum(TransactionStatus), default=TransactionStatus.PENDING)
+    execution_date = db.Column(db.DateTime)
+    description = db.Column(db.String(256))
+    approval_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    approval_date = db.Column(db.DateTime)
+    transaction_fees = db.Column(db.Float, default=0.0)
+    reference_number = db.Column(db.String(64))
+    memo = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    from_account = db.relationship('TreasuryAccount', foreign_keys=[from_account_id], backref=db.backref('outgoing_transactions', lazy=True))
+    to_account = db.relationship('TreasuryAccount', foreign_keys=[to_account_id], backref=db.backref('incoming_transactions', lazy=True))
+    approved_by = db.relationship('User', foreign_keys=[approval_user_id], backref=db.backref('approved_treasury_transactions', lazy=True))
+    created_by_user = db.relationship('User', foreign_keys=[created_by], backref=db.backref('created_treasury_transactions', lazy=True))
+    
+    # Optional link to a main application transaction
+    nvc_transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
+    nvc_transaction = db.relationship('Transaction', backref=db.backref('treasury_transactions', lazy=True))
+    
+    def get_exchange_amount(self):
+        """Calculate amount with exchange rate applied"""
+        return self.amount * self.exchange_rate
+    
+    def process_transaction(self):
+        """Process the transaction and update account balances"""
+        if self.status != TransactionStatus.PENDING:
+            return False
+            
+        if self.from_account:
+            self.from_account.update_balance(-self.amount, TransactionType.WITHDRAWAL)
+            
+        if self.to_account:
+            self.to_account.update_balance(self.amount * self.exchange_rate, TransactionType.DEPOSIT)
+            
+        self.execution_date = datetime.utcnow()
+        self.status = TransactionStatus.COMPLETED
+        return True
+
+class LoanType(enum.Enum):
+    TERM_LOAN = "term_loan"
+    REVOLVING_CREDIT = "revolving_credit"
+    BRIDGE_LOAN = "bridge_loan"
+    SYNDICATED_LOAN = "syndicated_loan"
+    
+class InterestType(enum.Enum):
+    FIXED = "fixed"
+    VARIABLE = "variable"
+    
+class PaymentFrequency(enum.Enum):
+    MONTHLY = "monthly"
+    QUARTERLY = "quarterly"
+    SEMI_ANNUAL = "semi_annual"
+    ANNUAL = "annual"
+
+class TreasuryLoan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    loan_id = db.Column(db.String(64), unique=True, nullable=False)
+    account_id = db.Column(db.Integer, db.ForeignKey('treasury_account.id'))
+    loan_type = db.Column(db.Enum(LoanType), nullable=False)
+    principal_amount = db.Column(db.Float, nullable=False)
+    outstanding_amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(3), default="USD")
+    interest_type = db.Column(db.Enum(InterestType), nullable=False)
+    interest_rate = db.Column(db.Float, nullable=False)
+    reference_rate = db.Column(db.String(64))  # For variable rate loans (e.g. LIBOR, SOFR)
+    margin = db.Column(db.Float)  # Added to reference rate for variable loans
+    start_date = db.Column(db.DateTime, nullable=False)
+    maturity_date = db.Column(db.DateTime, nullable=False)
+    payment_frequency = db.Column(db.Enum(PaymentFrequency), nullable=False)
+    next_payment_date = db.Column(db.DateTime)
+    next_payment_amount = db.Column(db.Float)
+    lender_institution_id = db.Column(db.Integer, db.ForeignKey('financial_institution.id'))
+    status = db.Column(db.String(32), default="active")
+    description = db.Column(db.String(256))
+    collateral_description = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    account = db.relationship('TreasuryAccount', backref=db.backref('loans', lazy=True))
+    lender = db.relationship('FinancialInstitution', backref=db.backref('provided_loans', lazy=True))
+    
+    def calculate_interest_due(self, as_of_date=None):
+        """Calculate interest due as of a specific date"""
+        if not as_of_date:
+            as_of_date = datetime.utcnow()
+            
+        # Simple interest calculation for demonstration
+        days_since_last_payment = (as_of_date - self.start_date).days
+        daily_rate = self.interest_rate / 36500  # Daily rate based on annual rate
+        
+        interest_due = self.outstanding_amount * daily_rate * days_since_last_payment
+        return interest_due
+        
+    def make_payment(self, payment_amount, payment_date=None):
+        """Record a loan payment"""
+        if not payment_date:
+            payment_date = datetime.utcnow()
+            
+        # Calculate interest portion
+        interest_due = self.calculate_interest_due(payment_date)
+        
+        # Apply payment to interest first, then principal
+        principal_payment = max(0, payment_amount - interest_due)
+        self.outstanding_amount -= principal_payment
+        
+        # Update payment schedule
+        if self.payment_frequency == PaymentFrequency.MONTHLY:
+            self.next_payment_date = payment_date + timedelta(days=30)
+        elif self.payment_frequency == PaymentFrequency.QUARTERLY:
+            self.next_payment_date = payment_date + timedelta(days=90)
+        elif self.payment_frequency == PaymentFrequency.SEMI_ANNUAL:
+            self.next_payment_date = payment_date + timedelta(days=182)
+        elif self.payment_frequency == PaymentFrequency.ANNUAL:
+            self.next_payment_date = payment_date + timedelta(days=365)
+            
+        # Create a payment record
+        payment = TreasuryLoanPayment(
+            loan_id=self.id,
+            payment_amount=payment_amount,
+            principal_amount=principal_payment,
+            interest_amount=min(interest_due, payment_amount),
+            payment_date=payment_date
+        )
+        
+        return payment
+
+class TreasuryLoanPayment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    loan_id = db.Column(db.Integer, db.ForeignKey('treasury_loan.id'))
+    payment_amount = db.Column(db.Float, nullable=False)
+    principal_amount = db.Column(db.Float, nullable=False)
+    interest_amount = db.Column(db.Float, nullable=False)
+    payment_date = db.Column(db.DateTime, nullable=False)
+    transaction_id = db.Column(db.Integer, db.ForeignKey('treasury_transaction.id'))
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    loan = db.relationship('TreasuryLoan', backref=db.backref('payments', lazy=True))
+    transaction = db.relationship('TreasuryTransaction', backref=db.backref('loan_payments', lazy=True))
