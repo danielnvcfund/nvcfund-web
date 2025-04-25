@@ -336,13 +336,21 @@ document.addEventListener('DOMContentLoaded', function() {
   // Cash Flow Forecast Chart
   const cashFlowCtx = document.getElementById('cashFlowForecastChart').getContext('2d');
   
-  // Fetch cash flow data from API
-  fetch('{{ url_for("treasury.api_cash_flow_forecast") }}')
+  // Temporarily using static data until API endpoint is implemented
+  // For the future: uncomment this block and implement the API endpoint
+  /*
+  fetch('{{ url_for("treasury.cash_flow_list") }}')
     .then(response => response.json())
     .then(data => {
       const dates = data.map(item => item.date);
       const inflows = data.map(item => item.inflow);
       const outflows = data.map(item => item.outflow);
+  */
+  
+  // Temporary static data
+  const dates = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+  const inflows = [10000, 12000, 15000, 9000, 11000, 13000];
+  const outflows = [8000, 9500, 11000, 8500, 10000, 9000];
       
       new Chart(cashFlowCtx, {
         type: 'line',
