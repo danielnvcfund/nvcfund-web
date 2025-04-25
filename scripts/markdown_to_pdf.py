@@ -24,7 +24,7 @@ def convert_markdown_to_pdf(markdown_file, output_pdf):
     <html>
     <head>
     <meta charset="UTF-8">
-    <title>EDI Integration Guide</title>
+    <title>NVC Electronic Data Interchange Guide</title>
     <style>
         body {{
             font-family: Arial, sans-serif;
@@ -40,6 +40,7 @@ def convert_markdown_to_pdf(markdown_file, output_pdf):
             border-bottom: 2px solid #1a3b5d;
             padding-bottom: 10px;
             text-align: center;
+            font-size: 24pt;
         }}
         h2 {{
             border-bottom: 1px solid #ddd;
@@ -57,6 +58,10 @@ def convert_markdown_to_pdf(markdown_file, output_pdf):
             border-radius: 5px;
             overflow-x: auto;
             font-family: monospace;
+            font-size: 9pt;
+            page-break-inside: avoid;
+            width: 100%;
+            text-align: center;
         }}
         table {{
             border-collapse: collapse;
@@ -91,16 +96,22 @@ def convert_markdown_to_pdf(markdown_file, output_pdf):
         }}
         @page {{
             size: letter;
-            margin: 2cm;
+            margin: 1.5cm;
             @bottom-center {{
                 content: "Page " counter(page) " of " counter(pages);
                 font-size: 9pt;
             }}
         }}
+        /* Specific style for the architecture diagram */
+        .architecture-diagram {{
+            page-break-inside: avoid;
+            text-align: center;
+            margin: 0 auto;
+        }}
     </style>
     </head>
     <body>
-    {html}
+    {html.replace('### NVC Global EDI Architecture Overview', '<h3 class="architecture-diagram">NVC Global EDI Architecture Overview</h3>')}
     <div class="footer">
         © 2025 NVC Global Banking Platform. All rights reserved.
     </div>

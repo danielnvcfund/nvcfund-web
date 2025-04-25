@@ -1,5 +1,4 @@
-# NVC GLOBAL BANKING PLATFORM
-# Electronic Data Interchange (EDI) Integration Guide
+# NVC Electronic Data Interchange Guide
 ## CONFIDENTIAL | INSTITUTIONAL PARTNER DOCUMENTATION
 
 ## Table of Contents
