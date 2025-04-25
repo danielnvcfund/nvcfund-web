@@ -14,6 +14,10 @@ def generate_transaction_id():
     """Generate a unique transaction ID"""
     return str(uuid.uuid4())
 
+def generate_uuid():
+    """Generate a unique UUID string"""
+    return str(uuid.uuid4())
+
 def generate_api_key():
     """Generate a secure API key"""
     alphabet = string.ascii_letters + string.digits

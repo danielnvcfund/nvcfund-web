@@ -193,6 +193,19 @@ def create_app():
         from routes.admin import admin
         app.register_blueprint(admin)
         
+        # Register EDI Integration routes
+        from routes.edi_routes import edi
+        app.register_blueprint(edi)
+        
+        # Initialize EDI Service
+        try:
+            from edi_integration import init_app as init_edi
+            init_edi(app)
+            logger.info("EDI Integration module initialized successfully")
+        except Exception as e:
+            logger.error(f"Error initializing EDI Integration: {str(e)}")
+            logger.warning("Application will run without EDI functionality")
+        
         # Admin API Keys routes are registered through the admin blueprint
         # No need to register them separately
 

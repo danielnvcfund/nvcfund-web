@@ -1,81 +1,49 @@
 [
   {
-    "partner_id": "JPMC001",
-    "name": "JPMorgan Chase Bank",
+    "partner_id": "CHASE001",
+    "name": "Chase Bank",
     "routing_number": "021000021",
-    "account_number": null,
+    "account_number": "",
     "edi_format": "X12",
     "connection_type": "SFTP",
     "credentials": {
-      "sftp_host": "secure-edi.jpmorgan.example.com",
+      "sftp_host": "sftp.example.com",
       "sftp_port": "22",
-      "sftp_username": "nvcglobal",
+      "sftp_username": "chase_user",
       "sftp_password": "",
-      "sftp_remote_dir": "/incoming/"
-    },
-    "is_active": true
-  },
-  {
-    "partner_id": "CITI001",
-    "name": "Citibank Global Transfers",
-    "routing_number": "021000089",
-    "account_number": null,
-    "edi_format": "EDIFACT",
-    "connection_type": "SFTP",
-    "credentials": {
-      "sftp_host": "edi-transfers.citi.example.com",
-      "sftp_port": "22",
-      "sftp_username": "nvc_platform",
-      "sftp_password": "",
-      "sftp_remote_dir": "/inbound/payments/"
+      "sftp_remote_dir": "/incoming"
     },
     "is_active": true
   },
   {
     "partner_id": "WELLS001",
-    "name": "Wells Fargo ACH Processing",
-    "routing_number": "121000248",
-    "account_number": null,
-    "edi_format": "X12",
+    "name": "Wells Fargo",
+    "routing_number": "121042882",
+    "account_number": "",
+    "edi_format": "EDIFACT",
     "connection_type": "SFTP",
     "credentials": {
-      "sftp_host": "ach-edi.wellsfargo.example.com",
+      "sftp_host": "sftp.wellsfargo.example.com",
       "sftp_port": "22",
-      "sftp_username": "nvcaccess",
+      "sftp_username": "wf_user",
       "sftp_password": "",
-      "sftp_remote_dir": "/ach/inbound/"
-    },
-    "is_active": true
-  },
-  {
-    "partner_id": "BOA001",
-    "name": "Bank of America Financial EDI",
-    "routing_number": "026009593",
-    "account_number": null,
-    "edi_format": "X12",
-    "connection_type": "SFTP",
-    "credentials": {
-      "sftp_host": "financial-edi.bankofamerica.example.com",
-      "sftp_port": "22",
-      "sftp_username": "nvcglobaltrans",
-      "sftp_password": "",
-      "sftp_remote_dir": "/financial/incoming/"
+      "sftp_remote_dir": "/edi/incoming"
     },
     "is_active": true
   },
   {
     "partner_id": "FEDWIRE001",
-    "name": "Federal Reserve Fedwire Service",
-    "routing_number": "021000018",
-    "account_number": null,
-    "edi_format": "CUSTOM",
+    "name": "Federal Reserve Fedwire",
+    "routing_number": "021000021",
+    "account_number": "",
+    "edi_format": "X12",
     "connection_type": "SFTP",
     "credentials": {
-      "sftp_host": "secure.fedwireservice.example.gov",
+      "sftp_host": "secure.fedwire.example.gov",
       "sftp_port": "22",
-      "sftp_username": "nvcglobalbank",
+      "sftp_username": "nvc_partner",
       "sftp_password": "",
-      "sftp_remote_dir": "/transfers/incoming/"
+      "sftp_remote_dir": "/transfers/incoming"
     },
     "is_active": true
   }

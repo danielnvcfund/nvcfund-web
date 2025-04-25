@@ -12,7 +12,6 @@ from typing import Dict, List, Optional, Union, Any
 from flask import current_app
 import pysftp
 import paramiko
-from bots_ediint import ediint
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 
@@ -20,6 +19,15 @@ from models import User, Transaction, TransactionStatus, TransactionType, Paymen
 
 # Configure logger
 logger = logging.getLogger(__name__)
+
+# Global EDI service instance
+edi_service = None
+
+def init_app(app):
+    """Initialize EDI integration with the app"""
+    global edi_service
+    edi_service = EdiService()
+    return edi_service
 
 class EdiTransactionType(Enum):
     """EDI transaction set types"""
@@ -856,3 +864,140 @@ def process_edi_transaction(nvc_transaction, partner_id):
         db.session.rollback()
     
     return success
+
+# Helper functions for routes
+def create_edi_transaction_from_nvc_transaction(transaction, partner_id):
+    """Create an EDI transaction from a NVC Banking transaction"""
+    if not transaction:
+        logger.error("No transaction provided")
+        return None
+    
+    if not edi_service:
+        logger.error("EDI service not initialized")
+        return None
+    
+    # Get partner
+    partner = edi_service.get_partner(partner_id)
+    if not partner:
+        logger.error(f"Partner ID {partner_id} not found")
+        return None
+    
+    # Determine transaction type
+    if transaction.transaction_type == TransactionType.EDI_PAYMENT:
+        edi_type = EdiTransactionType.CUST_PAYMENT
+    elif transaction.transaction_type == TransactionType.EDI_ACH_TRANSFER:
+        edi_type = EdiTransactionType.ACH
+    elif transaction.transaction_type == TransactionType.EDI_WIRE_TRANSFER:
+        edi_type = EdiTransactionType.WIRE
+    else:
+        # Default to a standard payment
+        edi_type = EdiTransactionType.X12_820 if partner.edi_format == EdiFormat.X12 else \
+                  EdiTransactionType.EDIFACT_PAYORD if partner.edi_format == EdiFormat.EDIFACT else \
+                  EdiTransactionType.CUST_PAYMENT
+    
+    # Get user information
+    user = User.query.get(transaction.user_id)
+    
+    # Construct originator info
+    originator_info = {
+        "name": user.organization or f"{user.first_name} {user.last_name}" if user else "NVC Banking Client",
+        "id": f"NVC{user.id}" if user else "NVC000",
+        "bank_id": "NVCBANK001",
+        "routing_number": "021000021",  # Example routing number
+        "account_number": "1234567890"  # Example account number
+    }
+    
+    # Construct beneficiary info from transaction metadata if available
+    metadata = {}
+    if transaction.tx_metadata_json:
+        try:
+            metadata = json.loads(transaction.tx_metadata_json)
+        except:
+            pass
+    
+    beneficiary_info = {
+        "name": metadata.get("recipient_name", partner.name),
+        "bank_id": partner.partner_id,
+        "routing_number": partner.routing_number or metadata.get("routing_number"),
+        "account_number": partner.account_number or metadata.get("account_number")
+    }
+    
+    # Create the EDI transaction
+    edi_transaction = edi_service.create_edi_transaction(
+        partner_id=partner_id,
+        transaction_type=edi_type,
+        amount=transaction.amount,
+        currency=transaction.currency,
+        originator_info=originator_info,
+        beneficiary_info=beneficiary_info,
+        reference_number=transaction.transaction_id,
+        description=transaction.description or "Payment from NVC Banking Platform",
+        metadata={"source_transaction_id": transaction.transaction_id}
+    )
+    
+    return edi_transaction
+
+def process_edi_transaction(transaction, partner_id):
+    """Process a transaction via EDI"""
+    if not transaction:
+        logger.error("No transaction provided")
+        return False
+    
+    if not edi_service:
+        logger.error("EDI service not initialized")
+        return False
+    
+    # Convert to EDI transaction
+    edi_transaction = create_edi_transaction_from_nvc_transaction(transaction, partner_id)
+    if not edi_transaction:
+        return False
+    
+    # Get partner
+    partner = edi_service.get_partner(partner_id)
+    if not partner:
+        logger.error(f"Partner ID {partner_id} not found")
+        return False
+    
+    # Send the transaction
+    result = edi_service.send_transaction(edi_transaction)
+    
+    if not result.get("success"):
+        logger.error(f"Failed to send EDI transaction: {result.get('error')}")
+        return False
+    
+    # Update the transaction with EDI processing info
+    try:
+        # Update transaction notes
+        notes = transaction.description or ""
+        if notes:
+            notes += " | "
+        notes += f"EDI transaction processed with partner {partner.name} on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        
+        transaction.description = notes
+        
+        # Update transaction metadata
+        metadata = {}
+        if transaction.tx_metadata_json:
+            try:
+                metadata = json.loads(transaction.tx_metadata_json)
+            except:
+                pass
+        
+        metadata["edi_processed"] = True
+        metadata["edi_partner_id"] = partner_id
+        metadata["edi_partner_name"] = partner.name
+        metadata["edi_transaction_id"] = edi_transaction.transaction_id
+        metadata["edi_format"] = edi_transaction.edi_format.value
+        metadata["edi_processed_at"] = datetime.now().isoformat()
+        metadata["edi_status"] = result.get("is_delivered", False)
+        
+        transaction.tx_metadata_json = json.dumps(metadata)
+        
+        # Save changes
+        db.session.commit()
+        
+        logger.info(f"Transaction {transaction.transaction_id} processed via EDI with partner {partner.name}")
+        return True
+    except Exception as e:
+        logger.error(f"Error updating transaction with EDI information: {str(e)}")
+        return False
