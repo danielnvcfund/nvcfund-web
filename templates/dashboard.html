@@ -34,7 +34,7 @@
     </div>
     
     <!-- Developer Tools Panel - Only visible to users with Developer role -->
-    {% if current_user.role.value == 'DEVELOPER' %}
+    {% if current_user.role.value == 'developer' %}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card bg-success bg-gradient text-white border-0 shadow">
@@ -489,7 +489,7 @@
             {% endif %}
             
             <!-- Developer Tools (for DEVELOPER role users) -->
-            {% if user.role and user.role.value == 'DEVELOPER' %}
+            {% if user.role and user.role.value == 'developer' %}
             <div class="card dashboard-widget border-0 shadow mb-4">
                 <div class="card-header bg-dark bg-opacity-10 border-0">
                     <div class="d-flex align-items-center">
