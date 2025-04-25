@@ -1,0 +1,240 @@
+{% extends 'layout.html' %}
+
+{% block title %}{{ 'New Treasury Account' if is_new else 'Edit Treasury Account' }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ 'New Treasury Account' if is_new else 'Edit Treasury Account' }}</h1>
+        <div>
+          {% if not is_new %}
+          <a href="{{ url_for('treasury.view_account', account_id=account.id) }}" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-eye me-1"></i> View Account
+          </a>
+          {% endif %}
+          <a href="{{ url_for('treasury.account_list') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-list me-1"></i> All Accounts
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <form method="POST" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form.name.label(class="form-label") }}
+                  {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                  {% if form.name.errors %}
+                  <div class="invalid-feedback">
+                    {% for error in form.name.errors %}
+                    {{ error }}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Provide a descriptive name for this treasury account.</small>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form.account_type.label(class="form-label") }}
+                  {{ form.account_type(class="form-select" + (" is-invalid" if form.account_type.errors else "")) }}
+                  {% if form.account_type.errors %}
+                  <div class="invalid-feedback">
+                    {% for error in form.account_type.errors %}
+                    {{ error }}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Select the purpose of this account.</small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form.institution_id.label(class="form-label") }}
+                  {{ form.institution_id(class="form-select" + (" is-invalid" if form.institution_id.errors else "")) }}
+                  {% if form.institution_id.errors %}
+                  <div class="invalid-feedback">
+                    {% for error in form.institution_id.errors %}
+                    {{ error }}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Select the financial institution where this account is held.</small>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form.account_number.label(class="form-label") }}
+                  {{ form.account_number(class="form-control" + (" is-invalid" if form.account_number.errors else "")) }}
+                  {% if form.account_number.errors %}
+                  <div class="invalid-feedback">
+                    {% for error in form.account_number.errors %}
+                    {{ error }}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Optional. The account number at the financial institution.</small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form.currency.label(class="form-label") }}
+                  {{ form.currency(class="form-select" + (" is-invalid" if form.currency.errors else "")) }}
+                  {% if form.currency.errors %}
+                  <div class="invalid-feedback">
+                    {% for error in form.currency.errors %}
+                    {{ error }}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form.initial_balance.label(class="form-label") }}
+                  {{ form.initial_balance(class="form-control" + (" is-invalid" if form.initial_balance.errors else ""), type="number", step="0.01") }}
+                  {% if form.initial_balance.errors %}
+                  <div class="invalid-feedback">
+                    {% for error in form.initial_balance.errors %}
+                    {{ error }}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  <small class="form-text text-muted">The current balance of this account.</small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="form-group">
+                  {{ form.target_balance.label(class="form-label") }}
+                  {{ form.target_balance(class="form-control" + (" is-invalid" if form.target_balance.errors else ""), type="number", step="0.01") }}
+                  {% if form.target_balance.errors %}
+                  <div class="invalid-feedback">
+                    {% for error in form.target_balance.errors %}
+                    {{ error }}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Optional. Target balance for this account.</small>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  {{ form.minimum_balance.label(class="form-label") }}
+                  {{ form.minimum_balance(class="form-control" + (" is-invalid" if form.minimum_balance.errors else ""), type="number", step="0.01") }}
+                  {% if form.minimum_balance.errors %}
+                  <div class="invalid-feedback">
+                    {% for error in form.minimum_balance.errors %}
+                    {{ error }}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Optional. Minimum balance to maintain.</small>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  {{ form.maximum_balance.label(class="form-label") }}
+                  {{ form.maximum_balance(class="form-control" + (" is-invalid" if form.maximum_balance.errors else ""), type="number", step="0.01") }}
+                  {% if form.maximum_balance.errors %}
+                  <div class="invalid-feedback">
+                    {% for error in form.maximum_balance.errors %}
+                    {{ error }}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Optional. Maximum recommended balance.</small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group mb-4">
+              {{ form.description.label(class="form-label") }}
+              {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=3) }}
+              {% if form.description.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.description.errors %}
+                {{ error }}
+                {% endfor %}
+              </div>
+              {% endif %}
+              <small class="form-text text-muted">Additional details about this account.</small>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <a href="{{ url_for('treasury.account_list') }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+              {{ form.submit(class="btn btn-primary") }}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-4">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">Treasury Account Types</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <h6>Operating Account</h6>
+            <p class="small text-muted">Day-to-day transaction accounts for regular payments, deposits, and cash management.</p>
+          </div>
+          <div class="mb-3">
+            <h6>Investment Account</h6>
+            <p class="small text-muted">Accounts for surplus funds that can be invested for short to medium-term returns.</p>
+          </div>
+          <div class="mb-3">
+            <h6>Reserve Account</h6>
+            <p class="small text-muted">For emergency funds or cash reserves for unexpected expenses or liquidity needs.</p>
+          </div>
+          <div class="mb-3">
+            <h6>Payroll Account</h6>
+            <p class="small text-muted">Dedicated accounts for employee salary payments and related disbursements.</p>
+          </div>
+          <div class="mb-3">
+            <h6>Tax Account</h6>
+            <p class="small text-muted">For setting aside funds for upcoming tax obligations and government payments.</p>
+          </div>
+          <div class="mb-3">
+            <h6>Debt Service Account</h6>
+            <p class="small text-muted">Reserved for managing loan repayments and debt obligations.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">Good Practice</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">Set clear minimum and maximum balance thresholds to help with cash management decisions.</li>
+            <li class="list-group-item">Use descriptive account names to easily identify accounts by purpose.</li>
+            <li class="list-group-item">Maintain separate accounts for different financial functions to improve tracking.</li>
+            <li class="list-group-item">Regularly review account balances against targets to optimize cash utilization.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

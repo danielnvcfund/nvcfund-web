@@ -17,6 +17,13 @@ def generate_transaction_id():
 def generate_uuid():
     """Generate a unique UUID string"""
     return str(uuid.uuid4())
+    
+def generate_unique_id(prefix=''):
+    """Generate a unique ID with optional prefix"""
+    unique_id = str(uuid.uuid4()).replace('-', '')[:16].upper()
+    if prefix:
+        return f"{prefix}-{unique_id}"
+    return unique_id
 
 def generate_api_key():
     """Generate a secure API key"""

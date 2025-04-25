@@ -197,6 +197,10 @@ def create_app():
         from routes.edi_routes import edi
         app.register_blueprint(edi)
         
+        # Register Treasury Management System routes
+        from routes.treasury_routes import treasury_bp
+        app.register_blueprint(treasury_bp)
+        
         # Initialize EDI Service
         try:
             from edi_integration import init_app as init_edi

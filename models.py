@@ -65,6 +65,7 @@ class TransactionStatus(enum.Enum):
     FAILED = "FAILED"
     REFUNDED = "REFUNDED"
     CANCELLED = "CANCELLED"
+    REJECTED = "REJECTED"
 
 class TransactionType(enum.Enum):
     DEPOSIT = "DEPOSIT"
@@ -692,6 +693,12 @@ class InvestmentType(enum.Enum):
     COMMERCIAL_PAPER = "commercial_paper"
     OVERNIGHT_INVESTMENT = "overnight_investment"
     TIME_DEPOSIT = "time_deposit"
+
+class InvestmentStatus(enum.Enum):
+    PENDING = "pending"
+    ACTIVE = "active"
+    COMPLETED = "completed"
+    CANCELED = "canceled"
     
 class CashFlowDirection(enum.Enum):
     INFLOW = "inflow"
@@ -716,7 +723,7 @@ class TreasuryInvestment(db.Model):
     start_date = db.Column(db.DateTime, nullable=False)
     maturity_date = db.Column(db.DateTime, nullable=False)
     institution_id = db.Column(db.Integer, db.ForeignKey('financial_institution.id'))
-    status = db.Column(db.Enum(TransactionStatus), default=TransactionStatus.PENDING)
+    status = db.Column(db.Enum(InvestmentStatus), default=InvestmentStatus.PENDING)
     description = db.Column(db.String(256))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -763,6 +770,7 @@ class TreasuryTransactionType(enum.Enum):
     INVESTMENT_PURCHASE = "investment_purchase"
     INVESTMENT_MATURITY = "investment_maturity"
     LOAN_PAYMENT = "loan_payment"
+    LOAN_DISBURSEMENT = "loan_disbursement"
     INTEREST_PAYMENT = "interest_payment"
     FEE_PAYMENT = "fee_payment"
     
@@ -822,6 +830,12 @@ class LoanType(enum.Enum):
     BRIDGE_LOAN = "bridge_loan"
     SYNDICATED_LOAN = "syndicated_loan"
     
+class LoanStatus(enum.Enum):
+    ACTIVE = "active"
+    PAID = "paid"
+    DEFAULTED = "defaulted"
+    RESTRUCTURED = "restructured"
+    
 class InterestType(enum.Enum):
     FIXED = "fixed"
     VARIABLE = "variable"
@@ -850,7 +864,7 @@ class TreasuryLoan(db.Model):
     next_payment_date = db.Column(db.DateTime)
     next_payment_amount = db.Column(db.Float)
     lender_institution_id = db.Column(db.Integer, db.ForeignKey('financial_institution.id'))
-    status = db.Column(db.String(32), default="active")
+    status = db.Column(db.Enum(LoanStatus), default=LoanStatus.ACTIVE)
     description = db.Column(db.String(256))
     collateral_description = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

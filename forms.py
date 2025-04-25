@@ -623,9 +623,12 @@ class TreasuryLoanForm(FlaskForm):
         if self.maturity_date.data and field.data > self.maturity_date.data:
             raise ValidationError('First payment date must be before maturity date')
 
-class TreasuryLoanPaymentForm(FlaskForm):
+class LoanPaymentForm(FlaskForm):
     """Form for making a loan payment"""
+    from_account_id = SelectField('From Account', validators=[DataRequired()], coerce=int)
     payment_amount = FloatField('Payment Amount', validators=[DataRequired(), NumberRange(min=0.01)])
     payment_date = DateField('Payment Date', validators=[DataRequired()], default=datetime.utcnow)
+    principal_amount = FloatField('Principal Amount', validators=[Optional()], render_kw={'readonly': True})
+    interest_amount = FloatField('Interest Amount', validators=[Optional()], render_kw={'readonly': True})
     notes = TextAreaField('Notes', validators=[Optional()])
-    submit = SubmitField('Record Payment')
+    submit = SubmitField('Make Payment')
