@@ -1,0 +1,180 @@
+{% extends 'layout.html' %}
+
+{% block title %}Edit EDI Partner{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12 col-lg-8 mx-auto">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Edit EDI Partner</h1>
+        <a href="{{ url_for('edi.partner_list') }}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Partners
+        </a>
+      </div>
+      
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <form method="POST" action="{{ url_for('edi.edit_partner', partner_id=partner.partner_id) }}">
+            {{ form.hidden_tag() }}
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="partner_id" class="form-label">Partner ID <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" value="{{ partner.partner_id }}" disabled readonly>
+                <div class="form-text text-muted">Partner ID cannot be changed.</div>
+              </div>
+              
+              <div class="col-md-6">
+                <label for="name" class="form-label">Institution Name <span class="text-danger">*</span></label>
+                {{ form.name(class="form-control", placeholder="e.g., Chase Bank") }}
+                {% if form.name.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.name.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="routing_number" class="form-label">Routing Number</label>
+                {{ form.routing_number(class="form-control", placeholder="e.g., 021000021") }}
+                {% if form.routing_number.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.routing_number.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                <div class="form-text text-muted">ABA routing number for this financial institution.</div>
+              </div>
+              
+              <div class="col-md-6">
+                <label for="account_number" class="form-label">Account Number</label>
+                {{ form.account_number(class="form-control", placeholder="Optional") }}
+                {% if form.account_number.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.account_number.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                <div class="form-text text-muted">Default account number for this partner (if applicable).</div>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="edi_format" class="form-label">EDI Format <span class="text-danger">*</span></label>
+                {{ form.edi_format(class="form-select") }}
+                {% if form.edi_format.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.edi_format.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              
+              <div class="col-md-6">
+                <label for="connection_type" class="form-label">Connection Type <span class="text-danger">*</span></label>
+                {{ form.connection_type(class="form-select") }}
+                {% if form.connection_type.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.connection_type.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <h5 class="mt-4 mb-3">Connection Credentials</h5>
+            
+            <div class="row mb-3">
+              <div class="col-md-8">
+                <label for="sftp_host" class="form-label">SFTP Host</label>
+                {{ form.sftp_host(class="form-control", placeholder="e.g., sftp.example.com") }}
+                {% if form.sftp_host.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.sftp_host.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              
+              <div class="col-md-4">
+                <label for="sftp_port" class="form-label">SFTP Port</label>
+                {{ form.sftp_port(class="form-control", placeholder="e.g., 22") }}
+                {% if form.sftp_port.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.sftp_port.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="sftp_username" class="form-label">SFTP Username</label>
+                {{ form.sftp_username(class="form-control", placeholder="e.g., nvc_user") }}
+                {% if form.sftp_username.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.sftp_username.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              
+              <div class="col-md-6">
+                <label for="sftp_password" class="form-label">SFTP Password</label>
+                {{ form.sftp_password(class="form-control", placeholder="Leave blank to keep existing password") }}
+                {% if form.sftp_password.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.sftp_password.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                <div class="form-text text-muted">Leave blank to keep the existing password.</div>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="sftp_remote_dir" class="form-label">Remote Directory</label>
+              {{ form.sftp_remote_dir(class="form-control", placeholder="e.g., /incoming") }}
+              {% if form.sftp_remote_dir.errors %}
+                <div class="text-danger small mt-1">
+                  {% for error in form.sftp_remote_dir.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <div class="form-text text-muted">Directory on the remote server where files should be placed.</div>
+            </div>
+            
+            <div class="mb-3 form-check">
+              {{ form.is_active(class="form-check-input") }}
+              <label class="form-check-label" for="is_active">Partner is active</label>
+            </div>
+            
+            <div class="mt-4 d-flex justify-content-between">
+              <a href="{{ url_for('edi.partner_list') }}" class="btn btn-outline-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Update Partner
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

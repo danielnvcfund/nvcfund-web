@@ -422,3 +422,51 @@ class PartnerApiKeyForm(FlaskForm):
     description = TextAreaField("Description", validators=[Optional(), Length(max=500)])
     is_active = BooleanField("Active", default=True)
     submit = SubmitField("Save")
+
+class EdiPartnerForm(FlaskForm):
+    """Form for creating and editing EDI partners"""
+    partner_id = StringField("Partner ID", validators=[DataRequired(), Length(min=2, max=64)])
+    name = StringField("Institution Name", validators=[DataRequired(), Length(min=2, max=128)])
+    routing_number = StringField("Routing Number", validators=[Optional(), Length(max=20)])
+    account_number = StringField("Account Number", validators=[Optional(), Length(max=30)])
+    
+    edi_format = SelectField("EDI Format", validators=[DataRequired()], choices=[
+        ("X12", "X12 (ANSI X12)"),
+        ("EDIFACT", "EDIFACT (UN/EDIFACT)"),
+        ("CUSTOM", "Custom Format")
+    ])
+    
+    connection_type = SelectField("Connection Type", validators=[DataRequired()], choices=[
+        ("SFTP", "SFTP Transfer"),
+        ("API", "API Integration"),
+        ("EMAIL", "Secure Email")
+    ])
+    
+    # SFTP credentials
+    sftp_host = StringField("SFTP Host", validators=[Optional(), Length(max=256)])
+    sftp_port = StringField("SFTP Port", validators=[Optional(), Length(max=5)], default="22")
+    sftp_username = StringField("SFTP Username", validators=[Optional(), Length(max=64)])
+    sftp_password = PasswordField("SFTP Password", validators=[Optional(), Length(max=128)])
+    sftp_remote_dir = StringField("Remote Directory", validators=[Optional(), Length(max=256)], default="/incoming")
+    
+    is_active = BooleanField("Partner is Active", default=True)
+    submit = SubmitField("Save Partner")
+
+class EDITransactionForm(FlaskForm):
+    """Form for creating EDI transactions"""
+    partner_id = SelectField("EDI Partner", validators=[DataRequired()])
+    transaction_type = SelectField("Transaction Type", validators=[DataRequired()], choices=[
+        ("EDI_PAYMENT", "Standard EDI Payment"),
+        ("EDI_ACH_TRANSFER", "ACH Transfer"),
+        ("EDI_WIRE_TRANSFER", "Wire Transfer")
+    ])
+    
+    amount = FloatField("Amount", validators=[DataRequired()])
+    currency = SelectField("Currency", validators=[DataRequired()])
+    
+    recipient_name = StringField("Recipient Name", validators=[DataRequired(), Length(min=2, max=128)])
+    recipient_account = StringField("Recipient Account", validators=[Optional(), Length(max=30)])
+    recipient_routing = StringField("Recipient Routing #", validators=[Optional(), Length(max=20)])
+    
+    description = TextAreaField("Description/Notes", validators=[Optional(), Length(max=500)])
+    submit = SubmitField("Process Transaction")

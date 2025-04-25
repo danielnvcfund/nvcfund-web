@@ -1,168 +1,171 @@
-{% extends "layout.html" %}
+{% extends 'layout.html' %}
 
 {% block title %}EDI Transactions{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h2 mb-0">
-                    <i class="fas fa-exchange-alt me-2 text-primary"></i> EDI Transactions
-                </h1>
-                <div>
-                    <a href="{{ url_for('edi.edi_dashboard') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
-                    </a>
-                </div>
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>EDI Transactions</h1>
+        <div>
+          <a href="{{ url_for('web.main.transactions') }}?type=EDI_PAYMENT" class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i> New EDI Payment
+          </a>
+        </div>
+      </div>
+      
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">Filter Transactions</h5>
+        </div>
+        <div class="card-body">
+          <form method="GET" class="row g-3" action="{{ url_for('edi.transaction_list') }}">
+            <div class="col-md-3">
+              <label for="partner_id" class="form-label">Partner</label>
+              <select class="form-select" id="partner_id" name="partner_id">
+                <option value="">All Partners</option>
+                {% for partner in partners %}
+                <option value="{{ partner.partner_id }}" {% if request.args.get('partner_id') == partner.partner_id %}selected{% endif %}>
+                  {{ partner.name }}
+                </option>
+                {% endfor %}
+              </select>
             </div>
             
-            <div class="alert alert-info mb-4">
-                <div class="d-flex">
-                    <div class="me-3">
-                        <i class="fas fa-info-circle fa-2x"></i>
-                    </div>
-                    <div>
-                        <h5 class="alert-heading">EDI Transaction History</h5>
-                        <p class="mb-0">
-                            View all transactions processed through EDI connections with financial institutions.
-                        </p>
-                    </div>
-                </div>
+            <div class="col-md-3">
+              <label for="transaction_type" class="form-label">Transaction Type</label>
+              <select class="form-select" id="transaction_type" name="transaction_type">
+                <option value="">All Types</option>
+                <option value="EDI_PAYMENT" {% if request.args.get('transaction_type') == 'EDI_PAYMENT' %}selected{% endif %}>EDI Payment</option>
+                <option value="EDI_ACH_TRANSFER" {% if request.args.get('transaction_type') == 'EDI_ACH_TRANSFER' %}selected{% endif %}>ACH Transfer</option>
+                <option value="EDI_WIRE_TRANSFER" {% if request.args.get('transaction_type') == 'EDI_WIRE_TRANSFER' %}selected{% endif %}>Wire Transfer</option>
+              </select>
             </div>
-        </div>
-    </div>
-    
-    <!-- Filter Panel -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow">
-                <div class="card-body">
-                    <form class="row g-3">
-                        <div class="col-md-4">
-                            <label for="filterPartner" class="form-label">Partner</label>
-                            <select class="form-select" id="filterPartner" name="partner_id">
-                                <option value="">All Partners</option>
-                                <!-- Partners would be populated dynamically -->
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="filterStatus" class="form-label">Status</label>
-                            <select class="form-select" id="filterStatus" name="status">
-                                <option value="">All Statuses</option>
-                                <option value="completed">Completed</option>
-                                <option value="pending">Pending</option>
-                                <option value="processing">Processing</option>
-                                <option value="failed">Failed</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="filterDate" class="form-label">Date Range</label>
-                            <select class="form-select" id="filterDate" name="date_range">
-                                <option value="7">Last 7 Days</option>
-                                <option value="30" selected>Last 30 Days</option>
-                                <option value="90">Last 90 Days</option>
-                                <option value="all">All Time</option>
-                            </select>
-                        </div>
-                        <div class="col-12 d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-filter me-1"></i> Apply Filters
-                            </button>
-                        </div>
-                    </form>
-                </div>
+            
+            <div class="col-md-3">
+              <label for="status" class="form-label">Status</label>
+              <select class="form-select" id="status" name="status">
+                <option value="">All Statuses</option>
+                <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="completed" {% if request.args.get('status') == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="failed" {% if request.args.get('status') == 'failed' %}selected{% endif %}>Failed</option>
+              </select>
             </div>
+            
+            <div class="col-md-3 d-flex align-items-end">
+              <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+            </div>
+          </form>
         </div>
-    </div>
-    
-    <!-- Transaction List -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card border-0 shadow">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-4">Transaction ID</th>
-                                    <th>Type</th>
-                                    <th>Amount</th>
-                                    <th>Partner</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
-                                    <th class="text-end pe-4">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% if transactions %}
-                                    {% for tx in transactions %}
-                                    <tr>
-                                        <td class="ps-4">
-                                            <a href="{{ url_for('web.main.transaction_details', transaction_id=tx.transaction_id) }}">
-                                                {{ tx.transaction_id[:8] }}...
-                                            </a>
-                                        </td>
-                                        <td>
-                                            {% if tx.transaction_type.value == 'BANK_TRANSFER' %}
-                                                <span class="badge bg-primary">Bank Transfer</span>
-                                            {% elif tx.transaction_type.value == 'WIRE_TRANSFER' %}
-                                                <span class="badge bg-info">Wire Transfer</span>
-                                            {% elif tx.transaction_type.value == 'ACH_TRANSFER' %}
-                                                <span class="badge bg-secondary">ACH Transfer</span>
-                                            {% else %}
-                                                <span class="badge bg-secondary">{{ tx.transaction_type.value }}</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ tx.amount }} {{ tx.currency }}</td>
-                                        <td>
-                                            <!-- Would be extracted from notes or metadata -->
-                                            {% if 'EDI partner' in tx.notes %}
-                                                {% set partner_name = tx.notes.split('EDI partner')[-1].split('.')[0].strip() %}
-                                                {{ partner_name }}
-                                            {% else %}
-                                                <span class="text-muted">Unknown</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ tx.created_at.strftime('%b %d, %Y') }}</td>
-                                        <td>
-                                            {% if tx.status.value == 'completed' %}
-                                                <span class="badge bg-success">Completed</span>
-                                            {% elif tx.status.value == 'pending' %}
-                                                <span class="badge bg-warning">Pending</span>
-                                            {% elif tx.status.value == 'processing' %}
-                                                <span class="badge bg-info">Processing</span>
-                                            {% elif tx.status.value == 'failed' %}
-                                                <span class="badge bg-danger">Failed</span>
-                                            {% else %}
-                                                <span class="badge bg-secondary">{{ tx.status.value }}</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-end pe-4">
-                                            <a href="{{ url_for('web.main.transaction_details', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-eye me-1"></i> View
-                                            </a>
-                                            {% if tx.status.value == 'failed' %}
-                                            <a href="{{ url_for('edi.process_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-warning">
-                                                <i class="fas fa-redo me-1"></i> Retry
-                                            </a>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                {% else %}
-                                    <tr>
-                                        <td colspan="7" class="text-center py-4 text-muted">
-                                            <i class="fas fa-info-circle me-1"></i> No EDI transactions found
-                                        </td>
-                                    </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
+      </div>
+      
+      {% if transactions %}
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Transaction ID</th>
+                  <th>Partner</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                  <td>{{ transaction.transaction_id }}</td>
+                  <td>
+                    {% if transaction.metadata.edi_partner_name %}
+                    {{ transaction.metadata.edi_partner_name }}
+                    {% else %}
+                    <span class="text-muted">Not available</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if transaction.transaction_type == 'EDI_PAYMENT' %}
+                    <span class="badge bg-primary">EDI Payment</span>
+                    {% elif transaction.transaction_type == 'EDI_ACH_TRANSFER' %}
+                    <span class="badge bg-info">ACH Transfer</span>
+                    {% elif transaction.transaction_type == 'EDI_WIRE_TRANSFER' %}
+                    <span class="badge bg-secondary">Wire Transfer</span>
+                    {% else %}
+                    <span class="badge bg-dark">{{ transaction.transaction_type }}</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ transaction.amount }} {{ transaction.currency }}</td>
+                  <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                  <td>
+                    {% if transaction.status == 'completed' %}
+                    <span class="badge bg-success">Completed</span>
+                    {% elif transaction.status == 'pending' %}
+                    <span class="badge bg-warning text-dark">Pending</span>
+                    {% elif transaction.status == 'failed' %}
+                    <span class="badge bg-danger">Failed</span>
+                    {% else %}
+                    <span class="badge bg-secondary">{{ transaction.status }}</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="btn-group">
+                      <a href="{{ url_for('web.main.transaction_details', transaction_id=transaction.transaction_id) }}" 
+                         class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-search"></i> Details
+                      </a>
+                      {% if transaction.metadata.edi_message %}
+                      <a href="{{ url_for('edi.view_edi_message', transaction_id=transaction.transaction_id) }}" 
+                         class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-file-code"></i> EDI Message
+                      </a>
+                      {% endif %}
+                      {% if transaction.status == 'pending' %}
+                      <a href="{{ url_for('edi.retry_transaction', transaction_id=transaction.transaction_id) }}" 
+                         class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-redo"></i> Retry
+                      </a>
+                      {% endif %}
                     </div>
-                </div>
-            </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
+      
+      <!-- Pagination -->
+      {% if pagination.pages > 1 %}
+      <nav aria-label="Transaction pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+          <li class="page-item {% if pagination.page == 1 %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('edi.transaction_list', page=pagination.page-1, **request.args) }}">Previous</a>
+          </li>
+          
+          {% for p in range(max(1, pagination.page - 2), min(pagination.pages + 1, pagination.page + 3)) %}
+          <li class="page-item {% if p == pagination.page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('edi.transaction_list', page=p, **request.args) }}">{{ p }}</a>
+          </li>
+          {% endfor %}
+          
+          <li class="page-item {% if pagination.page == pagination.pages %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('edi.transaction_list', page=pagination.page+1, **request.args) }}">Next</a>
+          </li>
+        </ul>
+      </nav>
+      {% endif %}
+      
+      {% else %}
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No EDI transactions found matching your criteria.
+      </div>
+      {% endif %}
     </div>
+  </div>
 </div>
 {% endblock %}
