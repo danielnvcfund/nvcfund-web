@@ -1,302 +1,216 @@
 {% extends 'layout.html' %}
 
-{% block title %}View SWIFT Message{% endblock %}
+{% block title %}View SWIFT GPI Message{% endblock %}
+
+{% block head %}
+<style>
+    .message-content {
+        font-family: monospace;
+        white-space: pre-wrap;
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    .field-tag {
+        color: var(--bs-primary);
+        font-weight: 600;
+    }
+    .badge-large {
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+    }
+    .message-header {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row mb-4">
-        <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('swift_gpi.gpi_dashboard') }}">SWIFT GPI Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('swift_gpi.list_messages') }}">Messages</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">View Message</li>
-                </ol>
-            </nav>
-            
-            <h1 class="mb-3">SWIFT Message Details</h1>
-            <p class="lead">Message Type: MT{{ message.message_type }} | Reference: {{ message.reference }}</p>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>SWIFT Message Details</h1>
+        <div>
+            <a href="{{ url_for('swift_gpi.list_messages') }}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-list me-2"></i> All Messages
+            </a>
+            <a href="{{ url_for('swift_gpi.gpi_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+            </a>
         </div>
     </div>
     
-    <div class="row mb-4">
-        <div class="col-md-6 mb-4 mb-md-0">
-            <div class="card shadow h-100">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">Message Information</h5>
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="message-header">
+                    <div class="card-header bg-{{ 'primary' if message.message_type == '103' else 'info' if message.message_type == '202' else 'secondary' }} text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-envelope me-2"></i> 
+                                MT{{ message.message_type }} - {{ message.reference }}
+                            </h5>
+                            <span class="badge badge-large bg-light text-dark">
+                                <i class="fas fa-calendar-alt me-1"></i> 
+                                {{ message.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-5 fw-bold">Message Type:</div>
-                        <div class="col-md-7">MT{{ message.message_type }}</div>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Sender</h6>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-building me-2 text-primary"></i>
+                                <div>
+                                    <h5 class="mb-0">{{ message.sender_bic }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Receiver</h6>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-building me-2 text-primary"></i>
+                                <div>
+                                    <h5 class="mb-0">{{ message.receiver_bic }}</h5>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-5 fw-bold">Reference:</div>
-                        <div class="col-md-7">{{ message.reference }}</div>
-                    </div>
-                    {% if message.related_reference %}
-                    <div class="row mb-3">
-                        <div class="col-md-5 fw-bold">Related Reference:</div>
-                        <div class="col-md-7">{{ message.related_reference }}</div>
-                    </div>
-                    {% endif %}
-                    <div class="row mb-3">
-                        <div class="col-md-5 fw-bold">Sender BIC:</div>
-                        <div class="col-md-7">{{ message.sender_bic }}</div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-5 fw-bold">Receiver BIC:</div>
-                        <div class="col-md-7">{{ message.receiver_bic }}</div>
-                    </div>
+                    
                     {% if message.amount and message.currency %}
-                    <div class="row mb-3">
-                        <div class="col-md-5 fw-bold">Amount:</div>
-                        <div class="col-md-7">{{ message.currency }} {{ message.amount|format_currency }}</div>
-                    </div>
-                    {% endif %}
-                    {% if message.value_date %}
-                    <div class="row mb-3">
-                        <div class="col-md-5 fw-bold">Value Date:</div>
-                        <div class="col-md-7">{{ message.value_date.strftime('%Y-%m-%d') }}</div>
-                    </div>
-                    {% endif %}
-                    <div class="row mb-3">
-                        <div class="col-md-5 fw-bold">Status:</div>
-                        <div class="col-md-7">
-                            {% if message.status == 'RECEIVED' %}
-                                <span class="badge bg-warning">Received</span>
-                            {% elif message.status == 'RECONCILED' %}
-                                <span class="badge bg-success">Reconciled</span>
-                            {% elif message.status == 'PROCESSED' %}
-                                <span class="badge bg-info">Processed</span>
-                            {% else %}
-                                <span class="badge bg-secondary">{{ message.status }}</span>
-                            {% endif %}
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Amount</h6>
+                            <h3 class="text-primary">{{ message.currency }} {{ '{:,.2f}'.format(message.amount) }}</h3>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Value Date</h6>
+                            <h5>
+                                {% if message.value_date %}
+                                    {{ message.value_date.strftime('%Y-%m-%d') }}
+                                {% else %}
+                                    <span class="text-muted">Not specified</span>
+                                {% endif %}
+                            </h5>
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-5 fw-bold">File Source:</div>
-                        <div class="col-md-7">{{ message.file_source }}</div>
+                    {% endif %}
+                    
+                    <h6 class="text-muted mb-3">Message Status</h6>
+                    <div class="mb-4">
+                        <span class="badge bg-{{ 'success' if message.status == 'RECONCILED' else 'warning' if message.status == 'RECEIVED' else 'primary' if message.status == 'PROCESSED' else 'danger' }} badge-large">
+                            {{ message.status }}
+                        </span>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-5 fw-bold">Uploaded By:</div>
-                        <div class="col-md-7">
-                            {% if uploaded_by %}
-                                {{ uploaded_by.username }}
-                            {% else %}
-                                Unknown User
-                            {% endif %}
+                    
+                    <h6 class="text-muted mb-3">Message Content</h6>
+                    <div class="message-content">{{ message.message_text }}</div>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted">Uploaded by: </span>
+                            <span class="fw-bold">{{ message.user.username if message.user else 'System' }}</span>
                         </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-5 fw-bold">Upload Date:</div>
-                        <div class="col-md-7">{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                        <div>
+                            <span class="text-muted">Source: </span>
+                            <span class="fw-bold">{{ message.file_source or 'Unknown' }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-6">
-            <div class="card shadow h-100">
-                <div class="card-header bg-info text-white">
-                    <h5 class="card-title mb-0">Message Content</h5>
+        <div class="col-lg-4">
+            {% if transaction %}
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Related Transaction</h5>
                 </div>
                 <div class="card-body">
-                    <pre class="message-content">{{ message.message_text }}</pre>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    {% if transaction %}
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header bg-success text-white">
-                    <h5 class="card-title mb-0">Associated Transaction</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-3 fw-bold">Transaction ID:</div>
-                        <div class="col-md-9">
-                            <a href="{{ url_for('transaction_details', transaction_id=transaction.transaction_id) }}">
-                                {{ transaction.transaction_id }}
-                            </a>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary rounded-circle p-2 text-white me-3">
+                            <i class="fas fa-exchange-alt"></i>
                         </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-3 fw-bold">Amount:</div>
-                        <div class="col-md-9">{{ transaction.currency }} {{ transaction.amount|format_currency }}</div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-3 fw-bold">Status:</div>
-                        <div class="col-md-9">
-                            {% if transaction.status.name == 'COMPLETED' %}
-                                <span class="badge bg-success">{{ transaction.status.name }}</span>
-                            {% elif transaction.status.name == 'PENDING' %}
-                                <span class="badge bg-warning">{{ transaction.status.name }}</span>
-                            {% elif transaction.status.name == 'FAILED' %}
-                                <span class="badge bg-danger">{{ transaction.status.name }}</span>
-                            {% else %}
-                                <span class="badge bg-secondary">{{ transaction.status.name }}</span>
-                            {% endif %}
+                        <div>
+                            <h6 class="mb-0">{{ transaction.transaction_id }}</h6>
+                            <small class="text-muted">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
                         </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-3 fw-bold">Type:</div>
-                        <div class="col-md-9">{{ transaction.transaction_type.name }}</div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-3 fw-bold">Description:</div>
-                        <div class="col-md-9">{{ transaction.description }}</div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-3 fw-bold">Date:</div>
-                        <div class="col-md-9">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
                     </div>
                     
-                    <div class="text-end mt-3">
-                        <a href="{{ url_for('transaction_details', transaction_id=transaction.transaction_id) }}" class="btn btn-primary">
-                            View Full Transaction Details
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Transaction Type</small>
+                        <span class="badge bg-info">{{ transaction.transaction_type.value }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Status</small>
+                        <span class="badge bg-{{ 'success' if transaction.status.value == 'COMPLETED' else 'warning' if transaction.status.value == 'PENDING' else 'danger' }}">
+                            {{ transaction.status.value }}
+                        </span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Amount</small>
+                        <h5>{{ transaction.currency }} {{ '{:,.2f}'.format(transaction.amount) }}</h5>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Description</small>
+                        <p class="mb-0">{{ transaction.description or 'No description' }}</p>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-eye me-1"></i> View Transaction Details
                         </a>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    {% else %}
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow border-warning">
+            {% endif %}
+            
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Message Actions</h5>
+                </div>
                 <div class="card-body">
-                    <h5 class="card-title text-warning">No Associated Transaction</h5>
-                    <p>This SWIFT message has not yet been reconciled with a transaction in the system.</p>
-                    <div class="text-end mt-3">
-                        <button id="createTransactionBtn" class="btn btn-primary">Create Transaction</button>
-                        <button id="reconcileMessageBtn" class="btn btn-warning ms-2">Attempt Reconciliation</button>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" disabled>
+                            <i class="fas fa-sync me-1"></i> Process Message
+                        </button>
+                        <button class="btn btn-outline-success" disabled>
+                            <i class="fas fa-check me-1"></i> Mark as Reconciled
+                        </button>
+                        <button class="btn btn-outline-primary" disabled>
+                            <i class="fas fa-file-download me-1"></i> Download Message
+                        </button>
+                        <button class="btn btn-outline-secondary" disabled>
+                            <i class="fas fa-reply me-1"></i> Generate Response
+                        </button>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    {% endif %}
-    
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between">
-                <a href="{{ url_for('swift_gpi.list_messages') }}" class="btn btn-secondary">
-                    <i class="fa fa-arrow-left me-2"></i> Back to Messages
-                </a>
-                
-                <div>
-                    <a href="#" class="btn btn-outline-primary me-2" onclick="window.print()">
-                        <i class="fa fa-print me-2"></i> Print
-                    </a>
-                    <a href="#" class="btn btn-outline-info" id="downloadPdfBtn">
-                        <i class="fa fa-file-pdf me-2"></i> Download as PDF
-                    </a>
+            
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">What is SWIFT GPI?</h5>
+                </div>
+                <div class="card-body">
+                    <p>SWIFT Global Payments Innovation (GPI) is a set of standards that provides:</p>
+                    <ul>
+                        <li>Faster, same-day use of funds</li>
+                        <li>Transparency of fees</li>
+                        <li>End-to-end payment tracking</li>
+                        <li>Unaltered remittance information</li>
+                    </ul>
+                    <p class="mb-0 text-muted">GPI covers more than 50% of SWIFT cross-border payments and represents over 40 trillion USD in value.</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-{% block styles %}
-<style>
-    .message-content {
-        font-family: 'Courier New', monospace;
-        font-size: 0.9rem;
-        background-color: #f8f9fa;
-        padding: 1rem;
-        border-radius: 0.25rem;
-        white-space: pre-wrap;
-        word-break: break-all;
-        max-height: 400px;
-        overflow-y: auto;
-    }
-    
-    @media print {
-        nav, footer, .breadcrumb, .btn {
-            display: none !important;
-        }
-        
-        .card {
-            border: 1px solid #ddd !important;
-            box-shadow: none !important;
-        }
-        
-        .card-header {
-            background-color: #f8f9fa !important;
-            color: #000 !important;
-        }
-        
-        .badge {
-            border: 1px solid #ddd !important;
-            color: #000 !important;
-            background-color: transparent !important;
-        }
-    }
-</style>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    $(document).ready(function() {
-        // Create Transaction functionality
-        $('#createTransactionBtn').click(function() {
-            window.location.href = "{{ url_for('new_payment') }}?swift_message_id={{ message.id }}";
-        });
-        
-        // Reconcile message functionality
-        $('#reconcileMessageBtn').click(function() {
-            $(this).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
-            $(this).prop('disabled', true);
-            
-            $.ajax({
-                url: "{{ url_for('swift_gpi.reconcile_messages') }}",
-                type: 'POST',
-                success: function(response) {
-                    if (response.success) {
-                        showAlert('success', 'Reconciliation Complete', response.message);
-                        setTimeout(function() {
-                            window.location.reload();
-                        }, 2000);
-                    } else {
-                        showAlert('danger', 'Reconciliation Failed', response.error);
-                        $('#reconcileMessageBtn').html('Attempt Reconciliation');
-                        $('#reconcileMessageBtn').prop('disabled', false);
-                    }
-                },
-                error: function(xhr) {
-                    showAlert('danger', 'Error', 'An error occurred during reconciliation.');
-                    $('#reconcileMessageBtn').html('Attempt Reconciliation');
-                    $('#reconcileMessageBtn').prop('disabled', false);
-                }
-            });
-        });
-        
-        function showAlert(type, title, message) {
-            var alertHtml = `
-                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                    <strong>${title}:</strong> ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            `;
-            
-            // Remove any existing alerts
-            $('.alert-container').remove();
-            
-            // Add alert to the top of the page
-            $('<div class="alert-container position-fixed top-0 start-50 translate-middle-x mt-4" style="z-index: 1050;"></div>')
-                .append(alertHtml)
-                .appendTo('body');
-            
-            // Auto-dismiss after 5 seconds
-            setTimeout(function() {
-                $('.alert-container .alert').alert('close');
-            }, 5000);
-        }
-    });
-</script>
-{% endblock %}
 {% endblock %}

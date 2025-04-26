@@ -102,6 +102,22 @@
                                     <i class="fas fa-list me-1"></i> View SWIFT Messages
                                 </a>
                             </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('swift_gpi.gpi_dashboard') }}">
+                                    <i class="fas fa-tachometer-alt me-1"></i> SWIFT GPI Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('swift_gpi.upload_gpi_file') }}">
+                                    <i class="fas fa-file-upload me-1"></i> Upload GPI File
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('swift_gpi.list_messages') }}">
+                                    <i class="fas fa-list-alt me-1"></i> View GPI Messages
+                                </a>
+                            </li>
                         </ul>
                     </li>
                     

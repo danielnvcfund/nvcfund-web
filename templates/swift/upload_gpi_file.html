@@ -2,72 +2,234 @@
 
 {% block title %}Upload SWIFT GPI File{% endblock %}
 
+{% block head %}
+<style>
+    .upload-area {
+        border: 2px dashed rgba(var(--bs-primary-rgb), 0.5);
+        border-radius: 10px;
+        padding: 30px;
+        text-align: center;
+        background-color: rgba(var(--bs-primary-rgb), 0.05);
+        transition: all 0.3s;
+    }
+    .upload-area:hover, .upload-area.dragover {
+        border-color: var(--bs-primary);
+        background-color: rgba(var(--bs-primary-rgb), 0.1);
+    }
+    .file-icon {
+        font-size: 3rem;
+        color: var(--bs-primary);
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container my-5">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1 class="mb-3">Upload SWIFT GPI File</h1>
-            <p class="lead">Upload SWIFT GPI message files for processing and reconciliation with internal transactions.</p>
-            
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">File Upload Guidelines</h5>
-                    <ul class="mb-0">
-                        <li>Supported file formats: .txt, .mt, .fin, .swi, .xml</li>
-                        <li>Files should contain valid SWIFT message formats</li>
-                        <li>For MT103, MT202, and other payment messages, transactions will be automatically created</li>
-                        <li>Maximum file size: 10MB</li>
-                    </ul>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Upload SWIFT GPI File</h1>
+        <a href="{{ url_for('swift_gpi.gpi_dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">File Upload</h5>
                 </div>
-            </div>
-            
-            <div class="card shadow">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">Select SWIFT GPI File to Upload</h5>
-                    <form method="POST" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <label for="file" class="form-label">SWIFT Message File</label>
-                            <input type="file" class="form-control" id="file" name="file" required>
-                            <div class="form-text">Select a SWIFT message file from your local computer.</div>
+                    <form action="{{ url_for('swift_gpi.upload_gpi_file') }}" method="post" enctype="multipart/form-data" id="uploadForm">
+                        <div class="upload-area mb-4" id="dropArea">
+                            <i class="fas fa-file-upload file-icon"></i>
+                            <h4>Drag & Drop SWIFT File</h4>
+                            <p class="text-muted">or click to browse files</p>
+                            <input type="file" name="file" id="fileInput" class="d-none" accept=".txt,.mt,.fin,.swi,.xml">
+                            <button type="button" id="browseButton" class="btn btn-primary mt-2">Browse Files</button>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="file_type" class="form-label">File Type</label>
-                            <select class="form-select" id="file_type" name="file_type">
-                                <option value="mt" selected>MT Message File</option>
-                                <option value="xml">XML Format</option>
-                                <option value="custom">Custom Format</option>
-                            </select>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="auto_reconcile" name="auto_reconcile" checked>
-                                <label class="form-check-label" for="auto_reconcile">
-                                    Automatically reconcile with existing transactions
-                                </label>
+                        <div id="fileDetails" class="mb-4 d-none">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-file-alt me-3 text-success fa-2x"></i>
+                                        <div>
+                                            <h5 class="card-title mb-1" id="fileName">filename.txt</h5>
+                                            <p class="card-text text-muted mb-0" id="fileSize">0 KB</p>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger ms-auto" id="removeFile">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{{ url_for('swift_gpi.gpi_dashboard') }}" class="btn btn-secondary me-md-2">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Upload and Process</button>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg" id="uploadButton" disabled>
+                                <i class="fas fa-cloud-upload-alt me-2"></i> Upload and Process File
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
+            
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Processing Information</h5>
+                </div>
+                <div class="card-body">
+                    <p>When you upload a SWIFT GPI file, the system will:</p>
+                    <ol>
+                        <li>Parse all SWIFT messages in the file</li>
+                        <li>Store each message in the database</li>
+                        <li>Create corresponding transaction records</li>
+                        <li>Apply automatic reconciliation rules</li>
+                        <li>Generate status notifications</li>
+                    </ol>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        The system supports MT103, MT202, and various other SWIFT message types.
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-    
-    <div class="row">
-        <div class="col-12">
-            <div class="alert alert-info">
-                <h5 class="alert-heading">Off-Ledger Transactions</h5>
-                <p>SWIFT GPI manual download allows you to import settlement notifications for off-ledger transactions with large institutional clients. These transactions will be automatically processed and reconciled with your internal records.</p>
-                <hr>
-                <p class="mb-0">For assistance with SWIFT GPI integration, please contact <a href="mailto:support@nvcplatform.net">NVC Global Support</a>.</p>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Supported File Types</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-file-alt me-3 text-primary"></i>
+                            <div>
+                                <strong>.txt</strong>
+                                <div class="text-muted small">Plain text SWIFT messages</div>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-file-alt me-3 text-primary"></i>
+                            <div>
+                                <strong>.mt</strong>
+                                <div class="text-muted small">Message Type format</div>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-file-alt me-3 text-primary"></i>
+                            <div>
+                                <strong>.fin</strong>
+                                <div class="text-muted small">FIN format messages</div>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-file-alt me-3 text-primary"></i>
+                            <div>
+                                <strong>.swi</strong>
+                                <div class="text-muted small">SWIFT proprietary format</div>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-file-code me-3 text-primary"></i>
+                            <div>
+                                <strong>.xml</strong>
+                                <div class="text-muted small">MX/ISO20022 format</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Need Help?</h5>
+                </div>
+                <div class="card-body">
+                    <p>If you need assistance with SWIFT GPI file formatting or have questions about the upload process, please refer to the documentation or contact support.</p>
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-outline-secondary">
+                            <i class="fas fa-book me-2"></i> View Documentation
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary">
+                            <i class="fas fa-headset me-2"></i> Contact Support
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+        const browseButton = document.getElementById('browseButton');
+        const fileDetails = document.getElementById('fileDetails');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const removeFile = document.getElementById('removeFile');
+        const uploadButton = document.getElementById('uploadButton');
+        
+        // Click to browse files
+        browseButton.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        // Handle file selection
+        fileInput.addEventListener('change', handleFiles);
+        
+        // Drag and drop events
+        dropArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropArea.classList.add('dragover');
+        });
+        
+        dropArea.addEventListener('dragleave', function() {
+            dropArea.classList.remove('dragover');
+        });
+        
+        dropArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropArea.classList.remove('dragover');
+            fileInput.files = e.dataTransfer.files;
+            handleFiles();
+        });
+        
+        // Remove selected file
+        removeFile.addEventListener('click', function() {
+            fileInput.value = '';
+            fileDetails.classList.add('d-none');
+            uploadButton.disabled = true;
+        });
+        
+        // Process selected file
+        function handleFiles() {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                
+                // Display file details
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                fileDetails.classList.remove('d-none');
+                uploadButton.disabled = false;
+            }
+        }
+        
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    });
+</script>
 {% endblock %}
