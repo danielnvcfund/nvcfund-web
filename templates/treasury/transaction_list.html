@@ -63,7 +63,7 @@
                 <span class="text-muted">External</span>
                 {% endif %}
               </td>
-              <td>{{ transaction.currency }} {{ "%.2f"|format(transaction.amount) }}</td>
+              <td>{{ transaction.amount|format_currency(transaction.currency) }}</td>
               <td>
                 <span class="badge {% if transaction.status.name == 'COMPLETED' %}bg-success{% elif transaction.status.name == 'PENDING' %}bg-warning{% elif transaction.status.name == 'REJECTED' %}bg-danger{% else %}bg-secondary{% endif %}">
                   {{ transaction.status.name|title }}

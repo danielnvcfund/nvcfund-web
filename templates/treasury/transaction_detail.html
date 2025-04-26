@@ -59,7 +59,7 @@
               <p class="text-muted mb-3">{{ transaction.transaction_type.value|replace('_', ' ')|title }}</p>
               
               <p class="mb-1"><strong>Amount:</strong></p>
-              <p class="text-muted mb-3">{{ transaction.currency }} {{ "%.2f"|format(transaction.amount) }}</p>
+              <p class="text-muted mb-3">{{ transaction.amount|format_currency(transaction.currency) }}</p>
               
               {% if transaction.exchange_rate %}
               <p class="mb-1"><strong>Exchange Rate:</strong></p>

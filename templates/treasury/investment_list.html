@@ -84,7 +84,7 @@
                   {{ investment.account.name }}
                 </a>
               </td>
-              <td>{{ investment.currency }} {{ "%.2f"|format(investment.amount) }}</td>
+              <td>{{ investment.amount|format_currency(investment.currency) }}</td>
               <td>{{ "%.2f"|format(investment.interest_rate * 100) }}%</td>
               <td>{{ investment.start_date.strftime('%Y-%m-%d') }}</td>
               <td>{{ investment.maturity_date.strftime('%Y-%m-%d') }}</td>
