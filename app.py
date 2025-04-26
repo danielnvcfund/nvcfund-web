@@ -262,6 +262,15 @@ def create_app():
         
         # Admin API Keys routes are registered through the admin blueprint
         # No need to register them separately
+        
+        # Register Customer Support routes
+        try:
+            from routes.customer_support_routes import customer_support_bp
+            app.register_blueprint(customer_support_bp)
+            logger.info("Customer Support routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Customer Support routes: {str(e)}")
+            logger.warning("Application will run without AI Customer Support functionality")
 
         # Create PHP test integration user
         try:
