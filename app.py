@@ -83,6 +83,10 @@ def create_app():
     jwt.init_app(app)
     login_manager.init_app(app)
     # login_view is already set in the global login_manager configuration
+    
+    # Add custom filters
+    from utils import format_currency
+    app.jinja_env.filters['format_currency'] = lambda amount, currency='USD': format_currency(amount, currency)
 
     # Set debug mode to True
     app.config['DEBUG'] = True
