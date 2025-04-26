@@ -1,0 +1,302 @@
+{% extends 'layout.html' %}
+
+{% block title %}View SWIFT Message{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('swift_gpi.gpi_dashboard') }}">SWIFT GPI Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('swift_gpi.list_messages') }}">Messages</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">View Message</li>
+                </ol>
+            </nav>
+            
+            <h1 class="mb-3">SWIFT Message Details</h1>
+            <p class="lead">Message Type: MT{{ message.message_type }} | Reference: {{ message.reference }}</p>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6 mb-4 mb-md-0">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Message Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-5 fw-bold">Message Type:</div>
+                        <div class="col-md-7">MT{{ message.message_type }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-5 fw-bold">Reference:</div>
+                        <div class="col-md-7">{{ message.reference }}</div>
+                    </div>
+                    {% if message.related_reference %}
+                    <div class="row mb-3">
+                        <div class="col-md-5 fw-bold">Related Reference:</div>
+                        <div class="col-md-7">{{ message.related_reference }}</div>
+                    </div>
+                    {% endif %}
+                    <div class="row mb-3">
+                        <div class="col-md-5 fw-bold">Sender BIC:</div>
+                        <div class="col-md-7">{{ message.sender_bic }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-5 fw-bold">Receiver BIC:</div>
+                        <div class="col-md-7">{{ message.receiver_bic }}</div>
+                    </div>
+                    {% if message.amount and message.currency %}
+                    <div class="row mb-3">
+                        <div class="col-md-5 fw-bold">Amount:</div>
+                        <div class="col-md-7">{{ message.currency }} {{ message.amount|format_currency }}</div>
+                    </div>
+                    {% endif %}
+                    {% if message.value_date %}
+                    <div class="row mb-3">
+                        <div class="col-md-5 fw-bold">Value Date:</div>
+                        <div class="col-md-7">{{ message.value_date.strftime('%Y-%m-%d') }}</div>
+                    </div>
+                    {% endif %}
+                    <div class="row mb-3">
+                        <div class="col-md-5 fw-bold">Status:</div>
+                        <div class="col-md-7">
+                            {% if message.status == 'RECEIVED' %}
+                                <span class="badge bg-warning">Received</span>
+                            {% elif message.status == 'RECONCILED' %}
+                                <span class="badge bg-success">Reconciled</span>
+                            {% elif message.status == 'PROCESSED' %}
+                                <span class="badge bg-info">Processed</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ message.status }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-5 fw-bold">File Source:</div>
+                        <div class="col-md-7">{{ message.file_source }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-5 fw-bold">Uploaded By:</div>
+                        <div class="col-md-7">
+                            {% if uploaded_by %}
+                                {{ uploaded_by.username }}
+                            {% else %}
+                                Unknown User
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-5 fw-bold">Upload Date:</div>
+                        <div class="col-md-7">{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Message Content</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="message-content">{{ message.message_text }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if transaction %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Associated Transaction</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Transaction ID:</div>
+                        <div class="col-md-9">
+                            <a href="{{ url_for('transaction_details', transaction_id=transaction.transaction_id) }}">
+                                {{ transaction.transaction_id }}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Amount:</div>
+                        <div class="col-md-9">{{ transaction.currency }} {{ transaction.amount|format_currency }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Status:</div>
+                        <div class="col-md-9">
+                            {% if transaction.status.name == 'COMPLETED' %}
+                                <span class="badge bg-success">{{ transaction.status.name }}</span>
+                            {% elif transaction.status.name == 'PENDING' %}
+                                <span class="badge bg-warning">{{ transaction.status.name }}</span>
+                            {% elif transaction.status.name == 'FAILED' %}
+                                <span class="badge bg-danger">{{ transaction.status.name }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ transaction.status.name }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Type:</div>
+                        <div class="col-md-9">{{ transaction.transaction_type.name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Description:</div>
+                        <div class="col-md-9">{{ transaction.description }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Date:</div>
+                        <div class="col-md-9">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                    </div>
+                    
+                    <div class="text-end mt-3">
+                        <a href="{{ url_for('transaction_details', transaction_id=transaction.transaction_id) }}" class="btn btn-primary">
+                            View Full Transaction Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow border-warning">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">No Associated Transaction</h5>
+                    <p>This SWIFT message has not yet been reconciled with a transaction in the system.</p>
+                    <div class="text-end mt-3">
+                        <button id="createTransactionBtn" class="btn btn-primary">Create Transaction</button>
+                        <button id="reconcileMessageBtn" class="btn btn-warning ms-2">Attempt Reconciliation</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('swift_gpi.list_messages') }}" class="btn btn-secondary">
+                    <i class="fa fa-arrow-left me-2"></i> Back to Messages
+                </a>
+                
+                <div>
+                    <a href="#" class="btn btn-outline-primary me-2" onclick="window.print()">
+                        <i class="fa fa-print me-2"></i> Print
+                    </a>
+                    <a href="#" class="btn btn-outline-info" id="downloadPdfBtn">
+                        <i class="fa fa-file-pdf me-2"></i> Download as PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block styles %}
+<style>
+    .message-content {
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        white-space: pre-wrap;
+        word-break: break-all;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    @media print {
+        nav, footer, .breadcrumb, .btn {
+            display: none !important;
+        }
+        
+        .card {
+            border: 1px solid #ddd !important;
+            box-shadow: none !important;
+        }
+        
+        .card-header {
+            background-color: #f8f9fa !important;
+            color: #000 !important;
+        }
+        
+        .badge {
+            border: 1px solid #ddd !important;
+            color: #000 !important;
+            background-color: transparent !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Create Transaction functionality
+        $('#createTransactionBtn').click(function() {
+            window.location.href = "{{ url_for('new_payment') }}?swift_message_id={{ message.id }}";
+        });
+        
+        // Reconcile message functionality
+        $('#reconcileMessageBtn').click(function() {
+            $(this).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+            $(this).prop('disabled', true);
+            
+            $.ajax({
+                url: "{{ url_for('swift_gpi.reconcile_messages') }}",
+                type: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        showAlert('success', 'Reconciliation Complete', response.message);
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        showAlert('danger', 'Reconciliation Failed', response.error);
+                        $('#reconcileMessageBtn').html('Attempt Reconciliation');
+                        $('#reconcileMessageBtn').prop('disabled', false);
+                    }
+                },
+                error: function(xhr) {
+                    showAlert('danger', 'Error', 'An error occurred during reconciliation.');
+                    $('#reconcileMessageBtn').html('Attempt Reconciliation');
+                    $('#reconcileMessageBtn').prop('disabled', false);
+                }
+            });
+        });
+        
+        function showAlert(type, title, message) {
+            var alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <strong>${title}:</strong> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            // Remove any existing alerts
+            $('.alert-container').remove();
+            
+            // Add alert to the top of the page
+            $('<div class="alert-container position-fixed top-0 start-50 translate-middle-x mt-4" style="z-index: 1050;"></div>')
+                .append(alertHtml)
+                .appendTo('body');
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(function() {
+                $('.alert-container .alert').alert('close');
+            }, 5000);
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,206 @@
+{% extends 'layout.html' %}
+
+{% block title %}SWIFT GPI Dashboard{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-3">SWIFT GPI Dashboard</h1>
+            <p class="lead">Manage and monitor SWIFT GPI transactions and messages.</p>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-3 mb-4 mb-md-0">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Total Messages</h5>
+                    <p class="card-text display-4">{{ total_messages }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4 mb-md-0">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">MT103 Messages</h5>
+                    <p class="card-text display-4">{{ mt103_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4 mb-md-0">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">MT202 Messages</h5>
+                    <p class="card-text display-4">{{ mt202_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-secondary">
+                <div class="card-body">
+                    <h5 class="card-title">Other Messages</h5>
+                    <p class="card-text display-4">{{ other_count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <a href="{{ url_for('swift_gpi.upload_gpi_file') }}" class="btn btn-primary w-100">
+                                <i class="fa fa-upload me-2"></i> Upload SWIFT GPI File
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <a href="{{ url_for('swift_gpi.list_messages') }}" class="btn btn-secondary w-100">
+                                <i class="fa fa-list me-2"></i> View All Messages
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="reconcileBtn" class="btn btn-success w-100">
+                                <i class="fa fa-sync me-2"></i> Reconcile Messages
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Recent SWIFT Messages</h5>
+                    
+                    {% if messages %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Message Type</th>
+                                    <th>Reference</th>
+                                    <th>Sender</th>
+                                    <th>Receiver</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for message in messages %}
+                                <tr>
+                                    <td>MT{{ message.message_type }}</td>
+                                    <td>{{ message.reference }}</td>
+                                    <td>{{ message.sender_bic }}</td>
+                                    <td>{{ message.receiver_bic }}</td>
+                                    <td>
+                                        {% if message.amount and message.currency %}
+                                            {{ message.currency }} {{ message.amount|format_currency }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if message.status == 'RECEIVED' %}
+                                            <span class="badge bg-warning">Received</span>
+                                        {% elif message.status == 'RECONCILED' %}
+                                            <span class="badge bg-success">Reconciled</span>
+                                        {% elif message.status == 'PROCESSED' %}
+                                            <span class="badge bg-info">Processed</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ message.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('swift_gpi.view_message', message_id=message.id) }}" class="btn btn-sm btn-outline-primary">
+                                            View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-end mt-3">
+                        <a href="{{ url_for('swift_gpi.list_messages') }}" class="btn btn-sm btn-outline-secondary">
+                            View All Messages
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No SWIFT messages have been uploaded yet. Use the "Upload SWIFT GPI File" button to import messages.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Reconciliation AJAX call
+        $('#reconcileBtn').click(function() {
+            $(this).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+            $(this).prop('disabled', true);
+            
+            $.ajax({
+                url: "{{ url_for('swift_gpi.reconcile_messages') }}",
+                type: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        showAlert('success', 'Reconciliation Complete', response.message);
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        showAlert('danger', 'Reconciliation Failed', response.error);
+                        $('#reconcileBtn').html('<i class="fa fa-sync me-2"></i> Reconcile Messages');
+                        $('#reconcileBtn').prop('disabled', false);
+                    }
+                },
+                error: function(xhr) {
+                    showAlert('danger', 'Error', 'An error occurred during reconciliation.');
+                    $('#reconcileBtn').html('<i class="fa fa-sync me-2"></i> Reconcile Messages');
+                    $('#reconcileBtn').prop('disabled', false);
+                }
+            });
+        });
+        
+        function showAlert(type, title, message) {
+            var alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <strong>${title}:</strong> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            // Remove any existing alerts
+            $('.alert-container').remove();
+            
+            // Add alert to the top of the page
+            $('<div class="alert-container position-fixed top-0 start-50 translate-middle-x mt-4" style="z-index: 1050;"></div>')
+                .append(alertHtml)
+                .appendTo('body');
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(function() {
+                $('.alert-container .alert').alert('close');
+            }, 5000);
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

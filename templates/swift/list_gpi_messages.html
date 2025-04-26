@@ -1,0 +1,179 @@
+{% extends 'layout.html' %}
+
+{% block title %}SWIFT GPI Messages{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('swift_gpi.gpi_dashboard') }}">SWIFT GPI Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Messages</li>
+                </ol>
+            </nav>
+            
+            <h1 class="mb-3">SWIFT GPI Messages</h1>
+            <p class="lead">View and filter SWIFT messages imported from GPI.</p>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Filter Messages</h5>
+                    <form method="GET" action="{{ url_for('swift_gpi.list_messages') }}">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="message_type" class="form-label">Message Type</label>
+                                <select class="form-select" id="message_type" name="message_type">
+                                    <option value="">All Types</option>
+                                    <option value="103" {% if message_type == '103' %}selected{% endif %}>MT103</option>
+                                    <option value="202" {% if message_type == '202' %}selected{% endif %}>MT202</option>
+                                    <option value="950" {% if message_type == '950' %}selected{% endif %}>MT950</option>
+                                    <option value="940" {% if message_type == '940' %}selected{% endif %}>MT940</option>
+                                    <option value="760" {% if message_type == '760' %}selected{% endif %}>MT760</option>
+                                    <option value="700" {% if message_type == '700' %}selected{% endif %}>MT700</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="date_from" class="form-label">From Date</label>
+                                <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="date_to" class="form-label">To Date</label>
+                                <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="reference" class="form-label">Reference</label>
+                                <input type="text" class="form-control" id="reference" name="reference" value="{{ reference }}" placeholder="Reference number">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <a href="{{ url_for('swift_gpi.list_messages') }}" class="btn btn-secondary me-2">Clear Filters</a>
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title mb-0">SWIFT Messages</h5>
+                        <a href="{{ url_for('swift_gpi.upload_gpi_file') }}" class="btn btn-success">
+                            <i class="fa fa-upload me-2"></i> Upload New File
+                        </a>
+                    </div>
+                    
+                    {% if messages.items %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Message Type</th>
+                                    <th>Reference</th>
+                                    <th>Sender</th>
+                                    <th>Receiver</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Upload Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for message in messages.items %}
+                                <tr>
+                                    <td>MT{{ message.message_type }}</td>
+                                    <td>{{ message.reference }}</td>
+                                    <td>{{ message.sender_bic }}</td>
+                                    <td>{{ message.receiver_bic }}</td>
+                                    <td>
+                                        {% if message.amount and message.currency %}
+                                            {{ message.currency }} {{ message.amount|format_currency }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if message.status == 'RECEIVED' %}
+                                            <span class="badge bg-warning">Received</span>
+                                        {% elif message.status == 'RECONCILED' %}
+                                            <span class="badge bg-success">Reconciled</span>
+                                        {% elif message.status == 'PROCESSED' %}
+                                            <span class="badge bg-info">Processed</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ message.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('swift_gpi.view_message', message_id=message.id) }}" class="btn btn-sm btn-outline-primary">
+                                            View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav aria-label="SWIFT message pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if messages.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('swift_gpi.list_messages', page=messages.prev_num, message_type=message_type, date_from=date_from, date_to=date_to, reference=reference) }}">Previous</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for page_num in messages.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                                {% if page_num %}
+                                    {% if page_num == messages.page %}
+                                    <li class="page-item active">
+                                        <a class="page-link" href="#">{{ page_num }}</a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('swift_gpi.list_messages', page=page_num, message_type=message_type, date_from=date_from, date_to=date_to, reference=reference) }}">{{ page_num }}</a>
+                                    </li>
+                                    {% endif %}
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#">...</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if messages.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('swift_gpi.list_messages', page=messages.next_num, message_type=message_type, date_from=date_from, date_to=date_to, reference=reference) }}">Next</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    
+                    {% else %}
+                    <div class="alert alert-info">
+                        No SWIFT messages found matching the selected filters.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

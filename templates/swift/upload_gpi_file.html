@@ -1,0 +1,73 @@
+{% extends 'layout.html' %}
+
+{% block title %}Upload SWIFT GPI File{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-3">Upload SWIFT GPI File</h1>
+            <p class="lead">Upload SWIFT GPI message files for processing and reconciliation with internal transactions.</p>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">File Upload Guidelines</h5>
+                    <ul class="mb-0">
+                        <li>Supported file formats: .txt, .mt, .fin, .swi, .xml</li>
+                        <li>Files should contain valid SWIFT message formats</li>
+                        <li>For MT103, MT202, and other payment messages, transactions will be automatically created</li>
+                        <li>Maximum file size: 10MB</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Select SWIFT GPI File to Upload</h5>
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">SWIFT Message File</label>
+                            <input type="file" class="form-control" id="file" name="file" required>
+                            <div class="form-text">Select a SWIFT message file from your local computer.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="file_type" class="form-label">File Type</label>
+                            <select class="form-select" id="file_type" name="file_type">
+                                <option value="mt" selected>MT Message File</option>
+                                <option value="xml">XML Format</option>
+                                <option value="custom">Custom Format</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="auto_reconcile" name="auto_reconcile" checked>
+                                <label class="form-check-label" for="auto_reconcile">
+                                    Automatically reconcile with existing transactions
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('swift_gpi.gpi_dashboard') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Upload and Process</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h5 class="alert-heading">Off-Ledger Transactions</h5>
+                <p>SWIFT GPI manual download allows you to import settlement notifications for off-ledger transactions with large institutional clients. These transactions will be automatically processed and reconciled with your internal records.</p>
+                <hr>
+                <p class="mb-0">For assistance with SWIFT GPI integration, please contact <a href="mailto:support@nvcplatform.net">NVC Global Support</a>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
