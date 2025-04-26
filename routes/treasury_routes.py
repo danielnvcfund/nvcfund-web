@@ -14,7 +14,7 @@ from sqlalchemy import desc, func
 
 from app import db
 from models import (
-    User, FinancialInstitution, Transaction, TransactionStatus, TransactionType,
+    User, FinancialInstitution, FinancialInstitutionType, Transaction, TransactionStatus, TransactionType,
     TreasuryAccount, TreasuryAccountType, TreasuryTransaction, TreasuryTransactionType,
     TreasuryInvestment, InvestmentType, InvestmentStatus,
     TreasuryLoan, LoanType, LoanStatus, InterestType,
@@ -59,11 +59,26 @@ def add_institution():
                 'message': 'Institution name is required'
             }), 400
         
-        print(f"Creating institution with name: {data.get('name')} and type: {data.get('institution_type', 'BANK')}")
+        institution_type_name = data.get('institution_type', 'BANK')
+        print(f"Creating institution with name: {data.get('name')} and type: {institution_type_name}")
+        
+        # Convert string type to actual Enum value
+        try:
+            # First check if it's already an enum
+            if isinstance(institution_type_name, FinancialInstitutionType):
+                institution_type = institution_type_name
+            else:
+                # Try to convert from string to enum
+                institution_type = FinancialInstitutionType[institution_type_name]
+        except (KeyError, TypeError):
+            # If conversion fails, default to BANK
+            print(f"WARNING: Invalid institution type '{institution_type_name}', defaulting to BANK")
+            institution_type = FinancialInstitutionType.BANK
+        
         # Create and save the new institution
         institution = FinancialInstitution(
             name=data.get('name'),
-            institution_type=data.get('institution_type', 'BANK'),
+            institution_type=institution_type,
             is_active=True
         )
         

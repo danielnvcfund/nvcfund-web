@@ -312,6 +312,13 @@
       
       // Create a new institution via AJAX
       console.log('Making fetch request to /treasury/api/add_institution');
+      // Log the exact payload we're sending
+      const payload = {
+        name: institutionName,
+        institution_type: institutionType
+      };
+      console.log('Sending payload:', payload);
+      
       fetch('/treasury/api/add_institution', {
         method: 'POST',
         headers: {
@@ -320,10 +327,7 @@
           'X-Requested-With': 'XMLHttpRequest'
         },
         credentials: 'same-origin',
-        body: JSON.stringify({
-          name: institutionName,
-          institution_type: institutionType
-        })
+        body: JSON.stringify(payload)
       })
       .then(response => {
         console.log('Response received:', response.status, response.statusText);
