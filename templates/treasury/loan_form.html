@@ -390,11 +390,16 @@
         return;
       }
       
+      // Get CSRF token from the meta tag
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+      
       // Create a new institution via AJAX
-      fetch('/api/treasury/add_institution', {
+      fetch('/treasury/api/add_institution', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({
           name: institutionName,
