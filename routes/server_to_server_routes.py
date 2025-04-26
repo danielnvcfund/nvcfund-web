@@ -262,3 +262,97 @@ def schedule_transfer():
         db.session.rollback()
         current_app.logger.error(f"Error scheduling S2S transfer: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+        
+@server_to_server_routes.route('/add-institution', methods=['POST'])
+@login_required
+def add_institution():
+    """Add a new financial institution"""
+    try:
+        # Check if this is an AJAX request
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        # Get form data
+        name = request.form.get('name')
+        institution_type = request.form.get('institution_type', 'BANK')
+        swift_code = request.form.get('swift_code')
+        account_number = request.form.get('account_number')
+        routing_number = request.form.get('routing_number')
+        country = request.form.get('country')
+        description = request.form.get('description')
+        
+        # Parse checkboxes
+        supports_s2s = request.form.get('supports_s2s') == 'true'
+        supports_rtgs = request.form.get('supports_rtgs') == 'true'
+        supports_swift = request.form.get('supports_swift') == 'true'
+        
+        # Get redirect URL if provided
+        redirect_to = request.form.get('redirect_to')
+        
+        # Validate required data
+        if not name:
+            if is_ajax:
+                return jsonify({'success': False, 'message': 'Institution name is required'}), 400
+            flash('Institution name is required', 'danger')
+            return redirect(url_for('server_to_server.new_transfer'))
+        
+        # Create new institution
+        institution = FinancialInstitution(
+            name=name,
+            institution_type=FinancialInstitutionType[institution_type],
+            swift_code=swift_code,
+            account_number=account_number,
+            s2s_enabled=supports_s2s,
+            rtgs_enabled=supports_rtgs
+        )
+        
+        # Add metadata
+        metadata = {}
+        if country:
+            metadata['country'] = country
+        if routing_number:
+            metadata['routing_number'] = routing_number
+        if description:
+            metadata['description'] = description
+        if supports_swift:
+            metadata['swift_enabled'] = True
+            
+        # Store metadata as JSON
+        if metadata:
+            institution.metadata_json = json.dumps(metadata)
+        
+        db.session.add(institution)
+        db.session.commit()
+        
+        # Log the creation
+        current_app.logger.info(f"New financial institution created: {name} (ID: {institution.id})")
+        
+        if is_ajax:
+            # Return JSON response for AJAX requests
+            return jsonify({
+                'success': True,
+                'institution': {
+                    'id': institution.id,
+                    'name': institution.name,
+                    'swift_code': institution.swift_code,
+                    'institution_type': institution.institution_type.value
+                },
+                'message': 'Institution created successfully'
+            })
+        
+        # Add success message
+        flash(f'Financial institution "{name}" created successfully', 'success')
+        
+        # Redirect back to the referring page
+        if redirect_to:
+            return redirect(url_for(redirect_to))
+        return redirect(url_for('server_to_server.new_transfer'))
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error creating financial institution: {str(e)}")
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': str(e)}), 500
+        
+        flash(f'Error creating institution: {str(e)}', 'danger')
+        return redirect(url_for('server_to_server.new_transfer'))
