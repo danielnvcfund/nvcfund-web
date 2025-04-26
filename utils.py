@@ -359,3 +359,38 @@ def validate_api_request(data, required_fields, optional_fields=None):
             result[field] = data.get(field, default)
     
     return True, result
+
+def format_currency(amount, currency='USD'):
+    """Format a monetary amount with currency symbol and 2 decimal places
+    
+    Args:
+        amount (float): The monetary amount to format
+        currency (str): The currency code (e.g. 'USD', 'EUR')
+        
+    Returns:
+        str: Formatted currency string (e.g. '$1,234.56')
+    """
+    if amount is None:
+        return f"{currency} 0.00"
+        
+    # Handle common currency symbols
+    currency_symbols = {
+        'USD': '$',
+        'EUR': '€',
+        'GBP': '£',
+        'JPY': '¥',
+        'CAD': 'C$',
+        'AUD': 'A$',
+        'CHF': 'CHF',
+    }
+    
+    # Get symbol or use currency code
+    symbol = currency_symbols.get(currency, currency)
+    
+    # Format with thousands separator and 2 decimal places
+    if currency == 'JPY':  # JPY traditionally has no decimal places
+        formatted = f"{symbol}{int(amount):,}"
+    else:
+        formatted = f"{symbol}{amount:,.2f}"
+        
+    return formatted

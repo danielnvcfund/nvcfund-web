@@ -85,7 +85,7 @@
                   {{ loan.account.name }}
                 </a>
               </td>
-              <td>{{ loan.currency }} {{ "%.2f"|format(loan.amount) }}</td>
+              <td>{{ loan.principal_amount|format_currency(loan.currency) }}</td>
               <td>{{ "%.2f"|format(loan.interest_rate * 100) }}%</td>
               <td>{{ loan.start_date.strftime('%Y-%m-%d') }}</td>
               <td>
@@ -95,7 +95,7 @@
                 <span class="text-muted">N/A</span>
                 {% endif %}
               </td>
-              <td>{{ loan.currency }} {{ "%.2f"|format(loan.remaining_balance) }}</td>
+              <td>{{ loan.outstanding_amount|format_currency(loan.currency) }}</td>
               <td>
                 <span class="badge {% if loan.status.name == 'ACTIVE' %}bg-danger{% elif loan.status.name == 'PAID_OFF' %}bg-success{% else %}bg-secondary{% endif %}">
                   {{ loan.status.name|replace('_', ' ')|title }}
