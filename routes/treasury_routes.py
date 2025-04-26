@@ -33,6 +33,44 @@ treasury_bp = Blueprint('treasury', __name__, url_prefix='/treasury')
 # API routes are prefixed with /api
 api_bp = Blueprint('treasury_api', __name__, url_prefix='/api/treasury')
 
+@api_bp.route('/add_institution', methods=['POST'])
+@login_required
+def add_institution():
+    """API endpoint to add a new financial institution"""
+    data = request.json
+    
+    if not data or not data.get('name'):
+        return jsonify({
+            'success': False,
+            'message': 'Institution name is required'
+        }), 400
+    
+    try:
+        # Create new financial institution
+        institution = FinancialInstitution(
+            name=data.get('name'),
+            institution_type=data.get('institution_type', 'BANK'),
+            status='active'
+        )
+        
+        db.session.add(institution)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Institution added successfully',
+            'institution': {
+                'id': institution.id,
+                'name': institution.name
+            }
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'Error adding institution: {str(e)}'
+        }), 500
+
 
 @treasury_bp.route('/')
 @login_required
