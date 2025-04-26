@@ -229,6 +229,24 @@ def create_app():
             logger.error(f"Error registering SWIFT GPI routes: {str(e)}")
             logger.warning("Application will run without SWIFT GPI functionality")
         
+        # Register Server-to-Server routes
+        try:
+            from routes.server_to_server_routes import server_to_server_routes
+            app.register_blueprint(server_to_server_routes)
+            logger.info("Server-to-Server routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Server-to-Server routes: {str(e)}")
+            logger.warning("Application will run without Server-to-Server functionality")
+        
+        # Register RTGS routes
+        try:
+            from routes.rtgs_routes import rtgs_routes
+            app.register_blueprint(rtgs_routes)
+            logger.info("RTGS routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering RTGS routes: {str(e)}")
+            logger.warning("Application will run without RTGS functionality")
+        
         # Register API routes
         from routes.api import api_bp as main_api_bp
         app.register_blueprint(main_api_bp)

@@ -66,6 +66,7 @@ class TransactionStatus(enum.Enum):
     REFUNDED = "REFUNDED"
     CANCELLED = "CANCELLED"
     REJECTED = "REJECTED"
+    SCHEDULED = "SCHEDULED"  # For future-scheduled transactions
 
 class TransactionType(enum.Enum):
     DEPOSIT = "DEPOSIT"
@@ -136,8 +137,13 @@ class FinancialInstitution(db.Model):
     api_endpoint = db.Column(db.String(256))
     api_key = db.Column(db.String(256))
     ethereum_address = db.Column(db.String(64))
+    swift_code = db.Column(db.String(11))  # SWIFT/BIC code for the institution
+    account_number = db.Column(db.String(64))  # Main account number for the institution
     metadata_json = db.Column(db.Text)  # JSON metadata for various integrations (SWIFT, etc.)
     is_active = db.Column(db.Boolean, default=True)
+    # Off-ledger transaction capabilities
+    rtgs_enabled = db.Column(db.Boolean, default=False)  # Whether the institution supports RTGS
+    s2s_enabled = db.Column(db.Boolean, default=False)   # Whether the institution supports server-to-server transfers
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

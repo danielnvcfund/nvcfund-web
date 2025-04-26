@@ -25,26 +25,26 @@ def dashboard():
     """RTGS Transfer Dashboard"""
     # Get recent transactions
     transactions = Transaction.query.filter_by(
-        transaction_type=TransactionType.RTGS
+        transaction_type=TransactionType.RTGS_TRANSFER
     ).order_by(desc(Transaction.created_at)).limit(20).all()
     
     # Count transactions by status
     total_count = Transaction.query.filter_by(
-        transaction_type=TransactionType.RTGS
+        transaction_type=TransactionType.RTGS_TRANSFER
     ).count()
     
     completed_count = Transaction.query.filter_by(
-        transaction_type=TransactionType.RTGS,
+        transaction_type=TransactionType.RTGS_TRANSFER,
         status=TransactionStatus.COMPLETED
     ).count()
     
     pending_count = Transaction.query.filter_by(
-        transaction_type=TransactionType.RTGS,
+        transaction_type=TransactionType.RTGS_TRANSFER,
         status=TransactionStatus.PENDING
     ).count()
     
     failed_count = Transaction.query.filter_by(
-        transaction_type=TransactionType.RTGS,
+        transaction_type=TransactionType.RTGS_TRANSFER,
         status=TransactionStatus.FAILED
     ).count()
     
@@ -102,7 +102,7 @@ def new_transfer():
             transaction = Transaction(
                 transaction_id=utils.generate_transaction_id(),
                 user_id=current_user.id,
-                transaction_type=TransactionType.RTGS,
+                transaction_type=TransactionType.RTGS_TRANSFER,
                 amount=amount,
                 currency=currency,
                 status=TransactionStatus.PENDING,
@@ -177,7 +177,7 @@ def api_transfer():
         transaction = Transaction(
             transaction_id=utils.generate_transaction_id(),
             user_id=current_user.id,
-            transaction_type=TransactionType.RTGS,
+            transaction_type=TransactionType.RTGS_TRANSFER,
             amount=float(data['amount']),
             currency=data['currency'],
             status=TransactionStatus.PENDING,
