@@ -80,11 +80,11 @@
               
               <div class="col-md-6">
                 <div class="form-group">
-                  {{ form.reference_number.label(class="form-label") }}
-                  {{ form.reference_number(class="form-control", placeholder="Auto-generated if left empty") }}
-                  {% if form.reference_number.errors %}
+                  {{ form.institution_id.label(class="form-label") }}
+                  {{ form.institution_id(class="form-select") }}
+                  {% if form.institution_id.errors %}
                   <div class="text-danger">
-                    {% for error in form.reference_number.errors %}
+                    {% for error in form.institution_id.errors %}
                     <small>{{ error }}</small>
                     {% endfor %}
                   </div>
@@ -188,26 +188,12 @@
             
             <div class="row mb-3">
               <div class="col-md-6">
-                <div class="form-group">
-                  {{ form.counterparty.label(class="form-label") }}
-                  {{ form.counterparty(class="form-control") }}
-                  {% if form.counterparty.errors %}
+                <div class="form-check form-switch mt-4">
+                  {{ form.is_active(class="form-check-input") }}
+                  {{ form.is_active.label(class="form-check-label") }}
+                  {% if form.is_active.errors %}
                   <div class="text-danger">
-                    {% for error in form.counterparty.errors %}
-                    <small>{{ error }}</small>
-                    {% endfor %}
-                  </div>
-                  {% endif %}
-                </div>
-              </div>
-              
-              <div class="col-md-6">
-                <div class="form-group">
-                  {{ form.interest_payment_frequency.label(class="form-label") }}
-                  {{ form.interest_payment_frequency(class="form-select") }}
-                  {% if form.interest_payment_frequency.errors %}
-                  <div class="text-danger">
-                    {% for error in form.interest_payment_frequency.errors %}
+                    {% for error in form.is_active.errors %}
                     <small>{{ error }}</small>
                     {% endfor %}
                   </div>
@@ -216,21 +202,7 @@
               </div>
             </div>
             
-            <div class="row mb-3">
-              <div class="col-md-12">
-                <div class="form-group">
-                  {{ form.notes.label(class="form-label") }}
-                  {{ form.notes(class="form-control", rows=3) }}
-                  {% if form.notes.errors %}
-                  <div class="text-danger">
-                    {% for error in form.notes.errors %}
-                    <small>{{ error }}</small>
-                    {% endfor %}
-                  </div>
-                  {% endif %}
-                </div>
-              </div>
-            </div>
+
             
             <div class="d-flex justify-content-between">
               <a href="{{ url_for('treasury.investment_list') }}" class="btn btn-outline-secondary">Cancel</a>
@@ -259,18 +231,17 @@
     }
   });
   
-  // Update interest payment frequency based on investment type
+  // Update investment-related fields based on investment type
   document.getElementById('investment_type').addEventListener('change', function() {
     const investmentType = this.value;
-    const interestFrequencySelect = document.getElementById('interest_payment_frequency');
     
-    // Example logic - adjust based on your business rules
+    // Example logic for future implementation of other form fields
     if (investmentType === 'CERTIFICATE_OF_DEPOSIT' || investmentType === 'BOND') {
-      // CDs and bonds often have specific payment schedules
-      interestFrequencySelect.value = 'SEMI_ANNUAL';
+      // For CD or bond investments, we might want to set specific default values
+      // This is just a placeholder for future functionality
     } else if (investmentType === 'MONEY_MARKET') {
-      // Money market funds typically compound daily but pay monthly
-      interestFrequencySelect.value = 'MONTHLY';
+      // Money market funds might have different default settings
+      // This is just a placeholder for future functionality
     }
   });
 </script>

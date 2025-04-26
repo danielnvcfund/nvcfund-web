@@ -30,6 +30,9 @@ from utils import generate_unique_id, format_currency
 # Create Treasury Management blueprint
 treasury_bp = Blueprint('treasury', __name__, url_prefix='/treasury')
 
+# API routes are prefixed with /api
+api_bp = Blueprint('treasury_api', __name__, url_prefix='/api/treasury')
+
 
 @treasury_bp.route('/')
 @login_required
