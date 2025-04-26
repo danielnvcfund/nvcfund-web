@@ -7,7 +7,7 @@ from flask_login import login_required, current_user
 from models import db, FinancialInstitution
 
 # Create the treasury API blueprint
-treasury_api_bp = Blueprint('treasury_api', __name__, url_prefix='/api/treasury')
+treasury_api_bp = Blueprint('treasury_api', __name__)
 
 
 @treasury_api_bp.route('/add_institution', methods=['POST'])
