@@ -368,32 +368,68 @@
         </footer>
     </div>
 
-    <!-- PDF Export Button - Only visible in browser, not in print -->
-    <div class="container mt-4 d-print-none">
-        <button id="downloadPDF" class="btn btn-primary">
-            <i class="fas fa-file-pdf me-2"></i> Download as PDF
-        </button>
+    <!-- PDF Export Section - Only visible in browser, not in print -->
+    <div class="container mt-5 d-print-none">
+        <div class="card bg-blue-dark p-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h4 class="mb-3"><i class="fas fa-file-pdf me-2"></i> Document Access Options</h4>
+                    <p class="mb-3">This assessment is also available as a downloadable PDF for offline viewing, sharing with stakeholders, or printing.</p>
+                    <p class="small text-muted mb-0">The PDF document preserves all formatting and is optimized for both digital viewing and printing.</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <button id="downloadPDF" class="btn btn-primary btn-lg">
+                        <i class="fas fa-download me-2"></i> Download PDF
+                    </button>
+                    <button id="printDocument" class="btn btn-outline-light btn-lg ms-2">
+                        <i class="fas fa-print me-2"></i> Print
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-        document.getElementById('downloadPDF').addEventListener('click', function() {
-            const element = document.body;
-            const opt = {
-                margin: 10,
-                filename: 'NVC_Banking_Platform_Capabilities.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
+        document.addEventListener('DOMContentLoaded', function() {
+            const downloadButton = document.getElementById('downloadPDF');
+            const printButton = document.getElementById('printDocument');
             
-            // Promise-based
-            html2pdf().set(opt).from(element).save();
+            // Download PDF
+            downloadButton.addEventListener('click', function() {
+                // Show loading state
+                downloadButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Generating PDF...';
+                downloadButton.disabled = true;
+                
+                // Define optimization settings
+                const element = document.body;
+                const opt = {
+                    margin: [15, 15, 15, 15],
+                    filename: 'NVC_Banking_Platform_Capabilities.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                
+                // Generate PDF with improved quality
+                setTimeout(() => {
+                    html2pdf().set(opt).from(element).save().then(() => {
+                        // Reset button state
+                        downloadButton.innerHTML = '<i class="fas fa-download me-2"></i> Download PDF';
+                        downloadButton.disabled = false;
+                    });
+                }, 100);
+            });
+            
+            // Print document
+            printButton.addEventListener('click', function() {
+                window.print();
+            });
         });
     </script>
     
-    <!-- Font Awesome for icons -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <!-- Font Awesome for icons (using CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </body>
 </html>
