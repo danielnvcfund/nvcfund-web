@@ -30,46 +30,56 @@ from utils import generate_unique_id, format_currency
 # Create Treasury Management blueprint
 treasury_bp = Blueprint('treasury', __name__, url_prefix='/treasury')
 
-# API routes are prefixed with /api
-api_bp = Blueprint('treasury_api', __name__, url_prefix='/api/treasury')
-
-@api_bp.route('/add_institution', methods=['POST'])
+# API routes within the treasury blueprint
+@treasury_bp.route('/api/add_institution', methods=['POST'])
 @login_required
 def add_institution():
-    """API endpoint to add a new financial institution"""
-    data = request.json
-    
-    if not data or not data.get('name'):
-        return jsonify({
-            'success': False,
-            'message': 'Institution name is required'
-        }), 400
-    
+    """Add a new financial institution via API"""
     try:
-        # Create new financial institution
+        if request.is_json:
+            data = request.get_json()
+        else:
+            # For non-JSON requests, try to get data from form
+            data = {
+                'name': request.form.get('name', ''),
+                'institution_type': request.form.get('institution_type', 'BANK')
+            }
+        
+        if not data.get('name'):
+            return jsonify({
+                'success': False,
+                'message': 'Institution name is required'
+            }), 400
+            
+        # Create and save the new institution
         institution = FinancialInstitution(
             name=data.get('name'),
             institution_type=data.get('institution_type', 'BANK'),
-            status='active'
+            is_active=True
         )
         
         db.session.add(institution)
         db.session.commit()
         
+        # Return the created institution
         return jsonify({
             'success': True,
-            'message': 'Institution added successfully',
+            'message': 'Institution created successfully',
             'institution': {
                 'id': institution.id,
-                'name': institution.name
+                'name': institution.name,
+                'type': institution.institution_type
             }
         })
     except Exception as e:
         db.session.rollback()
+        print(f"Error creating institution: {str(e)}")
         return jsonify({
             'success': False,
-            'message': f'Error adding institution: {str(e)}'
+            'message': f'Error creating institution: {str(e)}'
         }), 500
+
+
 
 
 @treasury_bp.route('/')

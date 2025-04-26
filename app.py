@@ -202,9 +202,8 @@ def create_app():
         app.register_blueprint(edi)
         
         # Register Treasury Management System routes
-        from routes.treasury_routes import treasury_bp, api_bp
+        from routes.treasury_routes import treasury_bp
         app.register_blueprint(treasury_bp)
-        app.register_blueprint(api_bp)
         
         # Register API routes
         from routes.api import api_bp as main_api_bp
