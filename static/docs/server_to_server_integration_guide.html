@@ -3,1115 +3,521 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NVC Server-to-Server Integration Guide</title>
+    <title>NVC Global Server-to-Server Integration Guide</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <style>
         body {
-            padding-top: 20px;
-            padding-bottom: 50px;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            color: var(--bs-body-color);
+            background-color: var(--bs-body-bg);
         }
-        .guide-container {
-            max-width: 1200px;
+        .container {
+            max-width: 960px;
             margin: 0 auto;
         }
-        .section {
-            margin-bottom: 30px;
-            padding: 20px;
-            border-radius: 6px;
-            background-color: var(--bs-body-bg);
-            border: 1px solid var(--bs-border-color);
-        }
-        .code-block {
-            background-color: var(--bs-body-bg);
-            border: 1px solid var(--bs-border-color);
-            border-radius: 4px;
-            padding: 15px;
-            margin: 15px 0;
-            font-family: monospace;
-            white-space: pre;
-            overflow-x: auto;
-        }
-        .api-endpoint {
-            background-color: rgba(0, 123, 255, 0.05);
-            border-left: 4px solid var(--bs-primary);
-            padding: 15px;
-            margin: 15px 0;
-        }
-        .method {
-            font-weight: bold;
-            padding: 3px 6px;
-            border-radius: 4px;
-            margin-right: 5px;
-        }
-        .get {
-            background-color: var(--bs-success);
-            color: #fff;
-        }
-        .post {
-            background-color: var(--bs-primary);
-            color: #fff;
-        }
-        .put {
-            background-color: var(--bs-warning);
-            color: #fff;
-        }
-        .delete {
-            background-color: var(--bs-danger);
-            color: #fff;
-        }
-        .table-responsive {
-            margin: 20px 0;
-        }
-        .toc {
-            position: sticky;
-            top: 20px;
-        }
-        .header-logo {
+        .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--bs-border-color);
         }
-        .header-logo img {
-            max-width: 200px;
+        .logo {
+            max-width: 250px;
+            margin-bottom: 20px;
         }
-        .table th {
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--bs-primary);
+        }
+        h2 {
+            font-size: 1.8rem;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--bs-border-color);
+            color: var(--bs-primary);
+        }
+        h3 {
+            font-size: 1.4rem;
+            margin-top: 25px;
+            color: var(--bs-info);
+        }
+        code {
+            background-color: var(--bs-dark);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            color: var(--bs-info);
+        }
+        pre {
+            background-color: var(--bs-dark);
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid var(--bs-border-color);
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        .endpoint {
+            background-color: var(--bs-dark);
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--bs-primary);
+        }
+        .endpoint .method {
+            font-weight: bold;
+            color: var(--bs-success);
+            margin-right: 10px;
+        }
+        .endpoint .url {
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            color: var(--bs-light);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid var(--bs-border-color);
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
             background-color: var(--bs-secondary-bg);
         }
         .note {
-            background-color: var(--bs-warning-bg-subtle);
-            border-left: 4px solid var(--bs-warning);
+            background-color: var(--bs-secondary-bg);
             padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid var(--bs-warning);
             margin: 15px 0;
-            border-radius: 4px;
         }
         .important {
-            background-color: var(--bs-info-bg-subtle);
-            border-left: 4px solid var(--bs-info);
+            background-color: var(--bs-secondary-bg);
             padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid var(--bs-danger);
             margin: 15px 0;
-            border-radius: 4px;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: var(--bs-secondary-color);
+            padding-top: 20px;
+            border-top: 1px solid var(--bs-border-color);
+        }
+        .section {
+            margin-bottom: 40px;
         }
         .diagram {
+            background-color: var(--bs-secondary-bg);
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
             text-align: center;
-            margin: 30px 0;
         }
         .diagram img {
             max-width: 100%;
         }
     </style>
 </head>
-<body data-bs-theme="dark">
-    <div class="guide-container">
-        <div class="header-logo">
-            <h1>NVC Global</h1>
-            <h2>Server-to-Server Integration Guide</h2>
-            <p class="text-muted">Version 1.0 | April 2025</p>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="../images/logo.png" alt="NVC Global Logo" class="logo">
+            <h1>Server-to-Server Integration Guide</h1>
+            <p>Version 1.0 | April 2025</p>
         </div>
 
-        <div class="row">
-            <div class="col-md-3">
-                <div class="toc card">
-                    <div class="card-header">
-                        <h5>Table of Contents</h5>
-                    </div>
-                    <div class="card-body">
-                        <nav id="navbar-example3" class="h-100 flex-column align-items-stretch">
-                            <nav class="nav nav-pills flex-column">
-                                <a class="nav-link" href="#introduction">1. Introduction</a>
-                                <a class="nav-link" href="#overview">2. System Overview</a>
-                                <a class="nav-link" href="#authentication">3. Authentication</a>
-                                <a class="nav-link" href="#endpoints">4. API Endpoints</a>
-                                <nav class="nav nav-pills flex-column">
-                                    <a class="nav-link ms-3" href="#transfer-endpoint">4.1 Transfer Endpoint</a>
-                                    <a class="nav-link ms-3" href="#schedule-endpoint">4.2 Schedule Endpoint</a>
-                                    <a class="nav-link ms-3" href="#status-endpoint">4.3 Status Endpoint</a>
-                                </nav>
-                                <a class="nav-link" href="#error-codes">5. Error Codes</a>
-                                <a class="nav-link" href="#implementation">6. Implementation Guide</a>
-                                <a class="nav-link" href="#testing">7. Testing</a>
-                                <a class="nav-link" href="#security">8. Security Best Practices</a>
-                                <a class="nav-link" href="#appendix">9. Appendix</a>
-                            </nav>
-                        </nav>
-                    </div>
-                </div>
-            </div>
+        <div class="section">
+            <h2>1. Introduction</h2>
+            <p>
+                This guide provides detailed instructions for financial institutions and corporate partners to 
+                integrate with NVC Global's Server-to-Server (S2S) transfer system. The S2S system enables direct, 
+                secure, high-volume financial transactions between institutions with minimal latency and maximum security.
+            </p>
             
-            <div class="col-md-9">
-                <div class="section" id="introduction">
-                    <h2>1. Introduction</h2>
-                    <p>
-                        The NVC Global Server-to-Server (S2S) API enables secure, high-volume financial data exchange between 
-                        institutional partners. This direct server-to-server connection eliminates intermediaries, 
-                        ensuring faster processing, enhanced security, and reduced transaction costs.
-                    </p>
-                    <p>
-                        This guide provides comprehensive documentation for financial institutions, payment processors, and 
-                        enterprise partners looking to integrate with the NVC Global Banking Platform for Server-to-Server transfers.
-                    </p>
-                    
-                    <div class="important">
-                        <strong>Key Benefits:</strong>
-                        <ul>
-                            <li>Direct communication between authorized servers</li>
-                            <li>High-volume transaction processing capabilities</li>
-                            <li>Reduced processing times and costs</li>
-                            <li>Enhanced security with multi-layer authentication</li>
-                            <li>Real-time transaction status updates</li>
-                            <li>Support for scheduled transfers</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <div class="section" id="overview">
-                    <h2>2. System Overview</h2>
-                    
-                    <p>
-                        The NVC Global S2S platform facilitates direct, secure communications between financial institutions using
-                        standard REST API protocols with JWT-based authentication and TLS encryption.
-                    </p>
-                    
-                    <div class="diagram">
-                        <div class="card">
-                            <div class="card-header">Server-to-Server Architecture</div>
-                            <div class="card-body">
-<pre>
-┌─────────────────┐     ┌───────────────────┐      ┌─────────────────┐
-│                 │     │                   │      │                 │
-│  Institution A  │◄────┤  NVC Global API   ├─────►│  Institution B  │
-│  Server         │     │  Gateway          │      │  Server         │
-│                 │     │                   │      │                 │
-└─────────────────┘     └───────────────────┘      └─────────────────┘
-        ▲                        ▲                          ▲
-        │                        │                          │
-        │                        │                          │
-        │                        ▼                          │
-        │                ┌───────────────────┐              │
-        │                │                   │              │
-        └───────────────┤  Blockchain Layer  ├──────────────┘
-                         │                   │
-                         └───────────────────┘
-</pre>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <h4>Transaction Flow</h4>
-                    <ol>
-                        <li><strong>Authentication:</strong> Client authenticates with the NVC Global API using JWT tokens.</li>
-                        <li><strong>Transaction Initiation:</strong> Client submits transfer request to the S2S API.</li>
-                        <li><strong>Validation:</strong> NVC Global validates the request and institution permissions.</li>
-                        <li><strong>Processing:</strong> Transaction is processed through the appropriate channels (blockchain or traditional banking networks).</li>
-                        <li><strong>Settlement:</strong> Funds are settled between institutions.</li>
-                        <li><strong>Confirmation:</strong> Both parties receive transaction confirmation and receipts.</li>
-                    </ol>
-                </div>
-                
-                <div class="section" id="authentication">
-                    <h2>3. Authentication</h2>
-                    
-                    <p>
-                        All API requests must be authenticated using JWT (JSON Web Tokens). Follow these steps to authenticate:
-                    </p>
-                    
-                    <h4>Obtaining API Credentials</h4>
-                    <p>
-                        Contact your NVC Global account representative to obtain API credentials including:
-                    </p>
-                    <ul>
-                        <li>API Key</li>
-                        <li>API Secret</li>
-                        <li>Institution ID</li>
-                    </ul>
-                    
-                    <h4>Generating JWT Tokens</h4>
-                    <p>
-                        Use your API credentials to generate a JWT token for API requests:
-                    </p>
-                    
-                    <div class="code-block">
-// Example JWT token generation (pseudo-code)
-payload = {
-  "iss": "your-institution-id",
-  "iat": current_timestamp,
-  "exp": current_timestamp + 3600,  // 1 hour expiration
-  "api_key": "your-api-key"
-}
+            <div class="note">
+                <strong>Note:</strong> Server-to-Server transfers are designed for institutional use and require 
+                explicit authorization and setup by NVC Global. Please contact your NVC Global account manager to 
+                begin the verification and setup process.
+            </div>
+        </div>
 
-token = JWT.encode(payload, "your-api-secret", "HS256")</div>
-                    
-                    <h4>Using JWT Tokens</h4>
-                    <p>
-                        Include the JWT token in the Authorization header of all API requests:
-                    </p>
-                    
-                    <div class="code-block">
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ5b3VyLWluc3RpdHV0aW9uLWlkIiwiaWF0IjoxNjE5NzQ1NjUyLCJleHAiOjE2MTk3NDkyNTIsImFwaV9rZXkiOiJ5b3VyLWFwaS1rZXkifQ.signature</div>
-                </div>
-                
-                <div class="section" id="endpoints">
-                    <h2>4. API Endpoints</h2>
-                    
-                    <p>
-                        The NVC Global S2S API provides the following endpoints for server-to-server transfers:
-                    </p>
-                    
-                    <div id="transfer-endpoint" class="api-endpoint">
-                        <span class="method post">POST</span> <code>/api/s2s/transfer</code>
-                        <p>Initiates an immediate server-to-server transfer between institutions.</p>
-                        
-                        <h5>Request Parameters</h5>
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Parameter</th>
-                                        <th>Type</th>
-                                        <th>Required</th>
-                                        <th>Description</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>institution_id</td>
-                                        <td>Integer</td>
-                                        <td>Yes</td>
-                                        <td>The ID of the recipient institution</td>
-                                    </tr>
-                                    <tr>
-                                        <td>amount</td>
-                                        <td>Float</td>
-                                        <td>Yes</td>
-                                        <td>The amount to transfer</td>
-                                    </tr>
-                                    <tr>
-                                        <td>currency</td>
-                                        <td>String</td>
-                                        <td>Yes</td>
-                                        <td>Currency code (e.g., USD, EUR, GBP)</td>
-                                    </tr>
-                                    <tr>
-                                        <td>transfer_type</td>
-                                        <td>String</td>
-                                        <td>No</td>
-                                        <td>Type of transfer (CREDIT or DEBIT). Default: CREDIT</td>
-                                    </tr>
-                                    <tr>
-                                        <td>reference_code</td>
-                                        <td>String</td>
-                                        <td>No</td>
-                                        <td>Optional reference code for the transfer</td>
-                                    </tr>
-                                    <tr>
-                                        <td>description</td>
-                                        <td>String</td>
-                                        <td>No</td>
-                                        <td>Description of the transfer</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <h5>Example Request</h5>
-                        <div class="code-block">
-POST /api/s2s/transfer HTTP/1.1
-Host: api.nvcglobal.net
-Authorization: Bearer your-jwt-token
-Content-Type: application/json
+        <div class="section">
+            <h2>2. System Architecture</h2>
+            <p>
+                The NVC Global Server-to-Server transfer system is built on a secure, multi-layered architecture 
+                that ensures both performance and security for high-value transfers.
+            </p>
 
-{
-  "institution_id": 123,
-  "amount": 10000.00,
+            <h3>2.1 Core Components</h3>
+            <ul>
+                <li><strong>Authentication Layer</strong> - Multi-factor authentication and API key validation</li>
+                <li><strong>Encryption Layer</strong> - End-to-end encryption of all transaction data</li>
+                <li><strong>Transaction Processing Engine</strong> - High-throughput processing for instant settlements</li>
+                <li><strong>Audit & Compliance System</strong> - Real-time transaction monitoring and regulatory reporting</li>
+                <li><strong>Reconciliation System</strong> - Automated matching and confirmation</li>
+            </ul>
+
+            <h3>2.2 System Architecture Diagram</h3>
+            <div class="diagram">
+                <pre>
+┌──────────────────┐     ┌─────────────────┐     ┌──────────────────┐
+│                  │     │                 │     │                  │
+│   Institution A  │◄────►  NVC Global S2S  ◄────►   Institution B  │
+│   (Originator)   │     │     Network     │     │   (Recipient)    │
+│                  │     │                 │     │                  │
+└──────────────────┘     └─────────────────┘     └──────────────────┘
+          │                       │                       │
+          │                       │                       │
+          ▼                       ▼                       ▼
+┌──────────────────┐     ┌─────────────────┐     ┌──────────────────┐
+│                  │     │                 │     │                  │
+│  Local Ledger    │     │ Central Ledger  │     │  Local Ledger    │
+│                  │     │                 │     │                  │
+└──────────────────┘     └─────────────────┘     └──────────────────┘
+                                  │
+                                  │
+                                  ▼
+                         ┌─────────────────┐
+                         │                 │
+                         │  Settlement &   │
+                         │  Reconciliation │
+                         │                 │
+                         └─────────────────┘
+                </pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>3. Integration Requirements</h2>
+
+            <h3>3.1 Technical Requirements</h3>
+            <ul>
+                <li>HTTP/HTTPS support with TLS 1.2 or higher</li>
+                <li>JSON request/response processing capabilities</li>
+                <li>Ability to generate and validate digital signatures</li>
+                <li>API endpoint exposed for receiving notifications</li>
+                <li>Secure storage for API credentials</li>
+                <li>Recommended: 99.9% uptime for critical systems</li>
+            </ul>
+
+            <h3>3.2 Security Requirements</h3>
+            <ul>
+                <li>Implementation of OAuth 2.0 or equivalent authentication protocol</li>
+                <li>Adherence to data protection regulations (GDPR, CCPA, etc.)</li>
+                <li>Implementation of IP whitelisting for API access</li>
+                <li>Regular security audits and penetration testing</li>
+                <li>Encryption of sensitive data at rest and in transit</li>
+            </ul>
+
+            <h3>3.3 Compliance Requirements</h3>
+            <ul>
+                <li>Compliance with AML/KYC regulations</li>
+                <li>Implementation of transaction monitoring systems</li>
+                <li>Record keeping according to financial regulatory requirements</li>
+                <li>Ability to generate regulatory reports</li>
+                <li>Support for transaction freezing/reversal procedures</li>
+            </ul>
+
+            <div class="important">
+                <strong>Important:</strong> All integrating institutions must sign the NVC Global Security & Compliance 
+                Agreement before gaining access to production systems.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>4. API Reference</h2>
+
+            <h3>4.1 Authentication</h3>
+            <p>
+                All API requests must include the following authentication headers:
+            </p>
+            <pre><code>Authorization: Bearer {your_api_token}
+X-API-Key: {your_api_key}
+X-Request-Timestamp: {unix_timestamp}
+X-Request-Signature: {hmac_signature}</code></pre>
+
+            <p>The signature should be calculated as follows:</p>
+            <pre><code>HMAC-SHA256(
+    API_SECRET, 
+    API_KEY + UNIX_TIMESTAMP + REQUEST_METHOD + ENDPOINT_PATH + REQUEST_BODY
+)</code></pre>
+
+            <h3>4.2 Server-to-Server Transfer API</h3>
+            
+            <h4>Initiate Transfer</h4>
+            <div class="endpoint">
+                <span class="method">POST</span>
+                <span class="url">/s2s/api/transfer</span>
+            </div>
+
+            <p>Request Body:</p>
+            <pre><code>{
+  "institution_id": "12345",
+  "amount": 1000000.00,
   "currency": "USD",
+  "description": "Payment for services",
+  "reference_code": "INV-2025-04-26",
   "transfer_type": "CREDIT",
-  "reference_code": "INV-12345",
-  "description": "Payment for services rendered"
-}</div>
-                        
-                        <h5>Example Response</h5>
-                        <div class="code-block">
-HTTP/1.1 200 OK
-Content-Type: application/json
+  "callback_url": "https://your-institution.com/callbacks/s2s"
+}</code></pre>
 
-{
+            <p>Response:</p>
+            <pre><code>{
   "success": true,
-  "transaction_id": "TXN-A595A9FB-1682516789",
+  "transaction_id": "f8c3de3d-1d35-4e97-9e55-c578a9c9c897",
   "status": "PENDING",
   "message": "Server-to-Server transfer initiated successfully"
-}</div>
-                    </div>
-                    
-                    <div id="schedule-endpoint" class="api-endpoint">
-                        <span class="method post">POST</span> <code>/api/s2s/schedule</code>
-                        <p>Schedules a server-to-server transfer for future execution.</p>
-                        
-                        <h5>Request Parameters</h5>
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Parameter</th>
-                                        <th>Type</th>
-                                        <th>Required</th>
-                                        <th>Description</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>institution_id</td>
-                                        <td>Integer</td>
-                                        <td>Yes</td>
-                                        <td>The ID of the recipient institution</td>
-                                    </tr>
-                                    <tr>
-                                        <td>amount</td>
-                                        <td>Float</td>
-                                        <td>Yes</td>
-                                        <td>The amount to transfer</td>
-                                    </tr>
-                                    <tr>
-                                        <td>currency</td>
-                                        <td>String</td>
-                                        <td>Yes</td>
-                                        <td>Currency code (e.g., USD, EUR, GBP)</td>
-                                    </tr>
-                                    <tr>
-                                        <td>schedule_date</td>
-                                        <td>String</td>
-                                        <td>Yes</td>
-                                        <td>ISO format date for scheduled execution (YYYY-MM-DDTHH:MM:SS)</td>
-                                    </tr>
-                                    <tr>
-                                        <td>transfer_type</td>
-                                        <td>String</td>
-                                        <td>No</td>
-                                        <td>Type of transfer (CREDIT or DEBIT). Default: CREDIT</td>
-                                    </tr>
-                                    <tr>
-                                        <td>reference_code</td>
-                                        <td>String</td>
-                                        <td>No</td>
-                                        <td>Optional reference code for the transfer</td>
-                                    </tr>
-                                    <tr>
-                                        <td>description</td>
-                                        <td>String</td>
-                                        <td>No</td>
-                                        <td>Description of the transfer</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <h5>Example Request</h5>
-                        <div class="code-block">
-POST /api/s2s/schedule HTTP/1.1
-Host: api.nvcglobal.net
-Authorization: Bearer your-jwt-token
-Content-Type: application/json
+}</code></pre>
 
-{
-  "institution_id": 123,
-  "amount": 10000.00,
-  "currency": "USD",
-  "schedule_date": "2025-05-15T14:30:00",
-  "transfer_type": "CREDIT",
-  "reference_code": "SCHED-12345",
-  "description": "Quarterly payment schedule"
-}</div>
-                        
-                        <h5>Example Response</h5>
-                        <div class="code-block">
-HTTP/1.1 200 OK
-Content-Type: application/json
+            <h4>Check Transfer Status</h4>
+            <div class="endpoint">
+                <span class="method">GET</span>
+                <span class="url">/s2s/api/status/{transaction_id}</span>
+            </div>
 
-{
-  "success": true,
-  "transaction_id": "TXN-B721C45D-1682516840",
-  "status": "SCHEDULED",
-  "scheduled_for": "2025-05-15T14:30:00",
-  "message": "Server-to-Server transfer scheduled successfully"
-}</div>
-                    </div>
-                    
-                    <div id="status-endpoint" class="api-endpoint">
-                        <span class="method get">GET</span> <code>/api/s2s/status/{transaction_id}</code>
-                        <p>Retrieves the current status of a server-to-server transfer.</p>
-                        
-                        <h5>Path Parameters</h5>
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Parameter</th>
-                                        <th>Type</th>
-                                        <th>Required</th>
-                                        <th>Description</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>transaction_id</td>
-                                        <td>String</td>
-                                        <td>Yes</td>
-                                        <td>The transaction ID to check</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <h5>Example Request</h5>
-                        <div class="code-block">
-GET /api/s2s/status/TXN-A595A9FB-1682516789 HTTP/1.1
-Host: api.nvcglobal.net
-Authorization: Bearer your-jwt-token</div>
-                        
-                        <h5>Example Response</h5>
-                        <div class="code-block">
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-  "transaction_id": "TXN-A595A9FB-1682516789",
+            <p>Response:</p>
+            <pre><code>{
+  "transaction_id": "f8c3de3d-1d35-4e97-9e55-c578a9c9c897",
   "status": "COMPLETED",
-  "amount": 10000.00,
+  "amount": 1000000.00,
   "currency": "USD",
-  "created_at": "2025-04-26T14:30:22Z",
-  "completed_at": "2025-04-26T14:32:15Z",
-  "reference_code": "INV-12345",
-  "institution": {
-    "id": 123,
-    "name": "Bank of Innovation",
-    "swift_code": "BINVUS33"
-  }
-}</div>
-                    </div>
-                </div>
-                
-                <div class="section" id="error-codes">
-                    <h2>5. Error Codes</h2>
-                    
-                    <p>
-                        The API uses standard HTTP status codes to indicate success or failure. Additionally, error responses 
-                        include an error code and message for more detailed information.
-                    </p>
-                    
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>HTTP Status</th>
-                                    <th>Error Code</th>
-                                    <th>Description</th>
-                                    <th>Resolution</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>400</td>
-                                    <td>INVALID_REQUEST</td>
-                                    <td>The request is invalid or malformed</td>
-                                    <td>Check request parameters for errors</td>
-                                </tr>
-                                <tr>
-                                    <td>401</td>
-                                    <td>UNAUTHORIZED</td>
-                                    <td>Authentication failed</td>
-                                    <td>Check your API credentials and JWT token</td>
-                                </tr>
-                                <tr>
-                                    <td>403</td>
-                                    <td>FORBIDDEN</td>
-                                    <td>Insufficient permissions</td>
-                                    <td>Ensure your institution has the required permissions</td>
-                                </tr>
-                                <tr>
-                                    <td>404</td>
-                                    <td>NOT_FOUND</td>
-                                    <td>Requested resource not found</td>
-                                    <td>Verify the institution ID or transaction ID</td>
-                                </tr>
-                                <tr>
-                                    <td>422</td>
-                                    <td>VALIDATION_ERROR</td>
-                                    <td>Request failed validation</td>
-                                    <td>Check error details for specific validation issues</td>
-                                </tr>
-                                <tr>
-                                    <td>429</td>
-                                    <td>RATE_LIMIT_EXCEEDED</td>
-                                    <td>Rate limit exceeded</td>
-                                    <td>Reduce request frequency</td>
-                                </tr>
-                                <tr>
-                                    <td>500</td>
-                                    <td>SERVER_ERROR</td>
-                                    <td>Internal server error</td>
-                                    <td>Contact NVC Global support</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <h4>Error Response Format</h4>
-                    <div class="code-block">
-HTTP/1.1 400 Bad Request
-Content-Type: application/json
+  "created_at": "2025-04-26T10:30:00Z",
+  "completed_at": "2025-04-26T10:30:05Z",
+  "settlement_reference": "NVC-S2S-2025042600001"
+}</code></pre>
 
-{
-  "success": false,
-  "error": "INVALID_REQUEST",
-  "message": "Missing required field: amount",
-  "details": {
-    "field": "amount",
-    "issue": "This field is required"
-  }
-}</div>
-                </div>
-                
-                <div class="section" id="implementation">
-                    <h2>6. Implementation Guide</h2>
-                    
-                    <h4>Implementation Steps</h4>
-                    <ol>
-                        <li><strong>Request API Access:</strong> Contact your NVC Global representative to obtain API credentials.</li>
-                        <li><strong>Configure Security:</strong> Implement JWT token generation and TLS certificate verification.</li>
-                        <li><strong>Integrate Endpoints:</strong> Implement the necessary API endpoints in your system.</li>
-                        <li><strong>Handle Callbacks:</strong> Set up callback endpoints to receive transaction status updates.</li>
-                        <li><strong>Test in Sandbox:</strong> Conduct thorough testing in the sandbox environment.</li>
-                        <li><strong>Production Migration:</strong> Move to production after successful testing and certification.</li>
-                    </ol>
-                    
-                    <h4>Sample Code Implementations</h4>
-                    
-                    <ul class="nav nav-tabs" id="codeTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="python-tab" data-bs-toggle="tab" data-bs-target="#python" type="button" role="tab" aria-controls="python" aria-selected="true">Python</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="javascript-tab" data-bs-toggle="tab" data-bs-target="#javascript" type="button" role="tab" aria-controls="javascript" aria-selected="false">JavaScript</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="java-tab" data-bs-toggle="tab" data-bs-target="#java" type="button" role="tab" aria-controls="java" aria-selected="false">Java</button>
-                        </li>
-                    </ul>
-                    <div class="tab-content" id="codeTabsContent">
-                        <div class="tab-pane fade show active" id="python" role="tabpanel" aria-labelledby="python-tab">
-                            <div class="code-block">
-import requests
-import jwt
+            <h4>Schedule Future Transfer</h4>
+            <div class="endpoint">
+                <span class="method">POST</span>
+                <span class="url">/s2s/api/schedule</span>
+            </div>
+
+            <p>Request Body:</p>
+            <pre><code>{
+  "institution_id": "12345",
+  "amount": 1000000.00,
+  "currency": "USD",
+  "description": "Scheduled quarterly payment",
+  "reference_code": "QTR-2025-Q2",
+  "transfer_type": "CREDIT",
+  "schedule_date": "2025-06-30T00:00:00Z",
+  "callback_url": "https://your-institution.com/callbacks/s2s"
+}</code></pre>
+
+            <p>Response:</p>
+            <pre><code>{
+  "success": true,
+  "transaction_id": "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6",
+  "status": "SCHEDULED",
+  "scheduled_for": "2025-06-30T00:00:00Z",
+  "message": "Server-to-Server transfer scheduled successfully"
+}</code></pre>
+        </div>
+
+        <div class="section">
+            <h2>5. Implementation Guide</h2>
+
+            <h3>5.1 Integration Process</h3>
+            <ol>
+                <li><strong>Application & Approval</strong> - Submit request for S2S access and complete compliance review</li>
+                <li><strong>Development Access</strong> - Receive sandbox API credentials</li>
+                <li><strong>Implementation</strong> - Develop against the sandbox environment</li>
+                <li><strong>Testing</strong> - Complete test scenarios provided by NVC Global</li>
+                <li><strong>Security Review</strong> - Pass security assessment</li>
+                <li><strong>Production Deployment</strong> - Receive production credentials and go live</li>
+            </ol>
+
+            <h3>5.2 Sample Code (Python)</h3>
+            <pre><code>import requests
+import hmac
+import hashlib
 import time
+import json
 
-# API configuration
-API_URL = "https://api.nvcglobal.net"
-INSTITUTION_ID = "your-institution-id"
-API_KEY = "your-api-key"
-API_SECRET = "your-api-secret"
+API_KEY = 'your_api_key'
+API_SECRET = 'your_api_secret'
+API_TOKEN = 'your_api_token'
+BASE_URL = 'https://api.nvcglobal.com'
 
-def generate_jwt_token():
-    """Generate a JWT token for API authentication"""
+def generate_signature(method, endpoint, body):
+    timestamp = str(int(time.time()))
+    
+    if isinstance(body, dict):
+        body = json.dumps(body)
+    
+    message = API_KEY + timestamp + method + endpoint + (body or '')
+    signature = hmac.new(
+        API_SECRET.encode('utf-8'),
+        message.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+    
+    return signature, timestamp
+
+def initiate_s2s_transfer(institution_id, amount, currency, description, reference_code):
+    endpoint = '/s2s/api/transfer'
+    method = 'POST'
+    
     payload = {
-        "iss": INSTITUTION_ID,
-        "iat": int(time.time()),
-        "exp": int(time.time()) + 3600,  # 1 hour expiration
-        "api_key": API_KEY
+        'institution_id': institution_id,
+        'amount': amount,
+        'currency': currency,
+        'description': description,
+        'reference_code': reference_code,
+        'transfer_type': 'CREDIT',
+        'callback_url': 'https://your-institution.com/callbacks/s2s'
     }
-    return jwt.encode(payload, API_SECRET, algorithm="HS256")
-
-def initiate_transfer(institution_id, amount, currency, description=None, reference_code=None):
-    """Initiate a server-to-server transfer"""
-    url = f"{API_URL}/api/s2s/transfer"
+    
+    signature, timestamp = generate_signature(method, endpoint, payload)
     
     headers = {
-        "Authorization": f"Bearer {generate_jwt_token()}",
-        "Content-Type": "application/json"
+        'Authorization': f'Bearer {API_TOKEN}',
+        'X-API-Key': API_KEY,
+        'X-Request-Timestamp': timestamp,
+        'X-Request-Signature': signature,
+        'Content-Type': 'application/json'
     }
     
-    payload = {
-        "institution_id": institution_id,
-        "amount": amount,
-        "currency": currency
-    }
+    response = requests.post(
+        BASE_URL + endpoint,
+        headers=headers,
+        json=payload
+    )
     
-    if description:
-        payload["description"] = description
-    
-    if reference_code:
-        payload["reference_code"] = reference_code
-    
-    response = requests.post(url, headers=headers, json=payload)
-    return response.json()
-
-def check_transfer_status(transaction_id):
-    """Check the status of a transfer"""
-    url = f"{API_URL}/api/s2s/status/{transaction_id}"
-    
-    headers = {
-        "Authorization": f"Bearer {generate_jwt_token()}"
-    }
-    
-    response = requests.get(url, headers=headers)
     return response.json()
 
 # Example usage
-if __name__ == "__main__":
-    # Initiate a transfer
-    result = initiate_transfer(
-        institution_id=123,
-        amount=5000.00,
-        currency="USD",
-        description="Payment for services",
-        reference_code="INV-12345"
-    )
-    
-    print(f"Transfer initiated: {result}")
-    
-    if result.get("success"):
-        # Check status after a few seconds
-        transaction_id = result.get("transaction_id")
-        time.sleep(5)
-        
-        status = check_transfer_status(transaction_id)
-        print(f"Transfer status: {status}")</div>
-                        </div>
-                        <div class="tab-pane fade" id="javascript" role="tabpanel" aria-labelledby="javascript-tab">
-                            <div class="code-block">
-// Import required libraries (using Node.js)
-const axios = require('axios');
-const jwt = require('jsonwebtoken');
+result = initiate_s2s_transfer(
+    institution_id='12345',
+    amount=1000000.00,
+    currency='USD',
+    description='Payment for services',
+    reference_code='INV-2025-04-26'
+)
 
-// API configuration
-const API_URL = 'https://api.nvcglobal.net';
-const INSTITUTION_ID = 'your-institution-id';
-const API_KEY = 'your-api-key';
-const API_SECRET = 'your-api-secret';
+print(result)
+</code></pre>
 
-// Generate JWT token
-function generateJwtToken() {
-  const payload = {
-    iss: INSTITUTION_ID,
-    iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour expiration
-    api_key: API_KEY
-  };
-  
-  return jwt.sign(payload, API_SECRET, { algorithm: 'HS256' });
-}
+            <h3>5.3 Callback Handling</h3>
+            <p>
+                Your system must implement a callback endpoint to receive updates about transfer status changes.
+                The callback will be sent as a POST request with the following payload:
+            </p>
 
-// Initiate transfer
-async function initiateTransfer(institutionId, amount, currency, description = null, referenceCode = null) {
-  try {
-    const url = `${API_URL}/api/s2s/transfer`;
-    
-    const headers = {
-      'Authorization': `Bearer ${generateJwtToken()}`,
-      'Content-Type': 'application/json'
-    };
-    
-    const payload = {
-      institution_id: institutionId,
-      amount: amount,
-      currency: currency
-    };
-    
-    if (description) {
-      payload.description = description;
-    }
-    
-    if (referenceCode) {
-      payload.reference_code = referenceCode;
-    }
-    
-    const response = await axios.post(url, payload, { headers });
-    return response.data;
-  } catch (error) {
-    console.error('Error initiating transfer:', error.response?.data || error.message);
-    throw error;
-  }
-}
+            <pre><code>{
+  "event": "s2s.transfer.status_update",
+  "transaction_id": "f8c3de3d-1d35-4e97-9e55-c578a9c9c897",
+  "previous_status": "PENDING",
+  "new_status": "COMPLETED",
+  "timestamp": "2025-04-26T10:30:05Z",
+  "settlement_reference": "NVC-S2S-2025042600001",
+  "signature": "hmac_signature_of_payload"
+}</code></pre>
 
-// Check transfer status
-async function checkTransferStatus(transactionId) {
-  try {
-    const url = `${API_URL}/api/s2s/status/${transactionId}`;
-    
-    const headers = {
-      'Authorization': `Bearer ${generateJwtToken()}`
-    };
-    
-    const response = await axios.get(url, { headers });
-    return response.data;
-  } catch (error) {
-    console.error('Error checking transfer status:', error.response?.data || error.message);
-    throw error;
-  }
-}
+            <p>
+                Your system should validate the signature using the same HMAC-SHA256 algorithm described 
+                in the authentication section.
+            </p>
+        </div>
 
-// Example usage
-async function example() {
-  try {
-    // Initiate a transfer
-    const result = await initiateTransfer(
-      123,
-      5000.00,
-      'USD',
-      'Payment for services',
-      'INV-12345'
-    );
-    
-    console.log('Transfer initiated:', result);
-    
-    if (result.success) {
-      // Check status after a few seconds
-      const transactionId = result.transaction_id;
-      
-      // Wait 5 seconds
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      
-      const status = await checkTransferStatus(transactionId);
-      console.log('Transfer status:', status);
-    }
-  } catch (error) {
-    console.error('Example failed:', error);
-  }
-}
+        <div class="section">
+            <h2>6. Testing and Certification</h2>
 
-// Run the example
-example();</div>
-                        </div>
-                        <div class="tab-pane fade" id="java" role="tabpanel" aria-labelledby="java-tab">
-                            <div class="code-block">
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import java.time.Instant;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+            <h3>6.1 Sandbox Environment</h3>
+            <p>
+                A complete sandbox environment is available for testing your integration. The sandbox 
+                environment is identical to production but uses separate credentials and does not 
+                affect real accounts or balances.
+            </p>
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
+            <p>Sandbox Base URL: <code>https://sandbox.api.nvcglobal.com</code></p>
 
-public class NvcS2SClient {
-    
-    private static final String API_URL = "https://api.nvcglobal.net";
-    private static final String INSTITUTION_ID = "your-institution-id";
-    private static final String API_KEY = "your-api-key";
-    private static final String API_SECRET = "your-api-secret";
-    
-    private final RestTemplate restTemplate = new RestTemplate();
-    
-    // Generate JWT token
-    private String generateJwtToken() {
-        Date now = new Date();
-        Date expiration = new Date(now.getTime() + 3600 * 1000); // 1 hour expiration
-        
-        return Jwts.builder()
-                .claim("iss", INSTITUTION_ID)
-                .claim("iat", Date.from(Instant.now()))
-                .claim("exp", expiration)
-                .claim("api_key", API_KEY)
-                .signWith(SignatureAlgorithm.HS256, API_SECRET.getBytes())
-                .compact();
-    }
-    
-    // Initiate a transfer
-    public Map<String, Object> initiateTransfer(
-            int institutionId, 
-            double amount, 
-            String currency, 
-            String description, 
-            String referenceCode) {
-        
-        String url = API_URL + "/api/s2s/transfer";
-        
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + generateJwtToken());
-        headers.set("Content-Type", "application/json");
-        
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("institution_id", institutionId);
-        payload.put("amount", amount);
-        payload.put("currency", currency);
-        
-        if (description != null && !description.isEmpty()) {
-            payload.put("description", description);
-        }
-        
-        if (referenceCode != null && !referenceCode.isEmpty()) {
-            payload.put("reference_code", referenceCode);
-        }
-        
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
-        
-        ResponseEntity<Map> response = restTemplate.exchange(
-                url, 
-                HttpMethod.POST, 
-                entity, 
-                Map.class);
-        
-        return response.getBody();
-    }
-    
-    // Check transfer status
-    public Map<String, Object> checkTransferStatus(String transactionId) {
-        String url = API_URL + "/api/s2s/status/" + transactionId;
-        
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + generateJwtToken());
-        
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-        
-        ResponseEntity<Map> response = restTemplate.exchange(
-                url, 
-                HttpMethod.GET, 
-                entity, 
-                Map.class);
-        
-        return response.getBody();
-    }
-    
-    // Example usage
-    public static void main(String[] args) {
-        NvcS2SClient client = new NvcS2SClient();
-        
-        try {
-            // Initiate a transfer
-            Map<String, Object> result = client.initiateTransfer(
-                    123, 
-                    5000.00, 
-                    "USD", 
-                    "Payment for services", 
-                    "INV-12345");
-            
-            System.out.println("Transfer initiated: " + result);
-            
-            Boolean success = (Boolean) result.get("success");
-            if (success != null && success) {
-                // Check status after a few seconds
-                String transactionId = (String) result.get("transaction_id");
-                
-                // Wait 5 seconds
-                Thread.sleep(5000);
-                
-                Map<String, Object> status = client.checkTransferStatus(transactionId);
-                System.out.println("Transfer status: " + status);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-}</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="section" id="testing">
-                    <h2>7. Testing</h2>
-                    
-                    <p>
-                        NVC Global provides a sandbox environment for testing your S2S integration before moving to production.
-                    </p>
-                    
-                    <h4>Sandbox Environment</h4>
-                    <p>
-                        The sandbox environment is a complete replica of the production environment, but uses test accounts and does not involve real money movement.
-                    </p>
-                    <ul>
-                        <li><strong>Sandbox URL:</strong> <code>https://sandbox-api.nvcglobal.net</code></li>
-                        <li><strong>Test Credentials:</strong> Provided upon request from your NVC Global representative</li>
-                    </ul>
-                    
-                    <h4>Test Cases</h4>
-                    <p>
-                        We recommend testing the following scenarios:
-                    </p>
-                    <ol>
-                        <li>Successful transfer (immediate)</li>
-                        <li>Successful scheduled transfer</li>
-                        <li>Transfer with invalid institution</li>
-                        <li>Transfer with insufficient funds</li>
-                        <li>Transfer with invalid currency</li>
-                        <li>Checking status of various transactions</li>
-                    </ol>
-                    
-                    <h4>Test Institution IDs</h4>
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Description</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>101</td>
-                                    <td>Test Bank A</td>
-                                    <td>Use for successful transfers</td>
-                                </tr>
-                                <tr>
-                                    <td>102</td>
-                                    <td>Test Bank B</td>
-                                    <td>Use for successful transfers with validation</td>
-                                </tr>
-                                <tr>
-                                    <td>103</td>
-                                    <td>Test Bank C</td>
-                                    <td>Simulates delayed processing (takes 60 seconds)</td>
-                                </tr>
-                                <tr>
-                                    <td>999</td>
-                                    <td>Error Bank</td>
-                                    <td>Always returns error responses for testing error handling</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="section" id="security">
-                    <h2>8. Security Best Practices</h2>
-                    
-                    <p>
-                        Server-to-Server transfers involve sensitive financial data. Follow these security best practices:
-                    </p>
-                    
-                    <h4>API Credentials Protection</h4>
-                    <ul>
-                        <li>Store API keys and secrets securely using environment variables or a secure vault service</li>
-                        <li>Rotate API secrets regularly (recommended every 90 days)</li>
-                        <li>Use different API credentials for sandbox and production environments</li>
-                        <li>Implement IP address restrictions for API access</li>
-                    </ul>
-                    
-                    <h4>Network Security</h4>
-                    <ul>
-                        <li>Use TLS 1.2 or higher for all API communications</li>
-                        <li>Validate SSL certificates to prevent man-in-the-middle attacks</li>
-                        <li>Implement network-level isolation for systems that interact with the API</li>
-                        <li>Use IP whitelisting to restrict which servers can communicate with your API endpoints</li>
-                    </ul>
-                    
-                    <h4>Monitoring and Alerting</h4>
-                    <ul>
-                        <li>Implement logging for all API requests and responses</li>
-                        <li>Set up real-time alerts for suspicious activity or failed transactions</li>
-                        <li>Monitor API usage patterns to detect anomalies</li>
-                        <li>Regularly review access logs and transaction records</li>
-                    </ul>
-                    
-                    <div class="note">
-                        <p><strong>Important Security Note:</strong> Never store or transmit API credentials in client-side code. All API calls should be made from secure server environments with appropriate access controls.</p>
-                    </div>
-                </div>
-                
-                <div class="section" id="appendix">
-                    <h2>9. Appendix</h2>
-                    
-                    <h4>Transaction Statuses</h4>
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Status</th>
-                                    <th>Description</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>PENDING</td>
-                                    <td>Transaction has been initiated but not yet processed</td>
-                                </tr>
-                                <tr>
-                                    <td>PROCESSING</td>
-                                    <td>Transaction is being processed</td>
-                                </tr>
-                                <tr>
-                                    <td>COMPLETED</td>
-                                    <td>Transaction has been successfully completed</td>
-                                </tr>
-                                <tr>
-                                    <td>FAILED</td>
-                                    <td>Transaction has failed</td>
-                                </tr>
-                                <tr>
-                                    <td>SCHEDULED</td>
-                                    <td>Transaction is scheduled for future execution</td>
-                                </tr>
-                                <tr>
-                                    <td>CANCELLED</td>
-                                    <td>Transaction has been cancelled</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <h4>Currency Codes</h4>
-                    <p>
-                        The API supports all ISO 4217 standard currency codes. The most commonly used are:
-                    </p>
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Code</th>
-                                    <th>Currency</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>USD</td>
-                                    <td>US Dollar</td>
-                                </tr>
-                                <tr>
-                                    <td>EUR</td>
-                                    <td>Euro</td>
-                                </tr>
-                                <tr>
-                                    <td>GBP</td>
-                                    <td>British Pound</td>
-                                </tr>
-                                <tr>
-                                    <td>JPY</td>
-                                    <td>Japanese Yen</td>
-                                </tr>
-                                <tr>
-                                    <td>CAD</td>
-                                    <td>Canadian Dollar</td>
-                                </tr>
-                                <tr>
-                                    <td>AUD</td>
-                                    <td>Australian Dollar</td>
-                                </tr>
-                                <tr>
-                                    <td>CHF</td>
-                                    <td>Swiss Franc</td>
-                                </tr>
-                                <tr>
-                                    <td>CNY</td>
-                                    <td>Chinese Yuan</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <h4>Contact Information</h4>
-                    <p>
-                        For assistance with the S2S API integration, please contact:
-                    </p>
-                    <ul>
-                        <li><strong>Technical Support:</strong> <a href="mailto:api-support@nvcglobal.net">api-support@nvcglobal.net</a></li>
-                        <li><strong>API Access Requests:</strong> <a href="mailto:partnerships@nvcplatform.net">partnerships@nvcplatform.net</a></li>
-                        <li><strong>Phone Support:</strong> +1 (555) 123-4567</li>
-                    </ul>
-                </div>
+            <h3>6.2 Test Scenarios</h3>
+            <p>
+                Complete the following test scenarios to verify your integration:
+            </p>
+            <ol>
+                <li>Successful transfer with valid parameters</li>
+                <li>Failed transfer due to insufficient funds</li>
+                <li>Transfer with callback processing</li>
+                <li>Scheduled future transfer</li>
+                <li>Transfer status verification</li>
+                <li>Error handling for invalid requests</li>
+            </ol>
+
+            <h3>6.3 Certification Process</h3>
+            <p>
+                Once you have successfully implemented and tested your integration, contact your 
+                NVC Global account manager to begin the certification process. Certification involves:
+            </p>
+            <ol>
+                <li>Code review of your implementation</li>
+                <li>Security assessment</li>
+                <li>Performance testing</li>
+                <li>Compliance verification</li>
+                <li>End-to-end testing with NVC Global</li>
+            </ol>
+
+            <div class="note">
+                <strong>Note:</strong> Allow 2-4 weeks for the full certification process to be completed.
             </div>
         </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        <div class="section">
+            <h2>7. Production Considerations</h2>
+
+            <h3>7.1 Going Live Checklist</h3>
+            <ul>
+                <li>Complete all test scenarios successfully</li>
+                <li>Receive certification approval from NVC Global</li>
+                <li>Implement proper error handling and retry logic</li>
+                <li>Set up monitoring for the integration</li>
+                <li>Create runbooks for common issues</li>
+                <li>Train support staff on the integration</li>
+                <li>Set up alert notifications for failed transfers</li>
+                <li>Implement reconciliation procedures</li>
+            </ul>
+
+            <h3>7.2 Support and Escalation</h3>
+            <p>
+                NVC Global provides 24/7 support for all S2S integrations. Contact information:
+            </p>
+            <ul>
+                <li>Technical Support: <code>s2s-support@nvcglobal.com</code></li>
+                <li>Emergency Hotline: <code>+1-888-NVC-S2S1</code> (available 24/7)</li>
+                <li>Support Portal: <code>https://support.nvcglobal.com</code></li>
+            </ul>
+
+            <h3>7.3 Monitoring and Alerting</h3>
+            <p>
+                Implement monitoring for these key metrics:
+            </p>
+            <ul>
+                <li>API response times</li>
+                <li>Transfer success rates</li>
+                <li>Callback processing success rates</li>
+                <li>Error rates by error type</li>
+                <li>Transfer volumes and amounts</li>
+                <li>Authentication failures</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2025 NVC Global Banking Platform</p>
+            <p>Confidential | For authorized use only</p>
+        </div>
+    </div>
 </body>
 </html>
