@@ -1,61 +1,79 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background -->
-  <rect width="800" height="400" rx="10" fill="#f9f9f9" stroke="#ddd" stroke-width="1" />
-  
-  <!-- Title -->
-  <text x="400" y="30" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#004d99" text-anchor="middle">EDI Transaction Flow</text>
-  
-  <!-- Sender Box -->
-  <rect x="100" y="80" width="150" height="80" rx="5" fill="#e6f7ff" stroke="#0099ff" stroke-width="2" />
-  <text x="175" y="115" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#004d99" text-anchor="middle">Sender</text>
-  <text x="175" y="140" font-family="Arial, sans-serif" font-size="12" fill="#333" text-anchor="middle">(Corporate Client)</text>
-  
-  <!-- NVC Banking Platform Box -->
-  <rect x="325" y="80" width="150" height="80" rx="5" fill="#004d99" stroke="#003366" stroke-width="2" />
-  <text x="400" y="115" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">NVC Banking</text>
-  <text x="400" y="140" font-family="Arial, sans-serif" font-size="12" fill="#ffffff" text-anchor="middle">Platform</text>
-  
-  <!-- Receiver Box -->
-  <rect x="550" y="80" width="150" height="80" rx="5" fill="#e6f7ff" stroke="#0099ff" stroke-width="2" />
-  <text x="625" y="115" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#004d99" text-anchor="middle">Receiver</text>
-  <text x="625" y="140" font-family="Arial, sans-serif" font-size="12" fill="#333" text-anchor="middle">(Financial Institution)</text>
-  
-  <!-- Arrow 1: Sender to NVC Banking -->
-  <line x1="250" y1="120" x2="325" y2="120" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)" />
-  <text x="287" y="110" font-family="Arial, sans-serif" font-size="12" fill="#666" text-anchor="middle">1. EDI File</text>
-  
-  <!-- Arrow 2: NVC Banking to Receiver -->
-  <line x1="475" y1="120" x2="550" y2="120" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)" />
-  <text x="512" y="110" font-family="Arial, sans-serif" font-size="12" fill="#666" text-anchor="middle">3. Translated EDI</text>
-  
-  <!-- Arrow 3: Receiver to NVC Banking (acknowledgment) -->
-  <line x1="550" y1="140" x2="475" y2="140" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)" stroke-dasharray="5,3" />
-  <text x="512" y="160" font-family="Arial, sans-serif" font-size="12" fill="#666" text-anchor="middle">4. Acknowledgment</text>
-  
-  <!-- Arrow 4: NVC Banking to Sender (acknowledgment) -->
-  <line x1="325" y1="140" x2="250" y2="140" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)" stroke-dasharray="5,3" />
-  <text x="287" y="160" font-family="Arial, sans-serif" font-size="12" fill="#666" text-anchor="middle">5. Status Update</text>
-  
-  <!-- Process Flow Steps -->
-  <rect x="100" y="200" width="600" height="170" rx="5" fill="#f0f0f0" stroke="#ddd" stroke-width="1" />
-  <text x="120" y="230" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#004d99">EDI Processing Steps:</text>
-  
-  <text x="120" y="260" font-family="Arial, sans-serif" font-size="12" fill="#333">1. Client prepares EDI document (X12 820, EDIFACT PAYORD, etc.) with payment instructions</text>
-  <text x="120" y="285" font-family="Arial, sans-serif" font-size="12" fill="#333">2. NVC Banking Platform validates document format and content</text>
-  <text x="120" y="310" font-family="Arial, sans-serif" font-size="12" fill="#333">3. Platform translates EDI to receiver's preferred format (if needed)</text>
-  <text x="120" y="335" font-family="Arial, sans-serif" font-size="12" fill="#333">4. Receiving institution processes the payment instruction and sends acknowledgment</text>
-  <text x="120" y="360" font-family="Arial, sans-serif" font-size="12" fill="#333">5. NVC Banking Platform updates transaction status and notifies client</text>
-  
-  <!-- Arrowhead Definition -->
-  <defs>
-    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
-    </marker>
-  </defs>
-  
-  <!-- NVC Banking Process Circle -->
-  <ellipse cx="400" y="190" rx="20" ry="20" fill="#ffffcc" stroke="#ffcc00" stroke-width="1.5" />
-  <text x="400" y="194" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#333" text-anchor="middle">2</text>
-  <text x="400" y="212" font-family="Arial, sans-serif" font-size="10" fill="#333" text-anchor="middle">Process</text>
+    <style>
+        .box {
+            fill: #f0f0f0;
+            stroke: #004d99;
+            stroke-width: 2;
+            rx: 10;
+            ry: 10;
+        }
+        .arrow {
+            stroke: #004d99;
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#arrowhead);
+        }
+        .label {
+            font-family: Verdana, sans-serif;
+            font-size: 14px;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+        .step-label {
+            font-family: Verdana, sans-serif;
+            font-size: 12px;
+            text-anchor: middle;
+            fill: #555;
+        }
+        .title {
+            font-family: Verdana, sans-serif;
+            font-size: 20px;
+            font-weight: bold;
+            text-anchor: middle;
+            fill: #004d99;
+        }
+    </style>
+    
+    <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#004d99" />
+        </marker>
+    </defs>
+    
+    <text x="400" y="30" class="title">NVC Global EDI Transaction Flow</text>
+    
+    <!-- Sender Box -->
+    <rect x="50" y="100" width="150" height="80" class="box" />
+    <text x="125" y="140" class="label">Sender</text>
+    <text x="125" y="160" class="step-label">(Financial Institution)</text>
+    
+    <!-- NVC EDI System Box -->
+    <rect x="325" y="100" width="150" height="80" class="box" />
+    <text x="400" y="140" class="label">NVC Global</text>
+    <text x="400" y="160" class="step-label">EDI System</text>
+    
+    <!-- Recipient Box -->
+    <rect x="600" y="100" width="150" height="80" class="box" />
+    <text x="675" y="140" class="label">Recipient</text>
+    <text x="675" y="160" class="step-label">(Financial Institution)</text>
+    
+    <!-- Validation Box -->
+    <rect x="325" y="250" width="150" height="80" class="box" />
+    <text x="400" y="290" class="label">NVC Validation</text>
+    <text x="400" y="310" class="step-label">& Security Layer</text>
+    
+    <!-- Arrows -->
+    <path d="M 200 140 L 325 140" class="arrow" />
+    <path d="M 475 140 L 600 140" class="arrow" />
+    <path d="M 400 180 L 400 250" class="arrow" />
+    <path d="M 325 290 L 125 180" class="arrow" />
+    <path d="M 475 290 L 675 180" class="arrow" />
+    
+    <!-- Step Labels -->
+    <text x="262" y="120" class="step-label">1. Send EDI Payment</text>
+    <text x="537" y="120" class="step-label">4. Forward to Recipient</text>
+    <text x="425" y="215" class="step-label">2. Validate</text>
+    <text x="225" y="240" class="step-label">3a. Acknowledgment</text>
+    <text x="575" y="240" class="step-label">3b. Acknowledgment</text>
 </svg>

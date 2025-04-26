@@ -16,8 +16,10 @@ def nvc_funds_transfer_guide_pdf():
     with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp_file:
         pdf_path = temp_file.name
     
-    # Convert HTML to PDF using WeasyPrint
-    HTML(string=html_content).write_pdf(pdf_path)
+    # Convert HTML to PDF using WeasyPrint with base URL for resources
+    from flask import request
+    base_url = request.url_root
+    HTML(string=html_content, base_url=base_url).write_pdf(pdf_path)
     
     # Send the PDF file
     return send_file(
