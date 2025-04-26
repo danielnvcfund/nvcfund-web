@@ -184,34 +184,39 @@
               <small class="form-text text-muted">Additional details about this account.</small>
             </div>
             
-            <!-- Modal for Adding New Financial Institution -->
-            <div class="modal fade" id="newInstitutionModal" tabindex="-1" aria-labelledby="newInstitutionModalLabel" aria-hidden="true">
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="newInstitutionModalLabel">Add New Financial Institution</h5>
+            <!-- Modal for Adding New Financial Institution (Improved) -->
+            <div class="modal fade" id="newInstitutionModal" tabindex="-1" aria-labelledby="newInstitutionModalLabel" aria-hidden="true" style="z-index: 1060;">
+              <div class="modal-dialog" style="pointer-events: auto;">
+                <div class="modal-content" style="box-shadow: 0 5px 15px rgba(0,0,0,.5); border: 1px solid rgba(0,0,0,.2);">
+                  <div class="modal-header bg-light">
+                    <h5 class="modal-title" id="newInstitutionModalLabel"><i class="fas fa-building me-2"></i>Add New Financial Institution</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
-                  <div class="modal-body">
-                    <form id="newInstitutionForm">
-                      <div class="mb-3">
-                        <label for="institutionName" class="form-label">Institution Name</label>
-                        <input type="text" class="form-control" id="institutionName" name="institutionName" required>
+                  <div class="modal-body" style="padding: 20px;">
+                    <!-- Use inline form without nested form tags to avoid interference -->
+                    <div id="newInstitutionForm">
+                      <div class="mb-4">
+                        <label for="institutionName" class="form-label fw-bold">Institution Name</label>
+                        <input type="text" class="form-control form-control-lg" id="institutionName" name="institutionName" placeholder="Enter institution name" required>
                       </div>
-                      <div class="mb-3">
-                        <label for="institutionType" class="form-label">Institution Type</label>
-                        <select class="form-select" id="institutionType" name="institutionType" required>
+                      <div class="mb-4">
+                        <label for="institutionType" class="form-label fw-bold">Institution Type</label>
+                        <select class="form-select form-select-lg" id="institutionType" name="institutionType" required>
                           <option value="BANK">Bank</option>
                           <option value="CREDIT_UNION">Credit Union</option>
                           <option value="INVESTMENT_FIRM">Investment Firm</option>
                           <option value="OTHER">Other</option>
                         </select>
                       </div>
-                    </form>
+                    </div>
                   </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="saveInstitutionBtn">Save Institution</button>
+                  <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-lg" data-bs-dismiss="modal">
+                      <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary btn-lg" id="saveInstitutionBtn">
+                      <i class="fas fa-save me-1"></i>Save Institution
+                    </button>
                   </div>
                 </div>
               </div>
@@ -279,46 +284,75 @@
 
 {% block scripts %}
 <script>
+  // Wait for the DOM to be fully loaded before attaching event handlers
   document.addEventListener('DOMContentLoaded', function() {
-    // Button to show the modal
+    // Capture DOM elements
     const addInstitutionBtn = document.getElementById('btn-add-institution');
-    // Save button in the modal
     const saveInstitutionBtn = document.getElementById('saveInstitutionBtn');
-    // The institution select dropdown
     const institutionSelect = document.getElementById('institution_id');
+    const modalElement = document.getElementById('newInstitutionModal');
+    const nameInput = document.getElementById('institutionName');
+    const typeSelect = document.getElementById('institutionType');
     
-    // Show the modal when the add button is clicked
-    addInstitutionBtn.addEventListener('click', function() {
-      const modal = new bootstrap.Modal(document.getElementById('newInstitutionModal'));
-      modal.show();
-    });
+    // Initialize the modal with Bootstrap
+    let institutionModal;
     
-    // Handle the save button click in the modal
-    saveInstitutionBtn.addEventListener('click', function() {
-      console.log('Save Institution button clicked');
-      const institutionName = document.getElementById('institutionName').value.trim();
-      const institutionType = document.getElementById('institutionType').value;
+    // Create and configure the modal when the page loads
+    function initializeModal() {
+      // Initialize the Bootstrap modal with options to improve interaction
+      institutionModal = new bootstrap.Modal(modalElement, {
+        backdrop: 'static',  // Prevent closing when clicking outside
+        keyboard: false      // Prevent closing with keyboard
+      });
       
+      // Focus handling for improved usability
+      modalElement.addEventListener('shown.bs.modal', function() {
+        // Set focus to the name input when modal opens
+        nameInput.focus();
+      });
+      
+      // Add event listener for the Enter key in the name field
+      nameInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          saveInstitution();
+        }
+      });
+    }
+    
+    // Function to handle the institution saving process
+    function saveInstitution() {
+      console.log('Save Institution function called');
+      
+      // Get values from form
+      const institutionName = nameInput.value.trim();
+      const institutionType = typeSelect.value;
+      
+      // Validate input
       if (!institutionName) {
         alert('Please enter an institution name.');
+        nameInput.focus();
         return;
       }
       
-      // Get CSRF token from the meta tag
+      // Get CSRF token
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
       console.log('CSRF Token:', csrfToken ? 'Found' : 'Not found');
       console.log('Institution Name:', institutionName);
       console.log('Institution Type:', institutionType);
       
-      // Create a new institution via AJAX
-      console.log('Making fetch request to /treasury/api/add_institution');
-      // Log the exact payload we're sending
+      // Disable the save button to prevent double-clicking
+      saveInstitutionBtn.disabled = true;
+      saveInstitutionBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
+      
+      // Prepare the request payload
       const payload = {
         name: institutionName,
         institution_type: institutionType
       };
       console.log('Sending payload:', payload);
       
+      // Make the API request
       fetch('/treasury/api/add_institution', {
         method: 'POST',
         headers: {
@@ -331,6 +365,12 @@
       })
       .then(response => {
         console.log('Response received:', response.status, response.statusText);
+        
+        // Reset button state after response received
+        saveInstitutionBtn.disabled = false;
+        saveInstitutionBtn.innerHTML = '<i class="fas fa-save me-1"></i>Save Institution';
+        
+        // Handle different response statuses
         if (!response.ok) {
           if (response.status === 401) {
             throw new Error('You need to be logged in to perform this action');
@@ -357,20 +397,67 @@
           // Select the newly added institution
           institutionSelect.value = data.institution.id;
           
-          // Close the modal
-          bootstrap.Modal.getInstance(document.getElementById('newInstitutionModal')).hide();
+          // Display success message
+          const successAlert = document.createElement('div');
+          successAlert.className = 'alert alert-success alert-dismissible fade show';
+          successAlert.innerHTML = `
+            <i class="fas fa-check-circle me-2"></i>
+            Institution "${data.institution.name}" created successfully
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          `;
           
-          // Clear the form
-          document.getElementById('institutionName').value = '';
+          // Insert alert before the form
+          document.querySelector('form').insertAdjacentElement('beforebegin', successAlert);
+          
+          // Auto-dismiss after 5 seconds
+          setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(successAlert);
+            bsAlert.close();
+          }, 5000);
+          
+          // Close the modal
+          institutionModal.hide();
+          
+          // Clear the form for next use
+          nameInput.value = '';
+          typeSelect.selectedIndex = 0;
         } else {
           alert('Error: ' + data.message);
         }
       })
       .catch(error => {
         console.error('Error adding institution:', error);
+        
+        // Reset button state after error
+        saveInstitutionBtn.disabled = false;
+        saveInstitutionBtn.innerHTML = '<i class="fas fa-save me-1"></i>Save Institution';
+        
+        // Show error alert
         alert('There was an error adding the institution: ' + error.message);
       });
-    });
+    }
+    
+    // Set up event handlers once DOM is ready
+    if (addInstitutionBtn && saveInstitutionBtn && institutionSelect) {
+      // Initialize modal
+      initializeModal();
+      
+      // Show modal when add button is clicked
+      addInstitutionBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        institutionModal.show();
+      });
+      
+      // Handle save button click
+      saveInstitutionBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        saveInstitution();
+      });
+    } else {
+      console.error('One or more required elements not found in the DOM');
+    }
   });
 </script>
 {% endblock %}
