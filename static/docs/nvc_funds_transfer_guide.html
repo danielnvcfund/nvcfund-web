@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVC Global Funds Transfer Guide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #0056b3;
+            text-align: center;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #0056b3;
+            margin-top: 30px;
+            border-left: 4px solid #0056b3;
+            padding-left: 10px;
+        }
+        h3 {
+            color: #007bff;
+            margin-top: 20px;
+        }
+        .step {
+            background-color: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .note {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .header-image {
+            display: block;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 0.8em;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+            padding-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-image">
+        <h1>NVC Global Funds Transfer Guide</h1>
+    </div>
+    
+    <p>
+        This document provides comprehensive instructions for transferring funds between banks using both the 
+        NVC Global Payment Gateway and EDI integration systems.
+    </p>
+    
+    <h2>Using NVC Global Payment Gateway</h2>
+    
+    <h3>Available Payment Methods</h3>
+    <ul>
+        <li><strong>SWIFT transfers</strong> for international bank payments</li>
+        <li><strong>Blockchain-based settlement</strong> with Ethereum</li>
+        <li><strong>Domestic bank transfers</strong> via API integration</li>
+    </ul>
+    
+    <h3>Steps to Send Funds</h3>
+    
+    <div class="step">
+        <strong>Step 1:</strong> Log in as an admin user
+    </div>
+    
+    <div class="step">
+        <strong>Step 2:</strong> Navigate to "Payments" → "New SWIFT Transfer"
+    </div>
+    
+    <div class="step">
+        <strong>Step 3:</strong> Fill in the required details:
+        <ul>
+            <li>Sender information (your bank details)</li>
+            <li>Recipient bank details (BIC/SWIFT code, name, address)</li>
+            <li>Recipient account details (account number, name)</li>
+            <li>Amount and currency</li>
+            <li>Payment reference/purpose</li>
+        </ul>
+    </div>
+    
+    <div class="step">
+        <strong>Step 4:</strong> Submit the transfer for processing
+    </div>
+    
+    <div class="step">
+        <strong>Step 5:</strong> Track the payment status in the "SWIFT Messages" section
+    </div>
+    
+    <div class="note">
+        <strong>Note:</strong> For cross-border transfers, additional information may be required including correspondent bank details, 
+        purpose of payment, and regulatory compliance information.
+    </div>
+    
+    <h2>Using EDI Integration</h2>
+    
+    <h3>Available EDI Capabilities</h3>
+    <ul>
+        <li><strong>Electronic Data Interchange</strong> for standardized file transfers</li>
+        <li>Support for <strong>X12 and EDIFACT</strong> formats</li>
+        <li><strong>Direct bank-to-bank</strong> communication channels</li>
+        <li>Pre-configured partners: <strong>Chase Bank, Wells Fargo, Federal Reserve</strong></li>
+    </ul>
+    
+    <h3>Steps to Send Funds via EDI</h3>
+    
+    <div class="step">
+        <strong>Step 1:</strong> Log in as an admin user
+    </div>
+    
+    <div class="step">
+        <strong>Step 2:</strong> Go to "EDI" → "Dashboard"
+    </div>
+    
+    <div class="step">
+        <strong>Step 3:</strong> Select "New EDI Transaction"
+    </div>
+    
+    <div class="step">
+        <strong>Step 4:</strong> Choose a registered partner (e.g., Chase Bank, Wells Fargo, Federal Reserve)
+    </div>
+    
+    <div class="step">
+        <strong>Step 5:</strong> Select transaction type "Financial Transfer"
+    </div>
+    
+    <div class="step">
+        <strong>Step 6:</strong> Upload or create the EDI message with payment details following the standard format
+    </div>
+    
+    <div class="step">
+        <strong>Step 7:</strong> Verify and submit the transaction
+    </div>
+    
+    <div class="step">
+        <strong>Step 8:</strong> Track progress in the EDI Transaction list
+    </div>
+    
+    <h2>Required Information for Fund Transfers</h2>
+    
+    <h3>Credentials Needed</h3>
+    <table>
+        <tr>
+            <th>Requirement</th>
+            <th>Description</th>
+            <th>Status</th>
+        </tr>
+        <tr>
+            <td>Admin User Account</td>
+            <td>Valid administrator login credentials</td>
+            <td>Required</td>
+        </tr>
+        <tr>
+            <td>API Keys</td>
+            <td>Authentication for payment gateways</td>
+            <td>Already configured</td>
+        </tr>
+        <tr>
+            <td>EDI Partner Configuration</td>
+            <td>Connection parameters for major banks</td>
+            <td>Already set up</td>
+        </tr>
+    </table>
+    
+    <h3>Banking Details Requirements</h3>
+    <table>
+        <tr>
+            <th>Information</th>
+            <th>When Required</th>
+        </tr>
+        <tr>
+            <td>Recipient Bank BIC/SWIFT Code</td>
+            <td>All international transfers</td>
+        </tr>
+        <tr>
+            <td>Recipient IBAN or Account Number</td>
+            <td>All transfers</td>
+        </tr>
+        <tr>
+            <td>Recipient Name</td>
+            <td>All transfers</td>
+        </tr>
+        <tr>
+            <td>Recipient Address</td>
+            <td>International transfers</td>
+        </tr>
+        <tr>
+            <td>Correspondent Bank Information</td>
+            <td>Some cross-border transfers</td>
+        </tr>
+        <tr>
+            <td>Purpose of Payment</td>
+            <td>Required for regulatory compliance</td>
+        </tr>
+    </table>
+    
+    <h2>Tracking and Confirmation</h2>
+    
+    <p>
+        After initiating a fund transfer, you can track its status:
+    </p>
+    
+    <ul>
+        <li><strong>For SWIFT transfers:</strong> Navigate to "SWIFT Messages" to view transfer status and details</li>
+        <li><strong>For EDI transfers:</strong> Check the "EDI" → "Transaction List" for status updates</li>
+        <li><strong>For blockchain settlements:</strong> Track transaction hash on the blockchain explorer</li>
+    </ul>
+    
+    <div class="note">
+        <strong>Important:</strong> All transfers are subject to compliance checks, bank processing times, and network conditions. 
+        International transfers typically take 1-3 business days to complete.
+    </div>
+    
+    <div class="footer">
+        <p>NVC Global Banking Platform © 2025</p>
+        <p>For technical support, contact the system administrator.</p>
+    </div>
+</body>
+</html>

@@ -205,6 +205,10 @@ def create_app():
         from routes.treasury_routes import treasury_bp
         app.register_blueprint(treasury_bp)
         
+        # Register Document routes
+        from routes.document_routes import document_routes
+        app.register_blueprint(document_routes)
+        
         # Register API routes
         from routes.api import api_bp as main_api_bp
         app.register_blueprint(main_api_bp)
