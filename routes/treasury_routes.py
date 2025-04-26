@@ -35,22 +35,31 @@ treasury_bp = Blueprint('treasury', __name__, url_prefix='/treasury')
 @login_required
 def add_institution():
     """Add a new financial institution via API"""
+    print("=== ADD INSTITUTION API CALLED ===")
+    print(f"Request method: {request.method}")
+    print(f"Request content type: {request.content_type}")
+    print(f"Request is JSON: {request.is_json}")
+    
     try:
         if request.is_json:
             data = request.get_json()
+            print(f"JSON data received: {data}")
         else:
             # For non-JSON requests, try to get data from form
             data = {
                 'name': request.form.get('name', ''),
                 'institution_type': request.form.get('institution_type', 'BANK')
             }
+            print(f"Form data received: {data}")
         
         if not data.get('name'):
+            print("ERROR: Institution name is required")
             return jsonify({
                 'success': False,
                 'message': 'Institution name is required'
             }), 400
-            
+        
+        print(f"Creating institution with name: {data.get('name')} and type: {data.get('institution_type', 'BANK')}")
         # Create and save the new institution
         institution = FinancialInstitution(
             name=data.get('name'),
@@ -61,6 +70,7 @@ def add_institution():
         db.session.add(institution)
         db.session.commit()
         
+        print(f"Institution created successfully with ID: {institution.id}")
         # Return the created institution
         return jsonify({
             'success': True,
@@ -73,7 +83,9 @@ def add_institution():
         })
     except Exception as e:
         db.session.rollback()
-        print(f"Error creating institution: {str(e)}")
+        print(f"ERROR creating institution: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             'success': False,
             'message': f'Error creating institution: {str(e)}'
