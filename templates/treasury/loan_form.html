@@ -264,7 +264,12 @@
               <div class="col-md-6">
                 <div class="form-group">
                   {{ form.lender_institution_id.label(class="form-label") }}
-                  {{ form.lender_institution_id(class="form-select") }}
+                  <div class="d-flex">
+                    {{ form.lender_institution_id(class="form-select") }}
+                    <button type="button" id="btn-add-institution" class="btn btn-outline-primary ms-2">
+                      <i class="fas fa-plus"></i>
+                    </button>
+                  </div>
                   {% if form.lender_institution_id.errors %}
                   <div class="text-danger">
                     {% for error in form.lender_institution_id.errors %}
@@ -272,6 +277,7 @@
                     {% endfor %}
                   </div>
                   {% endif %}
+                  <small class="form-text text-muted">Select an existing institution or click the plus button to add a new one.</small>
                 </div>
               </div>
               
@@ -302,34 +308,128 @@
     </div>
   </div>
 </div>
+<!-- Modal for Adding New Financial Institution -->
+<div class="modal fade" id="newInstitutionModal" tabindex="-1" aria-labelledby="newInstitutionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="newInstitutionModalLabel">Add New Financial Institution</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="newInstitutionForm">
+          <div class="mb-3">
+            <label for="institutionName" class="form-label">Institution Name</label>
+            <input type="text" class="form-control" id="institutionName" name="institutionName" required>
+          </div>
+          <div class="mb-3">
+            <label for="institutionType" class="form-label">Institution Type</label>
+            <select class="form-select" id="institutionType" name="institutionType" required>
+              <option value="BANK">Bank</option>
+              <option value="CREDIT_UNION">Credit Union</option>
+              <option value="INVESTMENT_FIRM">Investment Firm</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveInstitutionBtn">Save Institution</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  // Date validation
-  document.getElementById('loan-form').addEventListener('submit', function(e) {
-    const startDate = new Date(document.getElementById('start_date').value);
-    const maturityDate = new Date(document.getElementById('maturity_date').value);
-    
-    if (maturityDate <= startDate) {
-      e.preventDefault();
-      alert('Maturity date must be after the start date.');
-    }
-  });
-  
-
-  
-  // Set initial payment date
-  document.getElementById('start_date').addEventListener('change', function() {
-    if (document.getElementById('first_payment_date').value === '') {
-      const startDate = new Date(this.value);
-      if (startDate) {
-        // Default to one month after start date for first payment
-        const nextPaymentDate = new Date(startDate);
-        nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
-        document.getElementById('first_payment_date').valueAsDate = nextPaymentDate;
+  document.addEventListener('DOMContentLoaded', function() {
+    // Date validation
+    document.getElementById('loan-form').addEventListener('submit', function(e) {
+      const startDate = new Date(document.getElementById('start_date').value);
+      const maturityDate = new Date(document.getElementById('maturity_date').value);
+      
+      if (maturityDate <= startDate) {
+        e.preventDefault();
+        alert('Maturity date must be after the start date.');
       }
-    }
+    });
+    
+    // Set initial payment date
+    document.getElementById('start_date').addEventListener('change', function() {
+      if (document.getElementById('first_payment_date').value === '') {
+        const startDate = new Date(this.value);
+        if (startDate) {
+          // Default to one month after start date for first payment
+          const nextPaymentDate = new Date(startDate);
+          nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
+          document.getElementById('first_payment_date').valueAsDate = nextPaymentDate;
+        }
+      }
+    });
+    
+    // Institution modal handling
+    const addInstitutionBtn = document.getElementById('btn-add-institution');
+    const saveInstitutionBtn = document.getElementById('saveInstitutionBtn');
+    const institutionSelect = document.getElementById('lender_institution_id');
+    
+    // Show the modal when the add button is clicked
+    addInstitutionBtn.addEventListener('click', function() {
+      const modal = new bootstrap.Modal(document.getElementById('newInstitutionModal'));
+      modal.show();
+    });
+    
+    // Handle the save button click in the modal
+    saveInstitutionBtn.addEventListener('click', function() {
+      const institutionName = document.getElementById('institutionName').value.trim();
+      const institutionType = document.getElementById('institutionType').value;
+      
+      if (!institutionName) {
+        alert('Please enter an institution name.');
+        return;
+      }
+      
+      // Create a new institution via AJAX
+      fetch('/api/treasury/add_institution', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: institutionName,
+          institution_type: institutionType
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          // Add the new institution to the dropdown
+          const newOption = new Option(data.institution.name, data.institution.id);
+          institutionSelect.add(newOption, 1);  // Insert after "None" option
+          
+          // Select the newly added institution
+          institutionSelect.value = data.institution.id;
+          
+          // Close the modal
+          bootstrap.Modal.getInstance(document.getElementById('newInstitutionModal')).hide();
+          
+          // Clear the form
+          document.getElementById('institutionName').value = '';
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error adding institution:', error);
+        alert('There was an error adding the institution. Please try again.');
+      });
+    });
   });
 </script>
 {% endblock %}
