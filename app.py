@@ -1,7 +1,7 @@
 import os
 import logging
 
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -118,6 +118,17 @@ def create_app():
             return render_template('index.html')
         except Exception as e:
             logger.error(f"Error rendering index: {str(e)}")
+            return f"Error: {str(e)}", 500
+    
+    # Add direct access to funds transfer guide
+    @app.route('/funds-transfer-guide')
+    def funds_transfer_guide_direct():
+        """Direct access to funds transfer guide"""
+        try:
+            # Use a more direct approach without redirect function
+            return flask.redirect('/documents/nvc_funds_transfer_guide')
+        except Exception as e:
+            logger.error(f"Error redirecting to funds transfer guide: {str(e)}")
             return f"Error: {str(e)}", 500
     
     @app.route('/main')
