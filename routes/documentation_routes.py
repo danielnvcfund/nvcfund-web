@@ -23,6 +23,14 @@ def documentation_index():
     docs_dir = os.path.join(current_app.root_path, 'docs')
     pdf_files = []
     md_files = []
+    html_guides = []
+    
+    # Add HTML guides from static/docs directory
+    html_guides.append({
+        'name': 'Server-to-Server Integration Guide',
+        'url': '/static/docs/server_to_server_integration_guide.html',
+        'description': 'Comprehensive guide for integrating with the Server-to-Server transfer system'
+    })
     
     try:
         for filename in os.listdir(docs_dir):
@@ -58,6 +66,7 @@ def documentation_index():
         'documentation/index.html', 
         pdf_files=pdf_files,
         md_files=md_files,
+        html_guides=html_guides,
         is_admin=current_user.is_admin if hasattr(current_user, 'is_admin') else False
     )
 
