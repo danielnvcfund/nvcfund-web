@@ -303,12 +303,18 @@
         return;
       }
       
+      // Get CSRF token from the meta tag
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+      
       // Create a new institution via AJAX
       fetch('/api/treasury/add_institution', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest'
         },
+        credentials: 'same-origin',
         body: JSON.stringify({
           name: institutionName,
           institution_type: institutionType
@@ -316,7 +322,13 @@
       })
       .then(response => {
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+          if (response.status === 401) {
+            throw new Error('You need to be logged in to perform this action');
+          } else if (response.status === 403) {
+            throw new Error('You do not have permission to perform this action');
+          } else {
+            throw new Error('Network response was not ok: ' + response.status);
+          }
         }
         return response.json();
       })

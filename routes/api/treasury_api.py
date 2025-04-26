@@ -15,7 +15,14 @@ treasury_api_bp = Blueprint('treasury_api', __name__, url_prefix='/api/treasury'
 def add_institution():
     """Add a new financial institution via API"""
     try:
-        data = request.get_json()
+        if request.is_json:
+            data = request.get_json()
+        else:
+            # For non-JSON requests, try to get data from form
+            data = {
+                'name': request.form.get('name', ''),
+                'institution_type': request.form.get('institution_type', 'BANK')
+            }
         
         if not data.get('name'):
             return jsonify({
@@ -45,6 +52,7 @@ def add_institution():
         })
     except Exception as e:
         db.session.rollback()
+        print(f"Error creating institution: {str(e)}")
         return jsonify({
             'success': False,
             'message': f'Error creating institution: {str(e)}'
