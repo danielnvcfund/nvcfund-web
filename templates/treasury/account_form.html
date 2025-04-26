@@ -64,7 +64,12 @@
               <div class="col-md-6">
                 <div class="form-group">
                   {{ form.institution_id.label(class="form-label") }}
-                  {{ form.institution_id(class="form-select" + (" is-invalid" if form.institution_id.errors else "")) }}
+                  <div class="d-flex">
+                    {{ form.institution_id(class="form-select" + (" is-invalid" if form.institution_id.errors else "")) }}
+                    <button type="button" id="btn-add-institution" class="btn btn-outline-primary ms-2">
+                      <i class="fas fa-plus"></i>
+                    </button>
+                  </div>
                   {% if form.institution_id.errors %}
                   <div class="invalid-feedback">
                     {% for error in form.institution_id.errors %}
@@ -72,7 +77,7 @@
                     {% endfor %}
                   </div>
                   {% endif %}
-                  <small class="form-text text-muted">Select the financial institution where this account is held.</small>
+                  <small class="form-text text-muted">Select an existing institution or click the plus button to add a new one.</small>
                 </div>
               </div>
               <div class="col-md-6">
@@ -179,6 +184,39 @@
               <small class="form-text text-muted">Additional details about this account.</small>
             </div>
             
+            <!-- Modal for Adding New Financial Institution -->
+            <div class="modal fade" id="newInstitutionModal" tabindex="-1" aria-labelledby="newInstitutionModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="newInstitutionModalLabel">Add New Financial Institution</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form id="newInstitutionForm">
+                      <div class="mb-3">
+                        <label for="institutionName" class="form-label">Institution Name</label>
+                        <input type="text" class="form-control" id="institutionName" name="institutionName" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="institutionType" class="form-label">Institution Type</label>
+                        <select class="form-select" id="institutionType" name="institutionType" required>
+                          <option value="BANK">Bank</option>
+                          <option value="CREDIT_UNION">Credit Union</option>
+                          <option value="INVESTMENT_FIRM">Investment Firm</option>
+                          <option value="OTHER">Other</option>
+                        </select>
+                      </div>
+                    </form>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveInstitutionBtn">Save Institution</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
               <a href="{{ url_for('treasury.account_list') }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
               {{ form.submit(class="btn btn-primary") }}
@@ -237,4 +275,74 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Button to show the modal
+    const addInstitutionBtn = document.getElementById('btn-add-institution');
+    // Save button in the modal
+    const saveInstitutionBtn = document.getElementById('saveInstitutionBtn');
+    // The institution select dropdown
+    const institutionSelect = document.getElementById('institution_id');
+    
+    // Show the modal when the add button is clicked
+    addInstitutionBtn.addEventListener('click', function() {
+      const modal = new bootstrap.Modal(document.getElementById('newInstitutionModal'));
+      modal.show();
+    });
+    
+    // Handle the save button click in the modal
+    saveInstitutionBtn.addEventListener('click', function() {
+      const institutionName = document.getElementById('institutionName').value.trim();
+      const institutionType = document.getElementById('institutionType').value;
+      
+      if (!institutionName) {
+        alert('Please enter an institution name.');
+        return;
+      }
+      
+      // Create a new institution via AJAX
+      fetch('/api/treasury/add_institution', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: institutionName,
+          institution_type: institutionType
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          // Add the new institution to the dropdown
+          const newOption = new Option(data.institution.name, data.institution.id);
+          institutionSelect.add(newOption, undefined);
+          
+          // Select the newly added institution
+          institutionSelect.value = data.institution.id;
+          
+          // Close the modal
+          bootstrap.Modal.getInstance(document.getElementById('newInstitutionModal')).hide();
+          
+          // Clear the form
+          document.getElementById('institutionName').value = '';
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error adding institution:', error);
+        alert('There was an error adding the institution. Please try again.');
+      });
+    });
+  });
+</script>
 {% endblock %}
