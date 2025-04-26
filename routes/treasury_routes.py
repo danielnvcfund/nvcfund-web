@@ -71,14 +71,14 @@ def add_institution():
         db.session.commit()
         
         print(f"Institution created successfully with ID: {institution.id}")
-        # Return the created institution
+        # Return the created institution - need to convert enum to string for JSON serialization
         return jsonify({
             'success': True,
             'message': 'Institution created successfully',
             'institution': {
                 'id': institution.id,
                 'name': institution.name,
-                'type': institution.institution_type
+                'type': institution.institution_type.name if hasattr(institution.institution_type, 'name') else str(institution.institution_type)
             }
         })
     except Exception as e:
