@@ -93,6 +93,18 @@ def new_transfer():
                 return redirect(url_for('server_to_server.new_transfer'))
             
             # Create transaction record
+            metadata = {
+                'institution_id': institution.id,
+                'transfer_type': transfer_type,
+                'reference_code': reference_code,
+                'initiated_at': datetime.datetime.utcnow().isoformat(),
+                's2s_transfer_id': str(uuid.uuid4()),
+                'recipient_name': institution.name,
+                'recipient_account': institution.account_number or 'Unknown',
+                'recipient_bank_name': institution.name,
+                'recipient_bank_swift': institution.swift_code or 'Unknown'
+            }
+            
             transaction = Transaction(
                 transaction_id=utils.generate_transaction_id(),
                 user_id=current_user.id,
@@ -101,17 +113,8 @@ def new_transfer():
                 currency=currency,
                 status=TransactionStatus.PENDING,
                 description=description or f"Server-to-Server transfer to {institution.name}",
-                recipient_name=institution.name,
-                recipient_account=institution.account_number or 'Unknown',
-                recipient_bank_name=institution.name,
-                recipient_bank_swift=institution.swift_code or 'Unknown',
-                metadata={
-                    'institution_id': institution.id,
-                    'transfer_type': transfer_type,
-                    'reference_code': reference_code,
-                    'initiated_at': datetime.datetime.utcnow().isoformat(),
-                    's2s_transfer_id': str(uuid.uuid4())
-                }
+                institution_id=institution.id,
+                tx_metadata_json=json.dumps(metadata)
             )
             
             db.session.add(transaction)
@@ -154,6 +157,19 @@ def api_transfer():
             return jsonify({'success': False, 'error': 'This institution does not support Server-to-Server transfers'}), 400
         
         # Create transaction
+        metadata = {
+            'institution_id': institution.id,
+            'transfer_type': data.get('transfer_type', 'CREDIT'),
+            'reference_code': data.get('reference_code', ''),
+            'initiated_at': datetime.datetime.utcnow().isoformat(),
+            's2s_transfer_id': str(uuid.uuid4()),
+            'api_initiated': True,
+            'recipient_name': institution.name,
+            'recipient_account': institution.account_number or 'Unknown',
+            'recipient_bank_name': institution.name,
+            'recipient_bank_swift': institution.swift_code or 'Unknown'
+        }
+        
         transaction = Transaction(
             transaction_id=utils.generate_transaction_id(),
             user_id=current_user.id,
@@ -162,18 +178,8 @@ def api_transfer():
             currency=data['currency'],
             status=TransactionStatus.PENDING,
             description=data.get('description') or f"Server-to-Server transfer to {institution.name}",
-            recipient_name=institution.name,
-            recipient_account=institution.account_number or 'Unknown',
-            recipient_bank_name=institution.name,
-            recipient_bank_swift=institution.swift_code or 'Unknown',
-            metadata={
-                'institution_id': institution.id,
-                'transfer_type': data.get('transfer_type', 'CREDIT'),
-                'reference_code': data.get('reference_code', ''),
-                'initiated_at': datetime.datetime.utcnow().isoformat(),
-                's2s_transfer_id': str(uuid.uuid4()),
-                'api_initiated': True
-            }
+            institution_id=institution.id,
+            tx_metadata_json=json.dumps(metadata)
         )
         
         db.session.add(transaction)
@@ -224,6 +230,20 @@ def schedule_transfer():
             return jsonify({'success': False, 'error': 'This institution does not support Server-to-Server transfers'}), 400
         
         # Create transaction with scheduled status
+        metadata = {
+            'institution_id': institution.id,
+            'transfer_type': data.get('transfer_type', 'CREDIT'),
+            'reference_code': data.get('reference_code', ''),
+            'initiated_at': datetime.datetime.utcnow().isoformat(),
+            'scheduled_for': schedule_date.isoformat(),
+            's2s_transfer_id': str(uuid.uuid4()),
+            'scheduled': True,
+            'recipient_name': institution.name,
+            'recipient_account': institution.account_number or 'Unknown',
+            'recipient_bank_name': institution.name,
+            'recipient_bank_swift': institution.swift_code or 'Unknown'
+        }
+        
         transaction = Transaction(
             transaction_id=utils.generate_transaction_id(),
             user_id=current_user.id,
@@ -232,19 +252,8 @@ def schedule_transfer():
             currency=data['currency'],
             status=TransactionStatus.SCHEDULED,  # Use SCHEDULED status
             description=data.get('description') or f"Scheduled S2S transfer to {institution.name}",
-            recipient_name=institution.name,
-            recipient_account=institution.account_number or 'Unknown',
-            recipient_bank_name=institution.name,
-            recipient_bank_swift=institution.swift_code or 'Unknown',
-            metadata={
-                'institution_id': institution.id,
-                'transfer_type': data.get('transfer_type', 'CREDIT'),
-                'reference_code': data.get('reference_code', ''),
-                'initiated_at': datetime.datetime.utcnow().isoformat(),
-                'scheduled_for': schedule_date.isoformat(),
-                's2s_transfer_id': str(uuid.uuid4()),
-                'scheduled': True
-            }
+            institution_id=institution.id,
+            tx_metadata_json=json.dumps(metadata)
         )
         
         db.session.add(transaction)
