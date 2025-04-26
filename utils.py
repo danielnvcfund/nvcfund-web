@@ -31,7 +31,7 @@ def generate_api_key():
     return ''.join(secrets.choice(alphabet) for _ in range(64))
 
 def format_currency(amount, currency):
-    """Format currency amount with symbol"""
+    """Format currency amount with symbol and thousand separators"""
     symbols = {
         'USD': '$',
         'EUR': '€',
@@ -45,13 +45,13 @@ def format_currency(amount, currency):
     symbol = symbols.get(currency.upper(), '')
     
     if currency.upper() in ['USD', 'EUR', 'GBP']:
-        return f"{symbol}{amount:.2f}"
+        return f"{symbol}{amount:,.2f}"
     elif currency.upper() in ['JPY', 'CNY']:
-        return f"{symbol}{int(amount)}"
+        return f"{symbol}{int(amount):,}"
     elif currency.upper() in ['ETH', 'BTC']:
-        return f"{symbol}{amount:.8f}"
+        return f"{symbol}{amount:,.8f}"
     else:
-        return f"{amount} {currency.upper()}"
+        return f"{amount:,.2f} {currency.upper()}"
 
 def calculate_transaction_fee(amount, transaction_type):
     """Calculate transaction fee based on amount and type"""
