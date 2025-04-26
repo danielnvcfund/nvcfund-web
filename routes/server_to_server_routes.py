@@ -21,7 +21,6 @@ server_to_server_routes = Blueprint('server_to_server', __name__, url_prefix='/s
 
 @server_to_server_routes.route('/dashboard')
 @login_required
-@admin_required
 def dashboard():
     """Server-to-Server Transfer Dashboard"""
     # Get recent transactions
@@ -62,7 +61,6 @@ def dashboard():
 
 @server_to_server_routes.route('/new-transfer', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def new_transfer():
     """Create a new Server-to-Server transfer"""
     if request.method == 'POST':
