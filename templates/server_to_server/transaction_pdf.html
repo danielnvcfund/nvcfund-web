@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Server-to-Server Transfer {{ transaction.transaction_id }}</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11pt;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section h2 {
+            color: #555;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .info-row {
+            margin-bottom: 15px;
+            display: flex;
+        }
+        .info-label {
+            font-weight: bold;
+            width: 180px;
+        }
+        .info-value {
+            flex: 1;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 10pt;
+            color: #777;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 10pt;
+        }
+        .status-pending {
+            background-color: #ffeeba;
+            color: #856404;
+        }
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-failed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status-scheduled {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 100px;
+            color: rgba(200, 200, 200, 0.1);
+            z-index: -1;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <h2>NVC Banking Platform</h2>
+                <p>Global Payments Network</p>
+            </div>
+            <h1>Server-to-Server Transfer Receipt</h1>
+            <p>Transaction ID: {{ transaction.transaction_id }}</p>
+        </div>
+        
+        <div class="section">
+            <h2>Transaction Details</h2>
+            
+            <div class="info-row">
+                <div class="info-label">Amount:</div>
+                <div class="info-value"><strong>{{ formatted_amount }}</strong></div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">Date:</div>
+                <div class="info-value">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">Status:</div>
+                <div class="info-value">
+                    <span class="status status-{{ transaction.status.value.lower() }}">{{ transaction.status.value }}</span>
+                </div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">Transfer Type:</div>
+                <div class="info-value">Server-to-Server</div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">Description:</div>
+                <div class="info-value">{{ transaction.description }}</div>
+            </div>
+            
+            {% if metadata.get('reference_code') %}
+            <div class="info-row">
+                <div class="info-label">Reference Code:</div>
+                <div class="info-value">{{ metadata.get('reference_code') }}</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="section">
+            <h2>Recipient Information</h2>
+            
+            <div class="info-row">
+                <div class="info-label">Financial Institution:</div>
+                <div class="info-value">{{ institution.name if institution else metadata.get('recipient_bank_name', 'Unknown') }}</div>
+            </div>
+            
+            {% if institution and institution.swift_code %}
+            <div class="info-row">
+                <div class="info-label">SWIFT Code:</div>
+                <div class="info-value">{{ institution.swift_code }}</div>
+            </div>
+            {% elif metadata.get('recipient_bank_swift') %}
+            <div class="info-row">
+                <div class="info-label">SWIFT Code:</div>
+                <div class="info-value">{{ metadata.get('recipient_bank_swift') }}</div>
+            </div>
+            {% endif %}
+            
+            {% if metadata.get('recipient_account') %}
+            <div class="info-row">
+                <div class="info-label">Account Number:</div>
+                <div class="info-value">{{ metadata.get('recipient_account') }}</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if transaction.status == 'SCHEDULED' and metadata.get('scheduled_for') %}
+        <div class="section">
+            <h2>Schedule Information</h2>
+            
+            <div class="info-row">
+                <div class="info-label">Scheduled For:</div>
+                <div class="info-value">{{ metadata.get('scheduled_for').split('T')[0] }} {{ metadata.get('scheduled_for').split('T')[1].split('.')[0] }} UTC</div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="footer">
+            <p>This document was automatically generated by the NVC Banking Platform.</p>
+            <p>Document generated on: {{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</p>
+            <p>&copy; 2025 NVC Global - All rights reserved</p>
+        </div>
+        
+        <div class="watermark">
+            {% if transaction.status.value == 'COMPLETED' %}
+            COMPLETED
+            {% elif transaction.status.value == 'PENDING' %}
+            PENDING
+            {% elif transaction.status.value == 'FAILED' %}
+            FAILED
+            {% elif transaction.status.value == 'SCHEDULED' %}
+            SCHEDULED
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

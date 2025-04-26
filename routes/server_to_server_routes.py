@@ -7,6 +7,7 @@ import os
 import uuid
 import json
 import datetime
+import weasyprint
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, jsonify
 from flask_login import login_required, current_user
 from sqlalchemy import desc
@@ -365,3 +366,65 @@ def add_institution():
         
         flash(f'Error creating institution: {str(e)}', 'danger')
         return redirect(url_for('server_to_server.new_transfer'))
+
+@server_to_server_routes.route('/export/<transaction_id>', methods=['GET'])
+@login_required
+def export_transaction_pdf(transaction_id):
+    """Export a transaction as PDF"""
+    try:
+        # Get the transaction
+        transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+        
+        if not transaction:
+            flash('Transaction not found', 'danger')
+            return redirect(url_for('server_to_server.dashboard'))
+        
+        # Security check - only allow admins or transaction owners to view
+        if transaction.user_id != current_user.id and not current_user.is_admin:
+            flash('You do not have permission to view this transaction', 'danger')
+            return redirect(url_for('server_to_server.dashboard'))
+            
+        # Ensure it's a Server-to-Server transaction
+        if transaction.transaction_type != TransactionType.SERVER_TO_SERVER:
+            flash('This is not a Server-to-Server transaction', 'danger')
+            return redirect(url_for('server_to_server.dashboard'))
+        
+        # Get institution
+        institution = None
+        if transaction.institution_id:
+            institution = FinancialInstitution.query.get(transaction.institution_id)
+            
+        # Format the amount with commas
+        formatted_amount = f"{transaction.currency} {'{:,.2f}'.format(transaction.amount)}"
+            
+        # Get metadata if available
+        metadata = {}
+        if transaction.tx_metadata_json:
+            try:
+                metadata = json.loads(transaction.tx_metadata_json)
+            except:
+                current_app.logger.error(f"Error parsing transaction metadata for {transaction_id}")
+        
+        # Prepare HTML for PDF
+        html = render_template('server_to_server/transaction_pdf.html',
+                            transaction=transaction,
+                            institution=institution,
+                            formatted_amount=formatted_amount,
+                            metadata=metadata)
+                            
+        # Generate PDF
+        pdf = weasyprint.HTML(string=html).write_pdf()
+        
+        # Create response
+        response = current_app.response_class(
+            pdf,
+            mimetype='application/pdf',
+            headers={'Content-Disposition': f'attachment;filename=transaction_{transaction_id}.pdf'}
+        )
+        
+        return response
+        
+    except Exception as e:
+        current_app.logger.error(f"Error exporting transaction PDF: {str(e)}")
+        flash(f'Error generating PDF: {str(e)}', 'danger')
+        return redirect(url_for('server_to_server.dashboard'))
