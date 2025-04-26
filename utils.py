@@ -4,9 +4,17 @@ import secrets
 import logging
 import string
 import json
+import locale
 from datetime import datetime, timedelta
 from app import db
 from models import User, TransactionStatus
+
+# Set locale for currency formatting
+try:
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+except:
+    # Fallback if locale is not available
+    pass
 
 logger = logging.getLogger(__name__)
 

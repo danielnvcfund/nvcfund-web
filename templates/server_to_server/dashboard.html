@@ -8,7 +8,17 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="fas fa-server me-2"></i>Server-to-Server Transfer Dashboard</h4>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-server me-2"></i>Server-to-Server Transfer Dashboard</h4>
+                        <div>
+                            <a href="/static/docs/server_to_server_integration_guide.html" target="_blank" class="btn btn-sm btn-outline-light me-2">
+                                <i class="fas fa-book me-1"></i> Integration Guide
+                            </a>
+                            <a href="{{ url_for('server_to_server.new_transfer') }}" class="btn btn-sm btn-light">
+                                <i class="fas fa-plus me-1"></i> New Transfer
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -160,6 +170,9 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <a id="exportPdfBtn" href="#" class="btn btn-primary me-auto d-none">
+                    <i class="fas fa-file-pdf me-1"></i> Download PDF
+                </a>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -170,14 +183,34 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Format currency function
+        function formatCurrency(value) {
+            if (!value) return '';
+            
+            // Extract the currency and amount
+            const parts = value.trim().split(' ');
+            if (parts.length < 2) return value;
+            
+            const currency = parts[0];
+            const amount = parseFloat(parts[1].replace(/,/g, ''));
+            
+            // Format with commas
+            return `${currency} ${amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+        
         // Handle view details buttons
         const viewDetailsButtons = document.querySelectorAll('.view-details-btn');
         const modal = new bootstrap.Modal(document.getElementById('transactionDetailsModal'));
         const modalContent = document.getElementById('transaction-details-content');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
         
         viewDetailsButtons.forEach(button => {
             button.addEventListener('click', function() {
                 const transactionId = this.getAttribute('data-transaction-id');
+                
+                // Hide the PDF button while loading
+                exportPdfBtn.classList.add('d-none');
+                
                 modalContent.innerHTML = `
                     <div class="text-center">
                         <div class="spinner-border" role="status">
@@ -187,25 +220,29 @@
                 `;
                 modal.show();
                 
-                // In a real implementation, you would fetch transaction details from the server
-                // For now, we'll just display basic information
+                // Get basic information from the table row
                 const row = this.closest('tr');
                 const recipient = row.cells[1].textContent;
-                const amount = row.cells[2].textContent;
+                const rawAmount = row.cells[2].textContent;
+                const formattedAmount = formatCurrency(rawAmount);
                 const date = row.cells[3].textContent;
                 const status = row.cells[4].querySelector('.badge').textContent;
+                
+                // Update PDF export button
+                exportPdfBtn.href = `/s2s/export/${transactionId}`;
+                exportPdfBtn.classList.remove('d-none');
                 
                 setTimeout(() => {
                     modalContent.innerHTML = `
                         <div class="card">
-                            <div class="card-header">
+                            <div class="card-header bg-dark">
                                 <h6 class="mb-0">Transaction ID: <code>${transactionId}</code></h6>
                             </div>
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <p><strong>Recipient:</strong> ${recipient}</p>
-                                        <p><strong>Amount:</strong> ${amount}</p>
+                                        <p><strong>Amount:</strong> ${formattedAmount}</p>
                                         <p><strong>Date:</strong> ${date}</p>
                                         <p><strong>Status:</strong> ${status}</p>
                                     </div>
