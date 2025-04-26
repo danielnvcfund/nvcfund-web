@@ -220,6 +220,15 @@ def create_app():
         from routes.document_routes import document_routes
         app.register_blueprint(document_routes, url_prefix='/documents')
         
+        # Register SWIFT GPI routes
+        try:
+            from routes.swift_gpi_routes import swift_gpi_routes
+            app.register_blueprint(swift_gpi_routes)
+            logger.info("SWIFT GPI routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering SWIFT GPI routes: {str(e)}")
+            logger.warning("Application will run without SWIFT GPI functionality")
+        
         # Register API routes
         from routes.api import api_bp as main_api_bp
         app.register_blueprint(main_api_bp)

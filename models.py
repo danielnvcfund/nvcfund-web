@@ -1,7 +1,7 @@
 import enum
 import json
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from app import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -77,6 +77,13 @@ class TransactionType(enum.Enum):
     SWIFT_FUND_TRANSFER = "SWIFT_FUND_TRANSFER"        # For SWIFT MT103 customer fund transfers
     SWIFT_INSTITUTION_TRANSFER = "SWIFT_INSTITUTION_TRANSFER"  # For SWIFT MT202 financial institution transfers
     SWIFT_FREE_FORMAT = "SWIFT_FREE_FORMAT"            # For SWIFT MT799 free format messages
+    SWIFT_TRANSFER = "SWIFT_TRANSFER"                  # General SWIFT transfer (legacy)
+    SWIFT_GPI_PAYMENT = "SWIFT_GPI_PAYMENT"            # For SWIFT GPI payment messages
+    SWIFT_GPI_NOTIFICATION = "SWIFT_GPI_NOTIFICATION"  # For SWIFT GPI status notifications
+    INTERNATIONAL_WIRE = "INTERNATIONAL_WIRE"          # For international wire transfers
+    RTGS_TRANSFER = "RTGS_TRANSFER"                    # For Real-Time Gross Settlement transfers
+    SERVER_TO_SERVER = "SERVER_TO_SERVER"              # For direct server-to-server transfers
+    OFF_LEDGER_TRANSFER = "OFF_LEDGER_TRANSFER"        # For general off-ledger transfers
     TOKEN_EXCHANGE = "TOKEN_EXCHANGE"                  # For AFD1-NVCT token exchange transactions
     EDI_PAYMENT = "EDI_PAYMENT"                        # For Electronic Data Interchange payments
     EDI_ACH_TRANSFER = "EDI_ACH_TRANSFER"              # For ACH transfers via EDI
@@ -188,6 +195,35 @@ class BlockchainAccount(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     user = db.relationship('User', backref=db.backref('blockchain_accounts', lazy=True))
+
+class SwiftMessageStatus(enum.Enum):
+    RECEIVED = "RECEIVED"
+    PROCESSED = "PROCESSED"
+    RECONCILED = "RECONCILED"
+    FAILED = "FAILED"
+    PENDING = "PENDING"
+
+class SwiftMessage(db.Model):
+    """Model for storing SWIFT messages imported from various sources including GPI"""
+    id = db.Column(db.Integer, primary_key=True)
+    message_type = db.Column(db.String(10), nullable=False)  # 103, 202, 760, etc.
+    sender_bic = db.Column(db.String(15), nullable=False)
+    receiver_bic = db.Column(db.String(15), nullable=False)
+    reference = db.Column(db.String(35), nullable=False, index=True)
+    related_reference = db.Column(db.String(35))
+    amount = db.Column(db.Float)
+    currency = db.Column(db.String(3))
+    value_date = db.Column(db.Date)
+    message_text = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default="RECEIVED", index=True)
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    file_source = db.Column(db.String(255))
+    source_type = db.Column(db.String(50), default="MANUAL_UPLOAD")  # MANUAL_UPLOAD, API, SFTP, etc.
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship to the user who uploaded the message
+    user = db.relationship('User', backref=db.backref('swift_messages', lazy=True))
 
 class BlockchainTransaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
