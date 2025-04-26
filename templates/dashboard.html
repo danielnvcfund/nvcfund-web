@@ -42,7 +42,7 @@
     </script>
     
     <!-- Developer Tools Panel - Only visible to users with Developer role -->
-    {% if current_user.role.value == 'developer' %}
+    {% if current_user.role.value == 'DEVELOPER' or current_user.role.name == 'DEVELOPER' %}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card bg-success bg-gradient text-white border-0 shadow">
@@ -73,7 +73,7 @@
     {% endif %}
     
     <!-- Admin Tools Panel - Only visible to admin users -->
-    {% if current_user.role.value == 'admin' or current_user.role == 'admin' %}
+    {% if current_user.role.value == 'ADMIN' or current_user.role.name == 'ADMIN' %}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card bg-primary bg-gradient text-white border-0 shadow">
@@ -497,7 +497,7 @@
             {% endif %}
             
             <!-- Developer Tools (for DEVELOPER role users) -->
-            {% if user.role and user.role.value == 'developer' %}
+            {% if user.role and (user.role.value == 'DEVELOPER' or user.role.name == 'DEVELOPER') %}
             <div class="card dashboard-widget border-0 shadow mb-4">
                 <div class="card-header bg-dark bg-opacity-10 border-0">
                     <div class="d-flex align-items-center">
