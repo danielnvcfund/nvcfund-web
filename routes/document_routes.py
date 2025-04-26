@@ -1,7 +1,7 @@
 import os
-from flask import Blueprint, send_file, render_template
-import pdfkit
+from flask import Blueprint, send_file, render_template, make_response
 import tempfile
+from weasyprint import HTML
 
 document_routes = Blueprint('documents', __name__, url_prefix='/documents')
 
@@ -16,8 +16,8 @@ def nvc_funds_transfer_guide_pdf():
     with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp_file:
         pdf_path = temp_file.name
     
-    # Convert HTML to PDF
-    pdfkit.from_string(html_content, pdf_path)
+    # Convert HTML to PDF using WeasyPrint
+    HTML(string=html_content).write_pdf(pdf_path)
     
     # Send the PDF file
     return send_file(
@@ -26,3 +26,8 @@ def nvc_funds_transfer_guide_pdf():
         download_name='NVC_Global_Funds_Transfer_Guide.pdf',
         mimetype='application/pdf'
     )
+
+@document_routes.route('/nvc_funds_transfer_guide')
+def nvc_funds_transfer_guide_html():
+    """Return the HTML version of the funds transfer guide"""
+    return render_template('documents/nvc_funds_transfer_guide.html')

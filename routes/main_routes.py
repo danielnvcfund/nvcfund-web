@@ -164,6 +164,11 @@ def quick_access():
     """Quick access page for registration and documentation"""
     return render_template('quick_access.html')
 
+@main.route('/funds-transfer-guide')
+def funds_transfer_guide():
+    """Redirect to the funds transfer guide"""
+    return redirect(url_for('documents.nvc_funds_transfer_guide_html'))
+
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     """User login route"""

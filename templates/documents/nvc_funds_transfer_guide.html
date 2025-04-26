@@ -1,254 +1,658 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>NVC Global Funds Transfer Guide</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333;
-            max-width: 800px;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        header {
+            background-color: #004d99;
+            padding: 20px;
+            color: white;
+            text-align: center;
         }
         h1 {
-            color: #0056b3;
-            text-align: center;
-            border-bottom: 2px solid #0056b3;
-            padding-bottom: 10px;
-            margin-bottom: 30px;
+            margin: 0;
+            font-size: 2.5em;
         }
         h2 {
-            color: #0056b3;
+            color: #004d99;
+            border-bottom: 2px solid #004d99;
+            padding-bottom: 5px;
             margin-top: 30px;
-            border-left: 4px solid #0056b3;
-            padding-left: 10px;
         }
         h3 {
-            color: #007bff;
-            margin-top: 20px;
-        }
-        .step {
-            background-color: #f8f9fa;
-            border-left: 4px solid #28a745;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 0 5px 5px 0;
-        }
-        .note {
-            background-color: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 0 5px 5px 0;
-        }
-        .header-image {
-            display: block;
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 50px;
-            font-size: 0.8em;
-            color: #6c757d;
-            border-top: 1px solid #dee2e6;
-            padding-top: 20px;
+            color: #0066cc;
+            margin-top: 25px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 15px 0;
+            margin: 20px 0;
         }
-        th, td {
-            border: 1px solid #dee2e6;
-            padding: 10px;
-            text-align: left;
+        table, th, td {
+            border: 1px solid #ddd;
         }
         th {
-            background-color: #e9ecef;
+            background-color: #f0f0f0;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 10px;
+        }
+        .note {
+            background-color: #ffffcc;
+            border-left: 4px solid #ffcc00;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #ffeeee;
+            border-left: 4px solid #ff6666;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .tip {
+            background-color: #e6f7ff;
+            border-left: 4px solid #0099ff;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .step {
+            background-color: #f0f0f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background-color: #004d99;
+            color: white;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #777;
+            font-size: 0.9em;
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+        .logo {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .logo img {
+            max-width: 300px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .flow-diagram {
+            display: block;
+            margin: 30px auto;
+            max-width: 800px;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        @media print {
+            body {
+                background-color: white;
+                font-size: 12pt;
+            }
+            .container {
+                max-width: 100%;
+                box-shadow: none;
+            }
+            h2 {
+                page-break-after: avoid;
+            }
+            h3 {
+                page-break-after: avoid;
+            }
+            .step, .note, .warning, .tip {
+                page-break-inside: avoid;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header-image">
-        <h1>NVC Global Funds Transfer Guide</h1>
-    </div>
-    
-    <p>
-        This document provides comprehensive instructions for transferring funds between banks using both the 
-        NVC Global Payment Gateway and EDI integration systems.
-    </p>
-    
-    <h2>Using NVC Global Payment Gateway</h2>
-    
-    <h3>Available Payment Methods</h3>
-    <ul>
-        <li><strong>SWIFT transfers</strong> for international bank payments</li>
-        <li><strong>Blockchain-based settlement</strong> with Ethereum</li>
-        <li><strong>Domestic bank transfers</strong> via API integration</li>
-    </ul>
-    
-    <h3>Steps to Send Funds</h3>
-    
-    <div class="step">
-        <strong>Step 1:</strong> Log in as an admin user
-    </div>
-    
-    <div class="step">
-        <strong>Step 2:</strong> Navigate to "Payments" → "New SWIFT Transfer"
-    </div>
-    
-    <div class="step">
-        <strong>Step 3:</strong> Fill in the required details:
-        <ul>
-            <li>Sender information (your bank details)</li>
-            <li>Recipient bank details (BIC/SWIFT code, name, address)</li>
-            <li>Recipient account details (account number, name)</li>
-            <li>Amount and currency</li>
-            <li>Payment reference/purpose</li>
-        </ul>
-    </div>
-    
-    <div class="step">
-        <strong>Step 4:</strong> Submit the transfer for processing
-    </div>
-    
-    <div class="step">
-        <strong>Step 5:</strong> Track the payment status in the "SWIFT Messages" section
-    </div>
-    
-    <div class="note">
-        <strong>Note:</strong> For cross-border transfers, additional information may be required including correspondent bank details, 
-        purpose of payment, and regulatory compliance information.
-    </div>
-    
-    <h2>Using EDI Integration</h2>
-    
-    <h3>Available EDI Capabilities</h3>
-    <ul>
-        <li><strong>Electronic Data Interchange</strong> for standardized file transfers</li>
-        <li>Support for <strong>X12 and EDIFACT</strong> formats</li>
-        <li><strong>Direct bank-to-bank</strong> communication channels</li>
-        <li>Pre-configured partners: <strong>Chase Bank, Wells Fargo, Federal Reserve</strong></li>
-    </ul>
-    
-    <h3>Steps to Send Funds via EDI</h3>
-    
-    <div class="step">
-        <strong>Step 1:</strong> Log in as an admin user
-    </div>
-    
-    <div class="step">
-        <strong>Step 2:</strong> Go to "EDI" → "Dashboard"
-    </div>
-    
-    <div class="step">
-        <strong>Step 3:</strong> Select "New EDI Transaction"
-    </div>
-    
-    <div class="step">
-        <strong>Step 4:</strong> Choose a registered partner (e.g., Chase Bank, Wells Fargo, Federal Reserve)
-    </div>
-    
-    <div class="step">
-        <strong>Step 5:</strong> Select transaction type "Financial Transfer"
-    </div>
-    
-    <div class="step">
-        <strong>Step 6:</strong> Upload or create the EDI message with payment details following the standard format
-    </div>
-    
-    <div class="step">
-        <strong>Step 7:</strong> Verify and submit the transaction
-    </div>
-    
-    <div class="step">
-        <strong>Step 8:</strong> Track progress in the EDI Transaction list
-    </div>
-    
-    <h2>Required Information for Fund Transfers</h2>
-    
-    <h3>Credentials Needed</h3>
-    <table>
-        <tr>
-            <th>Requirement</th>
-            <th>Description</th>
-            <th>Status</th>
-        </tr>
-        <tr>
-            <td>Admin User Account</td>
-            <td>Valid administrator login credentials</td>
-            <td>Required</td>
-        </tr>
-        <tr>
-            <td>API Keys</td>
-            <td>Authentication for payment gateways</td>
-            <td>Already configured</td>
-        </tr>
-        <tr>
-            <td>EDI Partner Configuration</td>
-            <td>Connection parameters for major banks</td>
-            <td>Already set up</td>
-        </tr>
-    </table>
-    
-    <h3>Banking Details Requirements</h3>
-    <table>
-        <tr>
-            <th>Information</th>
-            <th>When Required</th>
-        </tr>
-        <tr>
-            <td>Recipient Bank BIC/SWIFT Code</td>
-            <td>All international transfers</td>
-        </tr>
-        <tr>
-            <td>Recipient IBAN or Account Number</td>
-            <td>All transfers</td>
-        </tr>
-        <tr>
-            <td>Recipient Name</td>
-            <td>All transfers</td>
-        </tr>
-        <tr>
-            <td>Recipient Address</td>
-            <td>International transfers</td>
-        </tr>
-        <tr>
-            <td>Correspondent Bank Information</td>
-            <td>Some cross-border transfers</td>
-        </tr>
-        <tr>
-            <td>Purpose of Payment</td>
-            <td>Required for regulatory compliance</td>
-        </tr>
-    </table>
-    
-    <h2>Tracking and Confirmation</h2>
-    
-    <p>
-        After initiating a fund transfer, you can track its status:
-    </p>
-    
-    <ul>
-        <li><strong>For SWIFT transfers:</strong> Navigate to "SWIFT Messages" to view transfer status and details</li>
-        <li><strong>For EDI transfers:</strong> Check the "EDI" → "Transaction List" for status updates</li>
-        <li><strong>For blockchain settlements:</strong> Track transaction hash on the blockchain explorer</li>
-    </ul>
-    
-    <div class="note">
-        <strong>Important:</strong> All transfers are subject to compliance checks, bank processing times, and network conditions. 
-        International transfers typically take 1-3 business days to complete.
-    </div>
-    
-    <div class="footer">
-        <p>NVC Global Banking Platform © 2025</p>
-        <p>For technical support, contact the system administrator.</p>
+    <div class="container">
+        <header>
+            <h1>NVC Global Funds Transfer Guide</h1>
+            <p>Comprehensive Guide for Electronic Fund Transfers via NVC Global Payment Gateway and EDI</p>
+        </header>
+
+        <div class="logo">
+            <img src="/static/images/nvc_logo.png" alt="NVC Global Logo">
+        </div>
+
+        <div class="section">
+            <h2>1. Introduction</h2>
+            <p>This guide provides comprehensive instructions for initiating, processing, and tracking fund transfers through the NVC Global Payment Gateway and Electronic Data Interchange (EDI) system. It is designed for financial institutions, corporate clients, and individual users who need to transfer funds securely across borders.</p>
+            
+            <div class="note">
+                <strong>Note:</strong> NVC Global Payment Gateway provides secure, efficient, and cost-effective fund transfer services with settlements in USD, EUR, GBP, JPY, and other major currencies. The system is backed by $10 trillion in assets, providing unparalleled security and reliability.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>2. NVC Global Payment Methods</h2>
+            <p>The NVC Banking Platform supports multiple payment methods to accommodate various business needs and scenarios:</p>
+            
+            <h3>2.1 Standard Payment Methods</h3>
+            <table>
+                <tr>
+                    <th>Payment Method</th>
+                    <th>Description</th>
+                    <th>Processing Time</th>
+                    <th>Recommended For</th>
+                </tr>
+                <tr>
+                    <td>SWIFT Transfer</td>
+                    <td>International wire transfer using the SWIFT network</td>
+                    <td>1-3 business days</td>
+                    <td>International B2B payments, large value transfers</td>
+                </tr>
+                <tr>
+                    <td>EDI Payment</td>
+                    <td>Electronic Data Interchange for automated payments</td>
+                    <td>Same day to next day</td>
+                    <td>B2B recurring payments, supply chain transactions</td>
+                </tr>
+                <tr>
+                    <td>NVC Token (NVCT)</td>
+                    <td>Digital asset token transfer on Ethereum blockchain</td>
+                    <td>Minutes to hours</td>
+                    <td>Cross-border payments, digital asset transfers</td>
+                </tr>
+                <tr>
+                    <td>PayPal</td>
+                    <td>Standard PayPal payment integration</td>
+                    <td>Instant to 24 hours</td>
+                    <td>Online marketplaces, digital services, consumer transactions</td>
+                </tr>
+                <tr>
+                    <td>Multi-Signature Wallet</td>
+                    <td>Secure blockchain transaction requiring multiple approvals</td>
+                    <td>1-2 business days</td>
+                    <td>High-value transfers requiring multiple authorizations</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>3. SWIFT Fund Transfer Process</h2>
+            
+            <h3>3.1 Preparing a SWIFT Transfer</h3>
+            <div class="step">
+                <span class="step-number">1</span> <strong>Login to your NVC Banking account</strong>
+                <p>Access your account at the NVC Banking Platform with your username and password</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">2</span> <strong>Navigate to "Transactions" → "New Payment" → "SWIFT Transfer"</strong>
+                <p>From your dashboard, access the SWIFT transfer form through the transactions menu</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">3</span> <strong>Complete the SWIFT Transfer Form</strong>
+                <p>Fill in all required fields including:</p>
+                <ul>
+                    <li>Recipient Bank Name</li>
+                    <li>Recipient Bank SWIFT/BIC Code</li>
+                    <li>Recipient Name</li>
+                    <li>Recipient Account Number/IBAN</li>
+                    <li>Transfer Amount and Currency</li>
+                    <li>Purpose of Payment</li>
+                    <li>Receiving Institution Name</li>
+                    <li>Institution ID</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">4</span> <strong>Review and Confirm the Transaction</strong>
+                <p>Carefully review all transaction details before final confirmation</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">5</span> <strong>Approve the Transaction</strong>
+                <p>Depending on your account settings, you may need to provide additional authentication or approval</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">6</span> <strong>Track the Transaction</strong>
+                <p>Monitor the status of your transfer in the "Transaction History" section</p>
+            </div>
+            
+            <div class="tip">
+                <strong>Tip:</strong> For large international transfers, initiate the transaction early in the business day to ensure it begins processing the same day.
+            </div>
+            
+            <h3>3.2 SWIFT Message Types</h3>
+            <p>The NVC Banking Platform supports various SWIFT message types for different transaction needs:</p>
+            
+            <table>
+                <tr>
+                    <th>Message Type</th>
+                    <th>Description</th>
+                    <th>Use Case</th>
+                </tr>
+                <tr>
+                    <td>MT103</td>
+                    <td>Single Customer Credit Transfer</td>
+                    <td>Standard international payment between banks</td>
+                </tr>
+                <tr>
+                    <td>MT202</td>
+                    <td>General Financial Institution Transfer</td>
+                    <td>Bank-to-bank transfers, cover payments</td>
+                </tr>
+                <tr>
+                    <td>MT700</td>
+                    <td>Issue of a Documentary Credit</td>
+                    <td>Letter of Credit issuance</td>
+                </tr>
+                <tr>
+                    <td>MT760</td>
+                    <td>Guarantee/Standby Letter of Credit</td>
+                    <td>Bank guarantee or standby credit issuance</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>4. Electronic Data Interchange (EDI) Transfers</h2>
+            
+            <h3>4.1 EDI Integration Setup</h3>
+            <p>Setting up EDI for automated fund transfers requires initial configuration:</p>
+            
+            <div class="step">
+                <span class="step-number">1</span> <strong>Request EDI Access</strong>
+                <p>Contact your NVC Global account manager to activate EDI capabilities for your organization</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">2</span> <strong>Configure EDI Partners</strong>
+                <p>Navigate to "EDI Dashboard" → "Partners" → "New Partner" to set up each financial institution or business partner</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">3</span> <strong>Define Document Types</strong>
+                <p>Configure the EDI document types your organization will use (e.g., X12 820 Payment Order, EDIFACT PAYORD)</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">4</span> <strong>Set Up Secure File Transfer</strong>
+                <p>Configure secure SFTP credentials for automated file exchange with partners</p>
+            </div>
+            
+            <h3>4.2 EDI Transaction Flow</h3>
+            <img class="flow-diagram" src="/static/images/edi_flow_diagram.png" alt="EDI Transaction Flow Diagram">
+            
+            <h3>4.3 Supported EDI Standards</h3>
+            <p>NVC Global supports the following EDI standards for financial transactions:</p>
+            
+            <table>
+                <tr>
+                    <th>Standard</th>
+                    <th>Document Types</th>
+                    <th>Industries</th>
+                </tr>
+                <tr>
+                    <td>X12</td>
+                    <td>820 (Payment Order), 824 (Application Advice), 835 (Payment Advice)</td>
+                    <td>Healthcare, Retail, Manufacturing, Financial Services</td>
+                </tr>
+                <tr>
+                    <td>EDIFACT</td>
+                    <td>PAYORD (Payment Order), BANSTA (Banking Status), PAYEXT (Extended Payment Order)</td>
+                    <td>International Trade, Banking, Insurance</td>
+                </tr>
+                <tr>
+                    <td>BAI2</td>
+                    <td>Balance and transaction reporting</td>
+                    <td>Banking, Treasury Management</td>
+                </tr>
+                <tr>
+                    <td>ISO 20022</td>
+                    <td>pain.001 (Credit Transfer), camt.053 (Statement)</td>
+                    <td>Global Banking, Corporate Treasury</td>
+                </tr>
+            </table>
+            
+            <div class="warning">
+                <strong>Important:</strong> All EDI transactions must follow the data format specifications exactly. Incorrect formatting can result in transaction delays or rejections.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>5. Blockchain-Based Transfers</h2>
+            
+            <h3>5.1 NVC Token (NVCT) Transfers</h3>
+            <p>NVCT is a USD-pegged stablecoin with an expandable supply backed by $10 trillion in assets, providing a secure and efficient means for digital value transfer.</p>
+            
+            <div class="step">
+                <span class="step-number">1</span> <strong>Access Token Transfer</strong>
+                <p>Navigate to "Transactions" → "New Payment" → "Token Transfer"</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">2</span> <strong>Enter Recipient Details</strong>
+                <p>Provide the recipient's Ethereum address or select from your saved contacts</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">3</span> <strong>Specify Amount</strong>
+                <p>Enter the amount of NVCT to transfer (1 NVCT = 1 USD)</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">4</span> <strong>Confirm Transaction</strong>
+                <p>Review and confirm the transaction details</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">5</span> <strong>Track Transaction</strong>
+                <p>Monitor the status in "Transaction History" or directly on the blockchain explorer</p>
+            </div>
+            
+            <h3>5.2 Multi-Signature Wallet Transactions</h3>
+            <p>For high-security transfers requiring multiple approvals:</p>
+            
+            <div class="step">
+                <span class="step-number">1</span> <strong>Initiate Multi-Sig Transaction</strong>
+                <p>Navigate to "Transactions" → "New Payment" → "Multi-Signature Transfer"</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">2</span> <strong>Set Transaction Parameters</strong>
+                <p>Enter recipient address, amount, and required signers (minimum 2)</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">3</span> <strong>Submit for Approval</strong>
+                <p>The transaction will be pending until the required number of approvals is reached</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">4</span> <strong>Authorized Signers Approval</strong>
+                <p>Each designated signer must log in and approve the transaction from their dashboard</p>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">5</span> <strong>Execution and Confirmation</strong>
+                <p>Once all required signatures are collected, the transaction executes automatically</p>
+            </div>
+            
+            <div class="note">
+                <strong>Note:</strong> Multi-signature wallets provide enhanced security for high-value transfers by requiring multiple parties to approve transactions before they are executed on the blockchain.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>6. Security Best Practices</h2>
+            
+            <h3>6.1 Authentication and Authorization</h3>
+            <ul>
+                <li>Enable two-factor authentication (2FA) for all accounts</li>
+                <li>Use strong, unique passwords for your NVC Banking Platform credentials</li>
+                <li>For institutional accounts, implement IP whitelisting for API access</li>
+                <li>Regularly review authorized users and their permission levels</li>
+            </ul>
+            
+            <h3>6.2 Transaction Security</h3>
+            <ul>
+                <li>Verify recipient details before confirming transactions</li>
+                <li>For high-value transfers, use the multi-signature approval process</li>
+                <li>Set up transaction alerts for all account activities</li>
+                <li>Implement daily transaction limits appropriate to your business needs</li>
+            </ul>
+            
+            <h3>6.3 API Integration Security</h3>
+            <ul>
+                <li>Store API keys securely and never expose them in client-side code</li>
+                <li>Implement proper JWT token handling for all API communications</li>
+                <li>Use TLS 1.2 or higher for all API connections</li>
+                <li>Rotate API keys periodically and after personnel changes</li>
+            </ul>
+            
+            <div class="warning">
+                <strong>Security Alert:</strong> NVC Global will never ask for your full password, private keys, or 2FA codes via email, phone, or messaging. Always access the platform directly through the official website.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>7. Troubleshooting and Support</h2>
+            
+            <h3>7.1 Common Issues and Resolutions</h3>
+            <table>
+                <tr>
+                    <th>Issue</th>
+                    <th>Possible Cause</th>
+                    <th>Resolution</th>
+                </tr>
+                <tr>
+                    <td>Transaction Pending for Extended Period</td>
+                    <td>Bank verification delays, incomplete information</td>
+                    <td>Check transaction details for errors, contact support if pending >24 hours</td>
+                </tr>
+                <tr>
+                    <td>EDI File Rejection</td>
+                    <td>Format errors, missing mandatory fields</td>
+                    <td>Review EDI logs, correct format issues, and resubmit</td>
+                </tr>
+                <tr>
+                    <td>API Connection Error</td>
+                    <td>Invalid credentials, network issues</td>
+                    <td>Verify API keys, check network connectivity, review server logs</td>
+                </tr>
+                <tr>
+                    <td>Blockchain Transaction Failure</td>
+                    <td>Insufficient gas, network congestion</td>
+                    <td>Check gas settings, monitor network status, retry during lower congestion</td>
+                </tr>
+            </table>
+            
+            <h3>7.2 Contact Support</h3>
+            <p>For assistance with any funds transfer issues, contact NVC Global support:</p>
+            <ul>
+                <li><strong>Email:</strong> support@nvcplatform.net</li>
+                <li><strong>Phone:</strong> +1-800-NVC-HELP (International: +1-212-555-0123)</li>
+                <li><strong>Live Chat:</strong> Available 24/7 from your dashboard</li>
+                <li><strong>Support Ticket:</strong> Submit through the Help section in your account</li>
+            </ul>
+            
+            <div class="tip">
+                <strong>Support Tip:</strong> When contacting support about a specific transaction, always include the Transaction ID, which begins with "TXN-" followed by alphanumeric characters.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>8. Fees and Processing Times</h2>
+            
+            <h3>8.1 Fee Structure</h3>
+            <table>
+                <tr>
+                    <th>Transfer Method</th>
+                    <th>Transaction Fee</th>
+                    <th>Currency Conversion Fee</th>
+                </tr>
+                <tr>
+                    <td>SWIFT Transfer</td>
+                    <td>$25 flat fee + 0.25% (min $35, max $150)</td>
+                    <td>0.5% of transaction amount</td>
+                </tr>
+                <tr>
+                    <td>EDI Payment</td>
+                    <td>$5 per transaction or volume-based pricing</td>
+                    <td>0.4% of transaction amount</td>
+                </tr>
+                <tr>
+                    <td>NVC Token Transfer</td>
+                    <td>0.1% of transaction amount</td>
+                    <td>Not applicable</td>
+                </tr>
+                <tr>
+                    <td>Multi-Signature Transaction</td>
+                    <td>0.15% of transaction amount</td>
+                    <td>Not applicable</td>
+                </tr>
+                <tr>
+                    <td>PayPal Integration</td>
+                    <td>2.9% + $0.30 per transaction</td>
+                    <td>PayPal standard rates apply</td>
+                </tr>
+            </table>
+            
+            <h3>8.2 Processing Times</h3>
+            <p>Expected processing times for different transfer methods:</p>
+            
+            <table>
+                <tr>
+                    <th>Transfer Method</th>
+                    <th>Standard Processing Time</th>
+                    <th>Expedited Option Available</th>
+                </tr>
+                <tr>
+                    <td>SWIFT Transfer (Same Currency)</td>
+                    <td>1-2 business days</td>
+                    <td>Yes (Same day, additional fee applies)</td>
+                </tr>
+                <tr>
+                    <td>SWIFT Transfer (Currency Conversion)</td>
+                    <td>2-3 business days</td>
+                    <td>Yes (Next day, additional fee applies)</td>
+                </tr>
+                <tr>
+                    <td>EDI Payment (Domestic)</td>
+                    <td>Same business day to next day</td>
+                    <td>Yes (Same day guaranteed, additional fee applies)</td>
+                </tr>
+                <tr>
+                    <td>EDI Payment (International)</td>
+                    <td>1-2 business days</td>
+                    <td>Limited availability</td>
+                </tr>
+                <tr>
+                    <td>NVC Token Transfer</td>
+                    <td>10-30 minutes</td>
+                    <td>Yes (Priority gas fee for faster confirmation)</td>
+                </tr>
+                <tr>
+                    <td>Multi-Signature Transaction</td>
+                    <td>Depends on signer availability + 10-30 minutes for execution</td>
+                    <td>Not applicable</td>
+                </tr>
+            </table>
+            
+            <div class="note">
+                <strong>Note:</strong> Actual processing times may vary based on receiving institution, regulatory reviews, and time of day. Transfers initiated after cut-off times (typically 3:00 PM local time) may be processed the following business day.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>9. Regulatory Compliance</h2>
+            
+            <h3>9.1 Required Documentation</h3>
+            <p>Depending on the transaction amount, purpose, and jurisdictions involved, the following documentation may be required:</p>
+            <ul>
+                <li>Proof of identity (government-issued ID, passport)</li>
+                <li>Proof of address (utility bill, bank statement)</li>
+                <li>Business registration documents (for corporate transactions)</li>
+                <li>Invoice or contract (for business payments)</li>
+                <li>Source of funds declaration (for amounts exceeding $10,000)</li>
+                <li>Purpose of payment statement (for international transfers)</li>
+            </ul>
+            
+            <h3>9.2 Compliance Thresholds</h3>
+            <table>
+                <tr>
+                    <th>Transaction Amount</th>
+                    <th>Required Verification</th>
+                </tr>
+                <tr>
+                    <td>$0 - $3,000</td>
+                    <td>Basic account verification</td>
+                </tr>
+                <tr>
+                    <td>$3,001 - $10,000</td>
+                    <td>Enhanced due diligence may apply</td>
+                </tr>
+                <tr>
+                    <td>$10,001 - $100,000</td>
+                    <td>Source of funds verification required</td>
+                </tr>
+                <tr>
+                    <td>Above $100,000</td>
+                    <td>Comprehensive due diligence and compliance review</td>
+                </tr>
+            </table>
+            
+            <div class="warning">
+                <strong>Compliance Note:</strong> All transactions are subject to anti-money laundering (AML) and know your customer (KYC) regulations. Transactions may be delayed if additional verification is required.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>10. Integration with Treasury Management System</h2>
+            
+            <p>The NVC Banking Platform's Treasury Management System provides comprehensive tools for managing corporate finances and integrates seamlessly with the funds transfer capabilities.</p>
+            
+            <h3>10.1 Cash Flow Management</h3>
+            <p>Use the Treasury Management System to:</p>
+            <ul>
+                <li>Forecast cash flow requirements</li>
+                <li>Schedule future transfers based on projected cash positions</li>
+                <li>Monitor liquidity across multiple accounts and currencies</li>
+                <li>Optimize working capital through automated funds transfers</li>
+            </ul>
+            
+            <h3>10.2 Investment Management</h3>
+            <p>Manage excess funds through the investment module:</p>
+            <ul>
+                <li>Transfer funds to investment accounts</li>
+                <li>Track performance of investments</li>
+                <li>Schedule automatic transfers based on target balances</li>
+                <li>Repatriate investment returns to operating accounts</li>
+            </ul>
+            
+            <h3>10.3 Loan and Financing</h3>
+            <p>Manage loan disbursements and repayments:</p>
+            <ul>
+                <li>Request loan disbursements directly to specified accounts</li>
+                <li>Set up automatic loan repayments</li>
+                <li>Track loan balances and payment schedules</li>
+                <li>Reconcile interest payments</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 NVC Global Banking Platform. All rights reserved.</p>
+            <p>Version 2.0 | Last Updated: April 26, 2025</p>
+            <p>For the latest version of this guide, please visit <a href="https://www.nvcplatform.net/docs">www.nvcplatform.net/docs</a></p>
+        </div>
     </div>
 </body>
 </html>
