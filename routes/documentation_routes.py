@@ -38,6 +38,21 @@ def documentation_index():
         'description': 'Current capabilities and mainnet readiness assessment for the NVC Banking Platform'
     })
     
+    # Add PDF versions of the HTML guides
+    if os.path.exists(os.path.join(docs_dir, 'server_to_server_integration_guide.pdf')):
+        pdf_files.append({
+            'name': 'Server-to-Server Integration Guide (PDF)',
+            'filename': 'server_to_server_integration_guide.pdf',
+            'url': '/documentation/pdf/server_to_server_integration_guide.pdf'
+        })
+        
+    if os.path.exists(os.path.join(docs_dir, 'nvc_banking_platform_capabilities.pdf')):
+        pdf_files.append({
+            'name': 'NVC Banking Platform Capabilities (PDF)',
+            'filename': 'nvc_banking_platform_capabilities.pdf',
+            'url': '/documentation/pdf/nvc_banking_platform_capabilities.pdf'
+        })
+    
     try:
         for filename in os.listdir(docs_dir):
             if filename.endswith('.pdf'):
@@ -155,10 +170,22 @@ def admin_documentation():
     admin_md_files.sort(key=lambda x: x['name'])
     
     # Add technical documents that aren't prefixed with admin_
-    technical_docs = ['blockchain_vs_swift.pdf', 'payment_operations_guide.pdf']
+    technical_docs = [
+        'blockchain_vs_swift.pdf', 
+        'payment_operations_guide.pdf',
+        'nvc_banking_platform_capabilities.pdf',
+        'server_to_server_integration_guide.pdf'
+    ]
     for filename in technical_docs:
         if os.path.exists(os.path.join(docs_dir, filename)):
-            name = filename[:-4].replace('_', ' ').title()
+            # Custom names for some documents
+            if filename == 'nvc_banking_platform_capabilities.pdf':
+                name = 'NVC Banking Platform Capabilities'
+            elif filename == 'server_to_server_integration_guide.pdf':
+                name = 'Server-to-Server Integration Guide'
+            else:
+                name = filename[:-4].replace('_', ' ').title()
+            
             admin_pdf_files.append({
                 'name': name,
                 'filename': filename,
