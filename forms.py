@@ -504,6 +504,7 @@ class TreasuryAccountForm(FlaskForm):
 
 class TreasuryInvestmentForm(FlaskForm):
     """Form for creating an investment"""
+    name = StringField('Investment Name', validators=[DataRequired(), Length(max=128)])
     account_id = SelectField('Source Account', validators=[DataRequired()], coerce=int)
     investment_type = SelectField('Investment Type', validators=[DataRequired()], choices=[
         (t.name, t.value.replace('_', ' ').title()) for t in InvestmentType

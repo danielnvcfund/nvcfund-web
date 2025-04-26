@@ -20,6 +20,8 @@ def run_migrations():
         try:
             # Add new user profile fields
             migrate_user_profile_fields()
+            # Add name field to treasury_loan table
+            migrate_treasury_loan_fields()
             logger.info("Migrations completed successfully")
         except Exception as e:
             logger.error(f"Migration error: {str(e)}")
@@ -59,6 +61,36 @@ def migrate_user_profile_fields():
             logger.info("User profile fields added successfully")
         except Exception as e:
             logger.error(f"Error adding user profile fields: {str(e)}")
+            raise
+
+def migrate_treasury_loan_fields():
+    """Add name field to TreasuryLoan model"""
+    logger.info("Checking treasury_loan table schema")
+    
+    # Check if the name column already exists
+    with db.engine.connect() as conn:
+        result = conn.execute(text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'treasury_loan' 
+            AND column_name = 'name'
+        """))
+        
+        # If name already exists, assume the migration was already done
+        if result.rowcount > 0:
+            logger.info("Treasury loan 'name' field already exists - skipping migration")
+            return
+        
+        # Add new column to the treasury_loan table
+        try:
+            conn.execute(text("""
+                ALTER TABLE treasury_loan 
+                ADD COLUMN name VARCHAR(128) NOT NULL DEFAULT 'Loan'
+            """))
+            conn.commit()
+            logger.info("Treasury loan name field added successfully")
+        except Exception as e:
+            logger.error(f"Error adding treasury loan name field: {str(e)}")
             raise
 
 if __name__ == "__main__":
