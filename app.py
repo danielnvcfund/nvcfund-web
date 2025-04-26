@@ -207,7 +207,7 @@ def create_app():
         
         # Register Document routes
         from routes.document_routes import document_routes
-        app.register_blueprint(document_routes)
+        app.register_blueprint(document_routes, url_prefix='/documents')
         
         # Register API routes
         from routes.api import api_bp as main_api_bp

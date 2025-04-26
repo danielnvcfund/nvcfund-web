@@ -167,7 +167,7 @@ def quick_access():
 @main.route('/funds-transfer-guide')
 def funds_transfer_guide():
     """Redirect to the funds transfer guide"""
-    return redirect(url_for('documents.nvc_funds_transfer_guide_html'))
+    return redirect('/documents/nvc_funds_transfer_guide')
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():

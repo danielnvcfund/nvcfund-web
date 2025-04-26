@@ -3,7 +3,7 @@ from flask import Blueprint, send_file, render_template, make_response
 import tempfile
 from weasyprint import HTML
 
-document_routes = Blueprint('documents', __name__, url_prefix='/documents')
+document_routes = Blueprint('documents', __name__)
 
 @document_routes.route('/nvc_funds_transfer_guide.pdf')
 def nvc_funds_transfer_guide_pdf():
