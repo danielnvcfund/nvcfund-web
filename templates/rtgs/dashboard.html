@@ -74,7 +74,7 @@
                                             <td>{{ institution.name }}</td>
                                             <td>{{ institution.institution_type.value }}</td>
                                             <td>{{ institution.swift_code or 'N/A' }}</td>
-                                            <td>{{ institution.metadata.get('country', 'N/A') if institution.metadata else 'N/A' }}</td>
+                                            <td>{{ institution.country or 'N/A' }}</td>
                                             <td>
                                                 <a href="{{ url_for('rtgs.new_transfer') }}?institution_id={{ institution.id }}" class="btn btn-sm btn-primary">
                                                     <i class="fas fa-exchange-alt me-1"></i>Transfer
