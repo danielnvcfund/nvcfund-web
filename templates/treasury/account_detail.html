@@ -297,7 +297,7 @@
                     <div class="card-body">
                       <h5 class="card-title">{{ investment.investment_type.value|replace('_', ' ')|title }}</h5>
                       <div class="mb-2">
-                        <strong>Amount:</strong> {{ investment.currency }} {{ "%.2f"|format(investment.amount) }}
+                        <strong>Amount:</strong> {{ investment.amount|format_currency(investment.currency) }}
                       </div>
                       <div class="mb-2">
                         <strong>Interest Rate:</strong> {{ "%.2f"|format(investment.interest_rate) }}%
@@ -309,7 +309,7 @@
                         <strong>Maturity Date:</strong> {{ investment.maturity_date.strftime('%Y-%m-%d') }}
                       </div>
                       <div class="mb-2">
-                        <strong>Expected Return:</strong> {{ investment.currency }} {{ "%.2f"|format(investment.calculate_maturity_value() - investment.amount) }}
+                        <strong>Expected Return:</strong> {{ (investment.calculate_maturity_value() - investment.amount)|format_currency(investment.currency) }}
                       </div>
                     </div>
                     <div class="card-footer bg-transparent">
@@ -354,10 +354,10 @@
                     <div class="card-body">
                       <h5 class="card-title">{{ loan.loan_type.value|replace('_', ' ')|title }}</h5>
                       <div class="mb-2">
-                        <strong>Principal:</strong> {{ loan.currency }} {{ "%.2f"|format(loan.principal_amount) }}
+                        <strong>Principal:</strong> {{ loan.principal_amount|format_currency(loan.currency) }}
                       </div>
                       <div class="mb-2">
-                        <strong>Outstanding:</strong> {{ loan.currency }} {{ "%.2f"|format(loan.outstanding_amount) }}
+                        <strong>Outstanding:</strong> {{ loan.outstanding_amount|format_currency(loan.currency) }}
                       </div>
                       <div class="mb-2">
                         <strong>Interest:</strong> {{ "%.2f"|format(loan.interest_rate) }}% ({{ loan.interest_type.value|title }})
@@ -370,7 +370,7 @@
                       </div>
                       {% if loan.next_payment_date %}
                       <div class="mb-2">
-                        <strong>Next Payment:</strong> {{ loan.currency }} {{ "%.2f"|format(loan.next_payment_amount) }} on {{ loan.next_payment_date.strftime('%Y-%m-%d') }}
+                        <strong>Next Payment:</strong> {{ loan.next_payment_amount|format_currency(loan.currency) }} on {{ loan.next_payment_date.strftime('%Y-%m-%d') }}
                       </div>
                       {% endif %}
                     </div>
@@ -436,7 +436,7 @@
                       <td>{{ cf.source_description|truncate(30) }}</td>
                       <td>{{ cf.category }}</td>
                       <td class="{% if cf.direction.name == 'INFLOW' %}text-success{% else %}text-danger{% endif %}">
-                        {{ cf.currency }} {{ "%.2f"|format(cf.amount) }}
+                        {{ cf.amount|format_currency(cf.currency) }}
                       </td>
                       <td>{{ "%.0f"|format(cf.probability) }}%</td>
                       <td>{{ cf.recurrence_type.value|title }}</td>
