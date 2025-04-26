@@ -324,7 +324,7 @@
         if (data.success) {
           // Add the new institution to the dropdown
           const newOption = new Option(data.institution.name, data.institution.id);
-          institutionSelect.add(newOption, undefined);
+          institutionSelect.add(newOption, 1);  // Insert after "None" option
           
           // Select the newly added institution
           institutionSelect.value = data.institution.id;
