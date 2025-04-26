@@ -220,7 +220,7 @@ def check_status(transaction_id):
     try:
         transaction = Transaction.query.filter_by(
             transaction_id=transaction_id,
-            transaction_type=TransactionType.RTGS
+            transaction_type=TransactionType.RTGS_TRANSFER
         ).first()
         
         if not transaction:

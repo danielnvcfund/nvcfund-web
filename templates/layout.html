@@ -177,6 +177,40 @@
                     </li>
                     {% endif %}
                     
+                    <!-- Off-Ledger Transactions dropdown -->
+                    {% if current_user.is_authenticated and current_user.is_admin %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if '/rtgs/' in request.path or '/s2s/' in request.path %}active fw-bold{% endif %}" href="#" id="offLedgerDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-exchange-alt me-1"></i> Off-Ledger
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-animated" aria-labelledby="offLedgerDropdown">
+                            <li class="dropdown-header">RTGS Transfers</li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('rtgs.dashboard') }}">
+                                    <i class="fas fa-tachometer-alt me-1"></i> RTGS Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('rtgs.new_transfer') }}">
+                                    <i class="fas fa-plus-circle me-1"></i> New RTGS Transfer
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="dropdown-header">Server-to-Server</li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('server_to_server.dashboard') }}">
+                                    <i class="fas fa-server me-1"></i> S2S Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('server_to_server.new_transfer') }}">
+                                    <i class="fas fa-plus-circle me-1"></i> New S2S Transfer
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                    
                     <!-- Treasury Management dropdown -->
                     {% if current_user.is_authenticated %}
                     <li class="nav-item dropdown">

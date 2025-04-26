@@ -1,0 +1,123 @@
+{% extends "layout.html" %}
+
+{% block title %}New Server-to-Server Transfer{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-server me-2"></i>New Server-to-Server Transfer</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('server_to_server.new_transfer') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="institution_id" class="form-label">Institution</label>
+                                    <select class="form-select" id="institution_id" name="institution_id" required>
+                                        <option value="" selected disabled>Select Institution</option>
+                                        {% for institution in institutions %}
+                                        <option value="{{ institution.id }}" {% if request.args.get('institution_id')|int == institution.id %}selected{% endif %}>
+                                            {{ institution.name }} ({{ institution.swift_code or 'No SWIFT' }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="amount" class="form-label">Amount</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" min="0.01" class="form-control" id="amount" name="amount" required>
+                                        <select class="form-select" id="currency" name="currency">
+                                            <option value="USD" selected>USD</option>
+                                            <option value="EUR">EUR</option>
+                                            <option value="GBP">GBP</option>
+                                            <option value="JPY">JPY</option>
+                                            <option value="CAD">CAD</option>
+                                            <option value="AUD">AUD</option>
+                                            <option value="CHF">CHF</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="transfer_type" class="form-label">Transfer Type</label>
+                                    <select class="form-select" id="transfer_type" name="transfer_type">
+                                        <option value="CREDIT" selected>Credit (Send Funds)</option>
+                                        <option value="DEBIT">Debit (Request Funds)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="reference_code" class="form-label">Reference Code</label>
+                                    <input type="text" class="form-control" id="reference_code" name="reference_code" placeholder="Optional reference code">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="5" placeholder="Enter transfer details or notes"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Server-to-Server transfers enable direct communication between financial institutions without intermediaries. These transfers are high-performance and suitable for high-volume processing.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('server_to_server.dashboard') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Transfer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Schedule a Transfer</h5>
+                </div>
+                <div class="card-body">
+                    <p>Need to schedule a transfer for a future date? Use our API to schedule transfers:</p>
+                    <pre class="bg-dark text-light p-3 rounded">
+<code>
+POST /s2s/api/schedule
+Content-Type: application/json
+
+{
+  "institution_id": 123,
+  "amount": 1000000.00,
+  "currency": "USD",
+  "schedule_date": "2025-05-15T14:30:00",
+  "reference_code": "SCHED-REF-001",
+  "description": "Quarterly payment schedule"
+}
+</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Could add client-side validation or dynamic form behavior here
+    });
+</script>
+{% endblock %}
