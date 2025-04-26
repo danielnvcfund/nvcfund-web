@@ -146,7 +146,7 @@
                                 {{ message.status }}
                             </span>
                         </td>
-                        <td>{{ message.source_type }}</td>
+                        <td>{{ message.file_source or 'Manual' }}</td>
                     </tr>
                     {% else %}
                     <tr>

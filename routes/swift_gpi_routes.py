@@ -454,11 +454,22 @@ def list_messages():
     
     # Execute query with pagination
     page = request.args.get('page', 1, type=int)
-    messages = query.order_by(desc(SwiftMessage.created_at)).paginate(
-        page=page, per_page=20)
+    per_page = 20
+    pagination = query.order_by(desc(SwiftMessage.created_at)).paginate(
+        page=page, per_page=per_page)
+    
+    # Create a pagination object that matches what the template expects
+    pagination_info = {
+        'page': page,
+        'pages': pagination.pages,
+        'total': pagination.total,
+        'has_next': pagination.has_next,
+        'has_prev': pagination.has_prev
+    }
     
     return render_template('swift/list_gpi_messages.html', 
-                          messages=messages,
+                          messages=pagination.items,
+                          pagination=pagination_info,
                           message_type=message_type,
                           date_from=date_from,
                           date_to=date_to,
