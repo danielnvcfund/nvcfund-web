@@ -20,7 +20,6 @@ rtgs_routes = Blueprint('rtgs', __name__, url_prefix='/rtgs')
 
 @rtgs_routes.route('/dashboard')
 @login_required
-@admin_required
 def dashboard():
     """RTGS Transfer Dashboard"""
     # Get recent transactions
@@ -61,7 +60,6 @@ def dashboard():
 
 @rtgs_routes.route('/new-transfer', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def new_transfer():
     """Create a new RTGS transfer"""
     if request.method == 'POST':
