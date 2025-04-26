@@ -295,6 +295,7 @@
     
     // Handle the save button click in the modal
     saveInstitutionBtn.addEventListener('click', function() {
+      console.log('Save Institution button clicked');
       const institutionName = document.getElementById('institutionName').value.trim();
       const institutionType = document.getElementById('institutionType').value;
       
@@ -305,8 +306,12 @@
       
       // Get CSRF token from the meta tag
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+      console.log('CSRF Token:', csrfToken ? 'Found' : 'Not found');
+      console.log('Institution Name:', institutionName);
+      console.log('Institution Type:', institutionType);
       
       // Create a new institution via AJAX
+      console.log('Making fetch request to /treasury/api/add_institution');
       fetch('/treasury/api/add_institution', {
         method: 'POST',
         headers: {
@@ -321,18 +326,25 @@
         })
       })
       .then(response => {
+        console.log('Response received:', response.status, response.statusText);
         if (!response.ok) {
           if (response.status === 401) {
             throw new Error('You need to be logged in to perform this action');
           } else if (response.status === 403) {
             throw new Error('You do not have permission to perform this action');
+          } else if (response.status === 404) {
+            throw new Error('API endpoint not found. Please check the server logs.');
           } else {
-            throw new Error('Network response was not ok: ' + response.status);
+            return response.text().then(text => {
+              console.error('Response body:', text);
+              throw new Error('Network response was not ok: ' + response.status + ' ' + text);
+            });
           }
         }
         return response.json();
       })
       .then(data => {
+        console.log('Data received:', data);
         if (data.success) {
           // Add the new institution to the dropdown
           const newOption = new Option(data.institution.name, data.institution.id);
@@ -352,7 +364,7 @@
       })
       .catch(error => {
         console.error('Error adding institution:', error);
-        alert('There was an error adding the institution. Please try again.');
+        alert('There was an error adding the institution: ' + error.message);
       });
     });
   });
