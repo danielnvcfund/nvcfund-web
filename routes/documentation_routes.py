@@ -32,6 +32,12 @@ def documentation_index():
         'description': 'Comprehensive guide for integrating with the Server-to-Server transfer system'
     })
     
+    html_guides.append({
+        'name': 'NVC Banking Platform Capabilities',
+        'url': '/static/docs/nvc_mainnet_readiness_assessment.html',
+        'description': 'Current capabilities and mainnet readiness assessment for the NVC Banking Platform'
+    })
+    
     try:
         for filename in os.listdir(docs_dir):
             if filename.endswith('.pdf'):
