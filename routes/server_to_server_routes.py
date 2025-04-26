@@ -13,7 +13,7 @@ from sqlalchemy import desc
 
 from app import db
 from auth import admin_required
-from models import Transaction, TransactionStatus, TransactionType, User, FinancialInstitution
+from models import Transaction, TransactionStatus, TransactionType, User, FinancialInstitution, FinancialInstitutionType
 import utils
 
 # Create the blueprint
