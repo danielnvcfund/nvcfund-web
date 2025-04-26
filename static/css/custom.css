@@ -71,6 +71,7 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     padding: 0.5rem;
+    z-index: 1050; /* Ensure dropdowns appear above other content */
 }
 
 @keyframes dropdownFade {
@@ -144,6 +145,8 @@ pre {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 1030; /* Ensure navbar is above other content */
+    position: relative;
 }
 
 .navbar-brand {
@@ -643,6 +646,11 @@ label.required::after {
 }
 
 /* ==== Responsive Adjustments ==== */
+/* Add a general styling for dropdown menus */
+.dropdown-menu {
+    z-index: 1050; /* Ensure all dropdowns appear above other content */
+}
+
 @media (max-width: 992px) {
     .quick-stats-card .value {
         font-size: 2rem;
@@ -666,6 +674,7 @@ label.required::after {
         background-color: rgba(var(--bs-primary-rgb), 0.05);
         box-shadow: none;
         margin-left: 1rem;
+        z-index: 1050;
     }
 }
 
