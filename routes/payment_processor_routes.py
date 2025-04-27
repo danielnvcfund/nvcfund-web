@@ -824,11 +824,6 @@ def new_contract():
 @login_required
 def contract_details(contract_id):
     """View contract details"""
-    # Check if user is admin or has contract management permissions
-    if not is_admin(current_user):
-        flash("You don't have permission to view contract information", "danger")
-        return redirect(url_for(INDEX_ROUTE))
-    
     contract = get_or_404(Contract, contract_id)
     
     # Get contract payments
@@ -844,7 +839,8 @@ def contract_details(contract_id):
         payments=payments,
         paid_amount=paid_amount,
         pending_amount=pending_amount,
-        title=f"Contract: {contract.contract_number}"
+        title=f"Contract: {contract.contract_number}",
+        today=date.today()
     )
 
 
