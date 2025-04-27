@@ -271,6 +271,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering Customer Support routes: {str(e)}")
             logger.warning("Application will run without AI Customer Support functionality")
+            
+        # Register Payment Processor routes
+        try:
+            from routes.payment_processor_routes import register_payment_processor_routes
+            register_payment_processor_routes(app)
+            logger.info("Payment Processor routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Payment Processor routes: {str(e)}")
+            logger.warning("Application will run without Payment Processor functionality")
 
         # Create PHP test integration user
         try:

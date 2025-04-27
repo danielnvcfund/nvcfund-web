@@ -950,9 +950,7 @@ class TreasuryLoan(db.Model):
             self.next_payment_date = payment_date + timedelta(days=30)
         elif self.payment_frequency == PaymentFrequency.QUARTERLY:
             self.next_payment_date = payment_date + timedelta(days=90)
-        elif self.payment_frequency == PaymentFrequency.SEMI_ANNUAL:
-            self.next_payment_date = payment_date + timedelta(days=182)
-        elif self.payment_frequency == PaymentFrequency.ANNUAL:
+        elif self.payment_frequency == PaymentFrequency.ANNUALLY:
             self.next_payment_date = payment_date + timedelta(days=365)
             
         # Create a payment record

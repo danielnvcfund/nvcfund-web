@@ -6,8 +6,10 @@ import string
 import json
 import locale
 from datetime import datetime, timedelta
+from flask import abort, current_app
+from flask_login import current_user
 from app import db
-from models import User, TransactionStatus
+from models import User, TransactionStatus, UserRole
 
 # Set locale for currency formatting
 try:
@@ -279,6 +281,21 @@ def get_transaction_analytics(user_id=None, days=30):
             'by_date': {},
             'raw_data': []
         }
+
+def get_or_404(model, id):
+    """Get a database object by ID or return 404"""
+    item = model.query.get(id)
+    if item is None:
+        abort(404)
+    return item
+
+def is_admin(user):
+    """Check if user has admin role"""
+    return user.role in [UserRole.ADMIN, UserRole.DEVELOPER]
+
+def is_developer(user):
+    """Check if user has developer role"""
+    return user.role == UserRole.DEVELOPER
 
 def check_pending_transactions():
     """Check and update status of pending transactions"""
