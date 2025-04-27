@@ -18,7 +18,7 @@
                         <i class="fas fa-tachometer-alt me-2"></i> 
                         <span>Go to Dashboard</span>
                     </a>
-                    <a href="{{ url_for('documentation.documentation_index') }}" class="btn btn-outline-light btn-lg px-4 py-3">
+                    <a href="/static/docs/transaction_settlement_explainer.html" class="btn btn-outline-light btn-lg px-4 py-3">
                         <i class="fas fa-book me-2"></i> 
                         <span>Documentation</span>
                     </a>
@@ -302,8 +302,8 @@ fetch('/api/transactions', {
                 <i class="fas fa-user-plus me-2"></i> Create Free Account
             </a>
             {% endif %}
-            <a href="{{ url_for('documentation.documentation_index') }}" class="btn btn-outline-light btn-lg px-4 py-3">
-                <i class="fas fa-book me-2"></i> Read Documentation
+            <a href="{{ url_for('documentation.transaction_system_pdf') }}" class="btn btn-outline-light btn-lg px-4 py-3">
+                <i class="fas fa-book me-2"></i> Transaction System Explained
             </a>
         </div>
     </div>
