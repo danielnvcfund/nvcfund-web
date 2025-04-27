@@ -442,6 +442,59 @@ def vendor_list():
     )
 
 
+@payment_processor_bp.route('/vendors/create-ajax', methods=['POST'])
+@login_required
+def create_vendor_ajax():
+    """Create a new vendor via AJAX"""
+    try:
+        # Get vendor data from request
+        data = request.json
+        
+        # Basic validation
+        if not data.get('name'):
+            return jsonify({'success': False, 'error': 'Vendor name is required'}), 400
+        
+        # Check if vendor with same name already exists
+        existing_vendor = Vendor.query.filter_by(name=data.get('name')).first()
+        if existing_vendor:
+            return jsonify({'success': False, 'error': 'A vendor with this name already exists'}), 400
+        
+        # Create new vendor
+        vendor = Vendor(
+            vendor_id=data.get('vendor_id'),
+            name=data.get('name'),
+            contact_name=data.get('contact_name'),
+            email=data.get('email'),
+            phone=data.get('phone'),
+            address=data.get('address'),
+            website=data.get('website'),
+            payment_terms=data.get('payment_terms'),
+            bank_name=data.get('bank_name'),
+            bank_account_number=data.get('bank_account_number'),
+            bank_routing_number=data.get('bank_routing_number'),
+            tax_id=data.get('tax_id'),
+            payment_method=data.get('payment_method'),
+            is_active=True
+        )
+        
+        db.session.add(vendor)
+        db.session.commit()
+        
+        # Return success response with vendor data
+        return jsonify({
+            'success': True, 
+            'vendor': {
+                'id': vendor.id,
+                'name': vendor.name
+            },
+            'message': f'Vendor {vendor.name} created successfully'
+        })
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error creating vendor: {str(e)}")
+        return jsonify({'success': False, 'error': 'Server error occurred. Please try again.'}), 500
+
+
 @payment_processor_bp.route('/vendors/new', methods=['GET', 'POST'])
 @login_required
 @admin_required
