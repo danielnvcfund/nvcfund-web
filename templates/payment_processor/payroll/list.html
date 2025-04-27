@@ -1,0 +1,203 @@
+{% extends 'layout.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-money-bill-wave me-2"></i> Payroll Management</h1>
+        <a href="{{ url_for('payment_processor.new_payroll_batch') }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i> Create Payroll Batch
+        </a>
+    </div>
+
+    {% include 'includes/flash_messages.html' %}
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Pending Payroll</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="display-6">${{ pending_total|format_currency }}</h3>
+                    <p class="text-muted">Awaiting processing</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">Processing</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="display-6">${{ processing_total|format_currency }}</h3>
+                    <p class="text-muted">Currently being processed</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Completed</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="display-6">${{ completed_total|format_currency }}</h3>
+                    <p class="text-muted">Successfully processed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Payroll Batches</h5>
+            <span class="badge bg-info">{{ payroll_batches|length }} Batches</span>
+        </div>
+        <div class="card-body p-0">
+            {% if payroll_batches %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Batch ID</th>
+                            <th>Payment Date</th>
+                            <th>Description</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                            <th>Created By</th>
+                            <th>Institution</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for batch in payroll_batches %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('payment_processor.payroll_batch_details', batch_id=batch.id) }}" class="link-primary fw-bold">
+                                    {{ batch.batch_id }}
+                                </a>
+                            </td>
+                            <td>{{ batch.payment_date.strftime('%b %d, %Y') }}</td>
+                            <td>{{ batch.description }}</td>
+                            <td class="fw-bold text-end">${{ batch.total_amount|format_currency }}</td>
+                            <td>
+                                {% if batch.status.value == 'PENDING' %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif batch.status.value == 'PROCESSING' %}
+                                <span class="badge bg-info">Processing</span>
+                                {% elif batch.status.value == 'COMPLETED' %}
+                                <span class="badge bg-success">Completed</span>
+                                {% elif batch.status.value == 'FAILED' %}
+                                <span class="badge bg-danger">Failed</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ batch.status.value|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if batch.processed_by_user %}
+                                {{ batch.processed_by_user.username }}
+                                {% else %}
+                                <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if batch.institution %}
+                                {{ batch.institution.name }}
+                                {% else %}
+                                <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('payment_processor.payroll_batch_details', batch_id=batch.id) }}" class="btn btn-outline-primary" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if batch.status.value == 'PENDING' %}
+                                    <button type="button" class="btn btn-outline-success" title="Process Payroll" data-bs-toggle="modal" data-bs-target="#processPayrollModal" data-batch-id="{{ batch.id }}" data-batch-total="{{ batch.total_amount }}">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-file-invoice-dollar fa-3x text-muted"></i>
+                </div>
+                <h5>No payroll batches found</h5>
+                <p class="text-muted">Create your first payroll batch to start processing payments</p>
+                <a href="{{ url_for('payment_processor.new_payroll_batch') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-1"></i> Create Payroll Batch
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Process Payroll Modal -->
+<div class="modal fade" id="processPayrollModal" tabindex="-1" aria-labelledby="processPayrollModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" id="processPayrollModalLabel">Process Payroll Batch</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to process this payroll batch?</p>
+                <p>This will create transactions and send payments to all employees in this batch.</p>
+                <div class="alert alert-info">
+                    <strong>Total Amount:</strong> $<span id="batchTotalAmount"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="processPayrollForm" method="POST" action="">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check-circle me-1"></i> Process Payroll
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    $(document).ready(function() {
+        // Enable datatable functionality
+        if ($.fn.dataTable) {
+            $('.table').DataTable({
+                order: [[1, 'desc']],
+                pageLength: 25
+            });
+        }
+        
+        // Handle process payroll modal
+        $('#processPayrollModal').on('show.bs.modal', function (event) {
+            const button = $(event.relatedTarget);
+            const batchId = button.data('batch-id');
+            const batchTotal = button.data('batch-total');
+            
+            // Format the total amount with commas
+            $('#batchTotalAmount').text(parseFloat(batchTotal).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }));
+            
+            // Set the form action URL
+            $('#processPayrollForm').attr('action', `/payment-processor/payroll/${batchId}/process`);
+        });
+    });
+</script>
+{% endblock %}
