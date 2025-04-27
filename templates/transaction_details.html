@@ -38,7 +38,7 @@
                             {% if formatted_amount is defined %}
                                 {{ formatted_amount }} {{ formatted_currency }}
                             {% else %}
-                                {{ transaction.amount }} {{ transaction.currency }}
+                                {{ transaction.amount|format_currency(transaction.currency) }}
                             {% endif %}
                         </div>
                     </div>
@@ -118,7 +118,7 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Amount:</div>
-                        <div class="col-md-8">{{ blockchain_tx.amount }} ETH</div>
+                        <div class="col-md-8">{{ blockchain_tx.amount|format_currency('ETH') }}</div>
                     </div>
                 </div>
                 <div class="col-lg-6">
@@ -132,7 +132,7 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Gas Price:</div>
-                        <div class="col-md-8">{{ blockchain_tx.gas_price }} ETH</div>
+                        <div class="col-md-8">{{ blockchain_tx.gas_price|format_currency('ETH') }}</div>
                     </div>
                 </div>
             </div>

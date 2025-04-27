@@ -74,14 +74,14 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for institution in institutions %}
+                                        {% for institution_data in institutions %}
                                         <tr>
-                                            <td>{{ institution.name }}</td>
-                                            <td>{{ institution.institution_type.value }}</td>
-                                            <td>{{ institution.swift_code or 'N/A' }}</td>
-                                            <td>{{ institution.country or 'N/A' }}</td>
+                                            <td>{{ institution_data.institution.name }}</td>
+                                            <td>{{ institution_data.institution.institution_type.value }}</td>
+                                            <td>{{ institution_data.institution.swift_code or 'N/A' }}</td>
+                                            <td>{{ institution_data.country }}</td>
                                             <td>
-                                                <a href="{{ url_for('rtgs.new_transfer') }}?institution_id={{ institution.id }}" class="btn btn-sm btn-primary">
+                                                <a href="{{ url_for('rtgs.new_transfer') }}?institution_id={{ institution_data.institution.id }}" class="btn btn-sm btn-primary">
                                                     <i class="fas fa-exchange-alt me-1"></i>Transfer
                                                 </a>
                                             </td>

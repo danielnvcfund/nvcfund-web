@@ -310,6 +310,17 @@ def add_institution():
             flash('Failed to generate Ethereum address', 'danger')
             return redirect(url_for('rtgs.dashboard'))
         
+        # Prepare metadata with country information and other details
+        metadata = {}
+        if country:
+            metadata["country"] = country
+        
+        # Add SWIFT info if available
+        if swift_code:
+            if "swift" not in metadata:
+                metadata["swift"] = {}
+            metadata["swift"]["bic"] = swift_code
+        
         # Create new institution with RTGS enabled
         institution = FinancialInstitution(
             name=name,
@@ -320,7 +331,7 @@ def add_institution():
             rtgs_enabled=True,  # Always enable RTGS
             s2s_enabled=s2s_enabled,
             is_active=True,
-            metadata_json=json.dumps({"country": country}) if country else None
+            metadata_json=json.dumps(metadata) if metadata else None
         )
         
         db.session.add(institution)
