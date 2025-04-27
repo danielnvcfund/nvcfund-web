@@ -394,7 +394,9 @@ def export_transaction_pdf(transaction_id):
         if transaction.institution_id:
             institution = FinancialInstitution.query.get(transaction.institution_id)
             
-        # Format the amount with commas
+        # Format the amount with commas using the format_currency utility
+        from utils import format_currency
+        # Keep the old method for compatibility but also pass transaction to template
         formatted_amount = f"{transaction.currency} {'{:,.2f}'.format(transaction.amount)}"
             
         # Get metadata if available
