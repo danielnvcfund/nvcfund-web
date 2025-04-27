@@ -49,6 +49,39 @@
                         <div class="col-md-4 fw-bold">Description:</div>
                         <div class="col-md-8">{{ transaction.description }}</div>
                     </div>
+                    
+                    <!-- Recipient Information -->
+                    {% set recipient = transaction.get_recipient_details() %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Receiving Institution:</div>
+                        <div class="col-md-8">
+                            {{ recipient.name }}
+                        </div>
+                    </div>
+                    {% if recipient.account %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Account Details:</div>
+                        <div class="col-md-8">
+                            {{ recipient.account }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if recipient.institution %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Institution:</div>
+                        <div class="col-md-8">
+                            {{ recipient.institution }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if recipient.address %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Address:</div>
+                        <div class="col-md-8">
+                            {{ recipient.address }}
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
                 <div class="col-lg-6">
                     <div class="row mb-3">

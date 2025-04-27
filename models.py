@@ -121,12 +121,44 @@ class Transaction(db.Model):
     # PHP banking system integration
     external_id = db.Column(db.String(64), index=True) # To store external transaction IDs
     tx_metadata_json = db.Column(db.Text) # To store additional JSON data
+    
+    # Recipient information
+    recipient_name = db.Column(db.String(128))
+    recipient_institution = db.Column(db.String(128))
+    recipient_account = db.Column(db.String(64))
+    recipient_address = db.Column(db.String(256))
+    recipient_country = db.Column(db.String(64))
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     user = db.relationship('User', backref=db.backref('transactions', lazy=True))
     institution = db.relationship('FinancialInstitution', backref=db.backref('transactions', lazy=True))
     gateway = db.relationship('PaymentGateway', backref=db.backref('transactions', lazy=True))
+    
+    def get_recipient_details(self):
+        """Extract recipient details from either dedicated fields or description"""
+        if self.recipient_name:
+            return {
+                'name': self.recipient_name,
+                'institution': self.recipient_institution,
+                'account': self.recipient_account,
+                'address': self.recipient_address,
+                'country': self.recipient_country
+            }
+        
+        # Legacy extraction from description
+        details = {}
+        if self.description:
+            if ',' in self.description:
+                details['name'] = self.description.split(',')[0].strip()
+            else:
+                details['name'] = self.description
+                
+            if 'Account:' in self.description:
+                details['account'] = self.description.split('Account:')[1].strip()
+            
+        return details
 
 class FinancialInstitutionType(enum.Enum):
     BANK = "bank"

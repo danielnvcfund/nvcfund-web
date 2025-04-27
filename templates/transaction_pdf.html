@@ -166,6 +166,29 @@
                 <div class="info-label">Description:</div>
                 <div class="info-value">{{ transaction.description }}</div>
             </div>
+            
+            <!-- Recipient Information Section (extracted from description) -->
+            <div class="section-title" style="margin-top: 15px; font-size: 14px;">Recipient Information</div>
+            {% set desc_lines = transaction.description.split('\n') if transaction.description else ['No recipient information available'] %}
+            {% if desc_lines|length > 1 %}
+                {% for line in desc_lines %}
+                <div class="info-row">
+                    <div class="info-value" style="width: 100%;">{{ line }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                {% set recipient_name = transaction.description.split(',')[0] if transaction.description and ',' in transaction.description else transaction.description %}
+                <div class="info-row">
+                    <div class="info-label">Recipient:</div>
+                    <div class="info-value">{{ recipient_name }}</div>
+                </div>
+                {% if 'Account:' in transaction.description %}
+                <div class="info-row">
+                    <div class="info-label">Account Details:</div>
+                    <div class="info-value">{{ transaction.description.split('Account:')[1].strip() if transaction.description and 'Account:' in transaction.description else 'Not specified' }}</div>
+                </div>
+                {% endif %}
+            {% endif %}
             <div class="info-row">
                 <div class="info-label">Created:</div>
                 <div class="info-value">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
