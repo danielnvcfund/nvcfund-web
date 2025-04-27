@@ -170,34 +170,39 @@
             <!-- Recipient Information Section -->
             <div class="section-title" style="margin-top: 15px; font-size: 14px;">Recipient Information</div>
             {% set recipient = transaction.get_recipient_details() %}
-            <div class="info-row">
-                <div class="info-label">Recipient:</div>
-                <div class="info-value">{{ recipient.name or 'Not specified' }}</div>
+            
+            <!-- Recipient Details Box -->
+            <div style="border: 1px solid #e0e0e0; background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                <div class="info-row">
+                    <div class="info-label">Recipient Name:</div>
+                    <div class="info-value"><strong>{{ recipient.name or 'Not specified' }}</strong></div>
+                </div>
+                
+                <!-- Receiving Bank Details -->
+                <div style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px;">
+                    <div style="font-weight: bold; margin-bottom: 5px; color: #002a5a;">Receiving Bank Details:</div>
+                    <div class="info-row">
+                        <div class="info-label">Bank Name:</div>
+                        <div class="info-value">{{ recipient.institution or 'Not specified' }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Account Number:</div>
+                        <div class="info-value">{{ recipient.account or 'Not specified' }}</div>
+                    </div>
+                    {% if recipient.address %}
+                    <div class="info-row">
+                        <div class="info-label">Bank Address:</div>
+                        <div class="info-value">{{ recipient.address }}</div>
+                    </div>
+                    {% endif %}
+                    {% if recipient.country %}
+                    <div class="info-row">
+                        <div class="info-label">Country:</div>
+                        <div class="info-value">{{ recipient.country }}</div>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
-            {% if recipient.institution %}
-            <div class="info-row">
-                <div class="info-label">Institution:</div>
-                <div class="info-value">{{ recipient.institution }}</div>
-            </div>
-            {% endif %}
-            {% if recipient.account %}
-            <div class="info-row">
-                <div class="info-label">Account Details:</div>
-                <div class="info-value">{{ recipient.account }}</div>
-            </div>
-            {% endif %}
-            {% if recipient.address %}
-            <div class="info-row">
-                <div class="info-label">Address:</div>
-                <div class="info-value">{{ recipient.address }}</div>
-            </div>
-            {% endif %}
-            {% if recipient.country %}
-            <div class="info-row">
-                <div class="info-label">Country:</div>
-                <div class="info-value">{{ recipient.country }}</div>
-            </div>
-            {% endif %}
             <div class="info-row">
                 <div class="info-label">Created:</div>
                 <div class="info-value">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>

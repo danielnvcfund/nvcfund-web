@@ -50,38 +50,45 @@
                         <div class="col-md-8">{{ transaction.description }}</div>
                     </div>
                     
-                    <!-- Recipient Information -->
+                    <!-- Recipient Information Card -->
                     {% set recipient = transaction.get_recipient_details() %}
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Receiving Institution:</div>
-                        <div class="col-md-8">
-                            {{ recipient.name }}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0"><i class="fas fa-university me-2"></i>Recipient & Bank Details</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 fw-bold">Recipient Name:</div>
+                                        <div class="col-md-8 fw-semibold">{{ recipient.name or 'Not specified' }}</div>
+                                    </div>
+                                    <hr class="my-2">
+                                    <h6 class="text-primary mb-2">Receiving Bank Information:</h6>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 fw-bold">Bank Name:</div>
+                                        <div class="col-md-8">{{ recipient.institution or 'Not specified' }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 fw-bold">Account Number:</div>
+                                        <div class="col-md-8">{{ recipient.account or 'Not specified' }}</div>
+                                    </div>
+                                    {% if recipient.address %}
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 fw-bold">Bank Address:</div>
+                                        <div class="col-md-8">{{ recipient.address }}</div>
+                                    </div>
+                                    {% endif %}
+                                    {% if recipient.country %}
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 fw-bold">Country:</div>
+                                        <div class="col-md-8">{{ recipient.country }}</div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    {% if recipient.account %}
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Account Details:</div>
-                        <div class="col-md-8">
-                            {{ recipient.account }}
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if recipient.institution %}
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Institution:</div>
-                        <div class="col-md-8">
-                            {{ recipient.institution }}
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if recipient.address %}
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Address:</div>
-                        <div class="col-md-8">
-                            {{ recipient.address }}
-                        </div>
-                    </div>
-                    {% endif %}
                 </div>
                 <div class="col-lg-6">
                     <div class="row mb-3">
