@@ -303,10 +303,10 @@ def add_institution():
             api_endpoint=api_endpoint,
             ethereum_address=eth_address,
             swift_code=swift_code if swift_code else None,
-            country=country if country else None,
             rtgs_enabled=True,  # Always enable RTGS
             s2s_enabled=s2s_enabled,
-            is_active=True
+            is_active=True,
+            metadata_json=json.dumps({"country": country}) if country else None
         )
         
         db.session.add(institution)
