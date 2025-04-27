@@ -61,13 +61,27 @@ def dashboard():
     # Get central banks and other RTGS-enabled institutions
     institutions = FinancialInstitution.query.filter_by(rtgs_enabled=True).all()
     
+    # Process institution metadata for each institution to get country info
+    from utils import get_institution_metadata
+    
+    # Create a list of institutions with their metadata
+    processed_institutions = []
+    for institution in institutions:
+        metadata = get_institution_metadata(institution)
+        institution_data = {
+            'institution': institution,
+            'metadata': metadata,
+            'country': metadata.get('country', 'N/A')  # Get country from metadata
+        }
+        processed_institutions.append(institution_data)
+    
     return render_template('rtgs/dashboard.html',
                           transactions=processed_transactions,
                           total_count=total_count,
                           completed_count=completed_count,
                           pending_count=pending_count,
                           failed_count=failed_count,
-                          institutions=institutions)
+                          institutions=processed_institutions)
 
 @rtgs_routes.route('/new_transfer', methods=['GET', 'POST'])
 @login_required

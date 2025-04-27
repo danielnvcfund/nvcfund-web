@@ -362,6 +362,32 @@ def get_transaction_metadata(transaction):
             return json.loads(fixed_json)
         except (json.JSONDecodeError, Exception):
             return {}
+
+def get_institution_metadata(institution):
+    """
+    Safely parse and return institution metadata from JSON
+    
+    Args:
+        institution: FinancialInstitution object with metadata_json attribute
+        
+    Returns:
+        dict: Parsed metadata or empty dict if parsing fails
+    """
+    if not institution or not hasattr(institution, 'metadata_json') or not institution.metadata_json:
+        return {}
+        
+    try:
+        return json.loads(institution.metadata_json)
+    except json.JSONDecodeError:
+        try:
+            # Try to fix common issues with malformed JSON
+            fixed_json = institution.metadata_json.strip()
+            if fixed_json.startswith('"') and fixed_json.endswith('"'):
+                # Handle double-encoded JSON string
+                fixed_json = fixed_json[1:-1].replace('\\"', '"')
+            return json.loads(fixed_json)
+        except (json.JSONDecodeError, Exception):
+            return {}
     
     # Check if the rest are hex characters
     try:
