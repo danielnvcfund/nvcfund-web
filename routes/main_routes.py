@@ -703,6 +703,82 @@ def transaction_details(transaction_id):
         is_owner=is_owner
     )
 
+@main.route('/transaction/<transaction_id>/pdf')
+@login_required
+def transaction_pdf(transaction_id):
+    """Generate PDF for a transaction receipt"""
+    from utils import format_currency
+    
+    # Get transaction
+    transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+    
+    if not transaction:
+        flash('Transaction not found', 'danger')
+        return redirect(url_for('web.main.transactions'))
+    
+    # Check if the transaction belongs to the user or user is admin
+    is_admin = current_user.role == UserRole.ADMIN if hasattr(current_user, 'role') else False
+    is_owner = transaction.user_id == current_user.id if hasattr(current_user, 'id') else False
+    
+    logger.debug(f"Transaction PDF access check - User ID: {current_user.id}, Role: {current_user.role}, " +
+                 f"Transaction owner ID: {transaction.user_id}")
+    
+    if not is_owner and not is_admin:
+        flash('Transaction not found or you do not have permission to access it', 'danger')
+        return redirect(url_for('web.main.transactions'))
+    
+    # Get blockchain transaction if available
+    blockchain_tx = None
+    if transaction.eth_transaction_hash:
+        blockchain_tx = BlockchainTransaction.query.filter_by(eth_tx_hash=transaction.eth_transaction_hash).first()
+        
+        # If not in our database, try to get from blockchain
+        if not blockchain_tx:
+            blockchain_tx = get_transaction_status(transaction.eth_transaction_hash)
+    
+    # Format amount with commas
+    try:
+        formatted_amount = "{:,.2f}".format(float(transaction.amount))
+        formatted_currency = transaction.currency
+    except Exception as e:
+        logger.error(f"Error formatting currency for PDF: {str(e)}")
+        formatted_amount = transaction.amount
+        formatted_currency = transaction.currency
+    
+    try:
+        # Render the HTML template
+        html_content = render_template(
+            'transaction_pdf.html',
+            transaction=transaction,
+            blockchain_tx=blockchain_tx,
+            formatted_amount=formatted_amount,
+            formatted_currency=formatted_currency,
+            now=datetime.utcnow()
+        )
+        
+        # Create a temporary file for the PDF
+        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp_file:
+            # Generate PDF from HTML
+            HTML(string=html_content).write_pdf(temp_file.name)
+            temp_file_path = temp_file.name
+        
+        # Create a filename for the downloaded PDF
+        filename = f"Transaction_{transaction.transaction_id}_{datetime.now().strftime('%Y%m%d')}.pdf"
+        
+        # Send the PDF file
+        return send_file(
+            temp_file_path,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=filename,
+            max_age=0  # Don't cache
+        )
+        
+    except Exception as e:
+        logger.error(f"Error generating transaction PDF: {str(e)}")
+        flash('Error generating PDF. Please try again later.', 'danger')
+        return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
+
 @main.route('/blockchain')
 @login_required
 def blockchain_status():
