@@ -202,7 +202,7 @@ def create_app():
         
         # Register Documentation routes
         from routes.documentation_routes import documentation_bp
-        app.register_blueprint(documentation_bp)
+        app.register_blueprint(documentation_bp, url_prefix='/documentation')
         
         # Register Admin routes
         from routes.admin import admin
