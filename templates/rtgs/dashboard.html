@@ -111,8 +111,8 @@
                                         {% for tx in transactions %}
                                         <tr>
                                             <td><code>{{ tx.transaction_id }}</code></td>
-                                            <td>{{ tx.metadata.get('beneficiary_name', '') if tx.metadata else '' }}</td>
-                                            <td>{{ tx.metadata.get('recipient_bank_name', '') if tx.metadata else '' }}</td>
+                                            <td>{{ tx.tx_metadata | tojson | fromjson | attr('beneficiary_name', '') }}</td>
+                                            <td>{{ tx.tx_metadata | tojson | fromjson | attr('recipient_bank_name', '') }}</td>
                                             <td>{{ tx.amount|format_currency(tx.currency) }}</td>
                                             <td>{{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                                             <td>

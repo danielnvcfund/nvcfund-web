@@ -6,6 +6,7 @@ Routes for handling RTGS transfers between central banks and financial instituti
 import os
 import uuid
 import datetime
+import json
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, jsonify
 from flask_login import login_required, current_user
 from sqlalchemy import desc
@@ -13,7 +14,7 @@ from sqlalchemy import desc
 from app import db
 from auth import admin_required
 from models import Transaction, TransactionStatus, TransactionType, User, FinancialInstitution
-import utils
+from utils import get_transaction_metadata, generate_transaction_id
 
 # Create the blueprint
 rtgs_routes = Blueprint('rtgs', __name__, url_prefix='/rtgs')
@@ -98,7 +99,7 @@ def new_transfer():
             
             # Create transaction record
             transaction = Transaction(
-                transaction_id=utils.generate_transaction_id(),
+                transaction_id=generate_transaction_id(),
                 user_id=current_user.id,
                 transaction_type=TransactionType.RTGS_TRANSFER,
                 amount=amount,
@@ -173,7 +174,7 @@ def api_transfer():
         
         # Create transaction
         transaction = Transaction(
-            transaction_id=utils.generate_transaction_id(),
+            transaction_id=generate_transaction_id(),
             user_id=current_user.id,
             transaction_type=TransactionType.RTGS_TRANSFER,
             amount=float(data['amount']),

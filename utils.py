@@ -337,6 +337,32 @@ def validate_ethereum_address(address):
     if not address.startswith('0x'):
         return False
     
+def get_transaction_metadata(transaction):
+    """
+    Safely parse and return transaction metadata from JSON
+    
+    Args:
+        transaction: Transaction object with tx_metadata_json attribute
+        
+    Returns:
+        dict: Parsed metadata or empty dict if parsing fails
+    """
+    if not transaction or not hasattr(transaction, 'tx_metadata_json') or not transaction.tx_metadata_json:
+        return {}
+        
+    try:
+        return json.loads(transaction.tx_metadata_json)
+    except json.JSONDecodeError:
+        try:
+            # Try to fix common issues with malformed JSON
+            fixed_json = transaction.tx_metadata_json.strip()
+            if fixed_json.startswith('"') and fixed_json.endswith('"'):
+                # Handle double-encoded JSON string
+                fixed_json = fixed_json[1:-1].replace('\\"', '"')
+            return json.loads(fixed_json)
+        except (json.JSONDecodeError, Exception):
+            return {}
+    
     # Check if the rest are hex characters
     try:
         int(address[2:], 16)
