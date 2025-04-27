@@ -13,8 +13,9 @@ from sqlalchemy import desc
 
 from app import db
 from auth import admin_required
-from models import Transaction, TransactionStatus, TransactionType, User, FinancialInstitution
+from models import Transaction, TransactionStatus, TransactionType, User, FinancialInstitution, FinancialInstitutionType
 from utils import get_transaction_metadata, generate_transaction_id
+from blockchain_utils import generate_ethereum_account
 
 # Create the blueprint
 rtgs_routes = Blueprint('rtgs', __name__, url_prefix='/rtgs')
@@ -258,3 +259,64 @@ def check_status(transaction_id):
     except Exception as e:
         current_app.logger.error(f"Error checking RTGS transfer status: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+        
+@rtgs_routes.route('/add_institution', methods=['POST'])
+@login_required
+@admin_required
+def add_institution():
+    """Add a new RTGS-enabled financial institution"""
+    try:
+        name = request.form.get('name')
+        institution_type_str = request.form.get('institution_type')
+        swift_code = request.form.get('swift_code')
+        country = request.form.get('country')
+        api_endpoint = request.form.get('api_endpoint')
+        s2s_enabled = request.form.get('s2s_enabled') == 'on'
+        
+        # Validate inputs
+        if not name:
+            flash('Institution name is required', 'danger')
+            return redirect(url_for('rtgs.dashboard'))
+        
+        if not institution_type_str:
+            flash('Institution type is required', 'danger')
+            return redirect(url_for('rtgs.dashboard'))
+            
+        # Convert institution type string to enum
+        try:
+            institution_type = FinancialInstitutionType(institution_type_str.lower())
+        except ValueError:
+            flash(f'Invalid institution type: {institution_type_str}', 'danger')
+            return redirect(url_for('rtgs.dashboard'))
+        
+        # Generate Ethereum address for the institution
+        eth_address, _ = generate_ethereum_account()
+        
+        if not eth_address:
+            flash('Failed to generate Ethereum address', 'danger')
+            return redirect(url_for('rtgs.dashboard'))
+        
+        # Create new institution with RTGS enabled
+        institution = FinancialInstitution(
+            name=name,
+            institution_type=institution_type,
+            api_endpoint=api_endpoint,
+            ethereum_address=eth_address,
+            swift_code=swift_code if swift_code else None,
+            country=country if country else None,
+            rtgs_enabled=True,  # Always enable RTGS
+            s2s_enabled=s2s_enabled,
+            is_active=True
+        )
+        
+        db.session.add(institution)
+        db.session.commit()
+        
+        flash(f'RTGS-enabled institution "{name}" added successfully', 'success')
+        return redirect(url_for('rtgs.dashboard'))
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error adding RTGS institution: {str(e)}")
+        flash(f'Error adding institution: {str(e)}', 'danger')
+        return redirect(url_for('rtgs.dashboard'))
