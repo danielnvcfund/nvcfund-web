@@ -23,10 +23,19 @@ rtgs_routes = Blueprint('rtgs', __name__, url_prefix='/rtgs')
 @login_required
 def dashboard():
     """RTGS Transfer Dashboard"""
-    # Get recent transactions
+    # Get recent transactions and process their metadata
     transactions = Transaction.query.filter_by(
         transaction_type=TransactionType.RTGS_TRANSFER
     ).order_by(desc(Transaction.created_at)).limit(20).all()
+    
+    # Process transaction metadata for each transaction
+    processed_transactions = []
+    for tx in transactions:
+        tx_data = {
+            'transaction': tx,
+            'metadata': get_transaction_metadata(tx)
+        }
+        processed_transactions.append(tx_data)
     
     # Count transactions by status
     total_count = Transaction.query.filter_by(
@@ -52,7 +61,7 @@ def dashboard():
     institutions = FinancialInstitution.query.filter_by(rtgs_enabled=True).all()
     
     return render_template('rtgs/dashboard.html',
-                          transactions=transactions,
+                          transactions=processed_transactions,
                           total_count=total_count,
                           completed_count=completed_count,
                           pending_count=pending_count,
@@ -230,7 +239,7 @@ def check_status(transaction_id):
             return jsonify({'success': False, 'error': 'Unauthorized'}), 403
         
         # Get recipient info from metadata
-        metadata = transaction.metadata or {}
+        metadata = get_transaction_metadata(transaction)
         
         return jsonify({
             'success': True,
