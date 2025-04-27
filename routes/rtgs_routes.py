@@ -14,7 +14,7 @@ from sqlalchemy import desc
 from app import db
 from auth import admin_required
 from models import Transaction, TransactionStatus, TransactionType, User, FinancialInstitution, FinancialInstitutionType
-from utils import get_transaction_metadata, generate_transaction_id
+from utils import get_transaction_metadata, generate_transaction_id, get_institution_metadata
 from blockchain_utils import generate_ethereum_account
 
 # Create the blueprint
@@ -122,6 +122,19 @@ def new_transfer():
                 return redirect(url_for('rtgs.new_transfer'))
             
             # Create transaction record
+            metadata = {
+                'institution_id': institution.id,
+                'purpose_code': purpose_code,
+                'initiated_at': datetime.datetime.utcnow().isoformat(),
+                'rtgs_transfer_id': str(uuid.uuid4()),
+                'settlement_type': 'RTGS',
+                'priority': 'HIGH',
+                'beneficiary_name': beneficiary_name,
+                'beneficiary_account': beneficiary_account,
+                'recipient_bank_name': institution.name,
+                'recipient_bank_swift': institution.swift_code or 'Unknown'
+            }
+            
             transaction = Transaction(
                 transaction_id=generate_transaction_id(),
                 user_id=current_user.id,
@@ -130,18 +143,12 @@ def new_transfer():
                 currency=currency,
                 status=TransactionStatus.PENDING,
                 description=description or f"RTGS transfer to {beneficiary_name}",
-                metadata={
-                    'institution_id': institution.id,
-                    'purpose_code': purpose_code,
-                    'initiated_at': datetime.datetime.utcnow().isoformat(),
-                    'rtgs_transfer_id': str(uuid.uuid4()),
-                    'settlement_type': 'RTGS',
-                    'priority': 'HIGH',
-                    'beneficiary_name': beneficiary_name,
-                    'beneficiary_account': beneficiary_account,
-                    'recipient_bank_name': institution.name,
-                    'recipient_bank_swift': institution.swift_code or 'Unknown'
-                }
+                institution_id=institution.id,
+                # Store recipient details in dedicated fields
+                recipient_name=beneficiary_name,
+                recipient_institution=institution.name,
+                recipient_account=beneficiary_account,
+                tx_metadata_json=json.dumps(metadata)
             )
             
             db.session.add(transaction)
@@ -197,6 +204,21 @@ def api_transfer():
             return jsonify({'success': False, 'error': 'This institution does not support RTGS transfers'}), 400
         
         # Create transaction
+        # Create metadata
+        metadata = {
+            'institution_id': institution.id,
+            'purpose_code': data.get('purpose_code', ''),
+            'initiated_at': datetime.datetime.utcnow().isoformat(),
+            'rtgs_transfer_id': str(uuid.uuid4()),
+            'settlement_type': 'RTGS',
+            'priority': data.get('priority', 'HIGH'),
+            'api_initiated': True,
+            'beneficiary_name': data['beneficiary_name'],
+            'beneficiary_account': data['beneficiary_account'],
+            'recipient_bank_name': institution.name,
+            'recipient_bank_swift': institution.swift_code or 'Unknown'
+        }
+        
         transaction = Transaction(
             transaction_id=generate_transaction_id(),
             user_id=current_user.id,
@@ -205,19 +227,13 @@ def api_transfer():
             currency=data['currency'],
             status=TransactionStatus.PENDING,
             description=data.get('description') or f"RTGS transfer to {data['beneficiary_name']}",
-            metadata={
-                'institution_id': institution.id,
-                'purpose_code': data.get('purpose_code', ''),
-                'initiated_at': datetime.datetime.utcnow().isoformat(),
-                'rtgs_transfer_id': str(uuid.uuid4()),
-                'settlement_type': 'RTGS',
-                'priority': data.get('priority', 'HIGH'),
-                'api_initiated': True,
-                'beneficiary_name': data['beneficiary_name'],
-                'beneficiary_account': data['beneficiary_account'],
-                'recipient_bank_name': institution.name,
-                'recipient_bank_swift': institution.swift_code or 'Unknown'
-            }
+            institution_id=institution.id,
+            # Store recipient details in dedicated fields
+            recipient_name=data['beneficiary_name'],
+            recipient_institution=institution.name,
+            recipient_account=data['beneficiary_account'],
+            recipient_country=get_institution_metadata(institution).get('country', ''),
+            tx_metadata_json=json.dumps(metadata)
         )
         
         db.session.add(transaction)

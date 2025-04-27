@@ -16,6 +16,7 @@ from app import db
 from auth import admin_required
 from models import Transaction, TransactionStatus, TransactionType, User, FinancialInstitution, FinancialInstitutionType
 import utils
+from utils import get_institution_metadata, get_transaction_metadata
 
 # Create the blueprint
 server_to_server_routes = Blueprint('server_to_server', __name__, url_prefix='/s2s')
@@ -254,6 +255,11 @@ def schedule_transfer():
             status=TransactionStatus.SCHEDULED,  # Use SCHEDULED status
             description=data.get('description') or f"Scheduled S2S transfer to {institution.name}",
             institution_id=institution.id,
+            # Store recipient details in dedicated fields
+            recipient_name=institution.name,
+            recipient_institution=institution.name,
+            recipient_account=institution.account_number or 'N/A',
+            recipient_country=get_institution_metadata(institution).get('country', ''),
             tx_metadata_json=json.dumps(metadata)
         )
         
