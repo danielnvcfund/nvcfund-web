@@ -351,8 +351,13 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('documentation.documentation_index') }}">
-                                    <i class="fas fa-file-alt me-1"></i> Documentation
+                                <a class="dropdown-item" href="/static/docs/nvc_mainnet_readiness_assessment.html">
+                                    <i class="fas fa-file-alt me-1"></i> Platform Documentation
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('documentation.transaction_system_pdf') }}">
+                                    <i class="fas fa-exchange-alt me-1"></i> Transaction System Explained
                                 </a>
                             </li>
                             <li>
@@ -511,7 +516,8 @@
                     <h5 class="text-white mb-3">Resources</h5>
                     <ul class="list-unstyled">
                         <li class="mb-2"><a href="{{ url_for('customer_support.support_index') }}" class="text-muted text-decoration-none"><i class="fas fa-robot me-2"></i>AI Customer Support</a></li>
-                        <li class="mb-2"><a href="{{ url_for('documentation.documentation_index') }}" class="text-muted text-decoration-none"><i class="fas fa-file-alt me-2"></i>Documentation</a></li>
+                        <li class="mb-2"><a href="/static/docs/nvc_mainnet_readiness_assessment.html" class="text-muted text-decoration-none"><i class="fas fa-file-alt me-2"></i>Platform Documentation</a></li>
+                        <li class="mb-2"><a href="{{ url_for('documentation.transaction_system_pdf') }}" class="text-muted text-decoration-none"><i class="fas fa-exchange-alt me-2"></i>Transaction System Explained</a></li>
                         <li class="mb-2"><a href="{{ url_for('web.main.api_docs') }}" class="text-muted text-decoration-none"><i class="fas fa-code me-2"></i>API Reference</a></li>
                         <li class="mb-2"><a href="{{ url_for('web.main.funds_transfer_guide') }}" class="text-muted text-decoration-none"><i class="fas fa-file-pdf me-2"></i>Funds Transfer Guide</a></li>
                         <li class="mb-2"><a href="/static/docs/server_to_server_integration_guide.html" class="text-muted text-decoration-none"><i class="fas fa-server me-2"></i>S2S Integration Guide</a></li>
