@@ -1,0 +1,191 @@
+{% extends 'layout.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('payment_processor.bill_list') }}">Bills</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('payment_processor.bill_details', bill_id=bill.id) }}">{{ bill.bill_number }}</a></li>
+            <li class="breadcrumb-item active">Pay Bill</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-money-bill-wave me-2"></i> Pay Bill: {{ bill.bill_number }}</h1>
+        <a href="{{ url_for('payment_processor.bill_details', bill_id=bill.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Bill
+        </a>
+    </div>
+
+    {% include 'includes/flash_messages.html' %}
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Payment Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('payment_processor.pay_bill', bill_id=bill.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="payment_date" class="form-label">Payment Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="payment_date" name="payment_date" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="payment_method" class="form-label">Payment Method <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="payment_method" name="payment_method" required>
+                                        {% for method in payment_methods %}
+                                        <option value="{{ method }}">{{ method|replace('_', ' ')|title }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="institution_id" class="form-label">Financial Institution</label>
+                                    <select class="form-select" id="institution_id" name="institution_id">
+                                        <option value="">-- Select Institution (Optional) --</option>
+                                        {% for institution in institutions %}
+                                        <option value="{{ institution.id }}">{{ institution.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Bill Number:</strong> {{ bill.bill_number }}</p>
+                                    <p class="mb-1"><strong>Vendor:</strong> {{ bill.vendor.name }}</p>
+                                    <p class="mb-1"><strong>Due Date:</strong> {{ bill.due_date.strftime('%B %d, %Y') }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Amount:</strong> <span class="fs-4">{{ bill.currency }} {{ bill.amount|format_currency }}</span></p>
+                                    <p class="mb-1"><strong>Category:</strong> {{ bill.category.value|replace('_', ' ')|title }}</p>
+                                    {% if bill.status.value == 'PENDING' and bill.due_date < today %}
+                                    <p class="mb-1 text-danger"><strong>Status:</strong> Overdue by {{ bill.days_until_due()|abs }} days</p>
+                                    {% else %}
+                                    <p class="mb-1"><strong>Status:</strong> {{ bill.status.value|replace('_', ' ')|title }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="button" class="btn btn-outline-secondary me-2" onclick="window.history.back();">Cancel</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check-circle me-1"></i> Confirm Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0"><i class="fas fa-building me-2"></i>Vendor Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>{{ bill.vendor.name }}</strong>
+                    </div>
+                    
+                    {% if bill.vendor.contact_name %}
+                    <div class="mb-3">
+                        Contact: {{ bill.vendor.contact_name }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if bill.vendor.email %}
+                    <div class="mb-3">
+                        <a href="mailto:{{ bill.vendor.email }}">
+                            <i class="fas fa-envelope me-1"></i> {{ bill.vendor.email }}
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if bill.vendor.phone %}
+                    <div class="mb-3">
+                        <i class="fas fa-phone me-1"></i> {{ bill.vendor.phone }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if bill.vendor.payment_terms %}
+                    <div class="mb-3">
+                        <span class="text-muted">Payment Terms:</span> {{ bill.vendor.payment_terms }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <a href="{{ url_for('payment_processor.vendor_details', vendor_id=bill.vendor.id) }}" class="btn btn-outline-secondary btn-sm w-100">
+                            <i class="fas fa-info-circle me-1"></i> View Vendor Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0"><i class="fas fa-credit-card me-2"></i>Payment Details</h5>
+                </div>
+                <div class="card-body">
+                    {% if bill.vendor.bank_name or bill.vendor.bank_account_number %}
+                    <div class="alert alert-success mb-3">
+                        <i class="fas fa-check-circle me-1"></i> Vendor has payment information on file
+                    </div>
+                    
+                    {% if bill.vendor.bank_name %}
+                    <div class="mb-3">
+                        <span class="text-muted">Bank:</span> {{ bill.vendor.bank_name }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if bill.vendor.bank_account_number %}
+                    <div class="mb-3">
+                        <span class="text-muted">Account:</span> 
+                        <span class="font-monospace">{{ '*' * (bill.vendor.bank_account_number|length - 4) }}{{ bill.vendor.bank_account_number[-4:] }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if bill.vendor.bank_routing_number %}
+                    <div class="mb-3">
+                        <span class="text-muted">Routing:</span>
+                        <span class="font-monospace">{{ '*' * (bill.vendor.bank_routing_number|length - 4) }}{{ bill.vendor.bank_routing_number[-4:] }}</span>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="alert alert-warning mb-3">
+                        <i class="fas fa-exclamation-triangle me-1"></i> Vendor has no payment information on file
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    $(document).ready(function() {
+        // Set today's date as default for payment date
+        const today = new Date();
+        const formattedToday = today.toISOString().substr(0, 10);
+        $('#payment_date').val(formattedToday);
+    });
+</script>
+{% endblock %}

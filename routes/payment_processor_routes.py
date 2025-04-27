@@ -56,7 +56,7 @@ def employee_list():
     # Check if user is admin or has employee management permissions
     if not is_admin(current_user):
         flash("You don't have permission to view employee information", "danger")
-        return redirect(url_for('main.index'))
+        return redirect(url_for(INDEX_ROUTE))
     
     employees = Employee.query.order_by(Employee.last_name).all()
     return render_template(
@@ -139,7 +139,7 @@ def employee_details(employee_id):
     # Check if user is admin or has employee management permissions
     if not is_admin(current_user):
         flash("You don't have permission to view employee information", "danger")
-        return redirect(url_for('main.index'))
+        return redirect(url_for(INDEX_ROUTE))
     
     employee = get_or_404(Employee, employee_id)
     recent_payments = SalaryPayment.query.filter_by(employee_id=employee_id).order_by(SalaryPayment.payment_date.desc()).limit(5).all()
@@ -447,7 +447,7 @@ def vendor_list():
     # Check if user is admin or has vendor management permissions
     if not is_admin(current_user):
         flash("You don't have permission to view vendor information", "danger")
-        return redirect(url_for('main.index'))
+        return redirect(url_for(INDEX_ROUTE))
     
     vendors = Vendor.query.order_by(Vendor.name).all()
     return render_template(
@@ -514,7 +514,7 @@ def vendor_details(vendor_id):
     # Check if user is admin or has vendor management permissions
     if not is_admin(current_user):
         flash("You don't have permission to view vendor information", "danger")
-        return redirect(url_for('main.index'))
+        return redirect(url_for(INDEX_ROUTE))
     
     vendor = get_or_404(Vendor, vendor_id)
     
@@ -538,7 +538,7 @@ def bill_list():
     # Check if user is admin or has bill management permissions
     if not is_admin(current_user):
         flash("You don't have permission to view bill information", "danger")
-        return redirect(url_for('main.index'))
+        return redirect(url_for(INDEX_ROUTE))
     
     # Filter options
     status_filter = request.args.get('status')
@@ -651,7 +651,7 @@ def bill_details(bill_id):
     # Check if user is admin or has bill management permissions
     if not is_admin(current_user):
         flash("You don't have permission to view bill information", "danger")
-        return redirect(url_for('main.index'))
+        return redirect(url_for(INDEX_ROUTE))
     
     bill = get_or_404(Bill, bill_id)
     
@@ -753,7 +753,7 @@ def contract_list():
     # Check if user is admin or has contract management permissions
     if not is_admin(current_user):
         flash("You don't have permission to view contract information", "danger")
-        return redirect(url_for('main.index'))
+        return redirect(url_for(INDEX_ROUTE))
     
     # Filter options
     status_filter = request.args.get('status')
@@ -860,7 +860,7 @@ def contract_details(contract_id):
     # Check if user is admin or has contract management permissions
     if not is_admin(current_user):
         flash("You don't have permission to view contract information", "danger")
-        return redirect(url_for('main.index'))
+        return redirect(url_for(INDEX_ROUTE))
     
     contract = get_or_404(Contract, contract_id)
     
