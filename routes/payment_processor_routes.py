@@ -382,7 +382,11 @@ def process_payroll_batch(batch_id):
             transaction_type=TransactionType.SALARY_PAYMENT,
             status=TransactionStatus.PROCESSING,
             description=f"Salary payment to {payment.employee.get_full_name()} - {payment.description}",
-            institution_id=batch.institution_id
+            institution_id=batch.institution_id,
+            # Add recipient information in dedicated fields
+            recipient_name=payment.employee.get_full_name(),
+            recipient_account=payment.employee.bank_account_number or 'N/A',
+            recipient_institution=payment.employee.bank_name or 'N/A'
         )
         
         # Add metadata
@@ -826,7 +830,11 @@ def pay_bill(bill_id):
             transaction_type=TransactionType.BILL_PAYMENT,
             status=TransactionStatus.PROCESSING,
             description=f"Payment for bill {bill.bill_number} to {bill.vendor.name}",
-            institution_id=institution_id
+            institution_id=institution_id,
+            # Add recipient information in dedicated fields
+            recipient_name=bill.vendor.name,
+            recipient_account=bill.vendor.bank_account_number or 'N/A',
+            recipient_institution=bill.vendor.bank_name or 'N/A'
         )
         
         # Add metadata
@@ -1076,7 +1084,11 @@ def process_contract_payment(contract_id, payment_id):
             transaction_type=TransactionType.CONTRACT_PAYMENT,
             status=TransactionStatus.PROCESSING,
             description=f"Payment {payment.payment_number} for contract {contract.contract_number} to {contract.vendor.name}",
-            institution_id=institution_id
+            institution_id=institution_id,
+            # Add recipient information in dedicated fields
+            recipient_name=contract.vendor.name,
+            recipient_account=contract.vendor.bank_account_number or 'N/A',
+            recipient_institution=contract.vendor.bank_name or 'N/A'
         )
         
         # Add metadata
