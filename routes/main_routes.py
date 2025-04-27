@@ -679,8 +679,10 @@ def transaction_details(transaction_id):
     
     # Format the transaction amount
     try:
-        # Don't apply format_currency directly to prevent double currency symbols
-        formatted_amount = transaction.amount
+        from utils import format_currency
+        
+        # Format with commas but without currency symbol (handled in template)
+        formatted_amount = "{:,.2f}".format(float(transaction.amount))
         formatted_currency = transaction.currency
         
         # Just for debugging purposes
