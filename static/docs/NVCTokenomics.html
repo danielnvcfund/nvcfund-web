@@ -83,6 +83,8 @@
             border-radius: 8px;
             border-left: 4px solid #0056b3;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            position: relative;
         }
         .token-stat:nth-child(even) {
             background-color: #e9f0f8;
@@ -93,19 +95,21 @@
         }
         .token-stat-name {
             font-weight: bold;
-            min-width: 220px;
+            width: 180px;
             color: #0056b3;
+            flex-shrink: 0;
         }
         .token-stat-value {
-            flex-grow: 1;
             font-weight: 600;
             font-size: 1.05em;
+            width: 250px;
         }
         .token-stat-description {
             color: #666;
-            margin-top: 8px;
             font-size: 0.9em;
-            flex-basis: 100%;
+            padding-left: 180px;
+            margin-top: 5px;
+            width: 100%;
         }
         table {
             width: 100%;
