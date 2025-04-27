@@ -27,6 +27,9 @@ from utils import generate_transaction_id, get_or_404, is_admin, is_developer
 
 payment_processor_bp = Blueprint('payment_processor', __name__, url_prefix='/payment-processor')
 
+# Set correct index route for redirects
+INDEX_ROUTE = 'main_explicit_index'
+
 
 # Helper functions
 def generate_random_id(prefix, length=16):
