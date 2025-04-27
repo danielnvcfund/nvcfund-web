@@ -8,7 +8,7 @@ documentation_bp = Blueprint('documentation', __name__)
 
 def generate_pdf_with_logo(html_content, base_url=None):
     """
-    Generate a PDF from HTML content with the NVC logo embedded
+    Generate a PDF from HTML content with page numbers
     
     Args:
         html_content (str): The HTML content to convert to PDF
@@ -17,27 +17,35 @@ def generate_pdf_with_logo(html_content, base_url=None):
     Returns:
         bytes: The PDF content
     """
-    # NVC logo as inline SVG - no need to load external file
-    nvc_logo_svg = """
-    <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
-      <text x="20" y="120" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="#ffffff">NVC</text>
-      <rect x="20" y="130" width="160" height="5" fill="#ffffff" />
-      <text x="25" y="160" font-family="Arial, sans-serif" font-size="30" font-weight="normal" fill="#ffffff">GLOBAL</text>
-    </svg>
+    # Add page number CSS
+    page_number_css = """
+    @page {
+        @bottom-right {
+            content: "Page " counter(page) " of " counter(pages);
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            color: #666;
+        }
+    }
     """
     
-    # Convert SVG to data URL
-    logo_data_url = f"data:image/svg+xml;base64,{base64.b64encode(nvc_logo_svg.encode('utf-8')).decode('utf-8')}"
-    
-    # Replace placeholder with actual logo
-    if "NVC Logo" in html_content:
-        html_content = html_content.replace(
-            'NVC Logo', 
-            f'<img src="{logo_data_url}" alt="NVC Logo" style="width: 200px; height: auto; display: block; margin: 0 auto;">'
-        )
+    # Create an HTML string with the page number CSS
+    html_with_page_numbers = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            {page_number_css}
+        </style>
+    </head>
+    <body>
+        {html_content}
+    </body>
+    </html>
+    """
     
     # Generate PDF
-    pdf = weasyprint.HTML(string=html_content, base_url=base_url).write_pdf()
+    pdf = weasyprint.HTML(string=html_with_page_numbers, base_url=base_url).write_pdf()
     return pdf
 
 @documentation_bp.route('/', methods=['GET'])
@@ -56,7 +64,7 @@ def transaction_system_pdf():
         with open(html_path, 'r') as f:
             html_content = f.read()
         
-        # Generate PDF with embedded logo
+        # Generate PDF with page numbers
         pdf = generate_pdf_with_logo(html_content, base_url=os.path.dirname(html_path))
         
         # Create a BytesIO object
@@ -86,7 +94,7 @@ def server_to_server_pdf():
         with open(html_path, 'r') as f:
             html_content = f.read()
         
-        # Generate PDF with embedded logo
+        # Generate PDF with page numbers
         pdf = generate_pdf_with_logo(html_content, base_url=os.path.dirname(html_path))
         
         # Create a BytesIO object
@@ -116,7 +124,7 @@ def nvct_pdf():
         with open(html_path, 'r') as f:
             html_content = f.read()
         
-        # Generate PDF with embedded logo
+        # Generate PDF with page numbers
         pdf = generate_pdf_with_logo(html_content, base_url=os.path.dirname(html_path))
         
         # Create a BytesIO object
@@ -146,7 +154,7 @@ def funds_transfer_pdf():
         with open(html_path, 'r') as f:
             html_content = f.read()
         
-        # Generate PDF with embedded logo
+        # Generate PDF with page numbers
         pdf = generate_pdf_with_logo(html_content, base_url=os.path.dirname(html_path))
         
         # Create a BytesIO object
@@ -176,7 +184,7 @@ def mainnet_pdf():
         with open(html_path, 'r') as f:
             html_content = f.read()
         
-        # Generate PDF with embedded logo
+        # Generate PDF with page numbers
         pdf = generate_pdf_with_logo(html_content, base_url=os.path.dirname(html_path))
         
         # Create a BytesIO object
