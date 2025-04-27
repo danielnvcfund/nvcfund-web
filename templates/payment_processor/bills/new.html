@@ -167,7 +167,7 @@
     </div>
 
     <!-- Add Vendor Modal -->
-    <div class="modal fade" id="addVendorModal" tabindex="-1" aria-labelledby="addVendorModalLabel" aria-hidden="true">
+    <div class="modal fade" id="addVendorModal" tabindex="-1" aria-labelledby="addVendorModalLabel" aria-hidden="true" style="z-index: 9999;">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -294,6 +294,12 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<style>
+    /* Ensure modal appears on top of console */
+    .modal-backdrop {
+        z-index: 9998;
+    }
+</style>
 <script>
     $(document).ready(function() {
         // Set today's date as default for issue date
