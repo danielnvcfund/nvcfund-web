@@ -7,11 +7,13 @@ import json
 import uuid
 import logging
 import subprocess
+import tempfile
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, abort, current_app, send_file, make_response
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, current_user, login_required
+from weasyprint import HTML
 
 import auth
 import high_availability
