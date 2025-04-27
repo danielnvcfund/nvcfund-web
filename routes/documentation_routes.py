@@ -1,9 +1,22 @@
 import os
+import base64
 from flask import Blueprint, render_template, send_file, current_app
 import weasyprint
 from io import BytesIO
 
 documentation_bp = Blueprint('documentation', __name__)
+
+def get_nvc_logo_data_url():
+    """Get the NVC logo as a data URL for embedding in PDFs"""
+    logo_path = os.path.join(current_app.root_path, 'static/images/nvc_logo_white.svg')
+    try:
+        with open(logo_path, 'rb') as f:
+            logo_data = f.read()
+            return f"data:image/svg+xml;base64,{base64.b64encode(logo_data).decode('utf-8')}"
+    except Exception as e:
+        current_app.logger.error(f"Error loading logo: {str(e)}")
+        # Return a simple text as fallback
+        return "NVC GLOBAL"
 
 @documentation_bp.route('/', methods=['GET'])
 def documentation_index():
@@ -17,8 +30,16 @@ def transaction_system_pdf():
         # Get the HTML content
         html_path = os.path.join(current_app.root_path, 'static/docs/transaction_settlement_explainer.html')
         
-        # Create PDF using WeasyPrint
-        pdf = weasyprint.HTML(filename=html_path).write_pdf()
+        # Read the HTML content
+        with open(html_path, 'r') as f:
+            html_content = f.read()
+        
+        # Embed the logo in the HTML
+        logo_data_url = get_nvc_logo_data_url()
+        html_content = html_content.replace('NVC Logo', f'<img src="{logo_data_url}" alt="NVC Logo" style="width: 200px; height: auto; display: block; margin: 0 auto;">')
+        
+        # Create PDF using WeasyPrint with modified HTML content
+        pdf = weasyprint.HTML(string=html_content, base_url=os.path.dirname(html_path)).write_pdf()
         
         # Create a BytesIO object
         pdf_io = BytesIO(pdf)
@@ -43,8 +64,17 @@ def server_to_server_pdf():
         # Get the HTML content
         html_path = os.path.join(current_app.root_path, 'static/docs/server_to_server_integration_guide.html')
         
-        # Create PDF using WeasyPrint
-        pdf = weasyprint.HTML(filename=html_path).write_pdf()
+        # Read the HTML content
+        with open(html_path, 'r') as f:
+            html_content = f.read()
+        
+        # Embed the logo in the HTML
+        logo_data_url = get_nvc_logo_data_url()
+        if "NVC Logo" in html_content:
+            html_content = html_content.replace('NVC Logo', f'<img src="{logo_data_url}" alt="NVC Logo" style="width: 200px; height: auto; display: block; margin: 0 auto;">')
+        
+        # Create PDF using WeasyPrint with modified HTML content
+        pdf = weasyprint.HTML(string=html_content, base_url=os.path.dirname(html_path)).write_pdf()
         
         # Create a BytesIO object
         pdf_io = BytesIO(pdf)
@@ -69,8 +99,17 @@ def nvct_pdf():
         # Get the HTML content
         html_path = os.path.join(current_app.root_path, 'static/docs/NVCTokenomics.html')
         
-        # Create PDF using WeasyPrint
-        pdf = weasyprint.HTML(filename=html_path).write_pdf()
+        # Read the HTML content
+        with open(html_path, 'r') as f:
+            html_content = f.read()
+        
+        # Embed the logo in the HTML
+        logo_data_url = get_nvc_logo_data_url()
+        if "NVC Logo" in html_content:
+            html_content = html_content.replace('NVC Logo', f'<img src="{logo_data_url}" alt="NVC Logo" style="width: 200px; height: auto; display: block; margin: 0 auto;">')
+        
+        # Create PDF using WeasyPrint with modified HTML content
+        pdf = weasyprint.HTML(string=html_content, base_url=os.path.dirname(html_path)).write_pdf()
         
         # Create a BytesIO object
         pdf_io = BytesIO(pdf)
@@ -95,8 +134,17 @@ def funds_transfer_pdf():
         # Get the HTML content
         html_path = os.path.join(current_app.root_path, 'static/docs/nvc_funds_transfer_guide.html')
         
-        # Create PDF using WeasyPrint
-        pdf = weasyprint.HTML(filename=html_path).write_pdf()
+        # Read the HTML content
+        with open(html_path, 'r') as f:
+            html_content = f.read()
+        
+        # Embed the logo in the HTML
+        logo_data_url = get_nvc_logo_data_url()
+        if "NVC Logo" in html_content:
+            html_content = html_content.replace('NVC Logo', f'<img src="{logo_data_url}" alt="NVC Logo" style="width: 200px; height: auto; display: block; margin: 0 auto;">')
+        
+        # Create PDF using WeasyPrint with modified HTML content
+        pdf = weasyprint.HTML(string=html_content, base_url=os.path.dirname(html_path)).write_pdf()
         
         # Create a BytesIO object
         pdf_io = BytesIO(pdf)
@@ -121,8 +169,17 @@ def mainnet_pdf():
         # Get the HTML content
         html_path = os.path.join(current_app.root_path, 'static/docs/nvc_mainnet_readiness_assessment.html')
         
-        # Create PDF using WeasyPrint
-        pdf = weasyprint.HTML(filename=html_path).write_pdf()
+        # Read the HTML content
+        with open(html_path, 'r') as f:
+            html_content = f.read()
+        
+        # Embed the logo in the HTML
+        logo_data_url = get_nvc_logo_data_url()
+        if "NVC Logo" in html_content:
+            html_content = html_content.replace('NVC Logo', f'<img src="{logo_data_url}" alt="NVC Logo" style="width: 200px; height: auto; display: block; margin: 0 auto;">')
+        
+        # Create PDF using WeasyPrint with modified HTML content
+        pdf = weasyprint.HTML(string=html_content, base_url=os.path.dirname(html_path)).write_pdf()
         
         # Create a BytesIO object
         pdf_io = BytesIO(pdf)
