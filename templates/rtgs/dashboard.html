@@ -13,7 +13,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3">
-                            <div class="card bg-light mb-3">
+                            <div class="card bg-primary text-white mb-3">
                                 <div class="card-body text-center">
                                     <h5 class="card-title">Total Transfers</h5>
                                     <h2 class="display-4">{{ total_count }}</h2>
@@ -111,8 +111,8 @@
                                         {% for tx in transactions %}
                                         <tr>
                                             <td><code>{{ tx.transaction_id }}</code></td>
-                                            <td>{{ tx.recipient_name }}</td>
-                                            <td>{{ tx.recipient_bank_name }}</td>
+                                            <td>{{ tx.metadata.get('beneficiary_name', '') if tx.metadata else '' }}</td>
+                                            <td>{{ tx.metadata.get('recipient_bank_name', '') if tx.metadata else '' }}</td>
                                             <td>{{ tx.amount|format_currency(tx.currency) }}</td>
                                             <td>{{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                                             <td>
