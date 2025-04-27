@@ -58,7 +58,7 @@ def dashboard():
                           failed_count=failed_count,
                           institutions=institutions)
 
-@rtgs_routes.route('/new-transfer', methods=['GET', 'POST'])
+@rtgs_routes.route('/new_transfer', methods=['GET', 'POST'])
 @login_required
 def new_transfer():
     """Create a new RTGS transfer"""
