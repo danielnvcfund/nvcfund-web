@@ -105,17 +105,17 @@ def new_transfer():
                 currency=currency,
                 status=TransactionStatus.PENDING,
                 description=description or f"RTGS transfer to {beneficiary_name}",
-                recipient_name=beneficiary_name,
-                recipient_account=beneficiary_account,
-                recipient_bank_name=institution.name,
-                recipient_bank_swift=institution.swift_code or 'Unknown',
                 metadata={
                     'institution_id': institution.id,
                     'purpose_code': purpose_code,
                     'initiated_at': datetime.datetime.utcnow().isoformat(),
                     'rtgs_transfer_id': str(uuid.uuid4()),
                     'settlement_type': 'RTGS',
-                    'priority': 'HIGH'
+                    'priority': 'HIGH',
+                    'beneficiary_name': beneficiary_name,
+                    'beneficiary_account': beneficiary_account,
+                    'recipient_bank_name': institution.name,
+                    'recipient_bank_swift': institution.swift_code or 'Unknown'
                 }
             )
             
@@ -180,10 +180,6 @@ def api_transfer():
             currency=data['currency'],
             status=TransactionStatus.PENDING,
             description=data.get('description') or f"RTGS transfer to {data['beneficiary_name']}",
-            recipient_name=data['beneficiary_name'],
-            recipient_account=data['beneficiary_account'],
-            recipient_bank_name=institution.name,
-            recipient_bank_swift=institution.swift_code or 'Unknown',
             metadata={
                 'institution_id': institution.id,
                 'purpose_code': data.get('purpose_code', ''),
@@ -191,7 +187,11 @@ def api_transfer():
                 'rtgs_transfer_id': str(uuid.uuid4()),
                 'settlement_type': 'RTGS',
                 'priority': data.get('priority', 'HIGH'),
-                'api_initiated': True
+                'api_initiated': True,
+                'beneficiary_name': data['beneficiary_name'],
+                'beneficiary_account': data['beneficiary_account'],
+                'recipient_bank_name': institution.name,
+                'recipient_bank_swift': institution.swift_code or 'Unknown'
             }
         )
         
@@ -228,6 +228,9 @@ def check_status(transaction_id):
         if transaction.user_id != current_user.id and not current_user.is_admin:
             return jsonify({'success': False, 'error': 'Unauthorized'}), 403
         
+        # Get recipient info from metadata
+        metadata = transaction.metadata or {}
+        
         return jsonify({
             'success': True,
             'transaction_id': transaction.transaction_id,
@@ -236,10 +239,10 @@ def check_status(transaction_id):
             'updated_at': transaction.updated_at.isoformat() if hasattr(transaction, 'updated_at') else None,
             'amount': transaction.amount,
             'currency': transaction.currency,
-            'recipient_name': transaction.recipient_name,
-            'recipient_account': transaction.recipient_account,
-            'recipient_bank_name': transaction.recipient_bank_name,
-            'metadata': transaction.metadata
+            'recipient_name': metadata.get('beneficiary_name', ''),
+            'recipient_account': metadata.get('beneficiary_account', ''),
+            'recipient_bank_name': metadata.get('recipient_bank_name', ''),
+            'metadata': metadata
         })
         
     except Exception as e:
