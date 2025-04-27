@@ -53,11 +53,6 @@ def format_currency(amount, currency="USD"):
 @login_required
 def employee_list():
     """List all employees"""
-    # Check if user is admin or has employee management permissions
-    if not is_admin(current_user):
-        flash("You don't have permission to view employee information", "danger")
-        return redirect(url_for(INDEX_ROUTE))
-    
     employees = Employee.query.order_by(Employee.last_name).all()
     return render_template(
         'payment_processor/employees/list.html', 
@@ -136,11 +131,6 @@ def new_employee():
 @login_required
 def employee_details(employee_id):
     """View employee details"""
-    # Check if user is admin or has employee management permissions
-    if not is_admin(current_user):
-        flash("You don't have permission to view employee information", "danger")
-        return redirect(url_for(INDEX_ROUTE))
-    
     employee = get_or_404(Employee, employee_id)
     recent_payments = SalaryPayment.query.filter_by(employee_id=employee_id).order_by(SalaryPayment.payment_date.desc()).limit(5).all()
     
@@ -444,11 +434,6 @@ def process_payroll_batch(batch_id):
 @login_required
 def vendor_list():
     """List all vendors"""
-    # Check if user is admin or has vendor management permissions
-    if not is_admin(current_user):
-        flash("You don't have permission to view vendor information", "danger")
-        return redirect(url_for(INDEX_ROUTE))
-    
     vendors = Vendor.query.order_by(Vendor.name).all()
     return render_template(
         'payment_processor/vendors/list.html', 
@@ -511,11 +496,6 @@ def new_vendor():
 @login_required
 def vendor_details(vendor_id):
     """View vendor details"""
-    # Check if user is admin or has vendor management permissions
-    if not is_admin(current_user):
-        flash("You don't have permission to view vendor information", "danger")
-        return redirect(url_for(INDEX_ROUTE))
-    
     vendor = get_or_404(Vendor, vendor_id)
     
     # Get recent bills and contracts
@@ -535,11 +515,6 @@ def vendor_details(vendor_id):
 @login_required
 def bill_list():
     """List all bills"""
-    # Check if user is admin or has bill management permissions
-    if not is_admin(current_user):
-        flash("You don't have permission to view bill information", "danger")
-        return redirect(url_for(INDEX_ROUTE))
-    
     # Filter options
     status_filter = request.args.get('status')
     category_filter = request.args.get('category')
@@ -578,7 +553,8 @@ def bill_list():
         selected_status=status_filter,
         selected_category=category_filter,
         selected_vendor=vendor_filter,
-        title="Bill Management"
+        title="Bill Management",
+        today=date.today()
     )
 
 
@@ -648,11 +624,6 @@ def new_bill():
 @login_required
 def bill_details(bill_id):
     """View bill details"""
-    # Check if user is admin or has bill management permissions
-    if not is_admin(current_user):
-        flash("You don't have permission to view bill information", "danger")
-        return redirect(url_for(INDEX_ROUTE))
-    
     bill = get_or_404(Bill, bill_id)
     
     # Get payment transaction if exists
@@ -662,7 +633,8 @@ def bill_details(bill_id):
         'payment_processor/bills/details.html', 
         bill=bill,
         transaction=transaction,
-        title=f"Bill: {bill.bill_number}"
+        title=f"Bill: {bill.bill_number}",
+        today=date.today()
     )
 
 
@@ -750,11 +722,6 @@ def pay_bill(bill_id):
 @login_required
 def contract_list():
     """List all contracts"""
-    # Check if user is admin or has contract management permissions
-    if not is_admin(current_user):
-        flash("You don't have permission to view contract information", "danger")
-        return redirect(url_for(INDEX_ROUTE))
-    
     # Filter options
     status_filter = request.args.get('status')
     contract_type_filter = request.args.get('contract_type')
