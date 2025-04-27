@@ -49,9 +49,14 @@
                         <div class="col-12">
                             <div class="d-flex justify-content-between mb-3">
                                 <h5>RTGS-Enabled Institutions ({{ institutions|length }})</h5>
-                                <a href="{{ url_for('rtgs.new_transfer') }}" class="btn btn-primary">
-                                    <i class="fas fa-plus-circle me-2"></i>New RTGS Transfer
-                                </a>
+                                <div>
+                                    <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#addInstitutionModal">
+                                        <i class="fas fa-building me-2"></i>Add Institution
+                                    </button>
+                                    <a href="{{ url_for('rtgs.new_transfer') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus-circle me-2"></i>New RTGS Transfer
+                                    </a>
+                                </div>
                             </div>
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle me-2"></i>
@@ -175,6 +180,83 @@
     </div>
 </div>
 {% endblock %}
+
+<!-- Add Institution Modal -->
+<div class="modal fade" id="addInstitutionModal" tabindex="-1" aria-labelledby="addInstitutionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addInstitutionModalLabel"><i class="fas fa-building me-2"></i>Add RTGS-Enabled Institution</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('rtgs.add_institution') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Institution Name*</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="institution_type" class="form-label">Institution Type*</label>
+                        <select class="form-select" id="institution_type" name="institution_type" required>
+                            <option value="BANK">Bank</option>
+                            <option value="CREDIT_UNION">Credit Union</option>
+                            <option value="INVESTMENT_FIRM">Investment Firm</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="swift_code" class="form-label">SWIFT/BIC Code</label>
+                        <input type="text" class="form-control" id="swift_code" name="swift_code" maxlength="11" placeholder="Optional">
+                        <small class="text-muted">8 or 11 characters (e.g., CHASUS33)</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="country" class="form-label">Country</label>
+                        <select class="form-select" id="country" name="country">
+                            <option value="">Select Country (Optional)</option>
+                            <option value="United States">United States</option>
+                            <option value="United Kingdom">United Kingdom</option>
+                            <option value="Canada">Canada</option>
+                            <option value="Australia">Australia</option>
+                            <option value="Germany">Germany</option>
+                            <option value="France">France</option>
+                            <option value="Japan">Japan</option>
+                            <option value="China">China</option>
+                            <option value="India">India</option>
+                            <option value="Nigeria">Nigeria</option>
+                            <option value="South Africa">South Africa</option>
+                            <option value="Qatar">Qatar</option>
+                            <option value="United Arab Emirates">United Arab Emirates</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="api_endpoint" class="form-label">API Endpoint URL</label>
+                        <input type="url" class="form-control" id="api_endpoint" name="api_endpoint" placeholder="https://api.institution.com (Optional)">
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="rtgs_enabled" name="rtgs_enabled" checked disabled>
+                            <label class="form-check-label" for="rtgs_enabled">RTGS Transfer Enabled</label>
+                            <small class="d-block text-muted">Institutions created here will automatically have RTGS enabled</small>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="s2s_enabled" name="s2s_enabled">
+                            <label class="form-check-label" for="s2s_enabled">Server-to-Server Transfer Enabled</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-plus-circle me-1"></i> Add Institution
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 {% block scripts %}
 <script>
