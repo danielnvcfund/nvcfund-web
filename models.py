@@ -93,6 +93,10 @@ class TransactionType(enum.Enum):
     TREASURY_INVESTMENT = "TREASURY_INVESTMENT"        # For treasury investments
     TREASURY_LOAN = "TREASURY_LOAN"                    # For treasury loans
     TREASURY_DEBT_REPAYMENT = "TREASURY_DEBT_REPAYMENT"  # For treasury debt repayments
+    SALARY_PAYMENT = "SALARY_PAYMENT"                  # For salary payments to employees
+    BILL_PAYMENT = "BILL_PAYMENT"                      # For bill payments to service providers
+    CONTRACT_PAYMENT = "CONTRACT_PAYMENT"              # For payments to contractors/vendors under contracts
+    BULK_PAYROLL = "BULK_PAYROLL"                      # For processing multiple salary payments at once
 
 class GatewayType(enum.Enum):
     STRIPE = "stripe"
@@ -976,3 +980,242 @@ class TreasuryLoanPayment(db.Model):
     # Relationships
     loan = db.relationship('TreasuryLoan', backref=db.backref('payments', lazy=True))
     transaction = db.relationship('TreasuryTransaction', backref=db.backref('loan_payments', lazy=True))
+
+# Payment processing systems
+
+class PaymentFrequency(enum.Enum):
+    ONE_TIME = "one_time"
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    BI_WEEKLY = "bi_weekly"
+    MONTHLY = "monthly"
+    QUARTERLY = "quarterly"
+    ANNUALLY = "annually"
+    CUSTOM = "custom"
+
+class BillCategory(enum.Enum):
+    UTILITY = "utility"
+    RENT = "rent"
+    MORTGAGE = "mortgage"
+    INSURANCE = "insurance"
+    TAX = "tax"
+    SUBSCRIPTION = "subscription"
+    SERVICE = "service"
+    OTHER = "other"
+
+class ContractType(enum.Enum):
+    FIXED_PRICE = "fixed_price"
+    HOURLY = "hourly"
+    RETAINER = "retainer"
+    MILESTONE_BASED = "milestone_based"
+    SUBSCRIPTION = "subscription"
+    OTHER = "other"
+
+class Employee(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    employee_id = db.Column(db.String(64), unique=True, nullable=False)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(50))
+    position = db.Column(db.String(100))
+    department = db.Column(db.String(100))
+    hire_date = db.Column(db.Date, default=date.today)
+    bank_account_number = db.Column(db.String(100))
+    bank_routing_number = db.Column(db.String(100))
+    bank_name = db.Column(db.String(150))
+    payment_method = db.Column(db.String(50), default="direct_deposit")
+    salary_amount = db.Column(db.Float)
+    salary_frequency = db.Column(db.Enum(PaymentFrequency), default=PaymentFrequency.MONTHLY)
+    is_active = db.Column(db.Boolean, default=True)
+    metadata_json = db.Column(db.Text)  # For additional custom employee data
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = db.relationship('User', backref=db.backref('employee_profile', uselist=False))
+    
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"
+    
+    def get_metadata(self):
+        if not self.metadata_json:
+            return {}
+        try:
+            return json.loads(self.metadata_json)
+        except:
+            return {}
+
+class PayrollBatch(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    batch_id = db.Column(db.String(64), unique=True, nullable=False)
+    description = db.Column(db.String(256))
+    payment_date = db.Column(db.Date, nullable=False)
+    total_amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), default="USD")
+    status = db.Column(db.Enum(TransactionStatus), default=TransactionStatus.PENDING)
+    processed_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    institution_id = db.Column(db.Integer, db.ForeignKey('financial_institution.id'))
+    payment_method = db.Column(db.String(50), default="direct_deposit")
+    metadata_json = db.Column(db.Text)  # For additional batch processing data
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    processed_by_user = db.relationship('User', backref=db.backref('processed_payrolls', lazy=True))
+    institution = db.relationship('FinancialInstitution', backref=db.backref('payroll_batches', lazy=True))
+    
+    def get_metadata(self):
+        if not self.metadata_json:
+            return {}
+        try:
+            return json.loads(self.metadata_json)
+        except:
+            return {}
+
+class SalaryPayment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
+    transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
+    payroll_batch_id = db.Column(db.Integer, db.ForeignKey('payroll_batch.id'))
+    payment_date = db.Column(db.Date, nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), default="USD")
+    payment_method = db.Column(db.String(50), default="direct_deposit")
+    status = db.Column(db.Enum(TransactionStatus), default=TransactionStatus.PENDING)
+    period_start = db.Column(db.Date)
+    period_end = db.Column(db.Date)
+    description = db.Column(db.String(256))
+    metadata_json = db.Column(db.Text)  # For tax details, deductions, etc.
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    employee = db.relationship('Employee', backref=db.backref('salary_payments', lazy=True))
+    transaction = db.relationship('Transaction', backref=db.backref('salary_payment', uselist=False))
+    payroll_batch = db.relationship('PayrollBatch', backref=db.backref('salary_payments', lazy=True))
+    
+    def get_metadata(self):
+        if not self.metadata_json:
+            return {}
+        try:
+            return json.loads(self.metadata_json)
+        except:
+            return {}
+
+class Vendor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    vendor_id = db.Column(db.String(64), unique=True, nullable=False)
+    name = db.Column(db.String(150), nullable=False)
+    contact_name = db.Column(db.String(150))
+    email = db.Column(db.String(120))
+    phone = db.Column(db.String(50))
+    address = db.Column(db.String(256))
+    website = db.Column(db.String(150))
+    payment_terms = db.Column(db.String(100))  # Net 30, Net 60, etc.
+    bank_account_number = db.Column(db.String(100))
+    bank_routing_number = db.Column(db.String(100))
+    bank_name = db.Column(db.String(150))
+    payment_method = db.Column(db.String(50), default="bank_transfer")
+    tax_id = db.Column(db.String(50))
+    is_active = db.Column(db.Boolean, default=True)
+    metadata_json = db.Column(db.Text)  # For additional vendor data
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def get_metadata(self):
+        if not self.metadata_json:
+            return {}
+        try:
+            return json.loads(self.metadata_json)
+        except:
+            return {}
+
+class Bill(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    bill_number = db.Column(db.String(64), unique=True, nullable=False)
+    vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'), nullable=False)
+    category = db.Column(db.Enum(BillCategory), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), default="USD")
+    issue_date = db.Column(db.Date, nullable=False)
+    due_date = db.Column(db.Date, nullable=False)
+    payment_date = db.Column(db.Date)
+    status = db.Column(db.Enum(TransactionStatus), default=TransactionStatus.PENDING)
+    description = db.Column(db.String(256))
+    recurring = db.Column(db.Boolean, default=False)
+    frequency = db.Column(db.Enum(PaymentFrequency), default=PaymentFrequency.ONE_TIME)
+    transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
+    metadata_json = db.Column(db.Text)  # For invoice details, line items, etc.
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    vendor = db.relationship('Vendor', backref=db.backref('bills', lazy=True))
+    transaction = db.relationship('Transaction', backref=db.backref('bill', uselist=False))
+    
+    def get_metadata(self):
+        if not self.metadata_json:
+            return {}
+        try:
+            return json.loads(self.metadata_json)
+        except:
+            return {}
+            
+    def days_until_due(self):
+        if self.due_date:
+            return (self.due_date - date.today()).days
+        return None
+
+class Contract(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    contract_number = db.Column(db.String(64), unique=True, nullable=False)
+    vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    contract_type = db.Column(db.Enum(ContractType), nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date)
+    total_value = db.Column(db.Float)
+    currency = db.Column(db.String(10), default="USD")
+    payment_terms = db.Column(db.String(100))
+    status = db.Column(db.String(50), default="active")  # active, completed, terminated
+    file_path = db.Column(db.String(256))  # Path to stored contract document
+    is_active = db.Column(db.Boolean, default=True)
+    metadata_json = db.Column(db.Text)  # For additional contract details
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    vendor = db.relationship('Vendor', backref=db.backref('contracts', lazy=True))
+    
+    def get_metadata(self):
+        if not self.metadata_json:
+            return {}
+        try:
+            return json.loads(self.metadata_json)
+        except:
+            return {}
+
+class ContractPayment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    contract_id = db.Column(db.Integer, db.ForeignKey('contract.id'), nullable=False)
+    transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
+    payment_number = db.Column(db.String(64), unique=True, nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), default="USD")
+    payment_date = db.Column(db.Date)
+    due_date = db.Column(db.Date, nullable=False)
+    description = db.Column(db.String(256))
+    milestone = db.Column(db.String(200))  # For milestone-based payments
+    status = db.Column(db.Enum(TransactionStatus), default=TransactionStatus.PENDING)
+    metadata_json = db.Column(db.Text)  # For additional payment details
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    contract = db.relationship('Contract', backref=db.backref('payments', lazy=True))
+    transaction = db.relationship('Transaction', backref=db.backref('contract_payment', uselist=False))
+    
+    def get_metadata(self):
+        if not self.metadata_json:
+            return {}
+        try:
+            return json.loads(self.metadata_json)
+        except:
+            return {}
