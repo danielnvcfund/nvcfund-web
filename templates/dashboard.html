@@ -339,7 +339,7 @@
                                             </span>
                                         </td>
                                         <td class="fw-semibold {% if tx.transaction_type.value == 'withdrawal' %}text-danger{% else %}text-primary{% endif %}">
-                                            {% if tx.transaction_type.value == 'withdrawal' %}-{% endif %}{{ tx.amount }} {{ tx.currency }}
+                                            {% if tx.transaction_type.value == 'withdrawal' %}-{% endif %}{{ tx.amount|format_currency(tx.currency) }}
                                         </td>
                                         <td>
                                             {% if tx.status.value == 'completed' %}

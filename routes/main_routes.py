@@ -677,11 +677,10 @@ def transaction_details(transaction_id):
         if not blockchain_tx:
             blockchain_tx = get_transaction_status(transaction.eth_transaction_hash)
     
-    # Format the transaction amount
+    # We no longer need explicit formatting here as we're using the format_currency filter in the template
+    # This code is kept for compatibility with existing templates that might expect these variables
     try:
-        from utils import format_currency
-        
-        # Format with commas but without currency symbol (handled in template)
+        # Format with commas (but we'll use the filter in the template)
         formatted_amount = "{:,.2f}".format(float(transaction.amount))
         formatted_currency = transaction.currency
         
