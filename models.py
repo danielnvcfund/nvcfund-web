@@ -997,6 +997,7 @@ class BillCategory(enum.Enum):
     MORTGAGE = "mortgage"
     INSURANCE = "insurance"
     TAX = "tax"
+    GOVERNMENT = "government"
     SUBSCRIPTION = "subscription"
     SERVICE = "service"
     OTHER = "other"
