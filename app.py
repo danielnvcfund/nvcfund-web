@@ -85,9 +85,8 @@ def create_app():
     # login_view is already set in the global login_manager configuration
     
     # Add custom filters
-    from utils import format_currency, format_transaction_type
+    from utils import format_currency
     app.jinja_env.filters['format_currency'] = lambda amount, currency='USD': format_currency(amount, currency)
-    app.jinja_env.globals['format_transaction_type'] = format_transaction_type
 
     # Set debug mode to True
     app.config['DEBUG'] = True

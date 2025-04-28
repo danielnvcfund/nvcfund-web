@@ -341,7 +341,7 @@
                                                     {% elif tx.transaction_type.value == 'withdrawal' %}fas fa-arrow-up
                                                     {% elif tx.transaction_type.value == 'transfer' %}fas fa-exchange-alt
                                                     {% else %}fas fa-dot-circle{% endif %} me-1"></i>
-                                                {{ format_transaction_type(tx.transaction_type) }}
+                                                {{ tx.transaction_type.value }}
                                             </span>
                                         </td>
                                         <td class="fw-semibold {% if tx.transaction_type.value == 'withdrawal' %}text-danger{% else %}text-primary{% endif %}">
