@@ -194,8 +194,8 @@
             <div class="card dashboard-widget quick-stats-card h-100 border-0 shadow">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
-                            <i class="fas fa-spinner text-warning"></i>
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-spinner text-primary"></i>
                         </div>
                         <h3 class="h5 fw-bold mb-0">Pending</h3>
                     </div>
@@ -211,7 +211,7 @@
                     <div class="label">Waiting for completion</div>
                     
                     <div class="progress mt-3" style="height: 8px;">
-                        <div class="progress-bar bg-warning" style="width: {% if recent_transactions %}{{ (pending.count / recent_transactions|length * 100)|round }}{% else %}0{% endif %}%"></div>
+                        <div class="progress-bar bg-primary" style="width: {% if recent_transactions %}{{ (pending.count / recent_transactions|length * 100)|round }}{% else %}0{% endif %}%"></div>
                     </div>
                 </div>
             </div>
@@ -232,9 +232,9 @@
             
             {% if incomplete_count.count > 0 %}
             <div class="card dashboard-widget border-0 shadow mb-4">
-                <div class="card-header border-bottom border-warning border-2 bg-warning bg-opacity-10">
+                <div class="card-header border-bottom border-primary border-2 bg-primary bg-opacity-10">
                     <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-warning text-dark p-2 me-3">
+                        <div class="rounded-circle bg-primary text-white p-2 me-3">
                             <i class="fas fa-exclamation-triangle"></i>
                         </div>
                         <h5 class="mb-0 fw-bold">Incomplete Transfers</h5>
@@ -353,7 +353,7 @@
                                                     <i class="fas fa-check-circle me-1"></i>{{ tx.status.value }}
                                                 </span>
                                             {% elif tx.status.value == 'pending' %}
-                                                <span class="badge bg-warning text-dark status-badge">
+                                                <span class="badge bg-primary text-white status-badge">
                                                     <i class="fas fa-clock me-1"></i>{{ tx.status.value }}
                                                 </span>
                                                 {% if tx.gateway and tx.gateway.name == 'NVC Global' %}
