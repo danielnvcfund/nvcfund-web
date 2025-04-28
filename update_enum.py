@@ -22,18 +22,19 @@ try:
     
     # Check existing enum values
     cursor.execute("SELECT unnest(enum_range(NULL::financialinstitutiontype));")
-    existing_values = [row[0].lower() for row in cursor.fetchall()]
+    existing_values = [row[0] for row in cursor.fetchall()]
+    existing_values_lower = [val.lower() for val in existing_values]
     
     print(f"Existing enum values: {existing_values}")
     
-    # Add new enum values if they don't exist
-    if 'central_bank' not in existing_values:
-        print("Adding 'central_bank' to enum...")
-        cursor.execute("ALTER TYPE financialinstitutiontype ADD VALUE 'central_bank';")
+    # Add new enum values if they don't exist (case-sensitive check)
+    if 'CENTRAL_BANK' not in existing_values:
+        print("Adding 'CENTRAL_BANK' to enum...")
+        cursor.execute("ALTER TYPE financialinstitutiontype ADD VALUE 'CENTRAL_BANK';")
         
-    if 'government' not in existing_values:
-        print("Adding 'government' to enum...")
-        cursor.execute("ALTER TYPE financialinstitutiontype ADD VALUE 'government';")
+    if 'GOVERNMENT' not in existing_values:
+        print("Adding 'GOVERNMENT' to enum...")
+        cursor.execute("ALTER TYPE financialinstitutiontype ADD VALUE 'GOVERNMENT';")
     
     print("Enum update completed successfully!")
     
