@@ -35,7 +35,7 @@
                 <ul class="navbar-nav me-auto">
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        {% if current_user.role == 'ADMIN' %}
+                        {% if current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' %}
                         <a class="nav-link {% if request.path == '/main/admin-dashboard' %}active fw-bold{% endif %}" href="{{ url_for('web.main.admin_dashboard') }}">
                             <i class="fas fa-user-shield me-1"></i> Admin Dashboard
                         </a>
@@ -166,7 +166,7 @@
                                     <i class="fas fa-list-alt me-1"></i> EDI Transactions
                                 </a>
                             </li>
-                            {% if current_user.role.value == 'ADMIN' %}
+                            {% if current_user.role.value == 'ADMIN' or current_user.role == 'ADMIN' %}
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('edi.new_partner') }}">
                                     <i class="fas fa-plus-circle me-1"></i> Add EDI Partner
@@ -297,7 +297,7 @@
                     {% endif %}
                     
                     <!-- Admin dropdown for admins only -->
-                    {% if current_user.is_authenticated and (current_user.role.value == 'admin' or current_user.role.value == 'ADMIN' or current_user.role.value == 'HEAD_ADMIN') %}
+                    {% if current_user.is_authenticated and (current_user.role.value == 'admin' or current_user.role.value == 'ADMIN' or current_user.role.value == 'HEAD_ADMIN' or current_user.role == 'ADMIN' or current_user.role == 'admin' or current_user.role == 'HEAD_ADMIN') %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle bg-danger bg-opacity-25 rounded px-2" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-cog me-1"></i> Admin
@@ -424,14 +424,14 @@
                                     <i class="fas fa-server me-1"></i> S2S Integration Guide
                                 </a>
                             </li>
-                            {% if current_user.is_authenticated and current_user.role.value != 'DEVELOPER' %}
+                            {% if current_user.is_authenticated and (current_user.role.value != 'DEVELOPER' and current_user.role != 'DEVELOPER') %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('api_access.request_access') }}">
                                     <i class="fas fa-key me-1"></i> Request API Access
                                 </a>
                             </li>
-                            {% elif current_user.is_authenticated and current_user.role.value == 'DEVELOPER' %}
+                            {% elif current_user.is_authenticated and (current_user.role.value == 'DEVELOPER' or current_user.role == 'DEVELOPER') %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('api_access.developer_keys') }}">
@@ -459,7 +459,7 @@
                             <li><hr class="dropdown-divider"></li>
                             
                             <!-- Role switching options -->
-                            {% if current_user.role.value == 'admin' %}
+                            {% if current_user.role.value == 'admin' or current_user.role == 'admin' or current_user.role == 'ADMIN' %}
                             <li><a class="dropdown-item" href="{{ url_for('web.main.dashboard') }}">
                                 <i class="fas fa-tachometer-alt me-1"></i> User Dashboard
                             </a></li>
@@ -470,7 +470,7 @@
                             {% endif %}
                             
                             <!-- Developer tools section -->
-                            {% if current_user.role.value == 'DEVELOPER' %}
+                            {% if current_user.role.value == 'DEVELOPER' or current_user.role == 'DEVELOPER' %}
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Developer Tools</h6></li>
                             <li><a class="dropdown-item" href="{{ url_for('api_access.developer_keys') }}">
