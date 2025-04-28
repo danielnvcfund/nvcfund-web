@@ -1,0 +1,114 @@
+{% extends 'layout.html' %}
+
+{% block title %}Edit RTGS Transfer{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('rtgs.dashboard') }}">RTGS</a></li>
+                    <li class="breadcrumb-item active">Edit Transfer</li>
+                </ol>
+            </nav>
+            
+            <div class="card border-primary mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        Edit RTGS Transfer
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        You can edit this transfer because it has not been processed by the receiving institution yet.
+                        Once a transfer is processed, it cannot be modified.
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Transaction Details</h5>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Transaction ID:</span>
+                                        <span class="text-monospace">{{ transaction.transaction_id }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Amount:</span>
+                                        <span class="fw-bold">{{ transaction.currency }} {{ "{:,.2f}".format(transaction.amount) }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Created:</span>
+                                        <span>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Status:</span>
+                                        <span class="badge bg-warning">{{ transaction.status.name }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Institution:</span>
+                                        <span>{{ transaction.recipient_institution }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="POST">
+                        {{ form.hidden_tag() if form }}
+                        
+                        <h5 class="mb-3">Beneficiary Information</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="beneficiary_name" class="form-label">Beneficiary Name</label>
+                                <input type="text" class="form-control" id="beneficiary_name" name="beneficiary_name" 
+                                       value="{{ metadata.get('beneficiary_name', transaction.recipient_name) }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="beneficiary_account" class="form-label">Beneficiary Account Number</label>
+                                <input type="text" class="form-control" id="beneficiary_account" name="beneficiary_account" 
+                                       value="{{ metadata.get('beneficiary_account', transaction.recipient_account) }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="beneficiary_bank" class="form-label">Beneficiary Bank Name</label>
+                                <input type="text" class="form-control" id="beneficiary_bank" name="beneficiary_bank" 
+                                       value="{{ metadata.get('beneficiary_bank', transaction.recipient_bank) }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="purpose_code" class="form-label">Purpose Code</label>
+                                <select class="form-select" id="purpose_code" name="purpose_code">
+                                    {% for code, name in purpose_codes %}
+                                    <option value="{{ code }}" {% if metadata.get('purpose_code') == code %}selected{% endif %}>
+                                        {{ name }} ({{ code }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ transaction.description }}</textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <a href="{{ url_for('web.main.transaction_details', transaction_id=transaction.transaction_id) }}" class="btn btn-secondary me-2">
+                                <i class="bi bi-x-circle me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,6 +1,7 @@
 """
 Real-Time Gross Settlement (RTGS) Routes
 Routes for handling RTGS transfers between central banks and financial institutions
+Includes functionality for canceling and editing pending RTGS transfers
 """
 
 import os
@@ -257,6 +258,130 @@ def api_transfer():
         db.session.rollback()
         current_app.logger.error(f"Error in RTGS API transfer: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@rtgs_routes.route('/cancel/<transaction_id>', methods=['GET', 'POST'])
+@login_required
+def cancel_transfer(transaction_id):
+    """Cancel a pending RTGS transfer"""
+    # Find the transaction
+    transaction = Transaction.query.filter_by(
+        transaction_id=transaction_id,
+        transaction_type=TransactionType.RTGS_TRANSFER
+    ).first_or_404()
+    
+    # Check permissions
+    if transaction.user_id != current_user.id and not current_user.is_admin:
+        flash('You do not have permission to cancel this transaction.', 'danger')
+        return redirect(url_for('rtgs.dashboard'))
+    
+    # Check if transaction can be canceled
+    if transaction.status != TransactionStatus.PENDING:
+        flash('Only pending transactions can be canceled.', 'danger')
+        return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
+    
+    if request.method == 'POST':
+        # Confirm the cancellation
+        if request.form.get('confirm_cancel') == 'yes':
+            transaction.status = TransactionStatus.CANCELLED
+            
+            # Add cancellation info to metadata
+            metadata = get_transaction_metadata(transaction)
+            metadata['canceled_at'] = datetime.datetime.utcnow().isoformat()
+            metadata['canceled_by'] = current_user.username
+            metadata['cancellation_reason'] = request.form.get('reason', 'User requested cancellation')
+            transaction.tx_metadata_json = json.dumps(metadata)
+            
+            db.session.commit()
+            
+            flash('RTGS transfer has been successfully canceled.', 'success')
+            return redirect(url_for('rtgs.dashboard'))
+    
+    # Show confirmation form
+    return render_template('rtgs/cancel_transfer.html', transaction=transaction)
+
+@rtgs_routes.route('/edit/<transaction_id>', methods=['GET', 'POST'])
+@login_required
+def edit_transfer(transaction_id):
+    """Edit a pending RTGS transfer"""
+    # Find the transaction
+    transaction = Transaction.query.filter_by(
+        transaction_id=transaction_id,
+        transaction_type=TransactionType.RTGS_TRANSFER
+    ).first_or_404()
+    
+    # Check permissions
+    if transaction.user_id != current_user.id and not current_user.is_admin:
+        flash('You do not have permission to edit this transaction.', 'danger')
+        return redirect(url_for('rtgs.dashboard'))
+    
+    # Check if transaction can be edited
+    if transaction.status != TransactionStatus.PENDING:
+        flash('Only pending transactions can be edited.', 'danger')
+        return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
+    
+    # Get the current metadata
+    metadata = get_transaction_metadata(transaction)
+    
+    if request.method == 'POST':
+        try:
+            # Get form data
+            beneficiary_account = request.form.get('beneficiary_account', '')
+            beneficiary_name = request.form.get('beneficiary_name', '')
+            beneficiary_bank = request.form.get('beneficiary_bank', '')
+            purpose_code = request.form.get('purpose_code', '')
+            description = request.form.get('description', '')
+            
+            # Validate data
+            if not beneficiary_account or not beneficiary_name or not beneficiary_bank:
+                flash('Beneficiary name, bank name, and account number are required', 'danger')
+                return redirect(url_for('rtgs.edit_transfer', transaction_id=transaction_id))
+            
+            # Update transaction and metadata
+            transaction.recipient_account = beneficiary_account
+            transaction.recipient_name = beneficiary_name
+            transaction.recipient_bank = beneficiary_bank
+            transaction.description = description
+            
+            # Update metadata
+            metadata['beneficiary_account'] = beneficiary_account
+            metadata['beneficiary_name'] = beneficiary_name
+            metadata['beneficiary_bank'] = beneficiary_bank
+            metadata['recipient_bank_name'] = beneficiary_bank
+            metadata['purpose_code'] = purpose_code
+            metadata['last_edited_at'] = datetime.datetime.utcnow().isoformat()
+            metadata['edited_by'] = current_user.username
+            
+            transaction.tx_metadata_json = json.dumps(metadata)
+            
+            db.session.commit()
+            
+            flash('RTGS transfer has been successfully updated.', 'success')
+            return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
+            
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error updating RTGS transfer: {str(e)}")
+            flash(f'Error updating transfer: {str(e)}', 'danger')
+    
+    # Prepare form data
+    purpose_codes = [
+        ('CORT', 'Corporate Transfer'),
+        ('INTC', 'Intra-Company Payment'),
+        ('TREA', 'Treasury Transfer'),
+        ('CASH', 'Cash Management Transfer'),
+        ('DIVI', 'Dividend Payment'),
+        ('GOVT', 'Government Payment'),
+        ('PENS', 'Pension Payment'),
+        ('SALA', 'Salary Payment'),
+        ('TAXS', 'Tax Payment'),
+        ('TRAD', 'Trade Payment'),
+    ]
+    
+    # Show edit form
+    return render_template('rtgs/edit_transfer.html', 
+                          transaction=transaction, 
+                          metadata=metadata,
+                          purpose_codes=purpose_codes)
 
 @rtgs_routes.route('/api/status/<transaction_id>', methods=['GET'])
 @login_required
