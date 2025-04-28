@@ -297,7 +297,7 @@
                     {% endif %}
                     
                     <!-- Admin dropdown for admins only -->
-                    {% if current_user.is_authenticated and current_user.username in ['admin', 'headadmin'] or (current_user.is_authenticated and (current_user.role.value == 'admin' or current_user.role.value == 'ADMIN' or current_user.role.value == 'HEAD_ADMIN' or current_user.role == 'ADMIN' or current_user.role == 'admin' or current_user.role == 'HEAD_ADMIN')) %}
+                    {% if current_user.is_authenticated and (current_user.username in ['admin', 'headadmin'] or current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' or current_user.role.name == 'ADMIN') %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle bg-danger bg-opacity-25 rounded px-2" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-cog me-1"></i> Admin
@@ -459,7 +459,7 @@
                             <li><hr class="dropdown-divider"></li>
                             
                             <!-- Role switching options -->
-                            {% if current_user.username in ['admin', 'headadmin'] or current_user.role.value == 'admin' or current_user.role == 'admin' or current_user.role == 'ADMIN' %}
+                            {% if current_user.username in ['admin', 'headadmin'] or current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' or current_user.role.name == 'ADMIN' %}
                             <li><a class="dropdown-item" href="{{ url_for('web.main.dashboard') }}">
                                 <i class="fas fa-tachometer-alt me-1"></i> User Dashboard
                             </a></li>
