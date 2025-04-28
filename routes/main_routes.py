@@ -1,6 +1,7 @@
 """
 Main routes for the NVC Banking Platform
 Contains all the primary web interface routes
+Includes error correction functionality for all transaction types before settlement
 """
 import os
 import json
