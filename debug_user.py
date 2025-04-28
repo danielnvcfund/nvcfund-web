@@ -1,0 +1,1 @@
+from flask import current_app; from flask_login import current_user; print(f'Current user: {current_user}, is_authenticated: {current_user.is_authenticated}, username: {current_user.username}, role: {current_user.role}, role value: {getattr(current_user.role, "value", "No value attribute")}')

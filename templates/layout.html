@@ -320,7 +320,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('admin_tools.financial_institutions_tool') }}">
+                                <a class="dropdown-item" href="/admin-tools/financial-institutions">
                                     <i class="fas fa-landmark me-1"></i> Financial Institutions
                                 </a>
                             </li>
@@ -459,13 +459,15 @@
                             <li><hr class="dropdown-divider"></li>
                             
                             <!-- Role switching options -->
-                            {% if current_user.role.value == 'admin' or current_user.role == 'admin' or current_user.role == 'ADMIN' %}
+                            {% if current_user.username in ['admin', 'headadmin'] or current_user.role.value == 'admin' or current_user.role == 'admin' or current_user.role == 'ADMIN' %}
                             <li><a class="dropdown-item" href="{{ url_for('web.main.dashboard') }}">
                                 <i class="fas fa-tachometer-alt me-1"></i> User Dashboard
                             </a></li>
-                            {% elif current_user.username in ['admin', 'headadmin'] %}
                             <li><a class="dropdown-item" href="{{ url_for('web.main.admin_dashboard') }}">
                                 <i class="fas fa-user-shield me-1"></i> Admin Dashboard
+                            </a></li>
+                            <li><a class="dropdown-item bg-danger bg-opacity-25" href="/admin-tools/financial-institutions">
+                                <i class="fas fa-landmark me-1"></i> Financial Institutions
                             </a></li>
                             {% endif %}
                             
