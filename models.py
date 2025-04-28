@@ -165,6 +165,7 @@ class FinancialInstitutionType(enum.Enum):
     CREDIT_UNION = "credit_union"
     INVESTMENT_FIRM = "investment_firm"
     CENTRAL_BANK = "central_bank"
+    GOVERNMENT = "government"
     OTHER = "other"
 
 class FinancialInstitution(db.Model):
