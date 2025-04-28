@@ -1,0 +1,126 @@
+{% extends "layout.html" %}
+
+{% block title %}Financial Institutions Reference Tool{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Financial Institutions Reference Tool</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Status</h5>
+                    <p class="card-text">
+                        <span class="fw-bold">{{ existing_count }}</span> of <span class="fw-bold">{{ total_count }}</span> 
+                        financial institutions are currently in the database.
+                    </p>
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" 
+                            style="width: {{ (existing_count / total_count * 100) | round }}%;" 
+                            aria-valuenow="{{ existing_count }}" 
+                            aria-valuemin="0" 
+                            aria-valuemax="{{ total_count }}">
+                            {{ (existing_count / total_count * 100) | round }}%
+                        </div>
+                    </div>
+                    
+                    {% if existing_count < total_count %}
+                        <form action="{{ url_for('admin_tools.add_all_financial_institutions') }}" method="POST" class="mb-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus-square me-1"></i> Add All Missing Institutions
+                            </button>
+                        </form>
+                        <small class="text-muted">This will add all {{ total_count - existing_count }} missing institutions to the database.</small>
+                    {% else %}
+                        <p class="text-success mb-0"><i class="fas fa-check-circle me-1"></i> All institutions are present in the database.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% for category, institutions in institutions_by_category.items() %}
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">{{ category }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>SWIFT/BIC</th>
+                            <th>Country</th>
+                            <th>RTGS System</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for institution in institutions %}
+                        <tr>
+                            <td>{{ institution.name }}</td>
+                            <td>
+                                {% if institution.institution_type == FinancialInstitutionType.CENTRAL_BANK %}
+                                    <span class="badge bg-primary">Central Bank</span>
+                                {% elif institution.institution_type == FinancialInstitutionType.BANK %}
+                                    <span class="badge bg-secondary">Bank</span>
+                                {% else %}
+                                    <span class="badge bg-info">Other</span>
+                                {% endif %}
+                            </td>
+                            <td><code>{{ institution.swift_code }}</code></td>
+                            <td>{{ institution.country }}</td>
+                            <td>{{ institution.rtgs_system }}</td>
+                            <td>
+                                {% if institution.exists %}
+                                    <span class="badge bg-success">Added</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Missing</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if not institution.exists %}
+                                    <form action="{{ url_for('admin_tools.add_financial_institution') }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="name" value="{{ institution.name }}">
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-plus-circle"></i> Add
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <a href="{{ url_for('rtgs.view_institution', id=institution.id) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle add all button with confirmation
+    const addAllBtn = document.querySelector('button[type="submit"]');
+    if (addAllBtn) {
+        addAllBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const missingCount = {{ total_count - existing_count }};
+            if (confirm(`Are you sure you want to add all ${missingCount} missing institutions? This may take a few moments.`)) {
+                this.closest('form').submit();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

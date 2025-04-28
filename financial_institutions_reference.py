@@ -537,8 +537,13 @@ FINANCIAL_INSTITUTIONS = [
 ]
 
 
-def populate_financial_institutions():
-    """Populate the database with a comprehensive list of financial institutions"""
+def populate_financial_institutions(batch_size=5):
+    """Populate the database with a comprehensive list of financial institutions
+    
+    Args:
+        batch_size (int): Number of institutions to process in each batch
+                         to avoid timeouts with blockchain operations
+    """
     logger = logging.getLogger(__name__)
     logger.info("Starting to populate financial institutions")
     
@@ -550,61 +555,73 @@ def populate_financial_institutions():
         existing = 0
         failed = 0
         
-        for institution_data in FINANCIAL_INSTITUTIONS:
-            # Check if institution already exists
-            existing_institution = FinancialInstitution.query.filter_by(name=institution_data["name"]).first()
-            if existing_institution:
-                logger.info(f"Institution '{institution_data['name']}' already exists (ID: {existing_institution.id})")
-                existing += 1
-                continue
+        # Process in batches to avoid timeouts
+        for i in range(0, len(FINANCIAL_INSTITUTIONS), batch_size):
+            batch = FINANCIAL_INSTITUTIONS[i:i+batch_size]
+            print(f"Processing batch {i//batch_size + 1}/{(total + batch_size - 1)//batch_size} ({len(batch)} institutions)")
+            
+            for institution_data in batch:
+                # Check if institution already exists
+                existing_institution = FinancialInstitution.query.filter_by(name=institution_data["name"]).first()
+                if existing_institution:
+                    logger.info(f"Institution '{institution_data['name']}' already exists (ID: {existing_institution.id})")
+                    print(f"Institution '{institution_data['name']}' already exists (ID: {existing_institution.id})")
+                    existing += 1
+                    continue
 
-            # Generate Ethereum address for the institution
-            eth_address, _ = generate_ethereum_account()
-            if not eth_address:
-                logger.error(f"Failed to generate Ethereum address for {institution_data['name']}")
-                failed += 1
-                continue
+                # Generate Ethereum address for the institution
+                eth_address, _ = generate_ethereum_account()
+                if not eth_address:
+                    logger.error(f"Failed to generate Ethereum address for {institution_data['name']}")
+                    print(f"Failed to generate Ethereum address for {institution_data['name']}")
+                    failed += 1
+                    continue
 
-            # Prepare metadata with country, RTGS information, and category
-            metadata = {
-                "country": institution_data["country"],
-                "rtgs_system": institution_data["rtgs_system"],
-                "category": institution_data.get("category", "Other"),
-                "added_at": datetime.utcnow().isoformat()
-            }
+                # Prepare metadata with country, RTGS information, and category
+                metadata = {
+                    "country": institution_data["country"],
+                    "rtgs_system": institution_data["rtgs_system"],
+                    "category": institution_data.get("category", "Other"),
+                    "added_at": datetime.utcnow().isoformat()
+                }
 
-            # Add SWIFT info if available
-            if institution_data["swift_code"]:
-                metadata["swift"] = {"bic": institution_data["swift_code"]}
+                # Add SWIFT info if available
+                if institution_data["swift_code"]:
+                    metadata["swift"] = {"bic": institution_data["swift_code"]}
 
-            # Create new institution
-            institution = FinancialInstitution(
-                name=institution_data["name"],
-                institution_type=institution_data["institution_type"],
-                ethereum_address=eth_address,
-                swift_code=institution_data["swift_code"],
-                rtgs_enabled=institution_data["rtgs_enabled"],
-                s2s_enabled=institution_data["s2s_enabled"],
-                is_active=institution_data["is_active"],
-                metadata_json=json.dumps(metadata)
-            )
+                # Create new institution
+                institution = FinancialInstitution(
+                    name=institution_data["name"],
+                    institution_type=institution_data["institution_type"],
+                    ethereum_address=eth_address,
+                    swift_code=institution_data["swift_code"],
+                    rtgs_enabled=institution_data["rtgs_enabled"],
+                    s2s_enabled=institution_data["s2s_enabled"],
+                    is_active=institution_data["is_active"],
+                    metadata_json=json.dumps(metadata)
+                )
 
-            db.session.add(institution)
-            try:
-                db.session.commit()
-                logger.info(f"Added {institution_data['name']} successfully (ID: {institution.id})")
-                added += 1
-            except Exception as e:
-                db.session.rollback()
-                logger.error(f"Error adding {institution_data['name']}: {str(e)}")
-                failed += 1
+                db.session.add(institution)
+                try:
+                    db.session.commit()
+                    logger.info(f"Added {institution_data['name']} successfully (ID: {institution.id})")
+                    print(f"Added {institution_data['name']} successfully")
+                    added += 1
+                except Exception as e:
+                    db.session.rollback()
+                    logger.error(f"Error adding {institution_data['name']}: {str(e)}")
+                    print(f"Error adding {institution_data['name']}: {str(e)}")
+                    failed += 1
+            
+            # Print batch progress
+            print(f"Batch {i//batch_size + 1} completed: Added {added} so far")
         
         # Log summary
         logger.info(f"Financial institutions population completed")
         logger.info(f"Total: {total}, Added: {added}, Already Existing: {existing}, Failed: {failed}")
         
         # Print summary to console
-        print(f"Financial institutions population completed")
+        print(f"\nFinancial institutions population completed")
         print(f"Total: {total}, Added: {added}, Already Existing: {existing}, Failed: {failed}")
         
         return {

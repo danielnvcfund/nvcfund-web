@@ -272,6 +272,15 @@ def create_app():
             logger.error(f"Error registering Customer Support routes: {str(e)}")
             logger.warning("Application will run without AI Customer Support functionality")
             
+        # Register Admin Tools routes
+        try:
+            from routes.admin_tools_routes import admin_tools_bp
+            app.register_blueprint(admin_tools_bp)
+            logger.info("Admin Tools routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Admin Tools routes: {str(e)}")
+            logger.warning("Application will run without Admin Tools functionality")
+            
         # Register Payment Processor routes
         try:
             from routes.payment_processor_routes import register_payment_processor_routes
