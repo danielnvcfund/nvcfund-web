@@ -216,6 +216,26 @@ class BankTransferForm(FlaskForm):
     recipient_state = StringField('State/Province', validators=[Optional()])
     recipient_zip = StringField('ZIP/Postal Code', validators=[DataRequired()])
     recipient_country = StringField('Country', validators=[DataRequired()])
+    recipient_phone = StringField('Phone Number', validators=[Optional()])
+    recipient_tax_id = StringField('Tax ID/VAT Number', validators=[Optional()])
+    
+    # Enhanced beneficiary information for regulatory compliance
+    recipient_institution_type = SelectField('Institution Type', choices=[
+        ('individual', 'Individual'),
+        ('business', 'Business'),
+        ('government', 'Government Agency'),
+        ('nonprofit', 'Non-profit Organization'),
+        ('financial', 'Financial Institution')
+    ], default='individual', validators=[DataRequired()])
+    recipient_relationship = SelectField('Relationship to Recipient', choices=[
+        ('self', 'Self'),
+        ('family', 'Family Member'),
+        ('business', 'Business Partner'),
+        ('vendor', 'Vendor/Supplier'),
+        ('client', 'Client/Customer'),
+        ('employee', 'Employee'),
+        ('other', 'Other')
+    ], validators=[Optional()])
     
     # Bank account information fields
     bank_name = StringField('Bank Name', validators=[DataRequired()])
@@ -224,24 +244,40 @@ class BankTransferForm(FlaskForm):
     account_type = SelectField('Account Type', choices=[
         ('checking', 'Checking'),
         ('savings', 'Savings'),
-        ('business', 'Business')
+        ('business', 'Business'),
+        ('investment', 'Investment'),
+        ('money_market', 'Money Market'),
+        ('loan', 'Loan Account'),
+        ('other', 'Other')
     ], validators=[DataRequired()])
     transfer_type = SelectField('Transfer Type', choices=[
         ('domestic', 'Domestic'),
         ('international', 'International')
     ], default='domestic', validators=[DataRequired()])
-    routing_number = StringField('Routing Number', validators=[Optional()])
+    routing_number = StringField('Routing Number (ABA)', validators=[Optional()])
     swift_bic = StringField('SWIFT/BIC Code', validators=[Optional()])
     iban = StringField('IBAN', validators=[Optional()])
     bank_address = TextAreaField('Bank Address', validators=[DataRequired()])
     bank_city = StringField('City', validators=[DataRequired()])
     bank_state = StringField('State/Province', validators=[Optional()])
     bank_country = StringField('Country', validators=[DataRequired()])
+    bank_branch_code = StringField('Branch Code', validators=[Optional()])
+    bank_branch_name = StringField('Branch Name', validators=[Optional()])
     
     # International transfer fields
     currency = SelectField('Currency', choices=[
-        ('USD', 'USD'), ('EUR', 'EUR'), ('GBP', 'GBP'), ('JPY', 'JPY'),
-        ('CAD', 'CAD'), ('AUD', 'AUD'), ('CHF', 'CHF')
+        ('USD', 'USD - US Dollar'),
+        ('EUR', 'EUR - Euro'),
+        ('GBP', 'GBP - British Pound'),
+        ('JPY', 'JPY - Japanese Yen'),
+        ('CAD', 'CAD - Canadian Dollar'),
+        ('AUD', 'AUD - Australian Dollar'),
+        ('CHF', 'CHF - Swiss Franc'),
+        ('CNY', 'CNY - Chinese Yuan'),
+        ('HKD', 'HKD - Hong Kong Dollar'),
+        ('SGD', 'SGD - Singapore Dollar'),
+        ('INR', 'INR - Indian Rupee'),
+        ('ZAR', 'ZAR - South African Rand')
     ], default='USD', validators=[Optional()])
     purpose = SelectField('Purpose of Payment', choices=[
         ('business', 'Business Services'),
@@ -249,18 +285,61 @@ class BankTransferForm(FlaskForm):
         ('property', 'Property Purchase'),
         ('investment', 'Investment'),
         ('education', 'Education'),
+        ('medical', 'Medical Expenses'),
+        ('tax', 'Tax Payment'),
+        ('legal', 'Legal Services'),
+        ('consultation', 'Professional Consultation'),
+        ('charitable', 'Charitable Donation'),
+        ('goods', 'Goods Purchase'),
+        ('services', 'Services Payment'),
+        ('loan', 'Loan Repayment'),
+        ('dividend', 'Dividend Payment'),
+        ('salary', 'Salary/Wages'),
         ('other', 'Other (Please Specify)')
     ], validators=[Optional()])
     purpose_detail = StringField('Purpose Details', validators=[Optional()])
     intermediary_bank = StringField('Intermediary Bank', validators=[Optional()])
     intermediary_swift = StringField('Intermediary SWIFT Code', validators=[Optional()])
     
+    # Settlement information
+    settlement_method = SelectField('Settlement Method', choices=[
+        ('standard', 'Standard (3-5 business days)'),
+        ('express', 'Express (1-2 business days)'),
+        ('same_day', 'Same Day (where available)'),
+        ('wire', 'Wire Transfer'),
+        ('ach', 'ACH Transfer'),
+        ('rtgs', 'RTGS')
+    ], default='standard', validators=[Optional()])
+    charge_bearer = SelectField('Fee Payment Option', choices=[
+        ('OUR', 'Sender pays all fees (OUR)'),
+        ('SHA', 'Shared fees (SHA)'),
+        ('BEN', 'Recipient pays all fees (BEN)')
+    ], default='SHA', validators=[Optional()])
+    
+    # Compliance and regulatory information
+    source_of_funds = SelectField('Source of Funds', choices=[
+        ('salary', 'Salary/Employment Income'),
+        ('business', 'Business Revenue'),
+        ('investment', 'Investment Returns'),
+        ('savings', 'Personal Savings'),
+        ('loan', 'Loan Proceeds'),
+        ('gift', 'Gift'),
+        ('sale', 'Sale of Asset'),
+        ('inheritance', 'Inheritance'),
+        ('other', 'Other (Please Specify)')
+    ], validators=[Optional()])
+    source_of_funds_detail = StringField('Source of Funds Details', validators=[Optional()])
+    
     # Reference information
     reference = StringField('Payment Reference', validators=[Optional()])
+    invoice_number = StringField('Invoice Number', validators=[Optional()])
     description = TextAreaField('Description', validators=[Optional()])
+    notes_to_recipient = TextAreaField('Notes to Recipient', validators=[Optional()])
+    notes_to_bank = TextAreaField('Instructions to Bank', validators=[Optional()])
     
     # Terms agreement
     terms_agree = BooleanField('I agree to the terms', validators=[DataRequired()])
+    compliance_agree = BooleanField('I confirm this transaction complies with all applicable laws', validators=[DataRequired()])
     
     amount = HiddenField('Amount')
     
