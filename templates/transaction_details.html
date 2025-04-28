@@ -51,7 +51,7 @@
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Transaction Information</h5>
-            <span class="badge {% if transaction.status.value == 'completed' %}bg-success{% elif transaction.status.value == 'pending' %}bg-primary text-white{% elif transaction.status.value == 'processing' %}bg-info text-dark{% elif transaction.status.value == 'failed' %}bg-danger{% elif transaction.status.value == 'refunded' %}bg-secondary{% else %}bg-secondary{% endif %} px-3 py-2">
+            <span class="badge {% if transaction.status.value == 'completed' %}bg-success{% elif transaction.status.value == 'pending' %}bg-primary text-white{% elif transaction.status.value == 'processing' %}bg-info text-white{% elif transaction.status.value == 'failed' %}bg-danger{% elif transaction.status.value == 'refunded' %}bg-secondary{% else %}bg-secondary{% endif %} px-3 py-2">
                 {{ transaction.status.value|upper }}
             </span>
         </div>

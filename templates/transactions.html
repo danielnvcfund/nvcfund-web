@@ -88,7 +88,7 @@
                                     {% elif tx.status.value == 'pending' %}
                                         <span class="badge bg-primary text-white status-badge">{{ tx.status.value }}</span>
                                     {% elif tx.status.value == 'processing' %}
-                                        <span class="badge bg-info text-dark status-badge">{{ tx.status.value }}</span>
+                                        <span class="badge bg-info text-white status-badge">{{ tx.status.value }}</span>
                                     {% elif tx.status.value == 'failed' %}
                                         <span class="badge bg-danger status-badge">{{ tx.status.value }}</span>
                                     {% elif tx.status.value == 'refunded' %}
