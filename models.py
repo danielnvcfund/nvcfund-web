@@ -128,6 +128,7 @@ class Transaction(db.Model):
     recipient_account = db.Column(db.String(64))
     recipient_address = db.Column(db.String(256))
     recipient_country = db.Column(db.String(64))
+    recipient_bank = db.Column(db.String(128))  # Name of the recipient's bank (for RTGS transfers)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -144,7 +145,8 @@ class Transaction(db.Model):
                 'institution': self.recipient_institution,
                 'account': self.recipient_account,
                 'address': self.recipient_address,
-                'country': self.recipient_country
+                'country': self.recipient_country,
+                'bank': self.recipient_bank
             }
         
         # Legacy extraction from description

@@ -182,8 +182,12 @@
                 <div style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px;">
                     <div style="font-weight: bold; margin-bottom: 5px; color: #002a5a;">Receiving Bank Details:</div>
                     <div class="info-row">
-                        <div class="info-label">Bank Name:</div>
+                        <div class="info-label">Processing Institution:</div>
                         <div class="info-value">{{ recipient.institution or 'Not specified' }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Beneficiary Bank:</div>
+                        <div class="info-value">{{ recipient.bank or 'Not specified' }}</div>
                     </div>
                     <div class="info-row">
                         <div class="info-label">Account Number:</div>

@@ -66,8 +66,12 @@
                                     <hr class="my-2">
                                     <h6 class="text-primary mb-2">Receiving Bank Information:</h6>
                                     <div class="row mb-2">
-                                        <div class="col-md-4 fw-bold">Bank Name:</div>
+                                        <div class="col-md-4 fw-bold">Processing Institution:</div>
                                         <div class="col-md-8">{{ recipient.institution or 'Not specified' }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 fw-bold">Beneficiary Bank:</div>
+                                        <div class="col-md-8">{{ recipient.bank or 'Not specified' }}</div>
                                     </div>
                                     <div class="row mb-2">
                                         <div class="col-md-4 fw-bold">Account Number:</div>
