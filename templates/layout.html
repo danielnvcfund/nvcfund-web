@@ -297,7 +297,7 @@
                     {% endif %}
                     
                     <!-- Admin dropdown for admins only -->
-                    {% if current_user.is_authenticated and current_user.role.value == 'admin' %}
+                    {% if current_user.is_authenticated and (current_user.role.value == 'admin' or current_user.role.value == 'ADMIN' or current_user.role.value == 'HEAD_ADMIN') %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle bg-danger bg-opacity-25 rounded px-2" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-cog me-1"></i> Admin
@@ -320,7 +320,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('web.main.index') }}">
+                                <a class="dropdown-item" href="{{ url_for('admin_tools.financial_institutions_tool') }}">
                                     <i class="fas fa-landmark me-1"></i> Financial Institutions
                                 </a>
                             </li>
