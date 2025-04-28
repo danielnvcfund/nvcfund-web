@@ -631,17 +631,26 @@ def download_swift_pdf(transaction_id):
             <meta charset="UTF-8">
             <title>SWIFT {message_type} - {transaction.transaction_id}</title>
             <style>
-                body {{ font-family: Arial, sans-serif; margin: 20px; }}
-                .header {{ text-align: center; margin-bottom: 30px; }}
-                .header h1 {{ color: #333366; }}
-                .logo {{ text-align: center; margin-bottom: 20px; }}
-                .swift-box {{ border: 1px solid #ccc; padding: 15px; margin-bottom: 30px; 
-                           font-family: 'Courier New', monospace; white-space: pre-wrap; }}
-                .details {{ margin-bottom: 30px; }}
-                .details h2 {{ color: #333366; font-size: 18px; margin-bottom: 10px; }}
-                .detail-row {{ margin-bottom: 10px; }}
-                .detail-label {{ font-weight: bold; width: 180px; display: inline-block; }}
-                .footer {{ text-align: center; font-size: 12px; color: #666; margin-top: 30px; }}
+                @page {{ size: letter portrait; margin: 1cm; }}
+                body {{ font-family: Arial, sans-serif; margin: 15px; font-size: 10px; line-height: 1.3; }}
+                .header {{ text-align: center; margin-bottom: 15px; }}
+                .header h1 {{ color: #333366; font-size: 16px; margin-bottom: 5px; }}
+                .header p {{ margin-top: 0; }}
+                .logo {{ text-align: center; margin-bottom: 10px; }}
+                .swift-box {{ 
+                    border: 1px solid #ccc; 
+                    padding: 10px; 
+                    margin-bottom: 15px; 
+                    font-family: 'Courier New', monospace; 
+                    white-space: pre-wrap;
+                    font-size: 9px;
+                    line-height: 1.2;
+                }}
+                .details {{ margin-bottom: 15px; }}
+                .details h2 {{ color: #333366; font-size: 14px; margin-bottom: 5px; margin-top: 10px; }}
+                .detail-row {{ margin-bottom: 3px; }}
+                .detail-label {{ font-weight: bold; width: 150px; display: inline-block; }}
+                .footer {{ text-align: center; font-size: 8px; color: #666; margin-top: 15px; border-top: 1px solid #eee; padding-top: 5px; }}
             </style>
         </head>
         <body>
