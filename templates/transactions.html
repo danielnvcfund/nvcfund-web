@@ -99,9 +99,20 @@
                                 </td>
                                 <td>{{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                                 <td>
-                                    <a href="{{ url_for('web.main.transaction_details', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('web.main.transaction_details', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        
+                                        {% if tx.status.value == 'pending' %}
+                                        <a href="{{ url_for('web.main.edit_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('web.main.cancel_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
                                     
                                     {% if is_admin and tx.status.value != 'completed' and tx.status.value != 'refunded' %}
                                     <div class="btn-group dropdown ms-1">
