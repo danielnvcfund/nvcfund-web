@@ -87,7 +87,11 @@ def create_app():
     # Add custom filters
     from utils import format_currency, format_transaction_type
     app.jinja_env.filters['format_currency'] = lambda amount, currency='USD': format_currency(amount, currency)
-    app.jinja_env.filters['format_transaction_type'] = format_transaction_type
+    
+    # Register format_transaction_type as a template filter
+    @app.template_filter('format_transaction_type')
+    def format_transaction_type_filter(transaction_type):
+        return format_transaction_type(transaction_type)
 
     # Set debug mode to True
     app.config['DEBUG'] = True

@@ -138,7 +138,11 @@
         </div>
         
         <div class="title">
-            {{ format_transaction_type(transaction.transaction_type) }}
+            {% if transaction.transaction_type.value == 'rtgs_transfer' %}
+                Real Time Gross Settlement (RTGS) Transaction
+            {% else %}
+                {{ transaction.transaction_type.value|replace('_', ' ')|title }}
+            {% endif %}
             <span class="status status-{{ transaction.status.value }}">{{ transaction.status.value|upper }}</span>
         </div>
         
@@ -150,7 +154,13 @@
             </div>
             <div class="info-row">
                 <div class="info-label">Type:</div>
-                <div class="info-value">{{ format_transaction_type(transaction.transaction_type) }}</div>
+                <div class="info-value">
+                    {% if transaction.transaction_type.value == 'rtgs_transfer' %}
+                        Real Time Gross Settlement (RTGS) Transaction
+                    {% else %}
+                        {{ transaction.transaction_type.value|replace('_', ' ')|title }}
+                    {% endif %}
+                </div>
             </div>
             <div class="info-row">
                 <div class="info-label">Amount:</div>
