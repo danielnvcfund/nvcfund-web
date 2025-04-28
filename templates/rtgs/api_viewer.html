@@ -173,6 +173,23 @@
                     
                     <div class="toolbar">
                         <div class="d-flex align-items-center">
+                            <div class="dropdown me-3">
+                                <button class="btn btn-outline-danger dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-file-export me-1"></i> Export Options
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('rtgs.download_rtgs_pdf', transaction_id=transaction.transaction_id) }}" target="_blank">
+                                            <i class="fas fa-file-pdf me-1"></i> Download PDF
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('rtgs.api_rtgs_status', transaction_id=transaction.transaction_id) }}" target="_blank">
+                                            <i class="fas fa-code me-1"></i> Raw JSON Response
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                             <button id="copy-btn" class="btn btn-outline-primary me-3">
                                 <i class="fas fa-copy me-1"></i> Copy JSON
                             </button>
