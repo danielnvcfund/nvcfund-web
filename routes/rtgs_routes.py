@@ -95,6 +95,7 @@ def new_transfer():
             currency = request.form.get('currency', 'USD')
             beneficiary_account = request.form.get('beneficiary_account', '')
             beneficiary_name = request.form.get('beneficiary_name', '')
+            beneficiary_bank = request.form.get('beneficiary_bank', '')
             purpose_code = request.form.get('purpose_code', '')
             description = request.form.get('description', '')
             
@@ -107,8 +108,8 @@ def new_transfer():
                 flash('Amount must be greater than zero', 'danger')
                 return redirect(url_for('rtgs.new_transfer'))
             
-            if not beneficiary_account or not beneficiary_name:
-                flash('Beneficiary account and name are required', 'danger')
+            if not beneficiary_account or not beneficiary_name or not beneficiary_bank:
+                flash('Beneficiary name, bank name, and account number are required', 'danger')
                 return redirect(url_for('rtgs.new_transfer'))
             
             # Get institution

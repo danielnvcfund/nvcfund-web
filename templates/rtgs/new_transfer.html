@@ -60,6 +60,13 @@
                                 <div class="mb-3">
                                     <label for="beneficiary_name" class="form-label">Beneficiary Name</label>
                                     <input type="text" class="form-control" id="beneficiary_name" name="beneficiary_name" required>
+                                    <div class="form-text">The name of the individual or organization receiving the funds</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="beneficiary_bank" class="form-label">Beneficiary Bank Name</label>
+                                    <input type="text" class="form-control" id="beneficiary_bank" name="beneficiary_bank" required>
+                                    <div class="form-text">The commercial bank where the beneficiary holds their account (e.g., TD Canada Trust)</div>
                                 </div>
                                 
                                 <div class="mb-3">
@@ -112,6 +119,7 @@ Authorization: Bearer YOUR_API_KEY
   "amount": 5000000.00,
   "currency": "USD",
   "beneficiary_name": "ACME Corporation",
+  "beneficiary_bank": "TD Canada Trust",
   "beneficiary_account": "123456789",
   "purpose_code": "TREA",
   "description": "Treasury payment"
@@ -138,10 +146,11 @@ Authorization: Bearer YOUR_API_KEY
             }
             
             const beneficiary = document.getElementById('beneficiary_name').value;
+            const bank = document.getElementById('beneficiary_bank').value;
             const account = document.getElementById('beneficiary_account').value;
-            if (!beneficiary.trim() || !account.trim()) {
+            if (!beneficiary.trim() || !account.trim() || !bank.trim()) {
                 event.preventDefault();
-                alert('Beneficiary name and account number are required');
+                alert('Beneficiary name, bank name, and account number are required');
                 return false;
             }
             
