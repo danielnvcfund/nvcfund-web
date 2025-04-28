@@ -134,12 +134,22 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                <button class="btn btn-sm btn-info view-details-btn" data-transaction-id="{{ tx_data.transaction.transaction_id }}">
-                                                    <i class="fas fa-eye me-1"></i>Details
-                                                </button>
-                                                <a href="{{ url_for('rtgs.check_status', transaction_id=tx_data.transaction.transaction_id) }}" class="btn btn-sm btn-secondary" target="_blank">
-                                                    <i class="fas fa-search me-1"></i>API
-                                                </a>
+                                                <div class="btn-group">
+                                                    <button class="btn btn-sm btn-info view-details-btn" data-transaction-id="{{ tx_data.transaction.transaction_id }}" title="View Details">
+                                                        <i class="fas fa-eye me-1"></i>View
+                                                    </button>
+                                                    {% if tx_data.transaction.status.value == 'PENDING' %}
+                                                        <a href="{{ url_for('rtgs.edit_transfer', transaction_id=tx_data.transaction.transaction_id) }}" class="btn btn-sm btn-success" title="Edit Transaction">
+                                                            <i class="fas fa-edit me-1"></i>Edit
+                                                        </a>
+                                                        <a href="{{ url_for('rtgs.cancel_transfer', transaction_id=tx_data.transaction.transaction_id) }}" class="btn btn-sm btn-danger" title="Cancel Transaction">
+                                                            <i class="fas fa-times me-1"></i>Cancel
+                                                        </a>
+                                                    {% endif %}
+                                                    <a href="{{ url_for('rtgs.check_status', transaction_id=tx_data.transaction.transaction_id) }}" class="btn btn-sm btn-secondary" target="_blank" title="Check API Status">
+                                                        <i class="fas fa-search me-1"></i>API
+                                                    </a>
+                                                </div>
                                             </td>
                                         </tr>
                                         {% else %}
