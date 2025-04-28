@@ -27,7 +27,7 @@
                     </a>
                 {% endif %}
             {% endif %}
-            <a href="{{ url_for('web.main.transactions') }}" class="btn btn-outline-primary">
+            <a href="{{ url_for('main.transactions') }}" class="btn btn-outline-primary">
                 <i class="fas fa-arrow-left me-1"></i> Back to Transactions
             </a>
         </div>
@@ -155,7 +155,7 @@
                     <i class="fas fa-university me-2"></i> <strong>Bank Transfer:</strong> 
                     <span>Complete this NVC Global payment by providing bank account details</span>
                 </div>
-                <a href="{{ url_for('web.main.bank_transfer_form', transaction_id=transaction.transaction_id) }}" class="btn btn-primary">
+                <a href="{{ url_for('main.bank_transfer_form', transaction_id=transaction.transaction_id) }}" class="btn btn-primary">
                     <i class="fas fa-money-check-alt me-2"></i> Complete Bank Transfer
                 </a>
             </div>
