@@ -140,7 +140,7 @@
                     <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Transaction API Response</h5>
                     <span class="badge px-3 py-2 
                         {% if transaction.status.value == 'COMPLETED' %}bg-success
-                        {% elif transaction.status.value == 'PENDING' %}bg-warning text-dark
+                        {% elif transaction.status.value == 'PENDING' %}bg-primary text-white
                         {% elif transaction.status.value == 'CANCELLED' %}bg-secondary
                         {% elif transaction.status.value == 'FAILED' %}bg-danger
                         {% else %}bg-info{% endif %}">
