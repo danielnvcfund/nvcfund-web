@@ -10,7 +10,17 @@ from models import FinancialInstitution, FinancialInstitutionType
 from blockchain_utils import generate_ethereum_account
 
 def add_central_banks():
-    """Add the Federal Reserve and Bank of China to the RTGS-enabled institutions"""
+    """Add major central banks and international financial institutions to the RTGS-enabled institutions
+    
+    Institutions added:
+    - Federal Reserve Bank of the United States
+    - Bank of China
+    - United States Department of the Treasury
+    - European Central Bank 
+    - World Bank
+    - International Monetary Fund (IMF)
+    - Bank for International Settlements (BIS)
+    """
     # Use Flask application context
     with app.app_context():
         # Define the banks to add
@@ -41,6 +51,46 @@ def add_central_banks():
                 "swift_code": "TREAS33",  # Treasury Department's SWIFT code
                 "country": "United States",
                 "rtgs_system": "Fedwire Funds Service",  # Uses Federal Reserve's Fedwire
+                "rtgs_enabled": True,
+                "s2s_enabled": True,
+                "is_active": True
+            },
+            {
+                "name": "European Central Bank",
+                "institution_type": FinancialInstitutionType.CENTRAL_BANK,
+                "swift_code": "ECBFDEFFXXX",
+                "country": "European Union",
+                "rtgs_system": "TARGET2",  # Trans-European Automated Real-time Gross Settlement Express Transfer System
+                "rtgs_enabled": True,
+                "s2s_enabled": True,
+                "is_active": True
+            },
+            {
+                "name": "World Bank",
+                "institution_type": FinancialInstitutionType.OTHER,
+                "swift_code": "IBRDUS33",
+                "country": "International",
+                "rtgs_system": "IBRD Funds Transfer System",
+                "rtgs_enabled": True,
+                "s2s_enabled": True,
+                "is_active": True
+            },
+            {
+                "name": "International Monetary Fund",
+                "institution_type": FinancialInstitutionType.OTHER,
+                "swift_code": "IMFDUS33",
+                "country": "International",
+                "rtgs_system": "IMF Funding System",
+                "rtgs_enabled": True,
+                "s2s_enabled": True,
+                "is_active": True
+            },
+            {
+                "name": "Bank for International Settlements",
+                "institution_type": FinancialInstitutionType.OTHER,
+                "swift_code": "BISBCHBB",
+                "country": "International/Switzerland",
+                "rtgs_system": "BIS Correspondent Banking Services",
                 "rtgs_enabled": True,
                 "s2s_enabled": True,
                 "is_active": True
