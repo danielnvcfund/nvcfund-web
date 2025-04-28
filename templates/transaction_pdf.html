@@ -138,7 +138,7 @@
         </div>
         
         <div class="title">
-            {{ transaction.transaction_type.value|capitalize }} Transaction
+            {{ format_transaction_type(transaction.transaction_type) }}
             <span class="status status-{{ transaction.status.value }}">{{ transaction.status.value|upper }}</span>
         </div>
         
@@ -150,7 +150,7 @@
             </div>
             <div class="info-row">
                 <div class="info-label">Type:</div>
-                <div class="info-value">{{ transaction.transaction_type.value|capitalize }}</div>
+                <div class="info-value">{{ format_transaction_type(transaction.transaction_type) }}</div>
             </div>
             <div class="info-row">
                 <div class="info-label">Amount:</div>
