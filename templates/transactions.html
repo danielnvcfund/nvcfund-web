@@ -105,10 +105,10 @@
                                         </a>
                                         
                                         {% if tx.status.value == 'pending' %}
-                                        <a href="{{ url_for('web.main.edit_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-success">
+                                        <a href="{{ url_for('main.edit_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-success">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a href="{{ url_for('web.main.cancel_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-danger">
+                                        <a href="{{ url_for('main.cancel_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-danger">
                                             <i class="fas fa-times"></i>
                                         </a>
                                         {% endif %}
