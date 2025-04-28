@@ -80,13 +80,7 @@
                             {% for tx in transactions %}
                             <tr id="transaction-{{ tx.transaction_id }}" class="transaction-row">
                                 <td><a href="{{ url_for('web.main.transaction_details', transaction_id=tx.transaction_id) }}">{{ tx.transaction_id[:8] }}...</a></td>
-                                <td>
-                                    {% if tx.transaction_type.value == 'rtgs_transfer' %}
-                                        Real Time Gross Settlement (RTGS) Transaction
-                                    {% else %}
-                                        {{ tx.transaction_type.value|replace('_', ' ')|title }}
-                                    {% endif %}
-                                </td>
+                                <td>{{ tx.transaction_type | format_transaction_type }}</td>
                                 <td>{{ tx.amount|format_currency(tx.currency) }}</td>
                                 <td>
                                     {% if tx.status.value == 'completed' %}
