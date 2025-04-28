@@ -20,6 +20,7 @@ def add_central_banks():
     - World Bank
     - International Monetary Fund (IMF)
     - Bank for International Settlements (BIS)
+    - African Development Bank (AfDB)
     """
     # Use Flask application context
     with app.app_context():
@@ -91,6 +92,16 @@ def add_central_banks():
                 "swift_code": "BISBCHBB",
                 "country": "International/Switzerland",
                 "rtgs_system": "BIS Correspondent Banking Services",
+                "rtgs_enabled": True,
+                "s2s_enabled": True,
+                "is_active": True
+            },
+            {
+                "name": "African Development Bank",
+                "institution_type": FinancialInstitutionType.OTHER,
+                "swift_code": "AFDBCIAC",
+                "country": "Pan-African",
+                "rtgs_system": "AfDB Regional Payment System",
                 "rtgs_enabled": True,
                 "s2s_enabled": True,
                 "is_active": True
