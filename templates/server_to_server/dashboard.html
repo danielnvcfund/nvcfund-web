@@ -39,7 +39,7 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card bg-warning mb-3 text-white">
+                            <div class="card bg-primary mb-3 text-white">
                                 <div class="card-body text-center">
                                     <h5 class="card-title">Pending</h5>
                                     <h2 class="display-4">{{ pending_count }}</h2>
@@ -123,7 +123,7 @@
                                                 {% if tx.status.value == 'COMPLETED' %}
                                                 <span class="badge bg-success">{{ tx.status.value }}</span>
                                                 {% elif tx.status.value == 'PENDING' %}
-                                                <span class="badge bg-warning">{{ tx.status.value }}</span>
+                                                <span class="badge bg-primary">{{ tx.status.value }}</span>
                                                 {% elif tx.status.value == 'SCHEDULED' %}
                                                 <span class="badge bg-info">{{ tx.status.value }}</span>
                                                 {% elif tx.status.value == 'FAILED' %}
