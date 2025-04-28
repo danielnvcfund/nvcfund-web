@@ -337,6 +337,14 @@ def add_institution():
         metadata = {}
         if country:
             metadata["country"] = country
+            
+        # Get RTGS system information
+        rtgs_system = request.form.get('rtgs_system', '')
+        if rtgs_system:
+            metadata["rtgs_system"] = rtgs_system
+        
+        # Add timestamp
+        metadata["added_at"] = datetime.datetime.utcnow().isoformat()
         
         # Add SWIFT info if available
         if swift_code:

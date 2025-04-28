@@ -34,6 +34,16 @@ def add_central_banks():
                 "rtgs_enabled": True,
                 "s2s_enabled": True,
                 "is_active": True
+            },
+            {
+                "name": "United States Department of the Treasury",
+                "institution_type": FinancialInstitutionType.OTHER,
+                "swift_code": "TREAS33",  # Treasury Department's SWIFT code
+                "country": "United States",
+                "rtgs_system": "Fedwire Funds Service",  # Uses Federal Reserve's Fedwire
+                "rtgs_enabled": True,
+                "s2s_enabled": True,
+                "is_active": True
             }
         ]
 
