@@ -146,9 +146,28 @@
                                                             <i class="fas fa-times me-1"></i>Cancel
                                                         </a>
                                                     {% endif %}
-                                                    <a href="{{ url_for('rtgs.check_status', transaction_id=tx_data.transaction.transaction_id) }}" class="btn btn-sm btn-secondary" target="_blank" title="Check API Status">
-                                                        <i class="fas fa-search me-1"></i>API
-                                                    </a>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="apiDropdown{{ tx_data.transaction.transaction_id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <i class="fas fa-search me-1"></i>API
+                                                        </button>
+                                                        <ul class="dropdown-menu" aria-labelledby="apiDropdown{{ tx_data.transaction.transaction_id }}">
+                                                            <li>
+                                                                <a class="dropdown-item" href="{{ url_for('rtgs.check_status', transaction_id=tx_data.transaction.transaction_id) }}" target="_blank">
+                                                                    <i class="fas fa-code me-1"></i>JSON Response
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a class="dropdown-item" href="{{ url_for('rtgs.check_status', transaction_id=tx_data.transaction.transaction_id, format='html') }}" target="_blank">
+                                                                    <i class="fas fa-eye me-1"></i>Enhanced Viewer
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a class="dropdown-item" href="{{ url_for('rtgs.check_status', transaction_id=tx_data.transaction.transaction_id, format='pdf') }}" target="_blank">
+                                                                    <i class="fas fa-file-pdf me-1"></i>Download PDF
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>

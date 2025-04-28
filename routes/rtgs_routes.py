@@ -404,7 +404,8 @@ def check_status(transaction_id):
         # Get recipient info from metadata
         metadata = get_transaction_metadata(transaction)
         
-        return jsonify({
+        # Format response json
+        response_data = {
             'success': True,
             'transaction_id': transaction.transaction_id,
             'status': transaction.status.value,
@@ -416,7 +417,130 @@ def check_status(transaction_id):
             'recipient_account': metadata.get('beneficiary_account', ''),
             'recipient_bank_name': metadata.get('recipient_bank_name', ''),
             'metadata': metadata
-        })
+        }
+        
+        # Check if HTML format is requested
+        format_param = request.args.get('format', 'json')
+        if format_param == 'html':
+            # Render the enhanced viewer template with the transaction data
+            return render_template(
+                'rtgs/api_viewer.html',
+                transaction=transaction,
+                metadata=metadata,
+                json_data=json.dumps(response_data, indent=2)
+            )
+        elif format_param == 'pdf':
+            # Generate PDF of the API response
+            from weasyprint import HTML
+            import tempfile
+            
+            # Create HTML content for the PDF
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>RTGS Transaction {transaction.transaction_id}</title>
+                <style>
+                    body {{ font-family: 'Helvetica', 'Arial', sans-serif; padding: 20px; }}
+                    h1 {{ color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 10px; }}
+                    h2 {{ color: #3498db; margin-top: 20px; }}
+                    .transaction-info {{ margin-bottom: 20px; }}
+                    .json-data {{ 
+                        font-family: 'Courier New', 'Consolas', monospace; 
+                        background-color: #f8f9fa;
+                        padding: 15px;
+                        border-radius: 5px;
+                        white-space: pre-wrap;
+                        font-size: 12px;
+                        line-height: 1.4;
+                    }}
+                    .badge {{
+                        display: inline-block;
+                        padding: 5px 10px;
+                        border-radius: 4px;
+                        font-weight: bold;
+                        color: white;
+                    }}
+                    .badge-PENDING {{ background-color: #ffc107; color: #212529; }}
+                    .badge-COMPLETED {{ background-color: #28a745; }}
+                    .badge-FAILED {{ background-color: #dc3545; }}
+                    .badge-CANCELLED {{ background-color: #6c757d; }}
+                    .field-label {{ font-weight: bold; min-width: 150px; display: inline-block; }}
+                    .field-value {{ display: inline-block; }}
+                    .status-field {{ margin-bottom: 10px; }}
+                    .footer {{ 
+                        margin-top: 30px;
+                        font-size: 10px;
+                        color: #6c757d;
+                        text-align: center;
+                        border-top: 1px solid #eee;
+                        padding-top: 10px;
+                    }}
+                </style>
+            </head>
+            <body>
+                <h1>RTGS Transaction Details</h1>
+                
+                <div class="transaction-info">
+                    <div class="status-field">
+                        <span class="field-label">Status:</span>
+                        <span class="badge badge-{transaction.status.value}">{transaction.status.value}</span>
+                    </div>
+                    <div>
+                        <span class="field-label">Transaction ID:</span>
+                        <span class="field-value">{transaction.transaction_id}</span>
+                    </div>
+                    <div>
+                        <span class="field-label">Created:</span>
+                        <span class="field-value">{transaction.created_at.strftime('%Y-%m-%d %H:%M:%S')}</span>
+                    </div>
+                    <div>
+                        <span class="field-label">Amount:</span>
+                        <span class="field-value">{transaction.amount:,.2f} {transaction.currency}</span>
+                    </div>
+                    <div>
+                        <span class="field-label">Recipient:</span>
+                        <span class="field-value">{metadata.get('beneficiary_name', 'N/A')}</span>
+                    </div>
+                    <div>
+                        <span class="field-label">Recipient Bank:</span>
+                        <span class="field-value">{metadata.get('recipient_bank_name', 'N/A')}</span>
+                    </div>
+                    <div>
+                        <span class="field-label">Account Number:</span>
+                        <span class="field-value">{metadata.get('beneficiary_account', 'N/A')}</span>
+                    </div>
+                </div>
+                
+                <h2>Complete API Response</h2>
+                <pre class="json-data">{json.dumps(response_data, indent=2)}</pre>
+                
+                <div class="footer">
+                    <p>Generated on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | NVC Global RTGS System</p>
+                    <p>Page 1</p>
+                </div>
+            </body>
+            </html>
+            """
+            
+            # Create PDF
+            pdf_file = tempfile.NamedTemporaryFile(suffix='.pdf')
+            HTML(string=html_content).write_pdf(pdf_file.name)
+            
+            # Return the PDF as a response
+            with open(pdf_file.name, 'rb') as f:
+                binary_pdf = f.read()
+            
+            response = current_app.response_class(
+                binary_pdf,
+                mimetype='application/pdf',
+                headers={'Content-Disposition': f'attachment; filename=rtgs-transaction-{transaction.transaction_id}.pdf'}
+            )
+            return response
+        
+        # Default: Return JSON response
+        return jsonify(response_data)
         
     except Exception as e:
         current_app.logger.error(f"Error checking RTGS transfer status: {str(e)}")
