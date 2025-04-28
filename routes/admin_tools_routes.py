@@ -118,11 +118,11 @@ def add_financial_institution():
             swift_code=institution_data.get('swift_code'),
             institution_type=FinancialInstitutionType[institution_data.get('type', 'BANK')],
             rtgs_enabled=True,
-            rtgs_system=institution_data.get('rtgs_system'),
             ethereum_address=institution_data.get('ethereum_address', ''),
             api_endpoint=institution_data.get('api_endpoint', ''),
             metadata_json=json.dumps({
                 'country': institution_data.get('country', ''),
+                'rtgs_system': institution_data.get('rtgs_system', ''),
                 'added_on': datetime.utcnow().isoformat()
             })
         )
@@ -168,11 +168,11 @@ def add_all_financial_institutions():
                     swift_code=swift_code,
                     institution_type=FinancialInstitutionType[inst_data.get('type', 'BANK')],
                     rtgs_enabled=True,
-                    rtgs_system=inst_data.get('rtgs_system'),
                     ethereum_address=inst_data.get('ethereum_address', ''),
                     api_endpoint=inst_data.get('api_endpoint', ''),
                     metadata_json=json.dumps({
                         'country': inst_data.get('country', ''),
+                        'rtgs_system': inst_data.get('rtgs_system', ''),
                         'added_on': datetime.utcnow().isoformat()
                     })
                 )
