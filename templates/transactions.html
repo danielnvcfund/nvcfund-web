@@ -100,24 +100,24 @@
                                 <td>{{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                                 <td>
                                     <div class="btn-group">
-                                        <a href="{{ url_for('web.main.transaction_details', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
+                                        <a href="{{ url_for('web.main.transaction_details', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                            <i class="fas fa-eye"></i> View
                                         </a>
                                         
                                         {% if tx.status.value == 'pending' %}
                                             {% if tx.transaction_type.value == 'rtgs_transfer' %}
-                                                <a href="{{ url_for('rtgs.edit_transfer', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-success">
-                                                    <i class="fas fa-edit"></i>
+                                                <a href="{{ url_for('rtgs.edit_transfer', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-success" title="Edit Transaction">
+                                                    <i class="fas fa-edit"></i> Edit
                                                 </a>
-                                                <a href="{{ url_for('rtgs.cancel_transfer', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-danger">
-                                                    <i class="fas fa-times"></i>
+                                                <a href="{{ url_for('rtgs.cancel_transfer', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-danger" title="Cancel Transaction">
+                                                    <i class="fas fa-times"></i> Cancel
                                                 </a>
                                             {% else %}
-                                                <a href="{{ url_for('web.main.edit_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-success">
-                                                    <i class="fas fa-edit"></i>
+                                                <a href="{{ url_for('web.main.edit_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-success" title="Edit Transaction">
+                                                    <i class="fas fa-edit"></i> Edit
                                                 </a>
-                                                <a href="{{ url_for('web.main.cancel_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-danger">
-                                                    <i class="fas fa-times"></i>
+                                                <a href="{{ url_for('web.main.cancel_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-danger" title="Cancel Transaction">
+                                                    <i class="fas fa-times"></i> Cancel
                                                 </a>
                                             {% endif %}
                                         {% endif %}
