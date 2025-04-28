@@ -4,72 +4,76 @@
     <meta charset="utf-8">
     <title>Transaction Receipt - {{ transaction.transaction_id }}</title>
     <style>
+        @page {
+            size: letter portrait;
+            margin: 1cm;
+        }
         body {
             font-family: Arial, sans-serif;
-            font-size: 12px;
+            font-size: 10px;
             color: #333;
-            line-height: 1.5;
+            line-height: 1.3;
             margin: 0;
             padding: 0;
         }
         .container {
             width: 100%;
-            max-width: 800px;
+            max-width: 750px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 10px;
         }
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
         }
         .logo {
-            font-size: 28px;
+            font-size: 20px;
             font-weight: bold;
             color: #002a5a;
         }
         .title {
-            font-size: 24px;
-            margin: 20px 0;
+            font-size: 16px;
+            margin: 10px 0;
             color: #002a5a;
         }
         .subtitle {
-            font-size: 14px;
+            font-size: 12px;
             color: #666;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
         .section {
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 5px;
+            padding: 10px;
+            border-radius: 3px;
         }
         .section-title {
-            font-size: 16px;
+            font-size: 12px;
             font-weight: bold;
             color: #002a5a;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             border-bottom: 1px solid #ddd;
-            padding-bottom: 5px;
+            padding-bottom: 3px;
         }
         .info-row {
             display: flex;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
         }
         .info-label {
             font-weight: bold;
-            width: 150px;
+            width: 120px;
         }
         .info-value {
             flex: 1;
         }
         .status {
             display: inline-block;
-            padding: 5px 10px;
-            border-radius: 3px;
+            padding: 3px 6px;
+            border-radius: 2px;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 10px;
             text-transform: uppercase;
         }
         .status-pending {
@@ -89,12 +93,15 @@
             color: #721c24;
         }
         .footer {
-            margin-top: 30px;
+            margin-top: 15px;
             text-align: center;
-            font-size: 10px;
+            font-size: 8px;
             color: #777;
             border-top: 1px solid #ddd;
-            padding-top: 10px;
+            padding-top: 5px;
+            position: absolute;
+            bottom: 10px;
+            width: 95%;
         }
         table {
             width: 100%;
@@ -104,7 +111,7 @@
             border: 1px solid #ddd;
         }
         th, td {
-            padding: 8px;
+            padding: 5px;
             text-align: left;
         }
         th {
@@ -112,21 +119,22 @@
         }
         .amount {
             font-weight: bold;
-            font-size: 18px;
+            font-size: 14px;
         }
         .blockchain-box {
             background-color: #f8f9fa;
             border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 10px;
+            padding: 6px;
+            border-radius: 3px;
+            margin-top: 5px;
             font-family: Consolas, monospace;
+            font-size: 9px;
             overflow-wrap: break-word;
             word-wrap: break-word;
         }
         .qr-section {
             text-align: center;
-            margin: 20px 0;
+            margin: 10px 0;
         }
     </style>
 </head>

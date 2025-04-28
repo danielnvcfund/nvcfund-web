@@ -442,40 +442,42 @@ def check_status(transaction_id):
                 <meta charset="UTF-8">
                 <title>RTGS Transaction {transaction.transaction_id}</title>
                 <style>
-                    body {{ font-family: 'Helvetica', 'Arial', sans-serif; padding: 20px; }}
-                    h1 {{ color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 10px; }}
-                    h2 {{ color: #3498db; margin-top: 20px; }}
-                    .transaction-info {{ margin-bottom: 20px; }}
+                    @page {{ size: letter portrait; margin: 1cm; }}
+                    body {{ font-family: 'Helvetica', 'Arial', sans-serif; padding: 15px; font-size: 10px; }}
+                    h1 {{ color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 5px; font-size: 16px; margin-top: 0; }}
+                    h2 {{ color: #3498db; margin-top: 10px; font-size: 14px; }}
+                    .transaction-info {{ margin-bottom: 10px; }}
                     .json-data {{ 
                         font-family: 'Courier New', 'Consolas', monospace; 
                         background-color: #f8f9fa;
-                        padding: 15px;
-                        border-radius: 5px;
+                        padding: 8px;
+                        border-radius: 4px;
                         white-space: pre-wrap;
-                        font-size: 12px;
-                        line-height: 1.4;
+                        font-size: 9px;
+                        line-height: 1.2;
                     }}
                     .badge {{
                         display: inline-block;
-                        padding: 5px 10px;
-                        border-radius: 4px;
+                        padding: 2px 5px;
+                        border-radius: 3px;
                         font-weight: bold;
                         color: white;
+                        font-size: 9px;
                     }}
                     .badge-PENDING {{ background-color: #ffc107; color: #212529; }}
                     .badge-COMPLETED {{ background-color: #28a745; }}
                     .badge-FAILED {{ background-color: #dc3545; }}
                     .badge-CANCELLED {{ background-color: #6c757d; }}
-                    .field-label {{ font-weight: bold; min-width: 150px; display: inline-block; }}
+                    .field-label {{ font-weight: bold; min-width: 120px; display: inline-block; }}
                     .field-value {{ display: inline-block; }}
-                    .status-field {{ margin-bottom: 10px; }}
+                    .status-field {{ margin-bottom: 5px; }}
                     .footer {{ 
-                        margin-top: 30px;
-                        font-size: 10px;
+                        margin-top: 15px;
+                        font-size: 8px;
                         color: #6c757d;
                         text-align: center;
                         border-top: 1px solid #eee;
-                        padding-top: 10px;
+                        padding-top: 5px;
                     }}
                 </style>
             </head>
