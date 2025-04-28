@@ -113,10 +113,12 @@ def add_financial_institution():
             return redirect(url_for('admin_tools.financial_institutions_tool'))
         
         # Create the new institution
+        # Get the institution type, defaulting to 'BANK' if not specified
+        # Note that we do not need to access .value here as the enum itself is used
         new_institution = FinancialInstitution(
             name=institution_data.get('name'),
             swift_code=institution_data.get('swift_code'),
-            institution_type=getattr(FinancialInstitutionType, institution_data.get('type', 'BANK')).value,
+            institution_type=getattr(FinancialInstitutionType, institution_data.get('type', 'BANK')),
             rtgs_enabled=True,
             ethereum_address=institution_data.get('ethereum_address', ''),
             api_endpoint=institution_data.get('api_endpoint', ''),
@@ -163,10 +165,12 @@ def add_all_financial_institutions():
             
             try:
                 # Create the new institution
+                # Get the institution type, defaulting to 'BANK' if not specified
+                # Note that we do not need to access .value here as the enum itself is used
                 new_institution = FinancialInstitution(
                     name=inst_data.get('name'),
                     swift_code=swift_code,
-                    institution_type=getattr(FinancialInstitutionType, inst_data.get('type', 'BANK')).value,
+                    institution_type=getattr(FinancialInstitutionType, inst_data.get('type', 'BANK')),
                     rtgs_enabled=True,
                     ethereum_address=inst_data.get('ethereum_address', ''),
                     api_endpoint=inst_data.get('api_endpoint', ''),
