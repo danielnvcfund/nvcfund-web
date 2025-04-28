@@ -116,7 +116,7 @@ def add_financial_institution():
         new_institution = FinancialInstitution(
             name=institution_data.get('name'),
             swift_code=institution_data.get('swift_code'),
-            institution_type=getattr(FinancialInstitutionType, institution_data.get('type', 'BANK')),
+            institution_type=getattr(FinancialInstitutionType, institution_data.get('type', 'BANK')).value,
             rtgs_enabled=True,
             ethereum_address=institution_data.get('ethereum_address', ''),
             api_endpoint=institution_data.get('api_endpoint', ''),
@@ -166,7 +166,7 @@ def add_all_financial_institutions():
                 new_institution = FinancialInstitution(
                     name=inst_data.get('name'),
                     swift_code=swift_code,
-                    institution_type=getattr(FinancialInstitutionType, inst_data.get('type', 'BANK')),
+                    institution_type=getattr(FinancialInstitutionType, inst_data.get('type', 'BANK')).value,
                     rtgs_enabled=True,
                     ethereum_address=inst_data.get('ethereum_address', ''),
                     api_endpoint=inst_data.get('api_endpoint', ''),
