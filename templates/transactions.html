@@ -105,12 +105,21 @@
                                         </a>
                                         
                                         {% if tx.status.value == 'pending' %}
-                                        <a href="{{ url_for('web.main.edit_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-success">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{{ url_for('web.main.cancel_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-danger">
-                                            <i class="fas fa-times"></i>
-                                        </a>
+                                            {% if tx.transaction_type.value == 'rtgs_transfer' %}
+                                                <a href="{{ url_for('rtgs.edit_transfer', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-success">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{{ url_for('rtgs.cancel_transfer', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            {% else %}
+                                                <a href="{{ url_for('web.main.edit_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-success">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{{ url_for('web.main.cancel_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            {% endif %}
                                         {% endif %}
                                     </div>
                                     
