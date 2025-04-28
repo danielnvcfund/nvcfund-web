@@ -1799,7 +1799,7 @@ def process_bank_transfer():
             return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
             
         try:
-            # Update transaction metadata with enhanced bank details
+            # Update transaction metadata with bank details
             bank_details = {
                 'recipient': {
                     'name': form.recipient_name.data,
@@ -1808,39 +1808,20 @@ def process_bank_transfer():
                     'city': form.recipient_city.data,
                     'state': form.recipient_state.data,
                     'zip': form.recipient_zip.data,
-                    'country': form.recipient_country.data,
-                    'phone': form.recipient_phone.data,
-                    'tax_id': form.recipient_tax_id.data,
-                    'institution_type': form.recipient_institution_type.data,
-                    'relationship': form.recipient_relationship.data
+                    'country': form.recipient_country.data
                 },
                 'bank': {
                     'name': form.bank_name.data,
                     'account_number': form.account_number.data,
                     'account_type': form.account_type.data,
-                    'account_holder': form.account_holder.data,
                     'transfer_type': form.transfer_type.data,
                     'address': form.bank_address.data,
                     'city': form.bank_city.data,
                     'state': form.bank_state.data,
-                    'country': form.bank_country.data,
-                    'branch_name': form.bank_branch_name.data,
-                    'branch_code': form.bank_branch_code.data
+                    'country': form.bank_country.data
                 },
                 'reference': form.reference.data,
-                'invoice_number': form.invoice_number.data,
-                'payment_note': form.description.data,
-                'notes_to_recipient': form.notes_to_recipient.data,
-                'notes_to_bank': form.notes_to_bank.data,
-                'compliance': {
-                    'source_of_funds': form.source_of_funds.data,
-                    'source_of_funds_detail': form.source_of_funds_detail.data,
-                    'compliance_agree': form.compliance_agree.data
-                },
-                'settlement': {
-                    'method': form.settlement_method.data,
-                    'charge_bearer': form.charge_bearer.data
-                }
+                'payment_note': form.description.data
             }
             
             # Add routing or SWIFT code based on transfer type
@@ -1869,75 +1850,48 @@ def process_bank_transfer():
             else:
                 transaction.tx_metadata_json = json.dumps({'bank_transfer': bank_details})
             
-            # Also store some recipient info in dedicated fields for better query performance
-            transaction.recipient_name = form.recipient_name.data
-            transaction.recipient_institution = form.bank_name.data
-            transaction.recipient_account = form.account_number.data
-            transaction.recipient_address = form.bank_address.data
-            transaction.recipient_country = form.bank_country.data
+            # Update transaction description
+            transaction.description = f"{transaction.description} (Bank Transfer to {form.bank_name.data})"
             
-            # Update transaction status to PROCESSING
+            # Update transaction status
             transaction.status = TransactionStatus.PROCESSING
-            transaction.updated_at = datetime.utcnow()
             
+            # Save transaction
             db.session.commit()
             
-            # Get the gateway handler for this transaction
-            gateway_handler = payment_gateways.get_gateway_handler(transaction.gateway_id)
-            if not gateway_handler:
-                flash('Unable to process this payment: payment gateway not found', 'danger')
-                return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
-            
-            # Process the bank transfer
+            # Process the bank transfer through NVC Global
             try:
-                result = gateway_handler.process_bank_transfer(transaction, bank_details)
+                # Make sure we have a valid gateway
+                if not transaction.gateway or not transaction.gateway.id:
+                    raise ValueError("No valid payment gateway found for this transaction")
+                
+                gateway_handler = get_gateway_handler(transaction.gateway.id)
+                
+                # Process the bank transfer
+                result = gateway_handler.process_bank_transfer(transaction)
+                
                 if result.get('success'):
-                    flash('Bank transfer initiated successfully. You will be notified when the transfer is completed.', 'success')
+                    flash('Bank transfer initiated successfully', 'success')
                     return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
                 else:
-                    error_message = result.get('error', 'Unknown error')
-                    flash(f'Bank transfer failed: {error_message}', 'danger')
+                    flash(f"Error processing bank transfer: {result.get('error', 'Unknown error')}", 'danger')
                     return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
             except Exception as e:
                 db.session.rollback()
-                flash(f'Error processing bank transfer: {str(e)}', 'danger')
                 logger.error(f"Error processing bank transfer: {str(e)}")
+                flash(f"Error processing bank transfer: {str(e)}", 'danger')
                 return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
-                
+        
         except Exception as e:
             db.session.rollback()
-            flash(f'Error updating transaction: {str(e)}', 'danger')
-            logger.error(f"Error updating transaction: {str(e)}")
-            return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
-    else:
-        if request.method == 'POST':
-            # Handle form validation errors
-            error_messages = []
-            for field, errors in form.errors.items():
-                field_label = getattr(form, field).label.text if hasattr(getattr(form, field), 'label') else field
-                error_messages.append(f"{field_label}: {', '.join(errors)}")
-            
-            error_message = "<br>".join(error_messages)
-            flash(f'Form validation failed:<br>{error_message}', 'danger')
+            logger.error(f"Error updating transaction with bank details: {str(e)}")
+            flash(f"Error updating transaction with bank details: {str(e)}", 'danger')
     
-    # If form validation fails or method is GET, try to load saved form data
-    if transaction_id:
-        try:
-            form_data = FormData.get_latest_form_data(current_user.id, transaction_id, 'bank_transfer')
-            if form_data and form_data.form_data:
-                form.populate_from_stored_data(form_data.form_data)
-        except Exception as e:
-            logger.error(f"Error loading saved form data: {str(e)}")
+    # If there were form validation errors
+    if form.errors:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
     
-    # Get transaction information for the form
-    if transaction_id:
-        transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
-        if transaction and transaction.user_id == current_user.id:
-            amount = transaction.amount
-            description = transaction.description
-            date = transaction.created_at.strftime('%Y-%m-%d %H:%M:%S')
-            return render_template('bank_transfer_form.html', form=form, transaction_id=transaction_id, amount=amount, description=description, date=date)
-    
-    # Fallback to dashboard if no transaction_id or transaction not found
-    flash('Transaction not found', 'danger')
-    return redirect(url_for('web.main.dashboard'))    # If the form validation failed, redirect to dashboard
+    # If the form validation failed, redirect to dashboard
+    return redirect(url_for('web.main.dashboard'))
