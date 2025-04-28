@@ -131,8 +131,10 @@ def new_transfer():
                 'settlement_type': 'RTGS',
                 'priority': 'HIGH',
                 'beneficiary_name': beneficiary_name,
+                'beneficiary_bank': beneficiary_bank,
                 'beneficiary_account': beneficiary_account,
-                'recipient_bank_name': institution.name,
+                'recipient_bank_name': beneficiary_bank,  # Use beneficiary's bank name
+                'recipient_processing_institution': institution.name,  # The RTGS institution
                 'recipient_bank_swift': institution.swift_code or 'Unknown'
             }
             
@@ -147,8 +149,9 @@ def new_transfer():
                 institution_id=institution.id,
                 # Store recipient details in dedicated fields
                 recipient_name=beneficiary_name,
-                recipient_institution=institution.name,
+                recipient_institution=institution.name,  # The RTGS/clearing institution
                 recipient_account=beneficiary_account,
+                recipient_bank=beneficiary_bank,  # Store the actual bank name where the account is held
                 tx_metadata_json=json.dumps(metadata)
             )
             
@@ -191,7 +194,7 @@ def api_transfer():
         data = request.json
         
         # Validate request
-        required_fields = ['institution_id', 'amount', 'currency', 'beneficiary_account', 'beneficiary_name']
+        required_fields = ['institution_id', 'amount', 'currency', 'beneficiary_account', 'beneficiary_name', 'beneficiary_bank']
         for field in required_fields:
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing required field: {field}'}), 400
@@ -215,8 +218,10 @@ def api_transfer():
             'priority': data.get('priority', 'HIGH'),
             'api_initiated': True,
             'beneficiary_name': data['beneficiary_name'],
+            'beneficiary_bank': data['beneficiary_bank'],
             'beneficiary_account': data['beneficiary_account'],
-            'recipient_bank_name': institution.name,
+            'recipient_bank_name': data['beneficiary_bank'],  # Use beneficiary's bank name
+            'recipient_processing_institution': institution.name,  # The RTGS institution
             'recipient_bank_swift': institution.swift_code or 'Unknown'
         }
         
@@ -231,8 +236,9 @@ def api_transfer():
             institution_id=institution.id,
             # Store recipient details in dedicated fields
             recipient_name=data['beneficiary_name'],
-            recipient_institution=institution.name,
+            recipient_institution=institution.name,  # The RTGS/clearing institution
             recipient_account=data['beneficiary_account'],
+            recipient_bank=data['beneficiary_bank'],  # Store the actual bank name where the account is held
             recipient_country=get_institution_metadata(institution).get('country', ''),
             tx_metadata_json=json.dumps(metadata)
         )
