@@ -1957,6 +1957,10 @@ def cancel_transaction(transaction_id):
     # Special handling for RTGS transfers
     if transaction.transaction_type == TransactionType.RTGS_TRANSFER:
         return redirect(url_for('rtgs.cancel_transfer', transaction_id=transaction_id))
+        
+    # Special handling for Server-to-Server transfers
+    if transaction.transaction_type == TransactionType.SERVER_TO_SERVER:
+        return redirect(url_for('server_to_server.cancel_transfer', transaction_id=transaction_id))
     
     # Check if transaction can be canceled
     if transaction.status != TransactionStatus.PENDING:
@@ -2003,6 +2007,10 @@ def edit_transaction(transaction_id):
     # Special handling for RTGS transfers
     if transaction.transaction_type == TransactionType.RTGS_TRANSFER:
         return redirect(url_for('rtgs.edit_transfer', transaction_id=transaction_id))
+        
+    # Special handling for Server-to-Server transfers
+    if transaction.transaction_type == TransactionType.SERVER_TO_SERVER:
+        return redirect(url_for('server_to_server.edit_transfer', transaction_id=transaction_id))
     
     # Check if transaction can be edited
     if transaction.status != TransactionStatus.PENDING:

@@ -600,3 +600,125 @@ def export_transaction_pdf(transaction_id):
         current_app.logger.error(f"Error exporting transaction PDF: {str(e)}")
         flash(f'Error generating PDF: {str(e)}', 'danger')
         return redirect(url_for('server_to_server.dashboard'))
+
+
+@server_to_server_routes.route('/edit/<transaction_id>', methods=['GET', 'POST'])
+@login_required
+def edit_transfer(transaction_id):
+    """Edit a pending Server-to-Server transfer"""
+    transaction = Transaction.query.filter_by(
+        transaction_id=transaction_id,
+        transaction_type=TransactionType.SERVER_TO_SERVER
+    ).first_or_404()
+    
+    # Check permissions
+    if transaction.user_id != current_user.id and not current_user.is_admin:
+        flash('You do not have permission to edit this transaction.', 'danger')
+        return redirect(url_for('web.main.transactions'))
+    
+    # Check if transaction can be edited
+    if transaction.status != TransactionStatus.PENDING:
+        flash('Only pending transactions can be edited.', 'danger')
+        return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
+    
+    # Get institution
+    institution = FinancialInstitution.query.get(transaction.institution_id)
+    
+    # Get the current metadata
+    metadata = get_transaction_metadata(transaction)
+    
+    if request.method == 'POST':
+        try:
+            # Get common form data
+            recipient_account = request.form.get('recipient_account', '')
+            recipient_name = request.form.get('recipient_name', '')
+            recipient_bank = request.form.get('recipient_bank', '')
+            description = request.form.get('description', '')
+            
+            # Validate data
+            if not recipient_account or not recipient_name:
+                flash('Recipient name and account number are required', 'danger')
+                return redirect(url_for('server_to_server.edit_transfer', transaction_id=transaction_id))
+            
+            # Update transaction fields
+            transaction.recipient_account = recipient_account
+            transaction.recipient_name = recipient_name
+            if recipient_bank:
+                transaction.recipient_bank = recipient_bank
+            transaction.description = description
+            
+            # Update metadata - keep track of all existing metadata and only update relevant fields
+            metadata['recipient_details'] = {
+                'name': recipient_name,
+                'account': recipient_account,
+                'bank': recipient_bank
+            }
+            metadata['last_edited_at'] = datetime.datetime.utcnow().isoformat()
+            metadata['edited_by'] = current_user.username
+            
+            transaction.tx_metadata_json = json.dumps(metadata)
+            
+            db.session.commit()
+            
+            flash('Transaction has been successfully updated.', 'success')
+            return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
+            
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error updating transaction: {str(e)}")
+            flash(f'Error updating transaction: {str(e)}', 'danger')
+    
+    # Show edit form
+    return render_template('transaction/edit_transaction.html', 
+                         transaction=transaction, 
+                         metadata=metadata)
+
+
+@server_to_server_routes.route('/cancel/<transaction_id>', methods=['GET', 'POST'])
+@login_required
+def cancel_transfer(transaction_id):
+    """Cancel a pending Server-to-Server transfer"""
+    transaction = Transaction.query.filter_by(
+        transaction_id=transaction_id,
+        transaction_type=TransactionType.SERVER_TO_SERVER
+    ).first_or_404()
+    
+    # Check permissions
+    if transaction.user_id != current_user.id and not current_user.is_admin:
+        flash('You do not have permission to cancel this transaction.', 'danger')
+        return redirect(url_for('web.main.transactions'))
+    
+    # Check if transaction can be cancelled
+    if transaction.status != TransactionStatus.PENDING:
+        flash('Only pending transactions can be cancelled.', 'danger')
+        return redirect(url_for('web.main.transaction_details', transaction_id=transaction_id))
+    
+    # Get the current metadata
+    metadata = get_transaction_metadata(transaction)
+    
+    if request.method == 'POST' and request.form.get('confirm_cancel') == 'yes':
+        try:
+            # Update transaction status
+            transaction.status = TransactionStatus.CANCELLED
+            
+            # Update metadata
+            metadata['cancellation_reason'] = request.form.get('reason', 'User cancelled')
+            metadata['cancelled_at'] = datetime.datetime.utcnow().isoformat()
+            metadata['cancelled_by'] = current_user.username
+            
+            transaction.tx_metadata_json = json.dumps(metadata)
+            
+            db.session.commit()
+            
+            flash('Transaction has been successfully cancelled.', 'success')
+            return redirect(url_for('web.main.transactions'))
+            
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error cancelling transaction: {str(e)}")
+            flash(f'Error cancelling transaction: {str(e)}', 'danger')
+    
+    # Show cancel form
+    return render_template('transaction/cancel_transaction.html', 
+                         transaction=transaction, 
+                         metadata=metadata)
