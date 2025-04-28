@@ -44,7 +44,7 @@
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between">
                                         <span>Type:</span>
-                                        <span>{{ transaction.transaction_type.value|capitalize }}</span>
+                                        <span>{{ transaction.transaction_type|format_transaction_type }}</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between">
                                         <span>Amount:</span>

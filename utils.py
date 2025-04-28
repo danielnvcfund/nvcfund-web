@@ -482,7 +482,8 @@ def format_transaction_type(transaction_type):
     Returns:
         str: Formatted transaction type for display
     """
-    print(f"DEBUG: format_transaction_type called with {transaction_type}")
+    # Using a logger instead of print for debugging
+    logger.debug(f"format_transaction_type called with {transaction_type}")
     # Convert to string if it's an enum
     if hasattr(transaction_type, 'value'):
         type_value = transaction_type.value
