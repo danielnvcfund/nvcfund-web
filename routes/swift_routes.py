@@ -109,6 +109,33 @@ def new_fund_transfer():
     
     return render_template('swift_fund_transfer_form.html', form=form)
 
+@swift.route('/mt542/new', methods=['GET', 'POST'])
+@login_required
+def new_mt542():
+    """Create a new SWIFT MT542 Deliver Against Payment message"""
+    form = SwiftMT542Form()
+    
+    if form.validate_on_submit():
+        try:
+            # Create the MT542 message
+            transaction = SwiftService.create_mt542_message(
+                user_id=current_user.id,
+                receiver_institution_id=form.receiver_institution_id.data,
+                trade_date=form.trade_date.data,
+                settlement_date=form.settlement_date.data,
+                security_details=form.security_details.data,
+                quantity=form.quantity.data,
+                amount=form.amount.data,
+                currency=form.currency.data
+            )
+            
+            flash('MT542 message created successfully', 'success')
+            return redirect(url_for('web.swift.message_status', transaction_id=transaction.transaction_id))
+        except Exception as e:
+            flash(f'Error creating MT542 message: {str(e)}', 'danger')
+    
+    return render_template('swift_mt542_form.html', form=form)
+
 @swift.route('/free_format/new', methods=['GET', 'POST'])
 @login_required
 def new_free_format_message():

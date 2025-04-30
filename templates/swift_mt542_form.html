@@ -1,0 +1,70 @@
+
+{% extends "layout.html" %}
+
+{% block title %}New SWIFT MT542 Message{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
+          <li class="breadcrumb-item active">New MT542 Message</li>
+        </ol>
+      </nav>
+      
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h2 class="h4 mb-0">Create SWIFT MT542 - Deliver Against Payment</h2>
+        </div>
+        <div class="card-body">
+          <form method="POST" id="mt542-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+              <label class="form-label required">Receiving Institution</label>
+              {{ form.receiver_institution_id(class="form-select") }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label required">Trade Date</label>
+              {{ form.trade_date(class="form-control", type="date") }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label required">Settlement Date</label>
+              {{ form.settlement_date(class="form-control", type="date") }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label required">Security Details</label>
+              {{ form.security_details(class="form-control") }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label required">Quantity</label>
+              {{ form.quantity(class="form-control", type="number") }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label required">Amount</label>
+              {{ form.amount(class="form-control", type="number", step="0.01") }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label required">Currency</label>
+              {{ form.currency(class="form-select") }}
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-secondary">Back</a>
+              <button type="submit" class="btn btn-primary">Submit MT542</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
