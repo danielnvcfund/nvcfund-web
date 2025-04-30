@@ -145,8 +145,27 @@ pre {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    z-index: 1030; /* Ensure navbar is above other content */
+    z-index: 1030;
     position: relative;
+    padding-left: 0;
+}
+
+.navbar .container {
+    margin-left: 0;
+    padding-left: 1rem;
+    max-width: 100%;
+}
+
+.navbar-nav {
+    margin-left: -0.5rem;
+}
+
+.nav-item {
+    margin-right: 0.25rem;
+}
+
+.navbar-brand {
+    padding-left: 0.5rem;
 }
 
 .navbar-brand {
