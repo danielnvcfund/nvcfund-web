@@ -34,17 +34,70 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     {% if current_user.is_authenticated %}
-                    <li class="nav-item">
-                        {% if current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' %}
-                        <a class="nav-link {% if request.path == '/main/admin-dashboard' %}active fw-bold{% endif %}" href="{{ url_for('web.main.admin_dashboard') }}">
-                            <i class="fas fa-user-shield me-1"></i> Admin Dashboard
-                        </a>
-                        {% else %}
-                        <a class="nav-link {% if request.path == '/main/dashboard' %}active fw-bold{% endif %}" href="{{ url_for('web.main.dashboard') }}">
+                    <!-- Core Features -->
+                    <li class="nav-item me-2">
+                        <a class="nav-link btn btn-outline-primary {% if request.path == '/main/dashboard' %}active fw-bold{% endif %}" href="{{ url_for('web.main.dashboard') }}">
                             <i class="fas fa-tachometer-alt me-1"></i> Dashboard
                         </a>
-                        {% endif %}
                     </li>
+                    
+                    <!-- Primary Operations Group -->
+                    <li class="nav-item dropdown me-2">
+                        <a class="nav-link dropdown-toggle btn btn-outline-primary" href="#" id="operationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-exchange-alt me-1"></i> Operations
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-animated">
+                            <li><h6 class="dropdown-header">Banking Operations</h6></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.transactions') }}">
+                                    <i class="fas fa-list-alt me-1"></i> Transactions
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.swift.swift_messages') }}">
+                                    <i class="fas fa-university me-1"></i> SWIFT Banking
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.blockchain_status') }}">
+                                    <i class="fas fa-link me-1"></i> Blockchain
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Financial Services Group -->
+                    <li class="nav-item dropdown me-2">
+                        <a class="nav-link dropdown-toggle btn btn-outline-primary" href="#" id="servicesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-money-check-alt me-1"></i> Services
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-animated">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('treasury.dashboard') }}">
+                                    <i class="fas fa-university me-1"></i> Treasury
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('edi.dashboard') }}">
+                                    <i class="fas fa-exchange-alt me-1"></i> EDI
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('payment_processor.employee_list') }}">
+                                    <i class="fas fa-money-bill-wave me-1"></i> Payments
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    {% if current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' %}
+                    <!-- Admin Controls -->
+                    <li class="nav-item me-2">
+                        <a class="nav-link btn btn-danger" href="{{ url_for('web.main.admin_dashboard') }}">
+                            <i class="fas fa-user-shield me-1"></i> Admin
+                        </a>
+                    </li>
+                    {% endif %}
                     
                     <!-- Transactions dropdown -->
                     <li class="nav-item dropdown">
