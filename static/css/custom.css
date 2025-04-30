@@ -166,7 +166,41 @@ pre {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     z-index: 99999;
     position: relative;
-    padding: 0.75rem 0;
+    padding: 0.5rem 0;
+}
+
+/* Two-line navigation structure */
+.navbar-collapse {
+    flex-wrap: wrap;
+}
+
+.navbar-nav {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 0.25rem;
+    padding: 0.25rem 0;
+}
+
+/* Primary navigation row */
+.navbar-nav:first-of-type {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 0.25rem;
+    padding-bottom: 0.5rem;
+}
+
+/* Secondary navigation row */
+.navbar-nav:not(:first-of-type) {
+    padding-top: 0.5rem;
+}
+
+/* Compact nav items */
+.nav-item {
+    margin: 0.125rem;
+}
+
+.nav-link {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.95rem;
 }
 
 /* Primary navigation items */
