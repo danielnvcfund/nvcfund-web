@@ -121,6 +121,9 @@ class PaymentForm(FlaskForm):
     currency = SelectField('Currency', choices=[('USD', 'USD'), ('EUR', 'EUR'), ('GBP', 'GBP'), ('ETH', 'ETH'), ('XRP', 'XRP')], validators=[DataRequired()])
     transaction_type = SelectField('Transaction Type', choices=[], validators=[DataRequired()])
     gateway_id = SelectField('Payment Gateway', choices=[], validators=[DataRequired()])
+    recipient_name = StringField('Recipient Name', validators=[DataRequired(), Length(max=128)])
+    recipient_institution = StringField('Receiving Institution', validators=[DataRequired(), Length(max=128)])
+    recipient_account = StringField('Account Number', validators=[DataRequired(), Length(max=64)])
     description = TextAreaField('Description', validators=[DataRequired()], default='Payment from nvcplatform.net')
     submit = SubmitField('Submit Payment')
     

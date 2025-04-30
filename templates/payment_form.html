@@ -48,6 +48,21 @@
                         </div>
                         
                         <div class="mb-3">
+                            {{ form.recipient_name.label(class="form-label") }}
+                            {{ form.recipient_name(class="form-control", placeholder="Recipient's full name or institution name") }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.recipient_institution.label(class="form-label") }}
+                            {{ form.recipient_institution(class="form-control", placeholder="Receiving bank/institution name") }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.recipient_account.label(class="form-label") }}
+                            {{ form.recipient_account(class="form-control", placeholder="Recipient's account number") }}
+                        </div>
+
+                        <div class="mb-3">
                             {{ form.description.label(class="form-label") }}
                             {{ form.description(class="form-control", rows="2", placeholder="Payment description...", value="Payment from nvcplatform.net") }}
                         </div>
