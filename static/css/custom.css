@@ -220,12 +220,28 @@ pre {
 
 .navbar-nav {
     display: flex;
-    flex-wrap: nowrap;
-    gap: 0.25rem;
-    padding: 0.5rem 0;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
     margin: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
+}
+
+/* Force specific items to second row */
+.nav-item:has(a[href*="swift"]),
+.nav-item:has(a[href*="blockchain"]),
+.nav-item:has(a[href*="edi"]),
+.nav-item:has(a[href*="off-ledger"]),
+.nav-item:has(a[href*="treasury"]) {
+    order: 2;
+}
+
+/* Primary items stay in first row */
+.nav-item:has(a[href*="dashboard"]),
+.nav-item:has(a[href*="operations"]),
+.nav-item:has(a[href*="services"]),
+.nav-item:has(a[href*="transactions"]),
+.nav-item:has(a[href*="payments"]) {
+    order: 1;
 }
 
 .navbar-nav::-webkit-scrollbar {
