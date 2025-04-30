@@ -221,27 +221,38 @@ pre {
 .navbar-nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0.75rem 0;
+    padding: 0;
     margin: 0;
+    width: 100%;
 }
 
-/* Force specific items to second row */
-.nav-item:has(a[href*="swift"]),
-.nav-item:has(a[href*="blockchain"]),
-.nav-item:has(a[href*="edi"]),
-.nav-item:has(a[href*="off-ledger"]),
-.nav-item:has(a[href*="treasury"]) {
-    order: 2;
+.navbar .container {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
 }
 
-/* Primary items stay in first row */
-.nav-item:has(a[href*="dashboard"]),
-.nav-item:has(a[href*="operations"]),
-.nav-item:has(a[href*="services"]),
-.nav-item:has(a[href*="transactions"]),
-.nav-item:has(a[href*="payments"]) {
-    order: 1;
+/* Primary Navigation Row */
+.navbar-nav.primary-nav {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Secondary Navigation Row */
+.navbar-nav.secondary-nav {
+    padding-top: 0.5rem;
+}
+
+/* Ensure dropdowns appear above other content */
+.navbar .dropdown-menu {
+    position: absolute !important;
+    z-index: 99999;
+}
+
+.nav-item {
+    margin: 0 0.25rem;
+    white-space: nowrap;
 }
 
 .navbar-nav::-webkit-scrollbar {
