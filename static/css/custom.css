@@ -164,17 +164,9 @@ pre {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    z-index: 9999;
+    z-index: 1030;
     position: relative;
     padding: 0;
-}
-
-.navbar .dropdown-menu {
-    z-index: 9999;
-}
-
-.navbar .nav-item.dropdown {
-    z-index: 9999;
 }
 
 .navbar .container {
