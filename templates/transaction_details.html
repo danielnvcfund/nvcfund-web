@@ -15,7 +15,7 @@
             </a>
         </div>
     </div>
-    
+
     {% if transaction.status.value == 'pending' %}
     <!-- Transaction Action Buttons -->
     <div class="card mb-4 border-warning">
@@ -82,7 +82,7 @@
                         <div class="col-md-4 fw-bold">Description:</div>
                         <div class="col-md-8">{{ transaction.description }}</div>
                     </div>
-                    
+
                     <!-- Recipient Information Card -->
                     {% set recipient = transaction.get_recipient_details() %}
                     <div class="row mb-4">
@@ -136,14 +136,14 @@
                         <div class="col-md-4 fw-bold">Last Updated:</div>
                         <div class="col-md-8">{{ transaction.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
                     </div>
-                    
+
                     {% if transaction.institution %}
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Institution:</div>
                         <div class="col-md-8">{{ transaction.institution.name }}</div>
                     </div>
                     {% endif %}
-                    
+
                     {% if transaction.gateway %}
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Payment Gateway:</div>
@@ -152,7 +152,7 @@
                     {% endif %}
                 </div>
             </div>
-            
+
             {% if transaction.eth_transaction_hash %}
             <div class="alert alert-info mb-0">
                 <i class="fas fa-link me-2"></i> <strong>Ethereum Transaction:</strong> 
@@ -164,7 +164,7 @@
                 </a>
             </div>
             {% endif %}
-            
+
             {% if transaction.gateway is defined and transaction.gateway and transaction.gateway.name == 'NVC Global' and (transaction.status.value == 'pending' or transaction.status.value == 'processing') %}
             <div class="alert alert-primary mt-3 mb-0 d-flex justify-content-between align-items-center">
                 <div>
@@ -235,7 +235,7 @@
                     </div>
                     <span>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
                 </li>
-                
+
                 {% if transaction.status.value == 'processing' or transaction.status.value == 'completed' or transaction.status.value == 'failed' or transaction.status.value == 'refunded' %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
@@ -246,7 +246,7 @@
                     <span>{{ transaction.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
                 </li>
                 {% endif %}
-                
+
                 {% if transaction.status.value == 'completed' or transaction.status.value == 'refunded' %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
@@ -257,7 +257,7 @@
                     <span>{{ transaction.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
                 </li>
                 {% endif %}
-                
+
                 {% if transaction.status.value == 'refunded' %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
@@ -268,7 +268,7 @@
                     <span>{{ transaction.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
                 </li>
                 {% endif %}
-                
+
                 {% if transaction.status.value == 'failed' %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
