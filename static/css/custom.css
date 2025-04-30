@@ -203,25 +203,42 @@ pre {
     font-size: 0.95rem;
 }
 
-/* Primary navigation items */
+/* Navigation Layout */
+.navbar-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+}
+
+/* Navigation Items */
+.nav-item {
+    flex: 0 0 auto;
+}
+
 .nav-link {
-    font-size: 1.15rem;
-    padding: 0.7rem 1.2rem;
-    margin: 0 0.3rem;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    margin: 0;
     border-radius: 6px;
     transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
-/* Force navigation items into two rows */
-.navbar-nav {
-    flex-wrap: wrap;
-    row-gap: 0.5rem;
-    padding: 0.5rem 0;
+/* Primary Navigation Row */
+.navbar-nav:first-of-type {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 0.5rem;
 }
 
-.navbar-nav .nav-item {
-    flex: 0 0 auto;
-    margin-bottom: 0.3rem;
+/* Secondary Navigation Row */
+.navbar-nav:not(:first-of-type) {
+    padding-top: 0.5rem;
+}
+
+/* Navbar Container */
+.navbar > .container {
+    padding: 0 1rem;
 }
 
 /* Dropdown styling */
