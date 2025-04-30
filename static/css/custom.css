@@ -71,7 +71,19 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     padding: 0.5rem;
-    z-index: 1050; /* Ensure dropdowns appear above other content */
+    z-index: 9999;
+    position: absolute;
+    background: var(--bs-dark);
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    margin-top: 0.5rem;
+    min-width: 200px;
+    background: var(--bs-dark);
 }
 
 @keyframes dropdownFade {
