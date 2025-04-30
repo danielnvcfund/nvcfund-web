@@ -78,12 +78,19 @@ body {
 
 .dropdown {
     position: relative;
+    z-index: 9999;
 }
 
 .dropdown-menu {
     margin-top: 0.5rem;
     min-width: 200px;
     background: var(--bs-dark);
+    z-index: 9999;
+    position: absolute;
+}
+
+.navbar .dropdown-menu {
+    position: absolute !important;
 }
 
 @keyframes dropdownFade {
