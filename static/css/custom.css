@@ -164,13 +164,23 @@ pre {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    z-index: 9999;
+    z-index: 99999;
     position: relative;
     padding: 0;
 }
 
 .navbar .dropdown-menu {
-    z-index: 9999;
+    z-index: 99999 !important;
+    position: absolute !important;
+}
+
+.navbar .nav-item.dropdown {
+    position: relative !important;
+}
+
+.navbar .dropdown-menu-animated {
+    position: absolute !important;
+    z-index: 99999 !important;
 }
 
 .navbar .nav-item.dropdown {
