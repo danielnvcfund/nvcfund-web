@@ -34,7 +34,7 @@ class User(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Personal information fields
     first_name = db.Column(db.String(100))
     last_name = db.Column(db.String(100))
@@ -43,7 +43,7 @@ class User(UserMixin, db.Model):
     phone = db.Column(db.String(50))
     newsletter = db.Column(db.Boolean, default=False)
     email_verified = db.Column(db.Boolean, default=False)
-    
+
     # PHP banking integration fields
     external_customer_id = db.Column(db.String(64), index=True)
     external_account_id = db.Column(db.String(64), index=True)  
@@ -97,6 +97,8 @@ class TransactionType(enum.Enum):
     BILL_PAYMENT = "BILL_PAYMENT"                      # For bill payments to service providers
     CONTRACT_PAYMENT = "CONTRACT_PAYMENT"              # For payments to contractors/vendors under contracts
     BULK_PAYROLL = "BULK_PAYROLL"                      # For processing multiple salary payments at once
+    SWIFT_DELIVER_AGAINST_PAYMENT = "SWIFT_DELIVER_AGAINST_PAYMENT" #Added SWIFT MT542
+
 
 class GatewayType(enum.Enum):
     STRIPE = "stripe"
@@ -121,7 +123,7 @@ class Transaction(db.Model):
     # PHP banking system integration
     external_id = db.Column(db.String(64), index=True) # To store external transaction IDs
     tx_metadata_json = db.Column(db.Text) # To store additional JSON data
-    
+
     # Recipient information
     recipient_name = db.Column(db.String(128))
     recipient_institution = db.Column(db.String(128))
@@ -129,14 +131,14 @@ class Transaction(db.Model):
     recipient_address = db.Column(db.String(256))
     recipient_country = db.Column(db.String(64))
     recipient_bank = db.Column(db.String(128))  # Name of the recipient's bank (for RTGS transfers)
-    
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     user = db.relationship('User', backref=db.backref('transactions', lazy=True))
     institution = db.relationship('FinancialInstitution', backref=db.backref('transactions', lazy=True))
     gateway = db.relationship('PaymentGateway', backref=db.backref('transactions', lazy=True))
-    
+
     def get_recipient_details(self):
         """Extract recipient details from either dedicated fields or description"""
         if self.recipient_name:
@@ -148,7 +150,7 @@ class Transaction(db.Model):
                 'country': self.recipient_country,
                 'bank': self.recipient_bank
             }
-        
+
         # Legacy extraction from description
         details = {}
         if self.description:
@@ -156,10 +158,10 @@ class Transaction(db.Model):
                 details['name'] = self.description.split(',')[0].strip()
             else:
                 details['name'] = self.description
-                
+
             if 'Account:' in self.description:
                 details['account'] = self.description.split('Account:')[1].strip()
-            
+
         return details
 
 class FinancialInstitutionType(enum.Enum):
@@ -189,7 +191,7 @@ class FinancialInstitution(db.Model):
 
 class PaymentGatewayType(enum.Enum):
     """Payment gateway types
-    
+
     Note: XRP_LEDGER is currently not in the database enum, but included here
     for future use. NVC_GLOBAL is in the database as 'nvc_global' (lowercase).
     """
@@ -201,7 +203,7 @@ class PaymentGatewayType(enum.Enum):
     # Very important: Using lowercase 'nvc_global' to match the database enum value exactly
     NVC_GLOBAL = "nvc_global"
     CUSTOM = "custom"
-    
+
     @classmethod
     def from_string(cls, value: str):
         """Create enum from string, with extra handling for known special cases"""
@@ -239,7 +241,7 @@ class BlockchainAccount(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     user = db.relationship('User', backref=db.backref('blockchain_accounts', lazy=True))
 
 class SwiftMessageStatus(enum.Enum):
@@ -267,7 +269,7 @@ class SwiftMessage(db.Model):
     source_type = db.Column(db.String(50), default="MANUAL_UPLOAD")  # MANUAL_UPLOAD, API, SFTP, etc.
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationship to the user who uploaded the message
     user = db.relationship('User', backref=db.backref('swift_messages', lazy=True))
 
@@ -287,9 +289,9 @@ class BlockchainTransaction(db.Model):
     tx_metadata = db.Column(db.Text)  # Changed from 'metadata' which is reserved in SQLAlchemy
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     user = db.relationship('User', backref=db.backref('blockchain_transactions', lazy=True))
-    
+
     # Optional link to a main application transaction
     transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
     transaction = db.relationship('Transaction', backref=db.backref('blockchain_transactions', lazy=True))
@@ -309,9 +311,9 @@ class XRPLedgerTransaction(db.Model):
     tx_metadata = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     user = db.relationship('User', backref=db.backref('xrp_transactions', lazy=True))
-    
+
     # Optional link to a main application transaction
     transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
     transaction = db.relationship('Transaction', backref=db.backref('xrp_transactions', lazy=True))
@@ -368,7 +370,7 @@ class ApiAccessRequest(db.Model):
     reviewer_notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
     user = db.relationship('User', foreign_keys=[user_id], backref=db.backref('api_access_requests', lazy=True))
     reviewer = db.relationship('User', foreign_keys=[reviewed_by], backref=db.backref('reviewed_requests', lazy=True))
@@ -409,14 +411,14 @@ class Invitation(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     accepted_at = db.Column(db.DateTime)
-    
+
     # The user who created the invitation
     inviter = db.relationship('User', foreign_keys=[invited_by], backref=db.backref('sent_invitations', lazy=True))
-    
+
     def is_expired(self):
         """Check if the invitation has expired"""
         return datetime.utcnow() > self.expires_at
-    
+
     def is_valid(self):
         """Check if the invitation is valid (not expired, not accepted, not revoked)"""
         return self.status == InvitationStatus.PENDING and not self.is_expired()
@@ -432,43 +434,43 @@ class FormData(db.Model):
     form_data = db.Column(db.Text, nullable=False)  # JSON serialized form data
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     expires_at = db.Column(db.DateTime, nullable=False)
-    
+
     user = db.relationship('User', backref=db.backref('form_data', lazy=True))
-    
+
     @classmethod
     def create_from_form(cls, user_id, transaction_id, form_type, form_data, expiry_hours=24):
         """
         Create a new FormData entry from a form object
-        
+
         Args:
             user_id (int): The user ID
             transaction_id (str): The transaction ID
             form_type (str): The type of form
             form_data (dict): The form data
             expiry_hours (int): Hours until this data expires
-            
+
         Returns:
             FormData: The created FormData object
         """
         # Convert form data to JSON
         form_data_json = json.dumps(form_data)
-        
+
         # Set expiry time
         expires_at = datetime.utcnow() + timedelta(hours=expiry_hours)
-        
+
         # Check if we already have a form for this transaction
         existing = cls.query.filter_by(
             transaction_id=transaction_id,
             form_type=form_type
         ).first()
-        
+
         if existing:
             # Update existing record
             existing.form_data = form_data_json
             existing.expires_at = expires_at
             existing.created_at = datetime.utcnow()
             return existing
-        
+
         # Create new record
         form_data_obj = cls(
             user_id=user_id,
@@ -477,19 +479,19 @@ class FormData(db.Model):
             form_data=form_data_json,
             expires_at=expires_at
         )
-        
+
         db.session.add(form_data_obj)
         return form_data_obj
-    
+
     @classmethod
     def get_for_transaction(cls, transaction_id, form_type):
         """
         Get form data for a transaction
-        
+
         Args:
             transaction_id (str): The transaction ID
             form_type (str): The type of form
-            
+
         Returns:
             dict: The form data, or None if not found
         """
@@ -500,26 +502,26 @@ class FormData(db.Model):
         ).filter(
             cls.expires_at > datetime.utcnow()
         ).order_by(cls.created_at.desc()).first()
-        
+
         if not form_data:
             return None
-        
+
         # Parse JSON
         try:
             return json.loads(form_data.form_data)
         except json.JSONDecodeError:
             return None
-    
+
     @classmethod
     def get_for_transaction_admin(cls, transaction_id, form_type):
         """
         Get form data for any transaction (admin method)
         This method allows admins to retrieve form data for any transaction
-        
+
         Args:
             transaction_id (str): The transaction ID
             form_type (str): The type of form
-            
+
         Returns:
             dict: The form data and user details, or None if not found
         """
@@ -530,10 +532,10 @@ class FormData(db.Model):
         ).filter(
             cls.expires_at > datetime.utcnow()
         ).order_by(cls.created_at.desc()).first()
-        
+
         if not form_data:
             return None
-        
+
         # Get user info
         user = User.query.get(form_data.user_id)
         user_info = {
@@ -541,7 +543,7 @@ class FormData(db.Model):
             'username': user.username,
             'email': user.email
         } if user else {'user_id': form_data.user_id}
-        
+
         # Parse JSON
         try:
             form_data_dict = json.loads(form_data.form_data)
@@ -553,15 +555,15 @@ class FormData(db.Model):
             }
         except json.JSONDecodeError:
             return None
-    
+
     @classmethod
     def get_all_for_user(cls, user_id):
         """
         Get all form data for a user
-        
+
         Args:
             user_id (int): The user ID
-            
+
         Returns:
             list: List of form data objects with transaction information
         """
@@ -571,7 +573,7 @@ class FormData(db.Model):
         ).filter(
             cls.expires_at > datetime.utcnow()
         ).order_by(cls.created_at.desc()).all()
-        
+
         result = []
         for item in form_data_items:
             try:
@@ -585,9 +587,9 @@ class FormData(db.Model):
                 })
             except json.JSONDecodeError:
                 continue
-                
+
         return result
-    
+
     @classmethod
     def cleanup_expired(cls):
         """Remove all expired form data"""
@@ -595,29 +597,29 @@ class FormData(db.Model):
         for item in expired:
             db.session.delete(item)
         db.session.commit()
-        
+
     @classmethod
     def save_form_data(cls, user_id, form_type, form_data, transaction_id=None, expires_at=None):
         """
         Save or update form data without requiring a transaction ID (for drafts)
-        
+
         Args:
             user_id (int): The user ID
             form_type (str): The type of form
             form_data (dict): The form data
             transaction_id (str, optional): The transaction ID if exists
             expires_at (datetime, optional): Expiry time, defaults to 24 hours
-            
+
         Returns:
             FormData: The new or updated FormData object
         """
         # Convert form data to JSON
         form_data_json = json.dumps(form_data)
-        
+
         # Set default expiry time if not provided
         if expires_at is None:
             expires_at = datetime.utcnow() + timedelta(hours=24)
-            
+
         # If transaction_id is provided, check if we have an existing record
         if transaction_id:
             existing = cls.query.filter_by(
@@ -632,14 +634,14 @@ class FormData(db.Model):
                 transaction_id=None,  # Only find draft forms with no transaction ID
                 form_type=form_type
             ).order_by(cls.created_at.desc()).first()
-        
+
         if existing:
             # Update existing record
             existing.form_data = form_data_json
             existing.expires_at = expires_at
             existing.created_at = datetime.utcnow()
             return existing
-            
+
         # Create new record
         form_data_obj = cls(
             user_id=user_id,
@@ -648,7 +650,7 @@ class FormData(db.Model):
             form_data=form_data_json,
             expires_at=expires_at
         )
-        
+
         db.session.add(form_data_obj)
         return form_data_obj
 class PartnerApiKeyAccessLevel(enum.Enum):
@@ -682,15 +684,15 @@ class PartnerApiKey(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    
+
     # Relationship to User model
     user = db.relationship('User', backref=db.backref('partner_api_keys', lazy=True))
-    
+
     @classmethod
     def generate_api_key(cls) -> str:
         """Generate a secure API key for partner institutions"""
         return f"nvc_partner_{secrets.token_urlsafe(32)}"
-    
+
     @classmethod
     def create_for_saint_crowm_bank(cls):
         """Create a default API key for Saint Crowm Bank if it doesn't exist"""
@@ -698,10 +700,10 @@ class PartnerApiKey(db.Model):
         existing = cls.query.filter_by(partner_name="Saint Crowm Bank").first()
         if existing:
             return existing
-            
+
         # Generate a new API key
         api_key = cls.generate_api_key()
-        
+
         # Create the API key record
         partner_key = cls(
             partner_name="Saint Crowm Bank",
@@ -712,10 +714,10 @@ class PartnerApiKey(db.Model):
             description="Official API integration for Saint Crowm Bank as the operators of AFD1 token",
             is_active=True
         )
-        
+
         db.session.add(partner_key)
         db.session.commit()
-        
+
         return partner_key
 
 
@@ -727,7 +729,7 @@ class TreasuryAccountType(enum.Enum):
     PAYROLL = "payroll"
     TAX = "tax"
     DEBT_SERVICE = "debt_service"
-    
+
 class TreasuryAccount(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), nullable=False)
@@ -746,10 +748,10 @@ class TreasuryAccount(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     last_reconciled = db.Column(db.DateTime)
-    
+
     # Relationships
     institution = db.relationship('FinancialInstitution', backref=db.backref('treasury_accounts', lazy=True))
-    
+
     def update_balance(self, amount, transaction_type=None):
         """Update account balance based on transaction type"""
         if transaction_type in [TransactionType.DEPOSIT, TransactionType.TREASURY_TRANSFER]:
@@ -758,7 +760,7 @@ class TreasuryAccount(db.Model):
         elif transaction_type in [TransactionType.WITHDRAWAL]:
             self.current_balance -= amount
             self.available_balance -= amount
-        
+
     def is_within_limits(self):
         """Check if account balance is within defined limits"""
         if self.minimum_balance is not None and self.current_balance < self.minimum_balance:
@@ -781,11 +783,11 @@ class InvestmentStatus(enum.Enum):
     ACTIVE = "active"
     COMPLETED = "completed"
     CANCELED = "canceled"
-    
+
 class CashFlowDirection(enum.Enum):
     INFLOW = "inflow"
     OUTFLOW = "outflow"
-    
+
 class RecurrenceType(enum.Enum):
     NONE = "none"
     DAILY = "daily"
@@ -809,19 +811,19 @@ class TreasuryInvestment(db.Model):
     description = db.Column(db.String(256))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
     account = db.relationship('TreasuryAccount', backref=db.backref('investments', lazy=True))
     institution = db.relationship('FinancialInstitution', backref=db.backref('investments', lazy=True))
-    
+
     def calculate_maturity_value(self):
         """Calculate the value at maturity based on interest rate"""
         if not self.interest_rate:
             return self.amount
-            
+
         days = (self.maturity_date - self.start_date).days
         annual_rate = self.interest_rate / 100
-        
+
         # Simple interest calculation
         interest = self.amount * annual_rate * (days / 365)
         return self.amount + interest
@@ -842,7 +844,7 @@ class CashFlowForecast(db.Model):
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
     account = db.relationship('TreasuryAccount', backref=db.backref('cash_flow_forecasts', lazy=True))
 
@@ -855,7 +857,7 @@ class TreasuryTransactionType(enum.Enum):
     LOAN_DISBURSEMENT = "loan_disbursement"
     INTEREST_PAYMENT = "interest_payment"
     FEE_PAYMENT = "fee_payment"
-    
+
 class TreasuryTransaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     transaction_id = db.Column(db.String(64), unique=True, nullable=False)
@@ -876,32 +878,32 @@ class TreasuryTransaction(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
     from_account = db.relationship('TreasuryAccount', foreign_keys=[from_account_id], backref=db.backref('outgoing_transactions', lazy=True))
     to_account = db.relationship('TreasuryAccount', foreign_keys=[to_account_id], backref=db.backref('incoming_transactions', lazy=True))
     approved_by = db.relationship('User', foreign_keys=[approval_user_id], backref=db.backref('approved_treasury_transactions', lazy=True))
     created_by_user = db.relationship('User', foreign_keys=[created_by], backref=db.backref('created_treasury_transactions', lazy=True))
-    
+
     # Optional link to a main application transaction
     nvc_transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
     nvc_transaction = db.relationship('Transaction', backref=db.backref('treasury_transactions', lazy=True))
-    
+
     def get_exchange_amount(self):
         """Calculate amount with exchange rate applied"""
         return self.amount * self.exchange_rate
-    
+
     def process_transaction(self):
         """Process the transaction and update account balances"""
         if self.status != TransactionStatus.PENDING:
             return False
-            
+
         if self.from_account:
             self.from_account.update_balance(-self.amount, TransactionType.WITHDRAWAL)
-            
+
         if self.to_account:
             self.to_account.update_balance(self.amount * self.exchange_rate, TransactionType.DEPOSIT)
-            
+
         self.execution_date = datetime.utcnow()
         self.status = TransactionStatus.COMPLETED
         return True
@@ -911,17 +913,17 @@ class LoanType(enum.Enum):
     REVOLVING_CREDIT = "revolving_credit"
     BRIDGE_LOAN = "bridge_loan"
     SYNDICATED_LOAN = "syndicated_loan"
-    
+
 class LoanStatus(enum.Enum):
     ACTIVE = "active"
     PAID = "paid"
     DEFAULTED = "defaulted"
     RESTRUCTURED = "restructured"
-    
+
 class InterestType(enum.Enum):
     FIXED = "fixed"
     VARIABLE = "variable"
-    
+
 class PaymentFrequency(enum.Enum):
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
@@ -952,35 +954,35 @@ class TreasuryLoan(db.Model):
     collateral_description = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
     account = db.relationship('TreasuryAccount', backref=db.backref('loans', lazy=True))
     lender = db.relationship('FinancialInstitution', backref=db.backref('provided_loans', lazy=True))
-    
+
     def calculate_interest_due(self, as_of_date=None):
         """Calculate interest due as of a specific date"""
         if not as_of_date:
             as_of_date = datetime.utcnow()
-            
+
         # Simple interest calculation for demonstration
         days_since_last_payment = (as_of_date - self.start_date).days
         daily_rate = self.interest_rate / 36500  # Daily rate based on annual rate
-        
+
         interest_due = self.outstanding_amount * daily_rate * days_since_last_payment
         return interest_due
-        
+
     def make_payment(self, payment_amount, payment_date=None):
         """Record a loan payment"""
         if not payment_date:
             payment_date = datetime.utcnow()
-            
+
         # Calculate interest portion
         interest_due = self.calculate_interest_due(payment_date)
-        
+
         # Apply payment to interest first, then principal
         principal_payment = max(0, payment_amount - interest_due)
         self.outstanding_amount -= principal_payment
-        
+
         # Update payment schedule
         if self.payment_frequency == PaymentFrequency.MONTHLY:
             self.next_payment_date = payment_date + timedelta(days=30)
@@ -988,7 +990,7 @@ class TreasuryLoan(db.Model):
             self.next_payment_date = payment_date + timedelta(days=90)
         elif self.payment_frequency == PaymentFrequency.ANNUALLY:
             self.next_payment_date = payment_date + timedelta(days=365)
-            
+
         # Create a payment record
         payment = TreasuryLoanPayment(
             loan_id=self.id,
@@ -997,7 +999,7 @@ class TreasuryLoan(db.Model):
             interest_amount=min(interest_due, payment_amount),
             payment_date=payment_date
         )
-        
+
         return payment
 
 class TreasuryLoanPayment(db.Model):
@@ -1010,7 +1012,7 @@ class TreasuryLoanPayment(db.Model):
     transaction_id = db.Column(db.Integer, db.ForeignKey('treasury_transaction.id'))
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Relationships
     loan = db.relationship('TreasuryLoan', backref=db.backref('payments', lazy=True))
     transaction = db.relationship('TreasuryTransaction', backref=db.backref('loan_payments', lazy=True))
@@ -1067,12 +1069,12 @@ class Employee(db.Model):
     metadata_json = db.Column(db.Text)  # For additional custom employee data
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     user = db.relationship('User', backref=db.backref('employee_profile', uselist=False))
-    
+
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
-    
+
     def get_metadata(self):
         if not self.metadata_json:
             return {}
@@ -1095,10 +1097,10 @@ class PayrollBatch(db.Model):
     metadata_json = db.Column(db.Text)  # For additional batch processing data
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     processed_by_user = db.relationship('User', backref=db.backref('processed_payrolls', lazy=True))
     institution = db.relationship('FinancialInstitution', backref=db.backref('payroll_batches', lazy=True))
-    
+
     def get_metadata(self):
         if not self.metadata_json:
             return {}
@@ -1123,11 +1125,11 @@ class SalaryPayment(db.Model):
     metadata_json = db.Column(db.Text)  # For tax details, deductions, etc.
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     employee = db.relationship('Employee', backref=db.backref('salary_payments', lazy=True))
     transaction = db.relationship('Transaction', backref=db.backref('salary_payment', uselist=False))
     payroll_batch = db.relationship('PayrollBatch', backref=db.backref('salary_payments', lazy=True))
-    
+
     def get_metadata(self):
         if not self.metadata_json:
             return {}
@@ -1155,7 +1157,7 @@ class Vendor(db.Model):
     metadata_json = db.Column(db.Text)  # For additional vendor data
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     def get_metadata(self):
         if not self.metadata_json:
             return {}
@@ -1182,10 +1184,10 @@ class Bill(db.Model):
     metadata_json = db.Column(db.Text)  # For invoice details, line items, etc.
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     vendor = db.relationship('Vendor', backref=db.backref('bills', lazy=True))
     transaction = db.relationship('Transaction', backref=db.backref('bill', uselist=False))
-    
+
     def get_metadata(self):
         if not self.metadata_json:
             return {}
@@ -1193,7 +1195,7 @@ class Bill(db.Model):
             return json.loads(self.metadata_json)
         except:
             return {}
-            
+
     def days_until_due(self):
         if self.due_date:
             return (self.due_date - date.today()).days
@@ -1217,9 +1219,9 @@ class Contract(db.Model):
     metadata_json = db.Column(db.Text)  # For additional contract details
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     vendor = db.relationship('Vendor', backref=db.backref('contracts', lazy=True))
-    
+
     def get_metadata(self):
         if not self.metadata_json:
             return {}
@@ -1243,10 +1245,10 @@ class ContractPayment(db.Model):
     metadata_json = db.Column(db.Text)  # For additional payment details
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     contract = db.relationship('Contract', backref=db.backref('payments', lazy=True))
     transaction = db.relationship('Transaction', backref=db.backref('contract_payment', uselist=False))
-    
+
     def get_metadata(self):
         if not self.metadata_json:
             return {}

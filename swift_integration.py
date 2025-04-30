@@ -220,6 +220,104 @@ class MT202(SwiftMessage):
         
         return transaction
 
+class MT542(SwiftMessage):
+    """SWIFT MT542 - Deliver Against Payment"""
+    
+    def __init__(self, user_id, institution_id, trade_details, financial_instrument, settlement_details):
+        super().__init__(user_id, institution_id)
+        self.message_type = "MT542"
+        self.trade_details = trade_details
+        self.financial_instrument = financial_instrument
+        self.settlement_details = settlement_details
+        self.reference = f"DAP{uuid.uuid4().hex[:10].upper()}"
+        
+    def to_json(self):
+        """Convert deliver against payment to JSON representation"""
+        institution = FinancialInstitution.query.get(self.institution_id)
+        institution_name = institution.name if institution else "Unknown Institution"
+        
+        return {
+            "message_type": self.message_type,
+            "reference": self.reference,
+            "sender_bic": self.get_sender_bic(),
+            "receiver_bic": self.get_receiver_bic(),
+            "trade_details": self.trade_details,
+            "financial_instrument": self.financial_instrument,
+            "settlement_details": self.settlement_details,
+            "sender_institution": "NVC Global Bank",
+            "receiver_institution": institution_name,
+            "creation_date": datetime.now().strftime("%Y-%m-%d")
+        }
+        
+    def generate_transaction(self):
+        """Create a transaction record for this deliver against payment"""
+        description = f"SWIFT MT542 Deliver Against Payment {self.reference}"
+        
+        # Prepare metadata
+        metadata = self.to_json()
+        metadata["institution_id"] = self.institution_id
+        
+        # Create the transaction
+        transaction = record_transaction(
+            user_id=self.user_id,
+            amount=float(self.trade_details.get('amount', 0)),
+            currency=self.trade_details.get('currency', 'USD'),
+            transaction_type=TransactionType.SWIFT_DELIVER_AGAINST_PAYMENT,
+            status=TransactionStatus.PENDING,
+            description=description,
+            metadata=metadata
+        )
+        
+        return transaction
+
+class MT199(SwiftMessage):
+    """SWIFT MT199 - Free Format Message"""
+    
+    def __init__(self, user_id, institution_id, related_reference, message_text):
+        super().__init__(user_id, institution_id)
+        self.message_type = "MT199"
+        self.related_reference = related_reference
+        self.message_text = message_text
+        self.reference = f"FF{uuid.uuid4().hex[:10].upper()}"
+        
+    def to_json(self):
+        """Convert free format message to JSON representation"""
+        institution = FinancialInstitution.query.get(self.institution_id)
+        institution_name = institution.name if institution else "Unknown Institution"
+        
+        return {
+            "message_type": self.message_type,
+            "reference": self.reference,
+            "related_reference": self.related_reference,
+            "sender_bic": self.get_sender_bic(),
+            "receiver_bic": self.get_receiver_bic(),
+            "sender_institution": "NVC Global Bank",
+            "receiver_institution": institution_name,
+            "creation_date": datetime.now().strftime("%Y-%m-%d"),
+            "message_text": self.message_text
+        }
+        
+    def generate_transaction(self):
+        """Create a transaction record for this free format message"""
+        description = f"SWIFT MT199 Free Format Message {self.reference}"
+        
+        # Prepare metadata
+        metadata = self.to_json()
+        metadata["institution_id"] = self.institution_id
+        
+        # Create the transaction
+        transaction = record_transaction(
+            user_id=self.user_id,
+            amount=0.0,  # Free format messages don't have amounts
+            currency="USD",  # Default currency
+            transaction_type=TransactionType.SWIFT_FREE_FORMAT,
+            status=TransactionStatus.PENDING,
+            description=description,
+            metadata=metadata
+        )
+        
+        return transaction
+
 class MT799(SwiftMessage):
     """SWIFT MT799 - Free Format Message"""
     
