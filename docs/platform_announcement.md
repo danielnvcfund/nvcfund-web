@@ -94,7 +94,7 @@ Sincerely,
 ---
 
 **Contact Information:**  
-Website: [nvcplatform.net](https://nvcplatform.net)  
+Website: NVC Fund Bank  
 Platform: [f920fd48-8411-4b55-be56-d9897c1a4843-00-2pld4zn3afnhj.worf.replit.dev](https://f920fd48-8411-4b55-be56-d9897c1a4843-00-2pld4zn3afnhj.worf.replit.dev)  
-Email: partnerships@nvcplatform.net  
+Email: partnerships@nvcfundbank.com  
 Phone: +1 (555) 123-4567

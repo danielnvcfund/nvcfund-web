@@ -27,7 +27,7 @@ function initGatewaySelection() {
             const gatewayName = selectedOption.text;
 
             // Get base description or use default
-            let baseDescription = descriptionField.value || 'Payment from nvcplatform.net';
+            let baseDescription = descriptionField.value || 'Payment from NVC Fund Bank';
 
             // Add gateway info if not already present
             if (!baseDescription.includes('via')) {
