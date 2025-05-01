@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, TextAreaField, DecimalField, PasswordField, BooleanField
-from wtforms.validators import DataRequired, Length, Optional, Email
+from wtforms.validators import DataRequired, Length, Optional, Email, EqualTo
 
 class FinancialInstitutionForm(FlaskForm):
     name = StringField('Institution Name', validators=[DataRequired(), Length(max=255)])
