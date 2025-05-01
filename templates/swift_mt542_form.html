@@ -22,9 +22,9 @@
             {{ form.hidden_tag() }}
 
             <div class="mb-3">
-              <label class="form-label required">Receiving Institution</label>
+              <label class="form-label required">Receiving Agent</label>
               <div class="d-flex">
-                {{ form.receiver_institution_id(class="form-select me-2") }}
+                {{ form.receiving_agent(class="form-select me-2") }}
                 <a href="{{ url_for('web.swift.new_institution') }}" class="btn btn-secondary">Add New Institution</a>
               </div>
             </div>
