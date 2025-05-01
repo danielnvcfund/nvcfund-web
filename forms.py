@@ -439,10 +439,9 @@ class SwiftMT542Form(FlaskForm):
     amount = DecimalField('Amount', validators=[DataRequired()])
     currency = SelectField('Currency', choices=[('USD', 'USD'), ('EUR', 'EUR'), ('GBP', 'GBP')], validators=[DataRequired()])
     submit = SubmitField('Submit MT542')
-"""
 
     def __init__(self, *args, **kwargs):
-    super(SwiftMT542Form, self).__init__(*args, **kwargs)
+        super(SwiftMT542Form, self).__init__(*args, **kwargs)
         # Load available financial institutions
         from swift_integration import SwiftService
         swift_institutions = SwiftService.get_swift_enabled_institutions()
