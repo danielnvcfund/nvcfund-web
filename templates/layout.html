@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}NVC Banking Platform{% endblock %}</title>
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
-    
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
-    
+
     {% block head_scripts %}{% endblock %}
 </head>
 <body>
@@ -40,7 +40,7 @@
                             <i class="fas fa-tachometer-alt me-1"></i> Dashboard
                         </a>
                     </li>
-                    
+
                     <!-- Primary Operations Group -->
                     <li class="nav-item dropdown me-2">
                         <a class="nav-link dropdown-toggle btn btn-outline-primary" href="#" id="operationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -98,7 +98,7 @@
                         </a>
                     </li>
                     {% endif %}
-                    
+
                     <!-- Transactions dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if request.path == '/main/transactions' or request.path == '/main/payment/new' %}active fw-bold{% endif %}" href="#" id="transactionsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -127,7 +127,7 @@
                             </li>
                         </ul>
                     </li>
-                    
+
                     <!-- SWIFT Banking dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if '/swift/' in request.path %}active fw-bold{% endif %}" href="#" id="swiftDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -144,11 +144,9 @@
                                     <i class="fas fa-exchange-alt me-1"></i> Fund Transfer (MT103/MT202)
                                 </a>
                             </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('web.swift.new_free_format_message') }}">
-                                    <i class="fas fa-envelope me-1"></i> Free Format Message (MT799)
-                                </a>
-                            </li>
+                            <li><a class="dropdown-item" href="{{ url_for('web.swift.new_mt542') }}">
+                                    <i class="fas fa-file-invoice-dollar me-1"></i> Deliver Against Payment (MT542)
+                                </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('web.swift.swift_messages') }}">
@@ -173,7 +171,7 @@
                             </li>
                         </ul>
                     </li>
-                    
+
                     <!-- Blockchain dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if request.path == '/main/blockchain_status' or request.path == '/main/nvc_token_economics' or request.path == '/token-exchange' %}active fw-bold{% endif %}" href="#" id="blockchainDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -197,7 +195,7 @@
                             </li>
                         </ul>
                     </li>
-                    
+
                     <!-- EDI dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if '/edi/' in request.path %}active fw-bold{% endif %}" href="#" id="ediDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -229,7 +227,7 @@
                         </ul>
                     </li>
                     {% endif %}
-                    
+
                     <!-- Payment Processor dropdown -->
                     {% if current_user.is_authenticated %}
                     <li class="nav-item dropdown">
@@ -269,7 +267,7 @@
                             </li>
                         </ul>
                     </li>
-                    
+
                     <!-- Off-Ledger Transactions dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if '/rtgs/' in request.path or '/s2s/' in request.path %}active fw-bold{% endif %}" href="#" id="offLedgerDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -307,7 +305,7 @@
                         </ul>
                     </li>
                     {% endif %}
-                    
+
                     <!-- Treasury Management dropdown -->
                     {% if current_user.is_authenticated %}
                     <li class="nav-item dropdown">
@@ -348,7 +346,7 @@
                         </ul>
                     </li>
                     {% endif %}
-                    
+
                     <!-- Admin dropdown for admins only -->
                     {% if current_user.is_authenticated and (current_user.username in ['admin', 'headadmin'] or current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' or current_user.role.name == 'ADMIN') %}
                     <li class="nav-item dropdown">
@@ -430,7 +428,7 @@
                         </ul>
                     </li>
                     {% endif %}
-                    
+
                     <!-- Documentation dropdown always visible -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if request.path == '/main/api_docs' or '/documentation' in request.path or '/api-access' in request.path %}active fw-bold{% endif %}" href="#" id="docsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -495,7 +493,7 @@
                         </ul>
                     </li>
                 </ul>
-                
+
                 <!-- User account section -->
                 <ul class="navbar-nav">
                     {% if current_user.is_authenticated %}
@@ -510,7 +508,7 @@
                             <li><h6 class="dropdown-header">Signed in as</h6></li>
                             <li><a class="dropdown-item fw-bold" href="#">{{ current_user.username }}</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            
+
                             <!-- Role switching options -->
                             {% if current_user.username in ['admin', 'headadmin'] or current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' or current_user.role.name == 'ADMIN' %}
                             <li><a class="dropdown-item" href="{{ url_for('web.main.dashboard') }}">
@@ -523,7 +521,7 @@
                                 <i class="fas fa-landmark me-1"></i> Financial Institutions
                             </a></li>
                             {% endif %}
-                            
+
                             <!-- Developer tools section -->
                             {% if current_user.role.value == 'DEVELOPER' or current_user.role == 'DEVELOPER' %}
                             <li><hr class="dropdown-divider"></li>
@@ -540,7 +538,7 @@
                                 <i class="fas fa-key me-1"></i> Request API Access
                             </a></li>
                             {% endif %}
-                            
+
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="{{ url_for('web.main.logout') }}">
                                 <i class="fas fa-sign-out-alt me-1"></i> Sign out
@@ -587,7 +585,7 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        
+
         <!-- Alert container for JavaScript alerts -->
         <div id="alert-container"></div>
     </div>
@@ -612,7 +610,7 @@
                         <li class="mb-2"><a href="{{ url_for('customer_support.support_index') }}" class="text-muted text-decoration-none"><i class="fas fa-robot me-2"></i>AI Customer Support</a></li>
                         <li class="mb-2"><a href="{{ url_for('documentation.documentation_index') }}" class="text-muted text-decoration-none"><i class="fas fa-book me-2"></i>Documentation Center</a></li>
                         <li class="mb-2"><a href="{{ url_for('documentation.transaction_system_pdf') }}" class="text-muted text-decoration-none"><i class="fas fa-exchange-alt me-2"></i>Transaction System Explained</a></li>
-                        <li class="mb-2"><a href="{{ url_for('web.main.api_docs') }}" class="text-muted text-decoration-none"><i class="fas fa-code me-2"></i>API Reference</a></li>
+                        <li classmb-2"><a href="{{ url_for('web.main.api_docs') }}" class="text-muted text-decoration-none"><i class="fas fa-code me-2"></i>API Reference</a></li>
                         <li class="mb-2"><a href="{{ url_for('documentation.funds_transfer_pdf') }}" class="text-muted text-decoration-none"><i class="fas fa-file-pdf me-2"></i>Funds Transfer Guide</a></li>
                         <li class="mb-2"><a href="{{ url_for('documentation.server_to_server_pdf') }}" class="text-muted text-decoration-none"><i class="fas fa-server me-2"></i>S2S Integration Guide</a></li>
                         <li class="mb-2"><a href="{{ url_for('web.main.terms_of_service') }}" class="text-muted text-decoration-none"><i class="fas fa-gavel me-2"></i>Terms of Service</a></li>
@@ -633,7 +631,7 @@
 
     <!-- Bootstrap JS Bundle with latest version -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-    
+
     <!-- Common Scripts -->
     {% block scripts %}{% endblock %}
 </body>
