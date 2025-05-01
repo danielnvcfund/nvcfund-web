@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}NVC Banking Platform - Business Client Registration{% endblock %}
+{% block title %}NVC Banking Platform - Partner Program Registration{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -9,11 +9,11 @@
             <div class="card border-0 shadow-lg my-5">
                 <div class="card-body p-5">
                     <div class="text-center mb-4">
-                        <h2 class="h3 mb-3 fw-bold">Business Client Registration</h2>
-                        <p class="text-muted">Create a business account to access our financial services platform</p>
+                        <h2 class="h3 mb-3 fw-bold">Partner Program Registration</h2>
+                        <p class="text-muted">Join our partner network to collaborate on financial technology solutions</p>
                     </div>
                     
-                    <form method="POST" action="{{ url_for('web.main.client_registration') }}">
+                    <form method="POST" action="{{ url_for('web.main.quick_access') }}">
                         {{ form.hidden_tag() }}
                         
                         <div class="row mb-4">
@@ -56,11 +56,23 @@
                         
                         <div class="row mb-4">
                             <div class="col-12 mb-3">
-                                <h4 class="h5 fw-bold border-bottom pb-2 mb-3">Business Information</h4>
+                                <h4 class="h5 fw-bold border-bottom pb-2 mb-3">Company Information</h4>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">{{ form.organization.label }}</label>
-                                {{ form.organization(class="form-control", placeholder="Company or organization name") }}
+                                <label class="form-label">{{ form.company_name.label }}</label>
+                                {{ form.company_name(class="form-control", placeholder="Company or organization name") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.partner_type.label }}</label>
+                                {{ form.partner_type(class="form-select") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.website.label }}</label>
+                                {{ form.website(class="form-control", placeholder="https://yourcompany.com") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.company_size.label }}</label>
+                                {{ form.company_size(class="form-select") }}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">{{ form.country.label }}</label>
@@ -69,6 +81,10 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">{{ form.phone.label }}</label>
                                 {{ form.phone(class="form-control", placeholder="+1 555 123 4567") }}
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">{{ form.partnership_goals.label }}</label>
+                                {{ form.partnership_goals(class="form-control", rows=4, placeholder="Describe your goals for partnering with us and how you plan to use our platform") }}
                             </div>
                         </div>
                         
@@ -92,7 +108,7 @@
                         
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-building me-2"></i> Register Business Account
+                                <i class="fas fa-handshake me-2"></i> Apply for Partner Program
                             </button>
                         </div>
                     </form>

@@ -40,6 +40,10 @@ class RegistrationForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     first_name = StringField('First Name', validators=[Optional()])
     last_name = StringField('Last Name', validators=[Optional()])
+    organization = StringField('Company/Organization', validators=[Optional()])
+    country = StringField('Country', validators=[Optional()])
+    phone = StringField('Phone Number', validators=[Optional()])
+    newsletter = BooleanField('Subscribe to Newsletter', default=True)
     terms_agree = BooleanField('I agree to the Terms of Service and Privacy Policy', validators=[DataRequired()])
 
 class RequestResetForm(FlaskForm):
@@ -121,6 +125,42 @@ class ClientRegistrationForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     first_name = StringField('First Name', validators=[DataRequired()])
     last_name = StringField('Last Name', validators=[DataRequired()])
+    organization = StringField('Company/Organization', validators=[Optional(), Length(max=100)])
+    country = StringField('Country', validators=[Optional(), Length(max=100)])
+    phone = StringField('Phone Number', validators=[Optional(), Length(max=20)])
+    newsletter = BooleanField('Subscribe to Newsletter', default=True)
+    invite_code = HiddenField('Invitation Code')
+    terms_agree = BooleanField('I agree to the Terms of Service and Privacy Policy', validators=[DataRequired()])
+
+class PartnerRegistrationForm(FlaskForm):
+    """Form for partner program registration"""
+    username = StringField('Username', validators=[DataRequired(), Length(min=4, max=64)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    first_name = StringField('First Name', validators=[DataRequired()])
+    last_name = StringField('Last Name', validators=[DataRequired()])
+    company_name = StringField('Company/Organization', validators=[DataRequired(), Length(max=100)])
+    partner_type = SelectField('Partner Type', choices=[
+        ('payment_processor', 'Payment Processor'),
+        ('financial_institution', 'Financial Institution'),
+        ('service_provider', 'Service Provider'),
+        ('technology_partner', 'Technology Partner'),
+        ('consultant', 'Consultant/Advisory')
+    ], validators=[DataRequired()])
+    website = StringField('Website', validators=[Optional(), Length(max=255)])
+    country = StringField('Country', validators=[DataRequired(), Length(max=100)])
+    phone = StringField('Phone Number', validators=[DataRequired(), Length(max=20)])
+    company_size = SelectField('Company Size', choices=[
+        ('1-10', '1-10 employees'),
+        ('11-50', '11-50 employees'),
+        ('51-200', '51-200 employees'),
+        ('201-1000', '201-1000 employees'),
+        ('1000+', '1000+ employees')
+    ], validators=[DataRequired()])
+    partnership_goals = TextAreaField('Partnership Goals', validators=[DataRequired(), Length(max=500)])
+    invite_code = HiddenField('Invitation Code')
+    newsletter = BooleanField('Subscribe to Newsletter', default=True)
     terms_agree = BooleanField('I agree to the Terms of Service and Privacy Policy', validators=[DataRequired()])
 
 class BankTransferForm(FlaskForm):

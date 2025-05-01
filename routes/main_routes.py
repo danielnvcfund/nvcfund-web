@@ -22,7 +22,7 @@ from forms import (
     LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, ForgotUsernameForm,
     PaymentForm, TransferForm, BlockchainTransactionForm, FinancialInstitutionForm, PaymentGatewayForm,
     InvitationForm, AcceptInvitationForm, TestPaymentForm, BankTransferForm, LetterOfCreditForm,
-    ClientRegistrationForm
+    ClientRegistrationForm, PartnerRegistrationForm
 )
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import func
@@ -162,10 +162,106 @@ def index():
     """Homepage route"""
     return render_template('index.html')
 
-@main.route('/quick-access')
+@main.route('/quick-access', methods=['GET', 'POST'])
 def quick_access():
-    """Quick access page for registration and documentation"""
-    return render_template('quick_access.html')
+    """Partner program registration and quick access page"""
+    # If user is already logged in, redirect to dashboard
+    if current_user.is_authenticated:
+        return redirect(url_for('web.main.dashboard'))
+        
+    form = PartnerRegistrationForm()
+    
+    # Check for invite code in URL parameters
+    invite_code = request.args.get('invite_code')
+    if invite_code:
+        form.invite_code.data = invite_code
+        
+        # Get the invitation if it exists
+        invitation = get_invitation_by_code(invite_code)
+        if invitation and invitation.invitation_type == InvitationType.PARTNER and invitation.is_valid():
+            # Pre-fill email field if we have it
+            form.email.data = invitation.email
+    
+    if form.validate_on_submit():
+        try:
+            # Create user with basic info - partners get the PARTNER role
+            user, error = register_user(form.username.data, form.email.data, form.password.data, role=UserRole.PARTNER)
+            
+            if error:
+                flash(error, 'danger')
+                return render_template('partner_registration.html', form=form)
+            
+            # Update additional profile information
+            if user:
+                # Partner personal details
+                user.first_name = form.first_name.data
+                user.last_name = form.last_name.data
+                user.organization = form.company_name.data
+                user.country = form.country.data
+                user.phone = form.phone.data
+                user.newsletter = form.newsletter.data
+                
+                # Create Ethereum wallet for the user
+                if not user.ethereum_address:
+                    try:
+                        address, private_key = generate_ethereum_account()
+                        user.ethereum_address = address
+                        user.ethereum_private_key = private_key
+                    except Exception as e:
+                        logger.error(f"Error creating Ethereum wallet: {str(e)}")
+                
+                # Create a BusinessPartner record for the user
+                try:
+                    partner = BusinessPartner(
+                        user_id=user.id,
+                        company_name=form.company_name.data,
+                        partner_type=PartnerType[form.partner_type.data.upper()] if hasattr(PartnerType, form.partner_type.data.upper()) else PartnerType.SERVICE_PROVIDER,
+                        website=form.website.data,
+                        company_size=form.company_size.data,
+                        partnership_goals=form.partnership_goals.data,
+                        status='PENDING'
+                    )
+                    db.session.add(partner)
+                except Exception as e:
+                    logger.error(f"Error creating BusinessPartner record: {str(e)}")
+                
+                # Check for invitation code
+                if form.invite_code.data:
+                    try:
+                        invitation = get_invitation_by_code(form.invite_code.data)
+                        if invitation and invitation.is_valid():
+                            # Accept the invitation
+                            accept_invitation(invitation.code, user.id)
+                    except Exception as e:
+                        logger.error(f"Error processing invitation: {str(e)}")
+                
+                # User has agreed to terms
+                if form.terms_agree.data:
+                    db.session.commit()
+                    
+                    # Successful registration
+                    flash('Partner registration successful! Your application is being reviewed. You can now log in to your account.', 'success')
+                    return redirect(url_for('web.main.login'))
+                else:
+                    # This shouldn't happen due to form validation, but just in case
+                    db.session.rollback()
+                    flash('You must agree to the Terms of Service and Privacy Policy to register.', 'danger')
+            else:
+                flash('An error occurred during registration. Please try again.', 'danger')
+                
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Partner registration error: {str(e)}")
+            flash('An error occurred during registration. Please try again later.', 'danger')
+    
+    # If there were form validation errors or this is a GET request
+    if form.errors and request.method == 'POST':
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
+    
+    # Render the partner registration page
+    return render_template('partner_registration.html', form=form)
 
 @main.route('/funds-transfer-guide')
 def funds_transfer_guide():
