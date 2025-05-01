@@ -2,6 +2,19 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, TextAreaField, DecimalField, PasswordField, BooleanField, FloatField, SubmitField, HiddenField, DateField
 from wtforms.validators import DataRequired, Length, Optional, Email, EqualTo
 
+def get_currency_choices():
+    """Get list of supported currencies"""
+    return [
+        ('USD', 'USD - US Dollar'),
+        ('EUR', 'EUR - Euro'), 
+        ('GBP', 'GBP - British Pound'),
+        ('JPY', 'JPY - Japanese Yen'),
+        ('CHF', 'CHF - Swiss Franc'),
+        ('CNY', 'CNY - Chinese Yuan'),
+        ('AUD', 'AUD - Australian Dollar'),
+        ('CAD', 'CAD - Canadian Dollar')
+    ]
+
 class FinancialInstitutionForm(FlaskForm):
     name = StringField('Institution Name', validators=[DataRequired(), Length(max=255)])
     swift_code = StringField('SWIFT/BIC Code', validators=[DataRequired(), Length(min=8, max=11)])
