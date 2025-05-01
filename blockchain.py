@@ -1,10 +1,12 @@
 import os
 import json
 import logging
+import time
 from web3 import Web3, HTTPProvider
 # Use the appropriate middleware for Web3.py v7+
 from web3 import middleware
 from eth_account import Account
+import cache_utils
 
 logger = logging.getLogger(__name__)
 
@@ -17,18 +19,33 @@ def get_models():
     from models import BlockchainTransaction, SmartContract, Transaction, TransactionStatus
     return BlockchainTransaction, SmartContract, Transaction, TransactionStatus
 
-# Global Web3 instance
+# Global Web3 instance - lazily initialized
 w3 = None
+_web3_initialized = False
+_web3_last_checked = 0
+_WEB3_REFRESH_INTERVAL = 600  # 10 minutes between initialization checks
 
 def get_web3():
-    """Get the Web3 instance, initializing it if necessary"""
-    global w3
-    if w3 is None:
+    """
+    Get the Web3 instance, initializing it if necessary
+    Implements lazy loading and connection refresh
+    """
+    global w3, _web3_initialized, _web3_last_checked
+    
+    current_time = time.time()
+    
+    # Check if we need to refresh the connection or initialize for the first time
+    if (not _web3_initialized) or (current_time - _web3_last_checked > _WEB3_REFRESH_INTERVAL):
         try:
             init_web3()
+            _web3_last_checked = current_time
+            _web3_initialized = True
         except Exception as e:
             logger.error(f"Error initializing Web3: {str(e)}")
-            return None
+            # If this is not the first initialization attempt, keep the old connection
+            if not _web3_initialized:
+                return None
+    
     return w3
 
 # Contract compilation would normally be done separately
@@ -419,18 +436,30 @@ NVC_TOKEN_BYTECODE = "0x608060405234801561001057600080fd5b5060405161001e90610046
 
 
 def init_web3():
-    """Initialize Web3 connection to Ethereum node"""
+    """
+    Initialize Web3 connection to Ethereum node
+    Implements caching to reduce startup time
+    """
     global w3
     
-    # Get Ethereum node URL from environment variable or use Sepolia testnet as default
-    # Note: Ropsten is deprecated, using Sepolia instead
-    infura_project_id = os.environ.get("INFURA_PROJECT_ID", "e1159d2eed8f4c4fafa3f2053b612f9b") # Updated project ID
-    
-    # Remove '0x' prefix if present in the project ID as Infura doesn't expect it
-    if infura_project_id and infura_project_id.startswith('0x'):
-        infura_project_id = infura_project_id[2:]
+    # Check cache first
+    cached_connection = cache_utils.get_cached_data("web3_connection_status")
+    if cached_connection and cached_connection.get("status") == "connected":
+        logger.info("Using cached Web3 connection information")
         
-    eth_node_url = os.environ.get("ETHEREUM_NODE_URL", f"https://sepolia.infura.io/v3/{infura_project_id}")
+        # We don't actually cache the connection object itself, just info about it
+        # Still need to create a fresh connection
+        eth_node_url = cached_connection.get("eth_node_url")
+    else:
+        # Get Ethereum node URL from environment variable or use Sepolia testnet as default
+        # Note: Ropsten is deprecated, using Sepolia instead
+        infura_project_id = os.environ.get("INFURA_PROJECT_ID", "e1159d2eed8f4c4fafa3f2053b612f9b") # Updated project ID
+        
+        # Remove '0x' prefix if present in the project ID as Infura doesn't expect it
+        if infura_project_id and infura_project_id.startswith('0x'):
+            infura_project_id = infura_project_id[2:]
+            
+        eth_node_url = os.environ.get("ETHEREUM_NODE_URL", f"https://sepolia.infura.io/v3/{infura_project_id}")
     
     logger.info(f"Connecting to Ethereum node: {eth_node_url}")
     
@@ -453,6 +482,14 @@ def init_web3():
         logger.warning("Web3 functionality may be limited")
     
     if w3 and w3.is_connected():
+        # Cache successful connection info
+        cache_utils.cache_data({
+            "status": "connected",
+            "eth_node_url": eth_node_url,
+            "network_id": w3.net.version,
+            "timestamp": time.time()
+        }, "web3_connection_status", expire_seconds=3600)  # Cache for 1 hour
+        
         logger.info(f"Successfully connected to Ethereum node. Network version: {w3.net.version}")
         
         # Initialize contracts if they don't exist - will be done later in the app context
