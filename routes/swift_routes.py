@@ -111,23 +111,6 @@ def new_fund_transfer():
 
     return render_template('swift_fund_transfer_form.html', form=form)
 
-@swift.route('/institution/new', methods=['GET', 'POST'])
-@login_required
-def new_institution():
-    form = FinancialInstitutionForm()
-    if form.validate_on_submit():
-        institution = FinancialInstitution(
-            name=form.name.data,
-            swift_code=form.swift_code.data,
-            country=form.country.data,
-            institution_type=form.institution_type.data
-        )
-        db.session.add(institution)
-        db.session.commit()
-        flash('Financial institution added successfully', 'success')
-        return redirect(url_for('web.swift.new_mt542'))
-    return render_template('financial_institution_form.html', form=form)
-
 @swift.route('/mt542/new', methods=['GET', 'POST'])
 @login_required
 def new_mt542():
