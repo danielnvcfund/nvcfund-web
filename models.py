@@ -927,7 +927,7 @@ class InterestType(enum.Enum):
 class PaymentFrequency(enum.Enum):
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
-    SEMI_ANNUAL = "semi_annual"
+    SEMI_ANNUAL = "semi-annual"
     ANNUAL = "annual"
 
 class TreasuryLoan(db.Model):
@@ -1023,7 +1023,7 @@ class PaymentFrequency(enum.Enum):
     ONE_TIME = "one_time"
     DAILY = "daily"
     WEEKLY = "weekly"
-    BI_WEEKLY = "bi_weekly"
+    BI_WEEKLY = "bi-weekly"
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
     ANNUALLY = "annually"
