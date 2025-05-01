@@ -27,10 +27,23 @@
                         <i class="fas fa-sign-in-alt me-2"></i> 
                         <span>Sign In</span>
                     </a>
-                    <a href="{{ url_for('web.main.register') }}" class="btn btn-outline-light btn-lg px-4 py-3">
-                        <i class="fas fa-user-plus me-2"></i> 
-                        <span>Register</span>
-                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light btn-lg px-4 py-3 dropdown-toggle" type="button" id="registerDropdownMain" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-plus me-2"></i> 
+                            <span>Register</span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="registerDropdownMain">
+                            <li><a class="dropdown-item" href="{{ url_for('web.main.register') }}">
+                                <i class="fas fa-user me-2"></i> Individual Account
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('web.main.client_registration') }}">
+                                <i class="fas fa-building me-2"></i> Business Client
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('web.main.quick_access') }}">
+                                <i class="fas fa-handshake me-2"></i> Partner Program
+                            </a></li>
+                        </ul>
+                    </div>
                     {% endif %}
                 </div>
             </div>
