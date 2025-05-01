@@ -83,6 +83,7 @@ class TransactionType(enum.Enum):
     SWIFT_GPI_NOTIFICATION = "SWIFT_GPI_NOTIFICATION"  # For SWIFT GPI status notifications
     INTERNATIONAL_WIRE = "INTERNATIONAL_WIRE"          # For international wire transfers
     RTGS_TRANSFER = "RTGS_TRANSFER"                    # For Real-Time Gross Settlement transfers
+    RTGS_TRANSFER = "RTGS_TRANSFER"                    # For Real-Time Gross Settlement transfers
     SERVER_TO_SERVER = "SERVER_TO_SERVER"              # For direct server-to-server transfers
     OFF_LEDGER_TRANSFER = "OFF_LEDGER_TRANSFER"        # For general off-ledger transfers
     TOKEN_EXCHANGE = "TOKEN_EXCHANGE"                  # For AFD1-NVCT token exchange transactions
