@@ -187,15 +187,18 @@ class LetterOfCreditForm(FlaskForm):
     submit = SubmitField('Create Letter of Credit')
 
 class SwiftFundTransferForm(FlaskForm):
-    """Form for creating a SWIFT MT103 customer fund transfer"""
-    sender_name = StringField('Sender Name', validators=[DataRequired()])
-    sender_account = StringField('Sender Account', validators=[DataRequired()])
-    beneficiary_name = StringField('Beneficiary Name', validators=[DataRequired()])
-    beneficiary_account = StringField('Beneficiary Account', validators=[DataRequired()])
-    beneficiary_bank = StringField('Beneficiary Bank', validators=[DataRequired()])
+    """Form for creating a SWIFT MT103/MT202 fund transfer"""
+    receiver_institution_id = SelectField('Receiving Institution', coerce=int, validators=[DataRequired()])
+    receiver_institution_name = StringField('Institution Name', validators=[DataRequired()])
     amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
     currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
-    payment_details = TextAreaField('Payment Details', validators=[DataRequired()])
+    ordering_customer = TextAreaField('Ordering Customer/Institution', validators=[DataRequired()])
+    beneficiary_customer = TextAreaField('Beneficiary Customer/Institution', validators=[DataRequired()])
+    details_of_payment = TextAreaField('Payment Details', validators=[DataRequired()])
+    is_financial_institution = RadioField('Transfer Type', choices=[
+        (0, 'Customer Transfer (MT103)'),
+        (1, 'Financial Institution Transfer (MT202)')
+    ], coerce=int, default=0)
     submit = SubmitField('Create Fund Transfer')
 
 class SwiftFreeFormatMessageForm(FlaskForm):
