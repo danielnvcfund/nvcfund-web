@@ -1,36 +1,17 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SelectField, TextAreaField, HiddenField, FloatField, DateField, SubmitField, RadioField, validators, IntegerField, DecimalField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional, URL, NumberRange
-from datetime import datetime, timedelta
-from models import (
-    FinancialInstitution, TransactionType, InvitationType, ApiAccessRequestStatus,
-    TreasuryAccountType, InvestmentType, TreasuryTransactionType, 
-    CashFlowDirection, RecurrenceType, LoanType, InterestType, PaymentFrequency
-)
-import json
+from wtforms import StringField, SelectField, TextAreaField, DecimalField
+from wtforms.validators import DataRequired, Length, Optional
 
-# Helper functions for forms
-def get_institution_choices():
-    """Get financial institution choices for select fields"""
-    try:
-        institutions = FinancialInstitution.query.filter_by(is_active=True).all()
-        return [(str(inst.id), inst.name) for inst in institutions]
-    except Exception:
-        # Return empty list if database query fails
-        return []
-
-def get_currency_choices():
-    """Get currency choices for select fields"""
-    return [
-        ('USD', 'USD - US Dollar'),
-        ('EUR', 'EUR - Euro'),
-        ('GBP', 'GBP - British Pound'),
-        ('CHF', 'CHF - Swiss Franc'),
-        ('JPY', 'JPY - Japanese Yen'),
-        ('CAD', 'CAD - Canadian Dollar'),
-        ('AUD', 'AUD - Australian Dollar'),
-        ('CNY', 'CNY - Chinese Yuan')
-    ]
+class FinancialInstitutionForm(FlaskForm):
+    name = StringField('Institution Name', validators=[DataRequired(), Length(max=255)])
+    swift_code = StringField('SWIFT/BIC Code', validators=[DataRequired(), Length(min=8, max=11)])
+    country = StringField('Country', validators=[DataRequired(), Length(max=100)])
+    institution_type = SelectField('Institution Type', choices=[
+        ('bank', 'Bank'),
+        ('central_bank', 'Central Bank'),
+        ('investment_firm', 'Investment Firm'),
+        ('other', 'Other')
+    ], validators=[DataRequired()])
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -42,25 +23,25 @@ class RegistrationForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
-    
+
     # Optional personal information fields
     first_name = StringField('First Name', validators=[Optional()])
     last_name = StringField('Last Name', validators=[Optional()])
     organization = StringField('Organization/Company', validators=[Optional()])
     country = StringField('Country', validators=[Optional()])
     phone = StringField('Phone Number', validators=[Optional()])
-    
+
     # Terms and newsletter
     terms_agree = BooleanField('I agree to the Terms of Service and Privacy Policy', validators=[DataRequired()])
     newsletter = BooleanField('Subscribe to newsletter', validators=[Optional()])
 
 class RequestResetForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
-    
+
 class ResetPasswordForm(FlaskForm):
     password = PasswordField('New Password', validators=[DataRequired(), Length(min=8)])
     password2 = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('password')])
-    
+
 class ForgotUsernameForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
 
@@ -73,14 +54,8 @@ class BlockchainTransactionForm(FlaskForm):
     receiver_address = StringField('Receiver Address', validators=[DataRequired(), Length(min=42, max=42)])
     amount = FloatField('Amount (ETH)', validators=[DataRequired()])
     gas_price = FloatField('Gas Price (Gwei)', default=1.0)
-    
-class FinancialInstitutionForm(FlaskForm):
-    name = StringField('Institution Name', validators=[DataRequired()])
-    institution_type = SelectField('Institution Type', choices=[], validators=[DataRequired()])
-    api_endpoint = StringField('API Endpoint')
-    api_key = StringField('API Key')
-    ethereum_address = StringField('Ethereum Address')
-    
+
+
 class PaymentGatewayForm(FlaskForm):
     name = StringField('Gateway Name', validators=[DataRequired()])
     gateway_type = SelectField('Gateway Type', choices=[], validators=[DataRequired()])
@@ -88,19 +63,19 @@ class PaymentGatewayForm(FlaskForm):
     api_key = StringField('API Key')
     webhook_secret = StringField('Webhook Secret')
     ethereum_address = StringField('Ethereum Address')
-    
+
 class InvitationForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     invitation_type = SelectField('Invitation Type', choices=[], validators=[DataRequired()])
     organization_name = StringField('Organization Name')
     message = TextAreaField('Personal Message')
     expires_days = SelectField('Expires In', choices=[(7, '7 Days'), (14, '14 Days'), (30, '30 Days')], coerce=int, default=7)
-    
+
 class AcceptInvitationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=4, max=64)])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
     password2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])
-    
+
 class TestPaymentForm(FlaskForm):
     amount = FloatField('Amount', validators=[DataRequired()])
     currency = SelectField('Currency', choices=[('USD', 'USD'), ('EUR', 'EUR')], validators=[DataRequired()])
@@ -126,7 +101,7 @@ class PaymentForm(FlaskForm):
     recipient_account = StringField('Account Number', validators=[DataRequired(), Length(max=64)])
     description = TextAreaField('Description', validators=[DataRequired()], default='Payment from nvcplatform.net')
     submit = SubmitField('Submit Payment')
-    
+
     def __init__(self, *args, **kwargs):
         super(PaymentForm, self).__init__(*args, **kwargs)
         # Dynamically load transaction types from the Enum
@@ -139,7 +114,7 @@ class ClientRegistrationForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
-    
+
     # Client details
     first_name = StringField('First Name', validators=[DataRequired()])
     last_name = StringField('Last Name', validators=[DataRequired()])
@@ -159,7 +134,7 @@ class ClientRegistrationForm(FlaskForm):
         # Add more countries as needed
     ], validators=[DataRequired()])
     phone = StringField('Phone Number', validators=[DataRequired()])
-    
+
     # Business details
     business_type = SelectField('Business Type', choices=[
         ('', 'Select business type (if applicable)'),
@@ -175,7 +150,7 @@ class ClientRegistrationForm(FlaskForm):
     tax_id = StringField('Tax ID / EIN', validators=[Optional()])
     business_address = TextAreaField('Business Address', validators=[Optional()])
     website = StringField('Website', validators=[Optional()])
-    
+
     # Banking preferences
     preferred_currency = SelectField('Preferred Currency', choices=[
         ('USD', 'USD - US Dollar'),
@@ -187,14 +162,14 @@ class ClientRegistrationForm(FlaskForm):
         ('AUD', 'AUD - Australian Dollar'),
         ('CNY', 'CNY - Chinese Yuan')
     ], validators=[DataRequired()])
-    
+
     # Agreement and opt-ins
     terms_agree = BooleanField('I agree to the Terms of Service and Privacy Policy', validators=[DataRequired()])
     newsletter = BooleanField('I would like to receive updates about new features and services', default=True)
-    
+
     # Optional invite code
     invite_code = StringField('Invitation Code (if any)', validators=[Optional()])
-    
+
     # Reference information
     referral_source = SelectField('How did you hear about us?', choices=[
         ('', 'Select an option'),
@@ -205,12 +180,12 @@ class ClientRegistrationForm(FlaskForm):
         ('news', 'News Article'),
         ('other', 'Other')
     ], validators=[Optional()])
-    
+
     submit = SubmitField('Complete Registration')
-    
+
 class BankTransferForm(FlaskForm):
     transaction_id = HiddenField('Transaction ID', validators=[Optional()])
-    
+
     # Recipient information fields
     recipient_name = StringField('Recipient Name', validators=[DataRequired()])
     recipient_email = StringField('Email Address', validators=[Optional(), Email()])
@@ -221,7 +196,7 @@ class BankTransferForm(FlaskForm):
     recipient_country = StringField('Country', validators=[DataRequired()])
     recipient_phone = StringField('Phone Number', validators=[Optional()])
     recipient_tax_id = StringField('Tax ID/VAT Number', validators=[Optional()])
-    
+
     # Enhanced beneficiary information for regulatory compliance
     recipient_institution_type = SelectField('Institution Type', choices=[
         ('individual', 'Individual'),
@@ -239,7 +214,7 @@ class BankTransferForm(FlaskForm):
         ('employee', 'Employee'),
         ('other', 'Other')
     ], validators=[Optional()])
-    
+
     # Bank account information fields
     bank_name = StringField('Bank Name', validators=[DataRequired()])
     account_holder = StringField('Account Holder Name', validators=[DataRequired()])
@@ -266,7 +241,7 @@ class BankTransferForm(FlaskForm):
     bank_country = StringField('Country', validators=[DataRequired()])
     bank_branch_code = StringField('Branch Code', validators=[Optional()])
     bank_branch_name = StringField('Branch Name', validators=[Optional()])
-    
+
     # International transfer fields
     currency = SelectField('Currency', choices=[
         ('USD', 'USD - US Dollar'),
@@ -303,7 +278,7 @@ class BankTransferForm(FlaskForm):
     purpose_detail = StringField('Purpose Details', validators=[Optional()])
     intermediary_bank = StringField('Intermediary Bank', validators=[Optional()])
     intermediary_swift = StringField('Intermediary SWIFT Code', validators=[Optional()])
-    
+
     # Settlement information
     settlement_method = SelectField('Settlement Method', choices=[
         ('standard', 'Standard (3-5 business days)'),
@@ -318,7 +293,7 @@ class BankTransferForm(FlaskForm):
         ('SHA', 'Shared fees (SHA)'),
         ('BEN', 'Recipient pays all fees (BEN)')
     ], default='SHA', validators=[Optional()])
-    
+
     # Compliance and regulatory information
     source_of_funds = SelectField('Source of Funds', choices=[
         ('salary', 'Salary/Employment Income'),
@@ -332,25 +307,25 @@ class BankTransferForm(FlaskForm):
         ('other', 'Other (Please Specify)')
     ], validators=[Optional()])
     source_of_funds_detail = StringField('Source of Funds Details', validators=[Optional()])
-    
+
     # Reference information
     reference = StringField('Payment Reference', validators=[Optional()])
     invoice_number = StringField('Invoice Number', validators=[Optional()])
     description = TextAreaField('Description', validators=[Optional()])
     notes_to_recipient = TextAreaField('Notes to Recipient', validators=[Optional()])
     notes_to_bank = TextAreaField('Instructions to Bank', validators=[Optional()])
-    
+
     # Terms agreement
     terms_agree = BooleanField('I agree to the terms', validators=[DataRequired()])
     compliance_agree = BooleanField('I confirm this transaction complies with all applicable laws', validators=[DataRequired()])
-    
+
     amount = HiddenField('Amount')
-    
+
     def populate_from_stored_data(self, stored_data):
         """Populate form from stored JSON data"""
         if not stored_data:
             return
-            
+
         try:
             data = json.loads(stored_data)
             for field_name, field_value in data.items():
@@ -375,7 +350,7 @@ class LetterOfCreditForm(FlaskForm):
     terms_and_conditions = TextAreaField('Terms and Conditions', 
                                         validators=[DataRequired(), Length(min=10, max=2000)],
                                         description="Full terms and conditions of the letter of credit")
-    
+
     def __init__(self, *args, **kwargs):
         super(LetterOfCreditForm, self).__init__(*args, **kwargs)
         # Load available financial institutions that support SWIFT
@@ -384,24 +359,24 @@ class LetterOfCreditForm(FlaskForm):
         if not swift_institutions:
             # If no SWIFT-enabled institutions are found, fall back to all active institutions
             swift_institutions = FinancialInstitution.query.filter_by(is_active=True).all()
-        
+
         self.receiver_institution_id.choices = [(i.id, i.name) for i in swift_institutions]
-        
+
         # Set default expiry date to 6 months from now
         if not self.expiry_date.data:
             self.expiry_date.data = datetime.now() + timedelta(days=180)
-            
+
     def validate_expiry_date(self, field):
         """Ensure expiry date is in the future"""
         if field.data <= datetime.now().date():
             raise ValidationError('Expiry date must be in the future')
-        
+
         # Validate maximum expiry period (2 years)
         max_date = datetime.now().date() + timedelta(days=730)
         if field.data > max_date:
             raise ValidationError('Maximum expiry period is 2 years from today')
-            
-            
+
+
 class SwiftFundTransferForm(FlaskForm):
     """Form for creating a SWIFT MT103/MT202 fund transfer"""
     receiver_institution_id = SelectField('Receiving Institution ID', coerce=int, validators=[DataRequired()])
@@ -425,7 +400,7 @@ class SwiftFundTransferForm(FlaskForm):
                                        default=0,
                                        validators=[DataRequired()])
     submit = SubmitField('Submit Fund Transfer')
-    
+
     def __init__(self, *args, **kwargs):
         super(SwiftFundTransferForm, self).__init__(*args, **kwargs)
         # Load available financial institutions that support SWIFT
@@ -434,10 +409,10 @@ class SwiftFundTransferForm(FlaskForm):
         if not swift_institutions:
             # If no SWIFT-enabled institutions are found, fall back to all active institutions
             swift_institutions = FinancialInstitution.query.filter_by(is_active=True).all()
-        
+
         self.receiver_institution_id.choices = [(i.id, i.name) for i in swift_institutions]
-    
-    
+
+
 class SwiftMT542Form(FlaskForm):
     """Form for sending a SWIFT MT542 Deliver Against Payment message"""
     receiver_institution_id = SelectField('Receiving Institution', coerce=int, validators=[DataRequired()])
@@ -465,7 +440,7 @@ class SwiftFreeFormatMessageForm(FlaskForm):
                                validators=[DataRequired(), Length(min=10, max=2000)],
                                description="Content of your message to the institution")
     submit = SubmitField('Send Message')
-    
+
     def __init__(self, *args, **kwargs):
         super(SwiftFreeFormatMessageForm, self).__init__(*args, **kwargs)
         # Load available financial institutions that support SWIFT
@@ -474,7 +449,7 @@ class SwiftFreeFormatMessageForm(FlaskForm):
         if not swift_institutions:
             # If no SWIFT-enabled institutions are found, fall back to all active institutions
             swift_institutions = FinancialInstitution.query.filter_by(is_active=True).all()
-        
+
         self.receiver_institution_id.choices = [(i.id, i.name) for i in swift_institutions]
 class ApiAccessRequestForm(FlaskForm):
     """Form for requesting API access"""
@@ -496,7 +471,7 @@ class ApiAccessRequestForm(FlaskForm):
         DataRequired(message="You must agree to the terms of service")
     ])
     submit = SubmitField("Submit Request")
-    
+
 class ApiAccessReviewForm(FlaskForm):
     """Form for admins to review API access requests"""
     status = SelectField("Decision", validators=[DataRequired()], choices=[
@@ -533,26 +508,26 @@ class EdiPartnerForm(FlaskForm):
     name = StringField("Institution Name", validators=[DataRequired(), Length(min=2, max=128)])
     routing_number = StringField("Routing Number", validators=[Optional(), Length(max=20)])
     account_number = StringField("Account Number", validators=[Optional(), Length(max=30)])
-    
+
     edi_format = SelectField("EDI Format", validators=[DataRequired()], choices=[
         ("X12", "X12 (ANSI X12)"),
         ("EDIFACT", "EDIFACT (UN/EDIFACT)"),
         ("CUSTOM", "Custom Format")
     ])
-    
+
     connection_type = SelectField("Connection Type", validators=[DataRequired()], choices=[
         ("SFTP", "SFTP Transfer"),
         ("API", "API Integration"),
         ("EMAIL", "Secure Email")
     ])
-    
+
     # SFTP credentials
     sftp_host = StringField("SFTP Host", validators=[Optional(), Length(max=256)])
     sftp_port = StringField("SFTP Port", validators=[Optional(), Length(max=5)], default="22")
     sftp_username = StringField("SFTP Username", validators=[Optional(), Length(max=64)])
     sftp_password = PasswordField("SFTP Password", validators=[Optional(), Length(max=128)])
     sftp_remote_dir = StringField("Remote Directory", validators=[Optional(), Length(max=256)], default="/incoming")
-    
+
     is_active = BooleanField("Partner is Active", default=True)
     submit = SubmitField("Save Partner")
 
@@ -564,14 +539,14 @@ class EDITransactionForm(FlaskForm):
         ("EDI_ACH_TRANSFER", "ACH Transfer"),
         ("EDI_WIRE_TRANSFER", "Wire Transfer")
     ])
-    
+
     amount = FloatField("Amount", validators=[DataRequired()])
     currency = SelectField("Currency", validators=[DataRequired()])
-    
+
     recipient_name = StringField("Recipient Name", validators=[DataRequired(), Length(min=2, max=128)])
     recipient_account = StringField("Recipient Account", validators=[Optional(), Length(max=30)])
     recipient_routing = StringField("Recipient Routing #", validators=[Optional(), Length(max=20)])
-    
+
     description = TextAreaField("Description/Notes", validators=[Optional(), Length(max=500)])
     submit = SubmitField("Process Transaction")
 
@@ -591,12 +566,12 @@ class TreasuryAccountForm(FlaskForm):
     minimum_balance = FloatField('Minimum Balance', validators=[Optional()], default=0.0)
     maximum_balance = FloatField('Maximum Balance', validators=[Optional()])
     submit = SubmitField('Save Account')
-    
+
     def validate_initial_balance(self, field):
         """Validate initial balance is not negative"""
         if field.data < 0:
             raise ValidationError('Initial balance cannot be negative')
-            
+
     def validate_target_balance(self, field):
         """Validate target balance if provided"""
         if field.data is not None and field.data < 0:
@@ -618,12 +593,12 @@ class TreasuryInvestmentForm(FlaskForm):
     description = TextAreaField('Description', validators=[Optional(), Length(max=256)])
     is_active = BooleanField('Investment is Active', default=True)
     submit = SubmitField('Create Investment')
-    
+
     def validate_maturity_date(self, field):
         """Validate maturity date is after start date"""
         if self.start_date.data and field.data <= self.start_date.data:
             raise ValidationError('Maturity date must be after start date')
-            
+
     def validate_interest_rate(self, field):
         """Validate interest rate is not negative"""
         if field.data is not None and field.data < 0:
@@ -643,7 +618,7 @@ class TreasuryTransactionForm(FlaskForm):
     description = TextAreaField('Description', validators=[Optional(), Length(max=256)])
     memo = TextAreaField('Memo / Notes', validators=[Optional()])
     submit = SubmitField('Create Transaction')
-    
+
     def validate_to_account_id(self, field):
         """Validate to_account is different from from_account"""
         if field.data == self.from_account_id.data and field.data != 0:
@@ -667,12 +642,12 @@ class CashFlowForecastForm(FlaskForm):
     probability = FloatField('Probability (%)', validators=[Optional()], default=100.0)
     notes = TextAreaField('Notes', validators=[Optional()])
     submit = SubmitField('Save Cash Flow')
-    
+
     def validate_probability(self, field):
         """Validate probability is between 0 and 100"""
         if field.data < 0 or field.data > 100:
             raise ValidationError('Probability must be between 0 and 100')
-            
+
     def validate_recurrence_end_date(self, field):
         """Validate recurrence end date if provided"""
         if self.recurrence_type.data != RecurrenceType.NONE.name and field.data is None:
@@ -713,12 +688,12 @@ class TreasuryLoanForm(FlaskForm):
     description = TextAreaField('Description', validators=[Optional(), Length(max=256)])
     collateral_description = TextAreaField('Collateral Description', validators=[Optional()])
     submit = SubmitField('Create Loan')
-    
+
     def validate_maturity_date(self, field):
         """Validate maturity date is after start date"""
         if self.start_date.data and field.data <= self.start_date.data:
             raise ValidationError('Maturity date must be after start date')
-            
+
     def validate_first_payment_date(self, field):
         """Validate first payment date is after start date"""
         if self.start_date.data and field.data < self.start_date.data:

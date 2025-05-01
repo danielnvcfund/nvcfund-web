@@ -1,119 +1,42 @@
-{% extends 'layout.html' %}
+{% extends "layout.html" %}
 
-{% block title %}
-{% if is_new %}Add New Financial Institution{% else %}Edit Financial Institution{% endif %} - NVC Banking Platform
-{% endblock %}
+{% block title %}Add Financial Institution{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>
-            <i class="fas fa-university me-2"></i>
-            {% if is_new %}Add New Financial Institution{% else %}Edit Financial Institution{% endif %}
-        </h1>
-        <div>
-            <a href="{{ url_for('financial_institutions') }}" class="btn btn-outline-primary">
-                <i class="fas fa-arrow-left me-1"></i> Back to Institutions
-            </a>
-        </div>
-    </div>
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Add Financial Institution</li>
+        </ol>
+    </nav>
 
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-university me-2"></i>
-                        Institution Details
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ request.url }}">
-                        {{ form.hidden_tag() }}
-                        
-                        <div class="mb-3">
-                            {{ form.name.label(class="form-label") }}
-                            {{ form.name(class="form-control", required=true) }}
-                            <div class="form-text">Choose a descriptive name for this financial institution.</div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.institution_type.label(class="form-label") }}
-                            {{ form.institution_type(class="form-select", required=true) }}
-                            <div class="form-text">Select the type of financial institution.</div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.api_endpoint.label(class="form-label") }}
-                            {{ form.api_endpoint(class="form-control", placeholder="https://api.example.com/v1") }}
-                            <div class="form-text">The API endpoint URL for integration.</div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.api_key.label(class="form-label") }}
-                            {{ form.api_key(class="form-control", placeholder="API key for authentication") }}
-                            <div class="form-text">API key for authentication with the institution's API.</div>
-                        </div>
-                        
-                        <div class="mb-3 form-check">
-                            {{ form.is_active(class="form-check-input") }}
-                            {{ form.is_active.label(class="form-check-label") }}
-                            <div class="form-text">Inactive institutions will not be available for transactions.</div>
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            {{ form.submit(class="btn btn-primary") }}
-                        </div>
-                    </form>
-                </div>
-            </div>
+    <div class="card shadow">
+        <div class="card-header">
+            <h2 class="h4 mb-0">Add New Financial Institution</h2>
         </div>
-        
-        <div class="col-lg-4">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Information</h5>
+        <div class="card-body">
+            <form method="POST">
+                {{ form.csrf_token }}
+                <div class="mb-3">
+                    <label class="form-label">Institution Name</label>
+                    {{ form.name(class="form-control") }}
                 </div>
-                <div class="card-body">
-                    <p>Financial institutions are integrated with our banking platform to enable transfers and transactions.</p>
-                    
-                    <div class="alert alert-info">
-                        <i class="fas fa-shield-alt me-2"></i> All connections to financial institutions are secured and encrypted.
-                    </div>
-                    
-                    <h6 class="mt-4">Institution Types:</h6>
-                    <ul class="list-group">
-                        <li class="list-group-item d-flex align-items-center">
-                            <i class="fas fa-university me-2"></i>
-                            <div>
-                                <strong>Bank</strong>
-                                <div class="small text-muted">Traditional banking institutions</div>
-                            </div>
-                        </li>
-                        <li class="list-group-item d-flex align-items-center">
-                            <i class="fas fa-landmark me-2"></i>
-                            <div>
-                                <strong>Credit Union</strong>
-                                <div class="small text-muted">Member-owned financial cooperatives</div>
-                            </div>
-                        </li>
-                        <li class="list-group-item d-flex align-items-center">
-                            <i class="fas fa-chart-line me-2"></i>
-                            <div>
-                                <strong>Investment Firm</strong>
-                                <div class="small text-muted">Securities brokers and wealth managers</div>
-                            </div>
-                        </li>
-                        <li class="list-group-item d-flex align-items-center">
-                            <i class="fas fa-building me-2"></i>
-                            <div>
-                                <strong>Other</strong>
-                                <div class="small text-muted">Other financial service providers</div>
-                            </div>
-                        </li>
-                    </ul>
+                <div class="mb-3">
+                    <label class="form-label">SWIFT/BIC Code</label>
+                    {{ form.swift_code(class="form-control") }}
                 </div>
-            </div>
+                <div class="mb-3">
+                    <label class="form-label">Country</label>
+                    {{ form.country(class="form-control") }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Institution Type</label>
+                    {{ form.institution_type(class="form-control") }}
+                </div>
+                <button type="submit" class="btn btn-primary">Add Institution</button>
+                <a href="{{ url_for('web.swift.new_mt542') }}" class="btn btn-secondary">Cancel</a>
+            </form>
         </div>
     </div>
 </div>
