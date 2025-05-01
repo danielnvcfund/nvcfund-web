@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, TextAreaField, DecimalField, PasswordField
+from wtforms import StringField, SelectField, TextAreaField, DecimalField, PasswordField, BooleanField
 from wtforms.validators import DataRequired, Length, Optional
 
 class FinancialInstitutionForm(FlaskForm):
