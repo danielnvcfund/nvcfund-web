@@ -30,7 +30,7 @@ def new_letter_of_credit():
     # We can safely use current_user
     user_id = current_user.id
     form = LetterOfCreditForm()
-    
+
     if form.validate_on_submit():
         try:
             # Create the letter of credit
@@ -40,39 +40,16 @@ def new_letter_of_credit():
                 amount=form.amount.data,
                 currency=form.currency.data,
 
-@swift.route('/institution/new', methods=['GET', 'POST'])
-@login_required
-def new_institution():
-    """Add a new financial institution"""
-    form = FinancialInstitutionForm()
-    form.institution_type.choices = [(t.name, t.value) for t in FinancialInstitutionType]
-
-    if form.validate_on_submit():
-        institution = FinancialInstitution(
-            name=form.name.data,
-            institution_type=FinancialInstitutionType[form.institution_type.data],
-            api_endpoint=form.api_endpoint.data,
-            api_key=form.api_key.data,
-            ethereum_address=form.ethereum_address.data,
-            is_active=True
-        )
-        db.session.add(institution)
-        db.session.commit()
-        flash('Financial institution added successfully', 'success')
-        return redirect(url_for('web.swift.new_mt542'))
-
-    return render_template('financial_institution_form.html', form=form, is_new=True)
-
                 beneficiary=form.beneficiary.data,
                 expiry_date=form.expiry_date.data,
                 terms_and_conditions=form.terms_and_conditions.data
             )
-            
+
             flash(f'Standby Letter of Credit created successfully. Reference: {transaction.transaction_id}', 'success')
             return redirect(url_for('web.swift.letter_of_credit_status', transaction_id=transaction.transaction_id))
         except Exception as e:
             flash(f'Error creating Letter of Credit: {str(e)}', 'danger')
-    
+
     return render_template('letter_of_credit_form.html', form=form)
 
 @swift.route('/letter_of_credit/status/<transaction_id>')
@@ -83,20 +60,20 @@ def letter_of_credit_status(transaction_id):
     if not transaction:
         flash('Transaction not found.', 'danger')
         return redirect(url_for('web.main.dashboard'))
-    
+
     if transaction.transaction_type != TransactionType.SWIFT_LETTER_OF_CREDIT:
         flash('This transaction is not a Letter of Credit.', 'warning')
         return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
-    
+
     # Get status from SWIFT service
     status_data = SwiftService.get_letter_of_credit_status(transaction.id)
-    
+
     # Parse SWIFT message data
     try:
         swift_data = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
     except json.JSONDecodeError:
         swift_data = {}
-    
+
     return render_template('letter_of_credit_status.html', 
                           transaction=transaction, 
                           swift_data=swift_data,
@@ -110,7 +87,7 @@ def new_fund_transfer():
     # We can safely use current_user
     user_id = current_user.id
     form = SwiftFundTransferForm()
-    
+
     if form.validate_on_submit():
         try:
             # Create the fund transfer with proper handling of None values
@@ -125,13 +102,13 @@ def new_fund_transfer():
                 details_of_payment=form.details_of_payment.data or '',
                 is_financial_institution=bool(form.is_financial_institution.data)
             )
-            
+
             message_type = "MT202" if form.is_financial_institution.data else "MT103"
             flash(f'SWIFT {message_type} fund transfer initiated successfully. Reference: {transaction.transaction_id}', 'success')
             return redirect(url_for('web.swift.fund_transfer_status', transaction_id=transaction.transaction_id))
         except Exception as e:
             flash(f'Error creating fund transfer: {str(e)}', 'danger')
-    
+
     return render_template('swift_fund_transfer_form.html', form=form)
 
 @swift.route('/mt542/new', methods=['GET', 'POST'])
@@ -139,7 +116,7 @@ def new_fund_transfer():
 def new_mt542():
     """Create a new SWIFT MT542 Deliver Against Payment message"""
     form = SwiftMT542Form()
-    
+
     if form.validate_on_submit():
         try:
             # Create the MT542 message
@@ -153,12 +130,12 @@ def new_mt542():
                 amount=form.amount.data,
                 currency=form.currency.data
             )
-            
+
             flash('MT542 message created successfully', 'success')
             return redirect(url_for('web.swift.message_status', transaction_id=transaction.transaction_id))
         except Exception as e:
             flash(f'Error creating MT542 message: {str(e)}', 'danger')
-    
+
     return render_template('swift_mt542_form.html', form=form)
 
 @swift.route('/free_format/new', methods=['GET', 'POST'])
@@ -169,7 +146,7 @@ def new_free_format_message():
     # We can safely use current_user
     user_id = current_user.id
     form = SwiftFreeFormatMessageForm()
-    
+
     if form.validate_on_submit():
         try:
             # Create the free format message
@@ -179,12 +156,12 @@ def new_free_format_message():
                 subject=form.subject.data,
                 message_body=form.message_body.data
             )
-            
+
             flash(f'SWIFT MT799 message sent successfully. Reference: {transaction.transaction_id}', 'success')
             return redirect(url_for('web.swift.message_status', transaction_id=transaction.transaction_id))
         except Exception as e:
             flash(f'Error sending message: {str(e)}', 'danger')
-    
+
     return render_template('swift_free_format_message_form.html', form=form)
 
 @swift.route('/message/status/<transaction_id>')
@@ -193,12 +170,12 @@ def message_status(transaction_id):
     """View the status of any SWIFT message"""
     # Flask-Login's login_required decorator ensures the user is authenticated
     # We can safely use current_user
-    
+
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
     if not transaction:
         flash('Transaction not found.', 'danger')
         return redirect(url_for('web.main.dashboard'))
-    
+
     # Get the transaction type safely
     tx_type = None
     try:
@@ -210,7 +187,7 @@ def message_status(transaction_id):
             tx_type = str(transaction.transaction_type)
     except Exception as e:
         logger.error(f"Error determining transaction type: {str(e)}")
-    
+
     # Try to determine message type from metadata first
     message_type = None
     try:
@@ -220,7 +197,7 @@ def message_status(transaction_id):
                 message_type = metadata['message_type']
     except Exception as e:
         logger.error(f"Error parsing transaction metadata: {str(e)}")
-    
+
     # Determine which status check to use based on transaction type or metadata
     if message_type == 'MT760' or (tx_type and 'letter_of_credit' in str(tx_type).lower()):
         status_data = SwiftService.get_letter_of_credit_status(transaction.id)
@@ -234,13 +211,13 @@ def message_status(transaction_id):
     else:
         flash('This transaction is not a SWIFT message.', 'warning')
         return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
-    
+
     # Parse SWIFT message data
     try:
         swift_data = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
     except json.JSONDecodeError:
         swift_data = {}
-    
+
     return render_template(template, 
                           transaction=transaction, 
                           swift_data=swift_data,
@@ -252,7 +229,7 @@ def fund_transfer_status(transaction_id):
     """View the status of a fund transfer"""
     # Flask-Login's login_required decorator ensures the user is authenticated
     # We can safely use current_user
-    
+
     # This is just a specialized redirect to message_status for fund transfers
     return redirect(url_for('web.swift.message_status', transaction_id=transaction_id))
 
@@ -262,12 +239,12 @@ def cancel_message(transaction_id):
     """Cancel a pending SWIFT message"""
     # Flask-Login's login_required decorator ensures the user is authenticated
     # We can safely use current_user
-    
+
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
     if not transaction:
         flash('Transaction not found.', 'danger')
         return redirect(url_for('web.main.dashboard'))
-    
+
     # Check if this is a SWIFT free format message
     tx_type = None
     try:
@@ -277,14 +254,14 @@ def cancel_message(transaction_id):
             tx_type = transaction.transaction_type.name
         else:
             tx_type = str(transaction.transaction_type)
-        
+
         # Check if message type is in metadata
         message_type = None
         if transaction.tx_metadata_json:
             metadata = json.loads(transaction.tx_metadata_json)
             if 'message_type' in metadata:
                 message_type = metadata['message_type']
-                
+
         if not (message_type == 'MT799' or (tx_type and 'free_format' in str(tx_type).lower())):
             flash('This transaction is not a SWIFT free format message.', 'warning')
             return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
@@ -292,11 +269,11 @@ def cancel_message(transaction_id):
         logger.error(f"Error determining transaction type: {str(e)}")
         flash('Error determining transaction type.', 'danger')
         return redirect(url_for('web.main.dashboard'))
-    
+
     if transaction.status != TransactionStatus.PENDING:
         flash('Only pending messages can be cancelled.', 'warning')
         return redirect(url_for('web.swift.message_status', transaction_id=transaction.transaction_id))
-    
+
     try:
         # Update transaction status
         transaction.status = TransactionStatus.CANCELLED
@@ -305,7 +282,7 @@ def cancel_message(transaction_id):
     except Exception as e:
         db.session.rollback()
         flash(f'Error cancelling message: {str(e)}', 'danger')
-    
+
     return redirect(url_for('web.swift.message_status', transaction_id=transaction.transaction_id))
 
 @swift.route('/cancel_transfer/<transaction_id>', methods=['POST'])
@@ -314,12 +291,12 @@ def cancel_transfer(transaction_id):
     """Cancel a pending SWIFT fund transfer"""
     # Flask-Login's login_required decorator ensures the user is authenticated
     # We can safely use current_user
-    
+
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
     if not transaction:
         flash('Transaction not found.', 'danger')
         return redirect(url_for('web.main.dashboard'))
-    
+
     # Check if this is a SWIFT fund transfer
     tx_type = None
     try:
@@ -329,14 +306,14 @@ def cancel_transfer(transaction_id):
             tx_type = transaction.transaction_type.name
         else:
             tx_type = str(transaction.transaction_type)
-        
+
         # Check if message type is in metadata
         message_type = None
         if transaction.tx_metadata_json:
             metadata = json.loads(transaction.tx_metadata_json)
             if 'message_type' in metadata:
                 message_type = metadata['message_type']
-                
+
         if not (message_type in ['MT103', 'MT202'] or (tx_type and ('fund_transfer' in str(tx_type).lower() or 'institution_transfer' in str(tx_type).lower()))):
             flash('This transaction is not a SWIFT fund transfer.', 'warning')
             return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
@@ -344,11 +321,11 @@ def cancel_transfer(transaction_id):
         logger.error(f"Error determining transaction type: {str(e)}")
         flash('Error determining transaction type.', 'danger')
         return redirect(url_for('web.main.dashboard'))
-    
+
     if transaction.status != TransactionStatus.PENDING:
         flash('Only pending transfers can be cancelled.', 'warning')
         return redirect(url_for('web.swift.fund_transfer_status', transaction_id=transaction.transaction_id))
-    
+
     try:
         # Update transaction status
         transaction.status = TransactionStatus.CANCELLED
@@ -357,7 +334,7 @@ def cancel_transfer(transaction_id):
     except Exception as e:
         db.session.rollback()
         flash(f'Error cancelling fund transfer: {str(e)}', 'danger')
-    
+
     return redirect(url_for('web.swift.fund_transfer_status', transaction_id=transaction.transaction_id))
 
 @swift.route('/messages')
@@ -366,15 +343,15 @@ def swift_messages():
     """View all SWIFT messages"""
     # Get all SWIFT-related transactions for the current user
     # Check for both enum and string values to handle different transaction creation methods
-    
+
     # First, let's look for transactions with SWIFT-related metadata
     swift_transactions = []
-    
+
     # Get all transactions for the current user
     all_user_transactions = Transaction.query.filter(
         Transaction.user_id == current_user.id
     ).order_by(Transaction.created_at.desc()).all()
-    
+
     # Get all transactions with SWIFT in their type string
     swift_type_transactions = []
     payment_type_transactions = []
@@ -390,7 +367,7 @@ def swift_messages():
                 tx_type = tx.transaction_type.name
             else:
                 tx_type = str(tx.transaction_type)
-                
+
             # Add to appropriate list
             if isinstance(tx_type, str) and 'swift' in tx_type.lower():
                 swift_type_transactions.append(tx)
@@ -401,7 +378,7 @@ def swift_messages():
 
     # Add all transactions with SWIFT in their type
     swift_transactions.extend(swift_type_transactions)
-    
+
     # For PAYMENT transactions, check if they could be SWIFT
     for tx in payment_type_transactions:
         try:
@@ -410,7 +387,7 @@ def swift_messages():
                                 'Fund Transfer' in tx.description or 'Financial Institution Transfer' in tx.description):
                 swift_transactions.append(tx)
                 continue
-                
+
             # Check if this is a SWIFT transaction based on metadata
             if tx.tx_metadata_json:
                 try:
@@ -430,7 +407,7 @@ def swift_messages():
                 except json.JSONDecodeError:
                     # Malformed JSON, just skip this check
                     pass
-                
+
             # Special handling for PHP integration transactions that use PAYMENT type
             # but might be SWIFT transfers - check based on institution_id being set
             if tx.institution_id is not None:
@@ -441,7 +418,7 @@ def swift_messages():
         except Exception as e:
             logger.error(f"Error processing potential SWIFT transaction: {str(e)}")
             # Continue to next transaction
-    
+
     # Create a list of message objects with additional data
     messages = []
     for tx in swift_transactions:
@@ -450,7 +427,7 @@ def swift_messages():
             metadata = json.loads(tx.tx_metadata_json) if tx.tx_metadata_json else {}
         except json.JSONDecodeError:
             metadata = {}
-        
+
         # Get institution name
         institution_name = ""
         if 'receiver_institution_id' in metadata:
@@ -459,21 +436,21 @@ def swift_messages():
                 institution_name = institution.name
         elif 'receiver_institution_name' in metadata:
             institution_name = metadata.get('receiver_institution_name')
-        
+
         # Determine if it's a financial institution transfer
         is_financial_institution = False
         if tx.transaction_type == TransactionType.SWIFT_INSTITUTION_TRANSFER:
             is_financial_institution = True
         elif 'is_financial_institution' in metadata:
             is_financial_institution = bool(metadata.get('is_financial_institution'))
-        
+
         messages.append({
             'transaction': tx,
             'institution_name': institution_name,
             'is_financial_institution': is_financial_institution,
             'metadata': metadata
         })
-    
+
     return render_template('swift_messages.html', messages=messages)
 
 @swift.route('/message/view/<transaction_id>')
@@ -484,11 +461,11 @@ def view_swift_message(transaction_id):
     if not transaction or transaction.user_id != current_user.id:
         flash('Transaction not found or access denied.', 'danger')
         return redirect(url_for('web.swift.swift_messages'))
-    
+
     # Check if it's a SWIFT message
     try:
         is_swift_message = False
-        
+
         # Get the transaction type value safely
         tx_type = None
         if hasattr(transaction.transaction_type, 'value'):
@@ -497,18 +474,18 @@ def view_swift_message(transaction_id):
             tx_type = transaction.transaction_type.name
         else:
             tx_type = str(transaction.transaction_type)
-            
+
         # Check if this is a SWIFT transaction type
         if isinstance(tx_type, str) and 'swift' in tx_type.lower():
             is_swift_message = True
-        
+
         # If not a SWIFT type, check description for SWIFT hints
         if not is_swift_message and transaction.description and ('SWIFT' in transaction.description or 
                               'Letter of Credit' in transaction.description or 
                               'Fund Transfer' in transaction.description or 
                               'Financial Institution Transfer' in transaction.description):
             is_swift_message = True
-            
+
         # Then check metadata for SWIFT-specific data
         if not is_swift_message and transaction.tx_metadata_json:
             try:
@@ -524,13 +501,13 @@ def view_swift_message(transaction_id):
                     is_swift_message = True
             except (json.JSONDecodeError, AttributeError):
                 pass
-                
+
         # Special case for PAYMENT type with institution ID (possible PHP integration)
         if not is_swift_message and (tx_type == 'PAYMENT' or tx_type == 'payment') and transaction.institution_id is not None:
             institution = FinancialInstitution.query.get(transaction.institution_id)
             if institution and 'bank' in institution.name.lower():
                 is_swift_message = True
-        
+
         if not is_swift_message:
             flash('This transaction is not a SWIFT message.', 'warning')
             return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
@@ -538,13 +515,13 @@ def view_swift_message(transaction_id):
         logger.error(f"Error checking if transaction is SWIFT message: {str(e)}")
         flash('Error processing transaction data.', 'danger')
         return redirect(url_for('web.swift.swift_messages'))
-    
+
     # Parse metadata
     try:
         metadata = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
     except json.JSONDecodeError:
         metadata = {}
-    
+
     # Get institution name
     institution_name = ""
     if 'receiver_institution_id' in metadata:
@@ -553,12 +530,12 @@ def view_swift_message(transaction_id):
             institution_name = institution.name
     elif 'receiver_institution_name' in metadata:
         institution_name = metadata.get('receiver_institution_name')
-    
+
     # Try to determine message type from metadata first
     message_type = None
     if 'message_type' in metadata:
         message_type = metadata['message_type']  # MT103, MT202, etc.
-    
+
     # Get message details based on transaction type
     if transaction.transaction_type == TransactionType.SWIFT_FUND_TRANSFER or message_type == 'MT103':
         message_type = "MT103"
@@ -603,7 +580,7 @@ def view_swift_message(transaction_id):
             ordering_customer = current_user.first_name + ' ' + current_user.last_name if current_user.first_name else current_user.username
             beneficiary_customer = institution_name or 'Beneficiary'
             details_of_payment = transaction.description
-    
+
     # Generate a receiver BIC from institution name
     if institution_name:
         # Sanitize name and generate BIC-like code
@@ -611,7 +588,7 @@ def view_swift_message(transaction_id):
         receiver_bic = receiver_bic.ljust(8, 'X')
     else:
         receiver_bic = "BANKXXXX"
-    
+
     return render_template(
         'swift_message_view.html',
         transaction=transaction,
@@ -631,12 +608,12 @@ def download_swift_pdf(transaction_id):
     if not transaction or transaction.user_id != current_user.id:
         flash('Transaction not found or access denied.', 'danger')
         return redirect(url_for('web.swift.swift_messages'))
-    
+
     # Extract message details
     try:
         # Get metadata
         metadata = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
-        
+
         # Determine message type
         message_type = None
         if 'message_type' in metadata:
@@ -656,7 +633,7 @@ def download_swift_pdf(transaction_id):
                 message_type = 'MT799'
             else:
                 message_type = 'MT103'  # Default
-        
+
         # Get institution name
         institution_name = ""
         if 'receiver_institution_name' in metadata:
@@ -668,13 +645,13 @@ def download_swift_pdf(transaction_id):
             institution = FinancialInstitution.query.get(metadata['receiver_institution_id'])
             if institution:
                 institution_name = institution.name
-                
+
         # Get customer details
         ordering_customer = metadata.get('ordering_customer', 'NVC GLOBAL CUSTOMER')
         beneficiary_customer = metadata.get('beneficiary_customer', 'BENEFICIARY CUSTOMER')
         details_of_payment = metadata.get('details_of_payment', 'Payment for services')
         receiver_bic = metadata.get('receiver_bic', 'RECVBANXXX')
-        
+
         # Generate PDF content
         html = f"""
         <!DOCTYPE html>
@@ -710,14 +687,14 @@ def download_swift_pdf(transaction_id):
                 <h1>SWIFT {message_type} Message</h1>
                 <p>Transaction Reference: {transaction.transaction_id}</p>
             </div>
-            
+
             <div class="swift-box">
 {{1:F01NVCGGLOBALXXX0000000000}}{{2:I{message_type}{receiver_bic}XXXXN}}{{4:
 :20:{transaction.transaction_id}
 :23B:CRED
 :32A:{transaction.created_at.strftime('%y%m%d')}{transaction.currency}{transaction.amount}
 """
-        
+
         # Add different fields based on message type
         if message_type == "MT103":
             html += f""":50K:{ordering_customer}
@@ -727,12 +704,12 @@ def download_swift_pdf(transaction_id):
             html += f""":53A:{ordering_customer}
 :58A:{beneficiary_customer}
 """
-            
+
         html += f""":70:{details_of_payment}
 :71A:SHA
 -}}
             </div>
-            
+
             <div class="details">
                 <h2>Transaction Details</h2>
                 <div class="detail-row">
@@ -751,7 +728,7 @@ def download_swift_pdf(transaction_id):
                     <span class="detail-label">Receiving Institution:</span> {institution_name}
                 </div>
             </div>
-            
+
             <div class="details">
                 <h2>Message Information</h2>
                 <div class="detail-row">
@@ -763,7 +740,7 @@ def download_swift_pdf(transaction_id):
                     }
                 </div>
             </div>
-            
+
             <div class="footer">
                 <p>Generated by NVC Banking Platform on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
                 <p>This document is for informational purposes only and is not a legal document.</p>
@@ -771,12 +748,12 @@ def download_swift_pdf(transaction_id):
         </body>
         </html>
         """
-        
+
         # Generate PDF
         pdf_file = io.BytesIO()
         HTML(string=html).write_pdf(pdf_file)
         pdf_file.seek(0)
-        
+
         # Return the PDF as a download
         return send_file(
             pdf_file,
@@ -784,7 +761,7 @@ def download_swift_pdf(transaction_id):
             as_attachment=True,
             mimetype='application/pdf'
         )
-        
+
     except Exception as e:
         logger.error(f"Error generating PDF: {str(e)}")
         flash(f'Error generating PDF: {str(e)}', 'danger')
@@ -796,11 +773,11 @@ def api_swift_status(transaction_id):
     """API endpoint to get SWIFT message status"""
     # Flask-Login's login_required decorator ensures the user is authenticated
     # We can safely use current_user
-    
+
     transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
     if not transaction:
         return jsonify({'success': False, 'error': 'Transaction not found'})
-    
+
     # Try to determine message type from metadata first
     message_type = None
     try:
@@ -810,7 +787,7 @@ def api_swift_status(transaction_id):
                 message_type = metadata['message_type']
     except Exception as e:
         logger.error(f"Error parsing transaction metadata: {str(e)}")
-    
+
     # Get the transaction type value safely
     tx_type = None
     try:
@@ -822,7 +799,7 @@ def api_swift_status(transaction_id):
             tx_type = str(transaction.transaction_type)
     except Exception as e:
         logger.error(f"Error determining transaction type: {str(e)}")
-    
+
     # Determine which status check to use based on transaction type or metadata
     if message_type == 'MT760' or (tx_type and 'letter_of_credit' in str(tx_type).lower()):
         status_data = SwiftService.get_letter_of_credit_status(transaction.id)
@@ -841,7 +818,7 @@ def api_swift_status(transaction_id):
                 status_value = transaction.status.name
             else:
                 status_value = str(transaction.status)
-                
+
             status_data = {
                 'success': True,
                 'status': status_value,
@@ -851,5 +828,5 @@ def api_swift_status(transaction_id):
         except Exception as e:
             logger.error(f"Error generating generic status: {str(e)}")
             status_data = {'success': False, 'error': 'Could not determine transaction type or status'}
-        
+
     return jsonify(status_data)
