@@ -1422,6 +1422,7 @@ def api_key_management():
     return redirect(url_for('admin.list_api_keys'))
 
 @main.route('/admin-dashboard')
+@main.route('/admin-dash')  # Adding an alias for the admin dashboard for backward compatibility
 @login_required
 def admin_dashboard():
     """Admin dashboard route - only accessible to admin users or special users"""
