@@ -21,6 +21,9 @@ from routes.api_access_routes import api_access_bp
 # Import PHP Bridge routes
 from api_bridge import php_bridge
 
+# Temporarily disabled RTGS routes
+# from routes.rtgs_routes import rtgs_routes
+
 # Create API blueprint
 api_blueprint = Blueprint('api', __name__, url_prefix='/api')
 

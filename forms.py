@@ -427,16 +427,19 @@ class SwiftFundTransferForm(FlaskForm):
         self.receiver_institution_id.choices = [(i.id, i.name) for i in swift_institutions]
 
 
+# Temporarily commented out RTGS form
+"""
 class SwiftMT542Form(FlaskForm):
-    """Form for sending a SWIFT MT542 Deliver Against Payment message"""
+    Form for sending a SWIFT MT542 Deliver Against Payment message
     receiver_institution_id = SelectField('Receiving Institution', coerce=int, validators=[DataRequired()])
     trade_date = DateField('Trade Date', validators=[DataRequired()])
     settlement_date = DateField('Settlement Date', validators=[DataRequired()])
     security_details = StringField('Security Details', validators=[DataRequired(), Length(max=500)])
-    quantity = IntegerField('Quantity', validators=[DataRequired(), NumberRange(min=1)])
-    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
+    quantity = IntegerField('Quantity', validators=[DataRequired()])
+    amount = DecimalField('Amount', validators=[DataRequired()])
     currency = SelectField('Currency', choices=[('USD', 'USD'), ('EUR', 'EUR'), ('GBP', 'GBP')], validators=[DataRequired()])
     submit = SubmitField('Submit MT542')
+"""
 
     def __init__(self, *args, **kwargs):
         super(SwiftMT542Form, self).__init__(*args, **kwargs)
