@@ -13,8 +13,9 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 
 from models import db, Transaction, TransactionType, TransactionStatus, FinancialInstitution
-from forms import LetterOfCreditForm, SwiftFundTransferForm, SwiftFreeFormatMessageForm, SwiftMT542Form
+from forms import LetterOfCreditForm, SwiftFundTransferForm, SwiftFreeFormatMessageForm, SwiftMT542Form, FinancialInstitutionForm
 from swift_integration import SwiftService
+from models import FinancialInstitution, FinancialInstitutionType
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -38,6 +39,30 @@ def new_letter_of_credit():
                 receiver_institution_id=form.receiver_institution_id.data,
                 amount=form.amount.data,
                 currency=form.currency.data,
+
+@swift.route('/institution/new', methods=['GET', 'POST'])
+@login_required
+def new_institution():
+    """Add a new financial institution"""
+    form = FinancialInstitutionForm()
+    form.institution_type.choices = [(t.name, t.value) for t in FinancialInstitutionType]
+
+    if form.validate_on_submit():
+        institution = FinancialInstitution(
+            name=form.name.data,
+            institution_type=FinancialInstitutionType[form.institution_type.data],
+            api_endpoint=form.api_endpoint.data,
+            api_key=form.api_key.data,
+            ethereum_address=form.ethereum_address.data,
+            is_active=True
+        )
+        db.session.add(institution)
+        db.session.commit()
+        flash('Financial institution added successfully', 'success')
+        return redirect(url_for('web.swift.new_mt542'))
+
+    return render_template('financial_institution_form.html', form=form, is_new=True)
+
                 beneficiary=form.beneficiary.data,
                 expiry_date=form.expiry_date.data,
                 terms_and_conditions=form.terms_and_conditions.data

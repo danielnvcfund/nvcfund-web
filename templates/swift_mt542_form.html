@@ -1,4 +1,3 @@
-
 {% extends "layout.html" %}
 
 {% block title %}New SWIFT MT542 Message{% endblock %}
@@ -13,7 +12,7 @@
           <li class="breadcrumb-item active">New MT542 Message</li>
         </ol>
       </nav>
-      
+
       <div class="card shadow">
         <div class="card-header bg-primary text-white">
           <h2 class="h4 mb-0">Create SWIFT MT542 - Deliver Against Payment</h2>
@@ -21,10 +20,13 @@
         <div class="card-body">
           <form method="POST" id="mt542-form">
             {{ form.hidden_tag() }}
-            
+
             <div class="mb-3">
               <label class="form-label required">Receiving Institution</label>
-              {{ form.receiver_institution_id(class="form-select") }}
+              <div class="d-flex">
+                {{ form.receiver_institution_id(class="form-select me-2") }}
+                <a href="{{ url_for('web.swift.new_institution') }}" class="btn btn-secondary">Add New Institution</a>
+              </div>
             </div>
 
             <div class="mb-3">
