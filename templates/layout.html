@@ -369,6 +369,25 @@
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
+                                <h6 class="dropdown-header">Client Registration</h6>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.register') }}">
+                                    <i class="fas fa-user-plus me-1"></i> Individual Registration
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.client_registration') }}">
+                                    <i class="fas fa-building me-1"></i> Business Client Registration
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.quick_access') }}">
+                                    <i class="fas fa-handshake me-1"></i> Partner Registration
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
                                 <a class="dropdown-item" href="{{ url_for('web.main.index') }}">
                                     <i class="fas fa-users me-1"></i> User Management
                                 </a>

@@ -72,6 +72,41 @@
                         </div>
                     </div>
                     
+                    <!-- Client Registration Tools -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card border-success mb-3">
+                                <div class="card-header bg-success bg-opacity-10 border-success">
+                                    <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Client Registration</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>Create new accounts and manage client onboarding for different user types.</p>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <a href="{{ url_for('web.main.register') }}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                                <i class="fas fa-user-plus fa-2x mb-2"></i>
+                                                <span>Individual Registration</span>
+                                            </a>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <a href="{{ url_for('web.main.client_registration') }}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                                <i class="fas fa-building fa-2x mb-2"></i>
+                                                <span>Business Client Registration</span>
+                                            </a>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <a href="{{ url_for('web.main.quick_access') }}" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                                <i class="fas fa-handshake fa-2x mb-2"></i>
+                                                <span>Partner Registration</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Development & Integration Tools -->
                     <div class="row mt-4">
                         <div class="col-md-12">
