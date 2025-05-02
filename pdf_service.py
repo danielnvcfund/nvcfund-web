@@ -261,15 +261,15 @@ TRANSACTION_RECEIPT_TEMPLATE = """
             <table class="info-table">
                 <tr>
                     <th>Bank Name</th>
-                    <td>{{ transaction.recipient_bank_name if transaction.recipient_bank_name else "Not specified" }}</td>
+                    <td>{{ transaction.recipient_bank_name or "Not specified" }}</td>
                 </tr>
                 <tr>
                     <th>Bank Address</th>
-                    <td class="address">{{ transaction.recipient_bank_address if transaction.recipient_bank_address else "Not specified" }}</td>
+                    <td class="address">{{ transaction.recipient_bank_address or "Not specified" }}</td>
                 </tr>
                 <tr>
                     <th>Routing Number</th>
-                    <td>{% if transaction.recipient_routing_number %}{{ transaction.recipient_routing_number }}{% elif transaction.routing_number %}{{ transaction.routing_number }}{% else %}Not specified{% endif %}</td>
+                    <td>{{ transaction.recipient_routing_number or transaction.routing_number or "Not specified" }}</td>
                 </tr>
             </table>
         </div>
@@ -342,6 +342,12 @@ class PDFService:
                     try:
                         tx_metadata = json.loads(transaction.tx_metadata_json)
                         transaction_dict.update(tx_metadata)
+                        
+                        # Ensure bank information fields are available in the main dictionary 
+                        # for easy access in the template
+                        for key in ["recipient_bank_name", "recipient_bank_address", "recipient_routing_number"]:
+                            if key in tx_metadata and key not in transaction_dict:
+                                transaction_dict[key] = tx_metadata[key]
                     except (json.JSONDecodeError, TypeError):
                         logger.warning(f"Failed to parse transaction metadata for {transaction.transaction_id}")
             else:
