@@ -51,6 +51,15 @@ def create_app():
         "pool_pre_ping": True,
     }
     
+    # Allow embedding in iframes for Replit
+    @app.after_request
+    def set_security_headers(response):
+        # This allows embedding in Replit iframe
+        response.headers['X-Frame-Options'] = 'ALLOW-FROM https://replit.com'
+        # For modern browsers that don't support ALLOW-FROM
+        response.headers['Content-Security-Policy'] = "frame-ancestors 'self' https://replit.com https://*.replit.com;"
+        return response
+    
     # Configure session 
     app.config["SESSION_COOKIE_SECURE"] = False  # Allow non-HTTPS for development
     app.config["SESSION_COOKIE_HTTPONLY"] = True
