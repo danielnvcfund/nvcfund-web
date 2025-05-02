@@ -10,6 +10,7 @@ import re
 import io
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, session, send_file, make_response, Response
 from flask_login import login_required, current_user
+from weasyprint import HTML
 
 from models import db, Transaction, TransactionType, TransactionStatus, FinancialInstitution
 from forms import LetterOfCreditForm, SwiftFundTransferForm, SwiftFreeFormatMessageForm, SwiftMT542Form, FinancialInstitutionForm
@@ -266,6 +267,9 @@ def download_swift_receipt(transaction_id):
         sender_name = f"{current_user.first_name} {current_user.last_name}" if current_user.first_name and current_user.last_name else current_user.username
         
         # Parse metadata
+        # Default message type
+        message_type = "MT103"  # Default for most transfers
+        
         try:
             metadata = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
             metadata['sender_name'] = sender_name
@@ -279,7 +283,10 @@ def download_swift_receipt(transaction_id):
             metadata['message_type'] = message_type
             
         except json.JSONDecodeError:
-            metadata = {'sender_name': sender_name}
+            metadata = {
+                'sender_name': sender_name,
+                'message_type': message_type
+            }
         
         # Generate PDF
         pdf_data = pdf_service.generate_swift_transaction_pdf(transaction, metadata)
