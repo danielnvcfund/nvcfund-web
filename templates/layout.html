@@ -755,8 +755,21 @@
                 <i class="fas fa-money-check me-1"></i> New ACH Transfer
             </a>
             
+            <!-- Treasury Link (visible to all) -->
+            <a href="{{ url_for('treasury.dashboard') }}" class="btn btn-sm btn-outline-warning mx-1 mb-1">
+                <i class="fas fa-university me-1"></i> Treasury
+            </a>
+            
+            <!-- Resources Link (visible to all) -->
+            <a href="{{ url_for('documentation.documentation_index') }}" class="btn btn-sm btn-outline-info mx-1 mb-1">
+                <i class="fas fa-book me-1"></i> Resources
+            </a>
+            
             <!-- Admin Quick Links (only visible to admins) -->
             {% if current_user.is_authenticated and (current_user.username in ['admin', 'headadmin'] or current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' or current_user.role.name == 'ADMIN') %}
+            <a href="{{ url_for('web.main.admin_dashboard') }}" class="btn btn-sm btn-danger mx-1 mb-1">
+                <i class="fas fa-user-shield me-1"></i> Admin
+            </a>
             <a href="{{ url_for('transaction_admin.admin_transactions') }}" class="btn btn-sm btn-primary mx-1 mb-1">
                 <i class="fas fa-tasks me-1"></i> Transaction Management
             </a>
