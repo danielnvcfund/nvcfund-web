@@ -16,6 +16,7 @@ from routes.api.treasury_api import treasury_api_bp
 from routes.high_availability_routes import ha_web
 from routes.main_routes import main
 from routes.swift_routes import swift
+from routes.ach_routes import ach
 from routes.api_access_routes import api_access_bp
 
 # Import PHP Bridge routes
@@ -45,3 +46,4 @@ api_blueprint.register_blueprint(treasury_api_bp, url_prefix='/treasury')
 web_blueprint.register_blueprint(ha_web, url_prefix='/ha')
 web_blueprint.register_blueprint(main, url_prefix='/main')
 web_blueprint.register_blueprint(swift, url_prefix='/swift')
+web_blueprint.register_blueprint(ach, url_prefix='/ach')

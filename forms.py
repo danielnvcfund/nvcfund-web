@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, TextAreaField, DecimalField, PasswordField, BooleanField, FloatField, SubmitField, HiddenField, DateField, RadioField, IntegerField
-from wtforms.validators import DataRequired, Length, Optional, Email, EqualTo, NumberRange, ValidationError
+from wtforms.validators import DataRequired, Length, Optional, Email, EqualTo, NumberRange, ValidationError, Regexp
 from models import TransactionType
 from datetime import datetime, timedelta
 
@@ -204,6 +204,83 @@ class SwiftFundTransferForm(FlaskForm):
         (1, 'Financial Institution Transfer (MT202)')
     ], coerce=int, default=0)
     submit = SubmitField('Create Fund Transfer')
+
+class ACHTransferForm(FlaskForm):
+    """Form for creating an ACH (Automated Clearing House) transfer"""
+    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01, message="Amount must be greater than 0.01")])
+    
+    recipient_name = StringField('Recipient Name', validators=[
+        DataRequired(), 
+        Length(min=2, max=100, message="Recipient name must be between 2 and 100 characters")
+    ])
+    
+    recipient_account_number = StringField('Recipient Account Number', validators=[
+        DataRequired(),
+        Length(min=4, max=17, message="Account number must be between 4 and 17 digits"),
+        Regexp(r'^\d+$', message="Account number must contain only digits")
+    ])
+    
+    recipient_routing_number = StringField('Recipient Routing Number', validators=[
+        DataRequired(),
+        Length(min=9, max=9, message="Routing number must be exactly 9 digits"),
+        Regexp(r'^\d{9}$', message="Routing number must be exactly 9 digits")
+    ])
+    
+    recipient_account_type = SelectField('Recipient Account Type', choices=[
+        ('checking', 'Checking Account'),
+        ('savings', 'Savings Account'),
+        ('business', 'Business Account')
+    ], validators=[DataRequired()])
+    
+    entry_class_code = SelectField('ACH Entry Class Code', choices=[
+        ('PPD', 'PPD - Personal Payments'),
+        ('CCD', 'CCD - Corporate Payments'),
+        ('WEB', 'WEB - Internet Payments'),
+        ('TEL', 'TEL - Telephone Payments'),
+        ('CIE', 'CIE - Customer-Initiated Entries'),
+        ('BOC', 'BOC - Back Office Conversion'),
+        ('POP', 'POP - Point-of-Purchase')
+    ], validators=[DataRequired()])
+    
+    effective_date = DateField('Effective Date', validators=[Optional()], 
+                              description="Optional. If left blank, the system will use the earliest possible date.")
+    
+    recurring = BooleanField('Make Recurring Payment', default=False)
+    
+    recurring_frequency = SelectField('Recurring Frequency', choices=[
+        ('', 'Select frequency'),
+        ('weekly', 'Weekly'),
+        ('biweekly', 'Bi-weekly'),
+        ('monthly', 'Monthly'),
+        ('quarterly', 'Quarterly')
+    ], validators=[Optional()], default='')
+    
+    sender_account_type = SelectField('Your Account Type', choices=[
+        ('checking', 'Checking Account'),
+        ('savings', 'Savings Account'),
+        ('business', 'Business Account')
+    ], validators=[DataRequired()], default='checking')
+    
+    company_entry_description = StringField('Company Entry Description', validators=[
+        Optional(),
+        Length(max=10, message="Description must be 10 characters or less")
+    ], description="This appears on recipient's bank statement (max 10 chars)")
+    
+    description = TextAreaField('Payment Details', validators=[
+        Optional(),
+        Length(max=140, message="Description must be 140 characters or less")
+    ])
+    
+    submit = SubmitField('Create ACH Transfer')
+    
+    def validate_effective_date(self, field):
+        """Validate the effective date is not in the past"""
+        if field.data and field.data < datetime.now().date():
+            raise ValidationError("Effective date cannot be in the past")
+        
+        # ACH transfers typically need at least one business day for processing
+        if field.data and field.data < (datetime.now() + timedelta(days=1)).date():
+            raise ValidationError("Effective date must be at least 1 business day in the future")
 
 class SwiftFreeFormatMessageForm(FlaskForm):
     """Form for creating a SWIFT MT799 free format message"""

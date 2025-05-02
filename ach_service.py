@@ -11,7 +11,8 @@ from flask import current_app
 from sqlalchemy.exc import SQLAlchemyError
 
 from models import Transaction, TransactionStatus, TransactionType, User, db
-from utils import generate_uuid, send_transaction_confirmation_email
+from utils import generate_uuid
+from email_service import send_transaction_confirmation_email
 
 logger = logging.getLogger(__name__)
 
