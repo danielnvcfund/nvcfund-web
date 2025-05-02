@@ -116,6 +116,62 @@ class PaymentForm(FlaskForm):
         super(PaymentForm, self).__init__(*args, **kwargs)
         # Dynamically load transaction types from the Enum
         self.transaction_type.choices = [(t.name, t.value) for t in TransactionType]
+        
+class PayPalPaymentForm(FlaskForm):
+    """Form for PayPal payments"""
+    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01, message="Amount must be greater than 0.01")])
+    currency = SelectField('Currency', choices=[
+        ('USD', 'USD - US Dollar'),
+        ('EUR', 'EUR - Euro'),
+        ('GBP', 'GBP - British Pound'),
+        ('CAD', 'CAD - Canadian Dollar'),
+        ('AUD', 'AUD - Australian Dollar'),
+        ('JPY', 'JPY - Japanese Yen')
+    ], default='USD', validators=[DataRequired()])
+    recipient_email = StringField('Recipient PayPal Email', validators=[
+        DataRequired(),
+        Email(message="Please enter a valid email address"),
+        Length(max=120, message="Email must be 120 characters or less")
+    ])
+    description = TextAreaField('Payment Description', validators=[
+        DataRequired(),
+        Length(max=250, message="Description must be 250 characters or less")
+    ], default='Payment from NVC Banking Platform')
+    notes = TextAreaField('Notes to Recipient (Optional)', validators=[
+        Optional(),
+        Length(max=500, message="Notes must be 500 characters or less")
+    ])
+    submit = SubmitField('Process PayPal Payment')
+    
+class PayPalPayoutForm(FlaskForm):
+    """Form for PayPal payouts (sending money)"""
+    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01, message="Amount must be greater than 0.01")])
+    currency = SelectField('Currency', choices=[
+        ('USD', 'USD - US Dollar'),
+        ('EUR', 'EUR - Euro'),
+        ('GBP', 'GBP - British Pound'),
+        ('CAD', 'CAD - Canadian Dollar'),
+        ('AUD', 'AUD - Australian Dollar'),
+        ('JPY', 'JPY - Japanese Yen')
+    ], default='USD', validators=[DataRequired()])
+    recipient_email = StringField('Recipient PayPal Email', validators=[
+        DataRequired(),
+        Email(message="Please enter a valid email address"),
+        Length(max=120, message="Email must be 120 characters or less")
+    ])
+    note = TextAreaField('Note to Recipient', validators=[
+        DataRequired(),
+        Length(max=250, message="Note must be 250 characters or less")
+    ], default='Payout from NVC Banking Platform')
+    email_subject = StringField('Email Subject', validators=[
+        Optional(),
+        Length(max=100, message="Subject must be 100 characters or less")
+    ], default='You have received a payment from NVC Banking Platform')
+    email_message = TextAreaField('Email Message', validators=[
+        Optional(),
+        Length(max=500, message="Message must be 500 characters or less")
+    ])
+    submit = SubmitField('Send PayPal Payout')
 
 class ClientRegistrationForm(FlaskForm):
     """Form for client registration"""
