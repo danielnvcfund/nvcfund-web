@@ -262,3 +262,33 @@ def paypal_capabilities_pdf():
     except Exception as e:
         current_app.logger.error(f"Error generating PDF: {str(e)}")
         return "An error occurred while generating the PDF. Please try again later.", 500
+        
+@documentation_bp.route('/ach_capabilities', methods=['GET'])
+def ach_capabilities_pdf():
+    """Generate a PDF of the ACH Transfer Capabilities document"""
+    try:
+        # Get the HTML content
+        html_path = os.path.join(current_app.root_path, 'static/docs/ach_capabilities.html')
+        
+        # Read the HTML content
+        with open(html_path, 'r') as f:
+            html_content = f.read()
+        
+        # Generate PDF with page numbers
+        pdf = generate_pdf_with_logo(html_content, base_url=os.path.dirname(html_path))
+        
+        # Create a BytesIO object
+        pdf_io = BytesIO(pdf)
+        pdf_io.seek(0)
+        
+        # Send the PDF as a response
+        return send_file(
+            pdf_io,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name='NVC_ACH_Transfer_Capabilities.pdf'
+        )
+    
+    except Exception as e:
+        current_app.logger.error(f"Error generating PDF: {str(e)}")
+        return "An error occurred while generating the PDF. Please try again later.", 500
