@@ -38,9 +38,20 @@ def new_ach_transfer():
                 amount=form.amount.data,
                 currency='USD',  # ACH transfers are in USD
                 recipient_name=form.recipient_name.data,
+                # Recipient address information
+                recipient_address_line1=form.recipient_address_line1.data,
+                recipient_address_line2=form.recipient_address_line2.data,
+                recipient_city=form.recipient_city.data,
+                recipient_state=form.recipient_state.data,
+                recipient_zip=form.recipient_zip.data,
+                # Recipient bank information
+                recipient_bank_name=form.recipient_bank_name.data,
+                recipient_bank_address=form.recipient_bank_address.data,
+                # Account details
                 recipient_account_number=form.recipient_account_number.data,
                 recipient_routing_number=form.recipient_routing_number.data,
                 recipient_account_type=form.recipient_account_type.data,
+                # Other transfer details
                 entry_class_code=form.entry_class_code.data,
                 effective_date=form.effective_date.data,
                 description=form.description.data,
