@@ -102,6 +102,66 @@
             </div>
           </div>
           
+          <!-- Correspondent/Intermediary Banks Section -->
+          {% if swift_data.get('correspondent_bank') or swift_data.get('intermediary_bank') %}
+          <div class="card mb-3">
+            <div class="card-header bg-light">
+              <h6 class="mb-0">Routing Banks</h6>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                {% if swift_data.get('correspondent_bank') %}
+                <div class="col-md-6">
+                  <div class="card mb-3">
+                    <div class="card-header bg-light">
+                      <h6 class="mb-0">Correspondent Bank</h6>
+                    </div>
+                    <div class="card-body">
+                      <table class="table table-sm">
+                        <tbody>
+                          <tr>
+                            <th>Bank Name:</th>
+                            <td>{{ swift_data.get('correspondent_bank', {}).get('name', 'Not specified') }}</td>
+                          </tr>
+                          <tr>
+                            <th>SWIFT/BIC:</th>
+                            <td>{{ swift_data.get('correspondent_bank', {}).get('swift', 'Not specified') }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+                
+                {% if swift_data.get('intermediary_bank') %}
+                <div class="col-md-6">
+                  <div class="card mb-3">
+                    <div class="card-header bg-light">
+                      <h6 class="mb-0">Intermediary Bank</h6>
+                    </div>
+                    <div class="card-body">
+                      <table class="table table-sm">
+                        <tbody>
+                          <tr>
+                            <th>Bank Name:</th>
+                            <td>{{ swift_data.get('intermediary_bank', {}).get('name', 'Not specified') }}</td>
+                          </tr>
+                          <tr>
+                            <th>SWIFT/BIC:</th>
+                            <td>{{ swift_data.get('intermediary_bank', {}).get('swift', 'Not specified') }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          
           {% if transaction.status == 'PENDING' %}
             <div class="alert alert-info">
               <i class="bi bi-info-circle me-2"></i> 

@@ -100,7 +100,11 @@ def new_fund_transfer():
                 ordering_customer=form.ordering_customer.data or '',
                 beneficiary_customer=form.beneficiary_customer.data or '',
                 details_of_payment=form.details_of_payment.data or '',
-                is_financial_institution=bool(form.is_financial_institution.data)
+                is_financial_institution=bool(form.is_financial_institution.data),
+                correspondent_bank_name=form.correspondent_bank_name.data or None,
+                correspondent_bank_swift=form.correspondent_bank_swift.data or None,
+                intermediary_bank_name=form.intermediary_bank_name.data or None,
+                intermediary_bank_swift=form.intermediary_bank_swift.data or None
             )
 
             message_type = "MT202" if form.is_financial_institution.data else "MT103"

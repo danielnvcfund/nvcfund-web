@@ -115,7 +115,7 @@ class MT760(SwiftMessage):
 class MT103(SwiftMessage):
     """SWIFT MT103 - Customer Credit Transfer"""
     
-    def __init__(self, user_id, institution_id, amount, currency, ordering_customer, beneficiary_customer, details_of_payment):
+    def __init__(self, user_id, institution_id, amount, currency, ordering_customer, beneficiary_customer, details_of_payment, correspondent_bank_name=None, correspondent_bank_swift=None, intermediary_bank_name=None, intermediary_bank_swift=None):
         super().__init__(user_id, institution_id)
         self.message_type = "MT103"
         self.amount = amount
@@ -123,6 +123,10 @@ class MT103(SwiftMessage):
         self.ordering_customer = ordering_customer
         self.beneficiary_customer = beneficiary_customer
         self.details_of_payment = details_of_payment
+        self.correspondent_bank_name = correspondent_bank_name
+        self.correspondent_bank_swift = correspondent_bank_swift
+        self.intermediary_bank_name = intermediary_bank_name
+        self.intermediary_bank_swift = intermediary_bank_swift
         self.reference = f"FT{uuid.uuid4().hex[:10].upper()}"
         
     def to_json(self):
@@ -130,7 +134,7 @@ class MT103(SwiftMessage):
         institution = FinancialInstitution.query.get(self.institution_id)
         institution_name = institution.name if institution else "Unknown Institution"
         
-        return {
+        result = {
             "message_type": self.message_type,
             "reference": self.reference,
             "sender_bic": self.get_sender_bic(),
@@ -144,6 +148,22 @@ class MT103(SwiftMessage):
             "beneficiary_customer": self.beneficiary_customer,
             "details_of_payment": self.details_of_payment
         }
+        
+        # Add correspondent bank information if provided
+        if self.correspondent_bank_name or self.correspondent_bank_swift:
+            result["correspondent_bank"] = {
+                "name": self.correspondent_bank_name,
+                "swift": self.correspondent_bank_swift
+            }
+            
+        # Add intermediary bank information if provided
+        if self.intermediary_bank_name or self.intermediary_bank_swift:
+            result["intermediary_bank"] = {
+                "name": self.intermediary_bank_name,
+                "swift": self.intermediary_bank_swift
+            }
+            
+        return result
         
     def generate_transaction(self):
         """Create a transaction record for this fund transfer"""
@@ -169,7 +189,7 @@ class MT103(SwiftMessage):
 class MT202(SwiftMessage):
     """SWIFT MT202 - General Financial Institution Transfer"""
     
-    def __init__(self, user_id, institution_id, amount, currency, ordering_customer, beneficiary_customer, details_of_payment):
+    def __init__(self, user_id, institution_id, amount, currency, ordering_customer, beneficiary_customer, details_of_payment, correspondent_bank_name=None, correspondent_bank_swift=None, intermediary_bank_name=None, intermediary_bank_swift=None):
         super().__init__(user_id, institution_id)
         self.message_type = "MT202"
         self.amount = amount
@@ -177,6 +197,10 @@ class MT202(SwiftMessage):
         self.ordering_customer = ordering_customer
         self.beneficiary_customer = beneficiary_customer
         self.details_of_payment = details_of_payment
+        self.correspondent_bank_name = correspondent_bank_name
+        self.correspondent_bank_swift = correspondent_bank_swift
+        self.intermediary_bank_name = intermediary_bank_name
+        self.intermediary_bank_swift = intermediary_bank_swift
         self.reference = f"IT{uuid.uuid4().hex[:10].upper()}"
         
     def to_json(self):
@@ -184,7 +208,7 @@ class MT202(SwiftMessage):
         institution = FinancialInstitution.query.get(self.institution_id)
         institution_name = institution.name if institution else "Unknown Institution"
         
-        return {
+        result = {
             "message_type": self.message_type,
             "reference": self.reference,
             "sender_bic": self.get_sender_bic(),
@@ -198,6 +222,22 @@ class MT202(SwiftMessage):
             "beneficiary_institution": self.beneficiary_customer,
             "details_of_payment": self.details_of_payment
         }
+        
+        # Add correspondent bank information if provided
+        if self.correspondent_bank_name or self.correspondent_bank_swift:
+            result["correspondent_bank"] = {
+                "name": self.correspondent_bank_name,
+                "swift": self.correspondent_bank_swift
+            }
+            
+        # Add intermediary bank information if provided
+        if self.intermediary_bank_name or self.intermediary_bank_swift:
+            result["intermediary_bank"] = {
+                "name": self.intermediary_bank_name,
+                "swift": self.intermediary_bank_swift
+            }
+            
+        return result
         
     def generate_transaction(self):
         """Create a transaction record for this institution transfer"""
@@ -437,7 +477,10 @@ class SwiftService:
             raise
     
     @staticmethod
-    def create_swift_fund_transfer(user_id, receiver_institution_id, receiver_institution_name=None, amount=0, currency='USD', ordering_customer='', beneficiary_customer='', details_of_payment='', is_financial_institution=False):
+    def create_swift_fund_transfer(user_id, receiver_institution_id, receiver_institution_name=None, amount=0, currency='USD', 
+                                   ordering_customer='', beneficiary_customer='', details_of_payment='', is_financial_institution=False,
+                                   correspondent_bank_name=None, correspondent_bank_swift=None, 
+                                   intermediary_bank_name=None, intermediary_bank_swift=None):
         """Create a new SWIFT fund transfer (MT103 or MT202)"""
         try:
             # Get the institution from the database
@@ -471,7 +514,11 @@ class SwiftService:
                     currency=currency,
                     ordering_customer=ordering_customer, 
                     beneficiary_customer=beneficiary_customer,
-                    details_of_payment=details_of_payment
+                    details_of_payment=details_of_payment,
+                    correspondent_bank_name=correspondent_bank_name,
+                    correspondent_bank_swift=correspondent_bank_swift,
+                    intermediary_bank_name=intermediary_bank_name,
+                    intermediary_bank_swift=intermediary_bank_swift
                 )
             else:
                 message = MT103(
@@ -481,7 +528,11 @@ class SwiftService:
                     currency=currency,
                     ordering_customer=ordering_customer,
                     beneficiary_customer=beneficiary_customer,
-                    details_of_payment=details_of_payment
+                    details_of_payment=details_of_payment,
+                    correspondent_bank_name=correspondent_bank_name,
+                    correspondent_bank_swift=correspondent_bank_swift,
+                    intermediary_bank_name=intermediary_bank_name,
+                    intermediary_bank_swift=intermediary_bank_swift
                 )
             
             # Generate transaction from the message
