@@ -388,6 +388,25 @@
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
+                                <h6 class="dropdown-header">Financial Institutions & SWIFT</h6>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/admin-tools/financial-institutions">
+                                    <i class="fas fa-university me-1"></i> Manage Institutions
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/financial_institution/new">
+                                    <i class="fas fa-plus-circle me-1"></i> Add New Institution
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.swift.new_fund_transfer') }}">
+                                    <i class="fas fa-exchange-alt me-1"></i> SWIFT Fund Transfer
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
                                 <a class="dropdown-item" href="{{ url_for('web.main.index') }}">
                                     <i class="fas fa-users me-1"></i> User Management
                                 </a>
