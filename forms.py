@@ -209,9 +209,46 @@ class ACHTransferForm(FlaskForm):
     """Form for creating an ACH (Automated Clearing House) transfer"""
     amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01, message="Amount must be greater than 0.01")])
     
+    # Recipient Personal Information
     recipient_name = StringField('Recipient Name', validators=[
         DataRequired(), 
         Length(min=2, max=100, message="Recipient name must be between 2 and 100 characters")
+    ])
+    
+    recipient_address_line1 = StringField('Recipient Address Line 1', validators=[
+        Optional(),
+        Length(min=2, max=100, message="Address must be between 2 and 100 characters")
+    ])
+    
+    recipient_address_line2 = StringField('Recipient Address Line 2', validators=[
+        Optional(),
+        Length(max=100, message="Address must be 100 characters or less")
+    ])
+    
+    recipient_city = StringField('Recipient City', validators=[
+        Optional(),
+        Length(min=2, max=50, message="City must be between 2 and 50 characters")
+    ])
+    
+    recipient_state = StringField('Recipient State/Province', validators=[
+        Optional(),
+        Length(min=2, max=20, message="State must be between 2 and 20 characters")
+    ])
+    
+    recipient_zip = StringField('Recipient ZIP/Postal Code', validators=[
+        Optional(),
+        Length(min=5, max=10, message="ZIP/Postal code must be between 5 and 10 characters")
+    ])
+    
+    # Recipient Bank Information
+    recipient_bank_name = StringField('Recipient Bank Name', validators=[
+        DataRequired(),
+        Length(min=2, max=100, message="Bank name must be between 2 and 100 characters")
+    ])
+    
+    recipient_bank_address = StringField('Recipient Bank Address', validators=[
+        Optional(),
+        Length(max=150, message="Bank address must be 150 characters or less")
     ])
     
     recipient_account_number = StringField('Recipient Account Number', validators=[
@@ -232,6 +269,7 @@ class ACHTransferForm(FlaskForm):
         ('business', 'Business Account')
     ], validators=[DataRequired()])
     
+    # ACH Transaction Details
     entry_class_code = SelectField('ACH Entry Class Code', choices=[
         ('PPD', 'PPD - Personal Payments'),
         ('CCD', 'CCD - Corporate Payments'),

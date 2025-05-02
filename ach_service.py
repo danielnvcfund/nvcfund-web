@@ -50,6 +50,13 @@ class ACHService:
             amount,
             currency="USD",
             recipient_name=None,
+            recipient_address_line1=None,
+            recipient_address_line2=None,
+            recipient_city=None,
+            recipient_state=None,
+            recipient_zip=None,
+            recipient_bank_name=None,
+            recipient_bank_address=None,
             recipient_account_number=None,
             recipient_routing_number=None,
             recipient_account_type="checking",
@@ -73,6 +80,13 @@ class ACHService:
             amount (float): Amount to transfer
             currency (str): Currency code (default: USD)
             recipient_name (str): Name of the recipient
+            recipient_address_line1 (str): First line of recipient's address
+            recipient_address_line2 (str): Second line of recipient's address
+            recipient_city (str): Recipient's city
+            recipient_state (str): Recipient's state or province
+            recipient_zip (str): Recipient's ZIP or postal code
+            recipient_bank_name (str): Name of the recipient's bank
+            recipient_bank_address (str): Address of the recipient's bank
             recipient_account_number (str): Account number of the recipient
             recipient_routing_number (str): Routing number of the recipient's bank
             recipient_account_type (str): Type of the recipient's account (checking, savings)
@@ -125,6 +139,16 @@ class ACHService:
             
             # Create metadata dictionary
             metadata = {
+                # Recipient Details
+                "recipient_address_line1": recipient_address_line1,
+                "recipient_address_line2": recipient_address_line2,
+                "recipient_city": recipient_city,
+                "recipient_state": recipient_state,
+                "recipient_zip": recipient_zip,
+                "recipient_bank_name": recipient_bank_name,
+                "recipient_bank_address": recipient_bank_address,
+                
+                # ACH Transaction Details
                 "entry_class_code": entry_class_code,
                 "transaction_code": transaction_code,
                 "recipient_account_type": recipient_account_type,
@@ -218,7 +242,20 @@ class ACHService:
             "transaction_id": transaction.transaction_id,
             "amount": transaction.amount,
             "currency": transaction.currency,
+            
+            # Recipient Personal Info
             "recipient": transaction.recipient_name,
+            "recipient_address_line1": metadata.get("recipient_address_line1"),
+            "recipient_address_line2": metadata.get("recipient_address_line2"),
+            "recipient_city": metadata.get("recipient_city"),
+            "recipient_state": metadata.get("recipient_state"),
+            "recipient_zip": metadata.get("recipient_zip"),
+            
+            # Recipient Bank Info
+            "recipient_bank_name": metadata.get("recipient_bank_name"),
+            "recipient_bank_address": metadata.get("recipient_bank_address"),
+            
+            # Transaction Details
             "description": transaction.description,
             "entry_class_code": metadata.get("entry_class_code"),
             "transaction_code": metadata.get("transaction_code"),
