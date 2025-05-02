@@ -312,6 +312,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering Payment Processor routes: {str(e)}")
             logger.warning("Application will run without Payment Processor functionality")
+            
+        # Register PayPal routes
+        try:
+            from routes.paypal_routes import register_paypal_blueprint
+            register_paypal_blueprint(app)
+            logger.info("PayPal routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering PayPal routes: {str(e)}")
+            logger.warning("Application will run without PayPal functionality")
 
         # Create PHP test integration user
         try:

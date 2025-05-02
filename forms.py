@@ -638,3 +638,24 @@ class LoanPaymentForm(FlaskForm):
     interest_amount = FloatField('Interest Amount', validators=[Optional()], render_kw={'readonly': True})
     notes = TextAreaField('Notes', validators=[Optional()])
     submit = SubmitField('Make Payment')
+
+
+class PayPalPaymentForm(FlaskForm):
+    """Form for making a PayPal payment"""
+    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
+    currency = SelectField('Currency', choices=get_currency_choices, validators=[DataRequired()])
+    recipient_email = StringField('Recipient Email', validators=[DataRequired(), Email()])
+    description = TextAreaField('Payment Description', validators=[DataRequired(), Length(max=127)])
+    notes = TextAreaField('Notes (for your records only)', validators=[Optional(), Length(max=500)])
+    submit = SubmitField('Continue to PayPal')
+
+
+class PayPalPayoutForm(FlaskForm):
+    """Form for creating a PayPal payout"""
+    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
+    currency = SelectField('Currency', choices=get_currency_choices, validators=[DataRequired()])
+    recipient_email = StringField('Recipient Email', validators=[DataRequired(), Email()])
+    note = TextAreaField('Note to Recipient', validators=[DataRequired(), Length(max=127)])
+    email_subject = StringField('Email Subject', validators=[Optional(), Length(max=255)])
+    email_message = TextAreaField('Email Message', validators=[Optional(), Length(max=1000)])
+    submit = SubmitField('Send Payout')

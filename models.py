@@ -73,6 +73,7 @@ class TransactionType(enum.Enum):
     WITHDRAWAL = "WITHDRAWAL"
     TRANSFER = "TRANSFER"
     PAYMENT = "PAYMENT"
+    PAYOUT = "PAYOUT"                                 # For PayPal payout transactions
     SETTLEMENT = "SETTLEMENT"
     SWIFT_LETTER_OF_CREDIT = "SWIFT_LETTER_OF_CREDIT"  # For SWIFT MT760 Letters of Credit
     SWIFT_FUND_TRANSFER = "SWIFT_FUND_TRANSFER"        # For SWIFT MT103 customer fund transfers
