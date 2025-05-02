@@ -1,0 +1,280 @@
+{% extends 'layout.html' %}
+
+{% block title %}ACH Transfer Status{% endblock %}
+
+{% block additional_styles %}
+<style>
+    .transaction-card {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .transaction-header {
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+    .transaction-body {
+        padding: 20px;
+    }
+    .transaction-id {
+        font-family: monospace;
+        background-color: #f0f0f0;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    .status-completed {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .status-failed {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .status-cancelled {
+        background-color: #e2e3e5;
+        color: #383d41;
+    }
+    .status-processing {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    .detail-label {
+        font-weight: 600;
+        color: #495057;
+    }
+    .detail-value {
+        color: #212529;
+    }
+    .timeline {
+        position: relative;
+        margin: 20px 0;
+        padding-left: 30px;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 9px;
+        top: 0;
+        height: 100%;
+        width: 2px;
+        background-color: #dee2e6;
+    }
+    .timeline-item {
+        position: relative;
+        padding-bottom: 15px;
+    }
+    .timeline-icon {
+        position: absolute;
+        left: -30px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 20px;
+        background-color: #4a6da7;
+        color: white;
+        font-size: 11px;
+    }
+    .timeline-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 4px;
+    }
+    .timeline-content {
+        background-color: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 6px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1 class="h3">ACH Transfer Details</h1>
+                <a href="{{ url_for('web.ach.ach_transfers') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Transfers
+                </a>
+            </div>
+
+            {% if transaction %}
+                <div class="card shadow-sm transaction-card mb-4">
+                    <div class="transaction-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted mb-1">Transaction ID</div>
+                            <span class="transaction-id">{{ transaction.transaction_id }}</span>
+                        </div>
+                        <div>
+                            <span class="status-badge status-{{ transaction.status.name.lower() }}">
+                                {{ transaction.status.name.replace('_', ' ').title() }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="transaction-body">
+                        <div class="row mb-4">
+                            <div class="col-md-4 mb-3">
+                                <div class="detail-label">Amount</div>
+                                <div class="detail-value h5 mb-0">${{ '%.2f'|format(transaction.amount) }}</div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="detail-label">Date Initiated</div>
+                                <div class="detail-value">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="detail-label">Effective Date</div>
+                                <div class="detail-value">{{ status_data.effective_date or 'Processing' }}</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="detail-label">Recipient</div>
+                                <div class="detail-value">{{ transaction.recipient_name }}</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="detail-label">Account Number</div>
+                                <div class="detail-value">{{ masked_account }}</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="detail-label">Routing Number</div>
+                                <div class="detail-value">{{ status_data.routing_number or '****' }}</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="detail-label">Account Type</div>
+                                <div class="detail-value">{{ metadata.recipient_account_type|capitalize if metadata.recipient_account_type else 'Checking' }}</div>
+                            </div>
+                        </div>
+
+                        {% if transaction.description %}
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="detail-label">Description</div>
+                                    <div class="detail-value">{{ transaction.description }}</div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <div class="detail-label">Entry Class Code</div>
+                                <div class="detail-value">
+                                    {{ metadata.entry_class_code or 'PPD' }}
+                                    {% if metadata.entry_class_code == 'PPD' %}
+                                        <small class="text-muted">(Personal Payment)</small>
+                                    {% elif metadata.entry_class_code == 'CCD' %}
+                                        <small class="text-muted">(Corporate Payment)</small>
+                                    {% elif metadata.entry_class_code %}
+                                        <small class="text-muted">({{ metadata.entry_class_code }})</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if is_recurring %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="detail-label">Recurring</div>
+                                    <div class="detail-value">
+                                        Yes - {{ recurring_frequency|capitalize if recurring_frequency else 'Monthly' }}
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if metadata.company_entry_description %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="detail-label">Statement Description</div>
+                                    <div class="detail-value">{{ metadata.company_entry_description }}</div>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {% if transaction.status.name == 'PENDING' %}
+                            <div class="alert alert-info mb-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                This ACH transfer is currently in processing. It typically takes 1-3 business days to complete.
+                                {% if status_data.estimated_completion %}
+                                    Estimated completion date: <strong>{{ status_data.estimated_completion }}</strong>
+                                {% endif %}
+                            </div>
+                            
+                            <form action="{{ url_for('web.ach.cancel_ach_transfer', transaction_id=transaction.transaction_id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this transfer? This action cannot be undone.')">
+                                <button type="submit" class="btn btn-outline-danger">
+                                    <i class="fas fa-ban me-1"></i> Cancel Transfer
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        <h3 class="h5 mt-4 mb-3">Transaction Timeline</h3>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-icon">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                                <div class="timeline-date">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                                <div class="timeline-content">
+                                    <strong>ACH transfer initiated</strong>
+                                    <div class="text-muted">Transaction created and submitted for processing</div>
+                                </div>
+                            </div>
+                            
+                            {% if transaction.status.name != 'PENDING' %}
+                                <div class="timeline-item">
+                                    <div class="timeline-icon">
+                                        {% if transaction.status.name == 'COMPLETED' %}
+                                            <i class="fas fa-check"></i>
+                                        {% elif transaction.status.name == 'FAILED' %}
+                                            <i class="fas fa-times"></i>
+                                        {% elif transaction.status.name == 'CANCELLED' %}
+                                            <i class="fas fa-ban"></i>
+                                        {% else %}
+                                            <i class="fas fa-arrow-right"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="timeline-date">{{ transaction.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                                    <div class="timeline-content">
+                                        {% if transaction.status.name == 'COMPLETED' %}
+                                            <strong>Transfer completed</strong>
+                                            <div class="text-muted">Funds have been successfully transferred</div>
+                                        {% elif transaction.status.name == 'FAILED' %}
+                                            <strong>Transfer failed</strong>
+                                            <div class="text-muted">{{ transaction.failure_reason or 'The transfer could not be completed. Please contact support for assistance.' }}</div>
+                                        {% elif transaction.status.name == 'CANCELLED' %}
+                                            <strong>Transfer cancelled</strong>
+                                            <div class="text-muted">This transfer was cancelled at your request</div>
+                                        {% else %}
+                                            <strong>Status updated to {{ transaction.status.name.replace('_', ' ').title() }}</strong>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Transaction not found. The transaction ID may be invalid or the transaction has been removed.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Add any JavaScript functionality needed for the page
+</script>
+{% endblock %}
