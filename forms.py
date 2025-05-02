@@ -190,6 +190,10 @@ class SwiftFundTransferForm(FlaskForm):
     """Form for creating a SWIFT MT103/MT202 fund transfer"""
     receiver_institution_id = SelectField('Receiving Institution', coerce=int, validators=[DataRequired()])
     receiver_institution_name = StringField('Institution Name', validators=[DataRequired()])
+    correspondent_bank_name = StringField('Correspondent Bank Name', validators=[Optional()])
+    correspondent_bank_swift = StringField('Correspondent Bank SWIFT/BIC', validators=[Optional()])
+    intermediary_bank_name = StringField('Intermediary Bank Name', validators=[Optional()])
+    intermediary_bank_swift = StringField('Intermediary Bank SWIFT/BIC', validators=[Optional()])
     amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
     currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
     ordering_customer = TextAreaField('Ordering Customer/Institution', validators=[DataRequired()])

@@ -90,6 +90,81 @@
               </div>
             </div>
             
+            <!-- Correspondent & Intermediary Banks -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h3 class="h5 mb-0">Correspondent & Intermediary Banks</h3>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="card mb-3">
+                      <div class="card-header bg-light">
+                        <h5 class="h6 mb-0">Correspondent Bank (Optional)</h5>
+                      </div>
+                      <div class="card-body">
+                        <div class="mb-3">
+                          <label for="{{ form.correspondent_bank_name.id }}" class="form-label">Bank Name</label>
+                          {{ form.correspondent_bank_name(class="form-control", placeholder="Enter correspondent bank name") }}
+                          {% if form.correspondent_bank_name.errors %}
+                            <div class="invalid-feedback d-block">
+                              {% for error in form.correspondent_bank_name.errors %}
+                                {{ error }}
+                              {% endfor %}
+                            </div>
+                          {% endif %}
+                        </div>
+                        <div class="mb-3">
+                          <label for="{{ form.correspondent_bank_swift.id }}" class="form-label">SWIFT/BIC Code</label>
+                          {{ form.correspondent_bank_swift(class="form-control", placeholder="Enter SWIFT/BIC code") }}
+                          {% if form.correspondent_bank_swift.errors %}
+                            <div class="invalid-feedback d-block">
+                              {% for error in form.correspondent_bank_swift.errors %}
+                                {{ error }}
+                              {% endfor %}
+                            </div>
+                          {% endif %}
+                          <div class="form-text">Correspondent bank typically maintains a relationship with the beneficiary bank</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card mb-3">
+                      <div class="card-header bg-light">
+                        <h5 class="h6 mb-0">Intermediary Bank (Optional)</h5>
+                      </div>
+                      <div class="card-body">
+                        <div class="mb-3">
+                          <label for="{{ form.intermediary_bank_name.id }}" class="form-label">Bank Name</label>
+                          {{ form.intermediary_bank_name(class="form-control", placeholder="Enter intermediary bank name") }}
+                          {% if form.intermediary_bank_name.errors %}
+                            <div class="invalid-feedback d-block">
+                              {% for error in form.intermediary_bank_name.errors %}
+                                {{ error }}
+                              {% endfor %}
+                            </div>
+                          {% endif %}
+                        </div>
+                        <div class="mb-3">
+                          <label for="{{ form.intermediary_bank_swift.id }}" class="form-label">SWIFT/BIC Code</label>
+                          {{ form.intermediary_bank_swift(class="form-control", placeholder="Enter SWIFT/BIC code") }}
+                          {% if form.intermediary_bank_swift.errors %}
+                            <div class="invalid-feedback d-block">
+                              {% for error in form.intermediary_bank_swift.errors %}
+                                {{ error }}
+                              {% endfor %}
+                            </div>
+                          {% endif %}
+                          <div class="form-text">Intermediary bank facilitates transfer between correspondent and beneficiary banks</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             <!-- Transfer Details -->
             <div class="card mb-4">
               <div class="card-header bg-light">
