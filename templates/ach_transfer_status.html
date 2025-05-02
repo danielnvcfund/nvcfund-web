@@ -144,6 +144,28 @@
                             <div class="col-md-6 mb-3">
                                 <div class="detail-label">Recipient</div>
                                 <div class="detail-value">{{ transaction.recipient_name }}</div>
+                                {% if metadata.recipient_address_line1 %}
+                                <div class="detail-value mt-1 text-muted small">
+                                    {{ metadata.recipient_address_line1 }}{% if metadata.recipient_address_line2 %}, {{ metadata.recipient_address_line2 }}{% endif %}<br>
+                                    {% if metadata.recipient_city or metadata.recipient_state or metadata.recipient_zip %}
+                                        {{ metadata.recipient_city }}{% if metadata.recipient_city and metadata.recipient_state %}, {% endif %}
+                                        {{ metadata.recipient_state }} {{ metadata.recipient_zip }}
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="detail-label">Bank Information</div>
+                                <div class="detail-value">
+                                    {% if metadata.recipient_bank_name %}
+                                        {{ metadata.recipient_bank_name }}
+                                        {% if metadata.recipient_bank_address %}
+                                        <div class="mt-1 text-muted small">{{ metadata.recipient_bank_address }}</div>
+                                        {% endif %}
+                                    {% else %}
+                                        Not provided
+                                    {% endif %}
+                                </div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <div class="detail-label">Account Number</div>
