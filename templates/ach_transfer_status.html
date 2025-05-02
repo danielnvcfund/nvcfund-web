@@ -217,6 +217,20 @@
                         {% endif %}
 
                         <h3 class="h5 mt-4 mb-3">Transaction Timeline</h3>
+                        <!-- Actions Section -->
+                        <div class="mb-4">
+                            <div class="d-flex flex-wrap gap-2">
+                                {% if transaction.status.name == 'PENDING' %}
+                                    <!-- Cancel button is already defined above -->
+                                {% endif %}
+                                
+                                <!-- Download PDF receipt button -->
+                                <a href="{{ url_for('web.ach.download_ach_receipt', transaction_id=transaction.transaction_id) }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-file-pdf me-1"></i> Download PDF Receipt
+                                </a>
+                            </div>
+                        </div>
+                        
                         <div class="timeline">
                             <div class="timeline-item">
                                 <div class="timeline-icon">

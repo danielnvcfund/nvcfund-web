@@ -6,14 +6,17 @@ import json
 import logging
 from datetime import datetime, timedelta
 
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app, send_file, Response
 from flask_login import login_required, current_user
 from sqlalchemy.exc import SQLAlchemyError
 
 from forms import ACHTransferForm
 from models import Transaction, TransactionStatus, TransactionType, db
 from ach_service import ach_service
+from pdf_service import pdf_service
 from utils import format_currency, format_transaction_type
+import io
+import os
 
 # Create blueprint
 ach = Blueprint('ach', __name__, url_prefix='/ach')
@@ -164,3 +167,54 @@ def ach_transfers():
     ).order_by(Transaction.created_at.desc()).all()
     
     return render_template('ach_transfers.html', transactions=transactions)
+
+@ach.route('/receipt/<transaction_id>/pdf')
+@login_required
+def download_ach_receipt(transaction_id):
+    """Download a PDF receipt for an ACH transfer"""
+    # Verify transaction exists and belongs to current user
+    transaction = Transaction.query.filter_by(
+        transaction_id=transaction_id,
+        user_id=current_user.id
+    ).first()
+    
+    if not transaction:
+        flash('Transaction not found.', 'danger')
+        return redirect(url_for('web.main.dashboard'))
+    
+    if transaction.transaction_type != TransactionType.EDI_ACH_TRANSFER:
+        flash('This transaction is not an ACH transfer.', 'warning')
+        return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
+    
+    try:
+        # Get user info to add to the PDF
+        sender_name = f"{current_user.first_name} {current_user.last_name}" if current_user.first_name and current_user.last_name else current_user.username
+        
+        # Parse metadata
+        try:
+            metadata = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
+            metadata['sender_name'] = sender_name
+        except json.JSONDecodeError:
+            metadata = {'sender_name': sender_name}
+        
+        # Generate PDF
+        pdf_data = pdf_service.generate_ach_transaction_pdf(transaction, metadata)
+        
+        # Create a response with PDF
+        filename = f"ACH_Transfer_{transaction_id}.pdf"
+        
+        response = Response(
+            pdf_data,
+            mimetype='application/pdf',
+            headers={
+                'Content-Disposition': f'attachment; filename="{filename}"',
+                'Content-Type': 'application/pdf'
+            }
+        )
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error generating PDF receipt: {str(e)}")
+        flash('An error occurred while generating the receipt. Please try again later.', 'danger')
+        return redirect(url_for('web.ach.ach_transfer_status', transaction_id=transaction_id))

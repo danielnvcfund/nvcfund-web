@@ -8,13 +8,13 @@ import logging
 from datetime import datetime
 import re
 import io
-from weasyprint import HTML
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, session, send_file, make_response
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, session, send_file, make_response, Response
 from flask_login import login_required, current_user
 
 from models import db, Transaction, TransactionType, TransactionStatus, FinancialInstitution
 from forms import LetterOfCreditForm, SwiftFundTransferForm, SwiftFreeFormatMessageForm, SwiftMT542Form, FinancialInstitutionForm
 from swift_integration import SwiftService
+from pdf_service import pdf_service
 from models import FinancialInstitution, FinancialInstitutionType
 
 # Configure logger
@@ -236,6 +236,72 @@ def fund_transfer_status(transaction_id):
 
     # This is just a specialized redirect to message_status for fund transfers
     return redirect(url_for('web.swift.message_status', transaction_id=transaction_id))
+
+@swift.route('/receipt/<transaction_id>/pdf')
+@login_required
+def download_swift_receipt(transaction_id):
+    """Download a PDF receipt for a SWIFT transfer"""
+    # Verify transaction exists and belongs to current user
+    transaction = Transaction.query.filter_by(
+        transaction_id=transaction_id,
+        user_id=current_user.id
+    ).first()
+    
+    if not transaction:
+        flash('Transaction not found.', 'danger')
+        return redirect(url_for('web.main.dashboard'))
+    
+    # Check if this is a SWIFT transfer
+    swift_transaction_types = [
+        TransactionType.SWIFT_FUND_TRANSFER, 
+        TransactionType.SWIFT_INSTITUTION_TRANSFER
+    ]
+    
+    if transaction.transaction_type not in swift_transaction_types:
+        flash('This transaction is not a SWIFT fund transfer.', 'warning')
+        return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
+    
+    try:
+        # Get user info to add to the PDF
+        sender_name = f"{current_user.first_name} {current_user.last_name}" if current_user.first_name and current_user.last_name else current_user.username
+        
+        # Parse metadata
+        try:
+            metadata = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
+            metadata['sender_name'] = sender_name
+            
+            # Add message type info to PDF
+            if transaction.transaction_type == TransactionType.SWIFT_INSTITUTION_TRANSFER:
+                message_type = "MT202"
+            else:
+                message_type = "MT103"
+                
+            metadata['message_type'] = message_type
+            
+        except json.JSONDecodeError:
+            metadata = {'sender_name': sender_name}
+        
+        # Generate PDF
+        pdf_data = pdf_service.generate_swift_transaction_pdf(transaction, metadata)
+        
+        # Create a response with PDF
+        filename = f"SWIFT_{message_type}_Transfer_{transaction_id}.pdf"
+        
+        response = Response(
+            pdf_data,
+            mimetype='application/pdf',
+            headers={
+                'Content-Disposition': f'attachment; filename="{filename}"',
+                'Content-Type': 'application/pdf'
+            }
+        )
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error generating PDF receipt: {str(e)}")
+        flash('An error occurred while generating the receipt. Please try again later.', 'danger')
+        return redirect(url_for('web.swift.fund_transfer_status', transaction_id=transaction_id))
 
 @swift.route('/cancel_message/<transaction_id>', methods=['POST'])
 @login_required
