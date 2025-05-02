@@ -222,6 +222,15 @@ def create_app():
         from routes.admin import admin
         app.register_blueprint(admin)
         
+        # Register Transaction Admin routes
+        try:
+            from routes.admin_routes import admin_bp
+            app.register_blueprint(admin_bp)
+            logger.info("Transaction Admin routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Transaction Admin routes: {str(e)}")
+            logger.warning("Application will run without Transaction Admin functionality")
+        
         # Register EDI Integration routes
         from routes.edi_routes import edi
         app.register_blueprint(edi)

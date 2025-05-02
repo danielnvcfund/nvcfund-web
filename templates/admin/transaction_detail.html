@@ -1,0 +1,141 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin - Transaction Details{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Transaction Details</h1>
+        <a href="{{ url_for('admin.admin_transactions') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left mr-1"></i> Back to All Transactions
+        </a>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Transaction Information</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>ID</th>
+                            <td>{{ transaction.id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Type</th>
+                            <td>{{ transaction.transaction_type.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Amount</th>
+                            <td>{{ "{:,.2f}".format(transaction.amount) }} {{ transaction.currency }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status</th>
+                            <td>
+                                <span class="badge 
+                                    {% if transaction.status.name == 'PENDING' %}badge-warning
+                                    {% elif transaction.status.name == 'PROCESSING' %}badge-info
+                                    {% elif transaction.status.name == 'COMPLETED' %}badge-success
+                                    {% elif transaction.status.name == 'FAILED' %}badge-danger
+                                    {% elif transaction.status.name == 'CANCELLED' %}badge-secondary
+                                    {% else %}badge-light{% endif %}">
+                                    {{ transaction.status.name }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Created</th>
+                            <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Updated</th>
+                            <td>{{ transaction.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        </tr>
+                        <tr>
+                            <th>User</th>
+                            <td>{{ transaction.user.username if transaction.user else 'System' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Description</th>
+                            <td>{{ transaction.description or 'No description' }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Update Status</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.update_transaction_status', transaction_id=transaction.id) }}">
+                        <div class="form-group">
+                            <label for="status">New Status</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="PENDING" {% if transaction.status.name == 'PENDING' %}selected{% endif %}>PENDING</option>
+                                <option value="PROCESSING" {% if transaction.status.name == 'PROCESSING' %}selected{% endif %}>PROCESSING</option>
+                                <option value="COMPLETED" {% if transaction.status.name == 'COMPLETED' %}selected{% endif %}>COMPLETED</option>
+                                <option value="FAILED" {% if transaction.status.name == 'FAILED' %}selected{% endif %}>FAILED</option>
+                                <option value="CANCELLED" {% if transaction.status.name == 'CANCELLED' %}selected{% endif %}>CANCELLED</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Status</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Transaction Metadata</h4>
+                </div>
+                <div class="card-body">
+                    <pre class="bg-light p-3 rounded">{{ transaction.metadata | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Admin Notes</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.add_transaction_note', transaction_id=transaction.id) }}" class="mb-4">
+                        <div class="form-group">
+                            <label for="note">Add Note</label>
+                            <textarea class="form-control" id="note" name="note" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Note</button>
+                    </form>
+                    
+                    <hr>
+                    
+                    <div class="notes-section">
+                        {% if transaction.metadata and transaction.metadata.get('admin_notes') %}
+                            {% for note in transaction.metadata.get('admin_notes') | reverse %}
+                                <div class="card mb-2">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <span>{{ note.user }}</span>
+                                        <small class="text-muted">{{ note.timestamp }}</small>
+                                    </div>
+                                    <div class="card-body">
+                                        {% if note.get('action') %}
+                                            <div class="alert alert-info mb-0">{{ note.action }}</div>
+                                        {% else %}
+                                            <p class="mb-0">{{ note.note }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-info">No notes yet</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
