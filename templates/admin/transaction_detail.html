@@ -6,7 +6,7 @@
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Transaction Details</h1>
-        <a href="{{ url_for('admin.admin_transactions') }}" class="btn btn-outline-primary">
+        <a href="{{ url_for('transaction_admin.admin_transactions') }}" class="btn btn-outline-primary">
             <i class="fas fa-arrow-left mr-1"></i> Back to All Transactions
         </a>
     </div>
@@ -70,7 +70,7 @@
                     <h4 class="mb-0">Update Status</h4>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('admin.update_transaction_status', transaction_id=transaction.id) }}">
+                    <form method="POST" action="{{ url_for('transaction_admin.update_transaction_status', transaction_id=transaction.id) }}">
                         <div class="form-group">
                             <label for="status">New Status</label>
                             <select class="form-control" id="status" name="status">
@@ -102,7 +102,7 @@
                     <h4 class="mb-0">Admin Notes</h4>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('admin.add_transaction_note', transaction_id=transaction.id) }}" class="mb-4">
+                    <form method="POST" action="{{ url_for('transaction_admin.add_transaction_note', transaction_id=transaction.id) }}" class="mb-4">
                         <div class="form-group">
                             <label for="note">Add Note</label>
                             <textarea class="form-control" id="note" name="note" rows="3" required></textarea>

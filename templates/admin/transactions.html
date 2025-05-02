@@ -28,7 +28,7 @@
                     <tbody>
                         {% for transaction in transactions %}
                         <tr>
-                            <td>{{ transaction.id[:8] }}...</td>
+                            <td>{{ transaction.id }}</td>
                             <td>{{ transaction.transaction_type.name }}</td>
                             <td>{{ "{:,.2f}".format(transaction.amount) }}</td>
                             <td>{{ transaction.currency }}</td>
