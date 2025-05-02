@@ -92,10 +92,51 @@
 
                     {% if current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' %}
                     <!-- Admin Controls -->
-                    <li class="nav-item me-2">
-                        <a class="nav-link btn btn-danger" href="{{ url_for('web.main.admin_dashboard') }}">
+                    <li class="nav-item dropdown me-2">
+                        <a class="nav-link dropdown-toggle btn btn-danger" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-user-shield me-1"></i> Admin
                         </a>
+                        <ul class="dropdown-menu dropdown-menu-animated" aria-labelledby="adminDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.admin_dashboard') }}">
+                                    <i class="fas fa-tachometer-alt me-1"></i> Admin Dashboard
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="dropdown-header">Client Management</li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.register') }}">
+                                    <i class="fas fa-user-plus me-1"></i> Individual Registration
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.client_registration') }}">
+                                    <i class="fas fa-briefcase me-1"></i> Business Client Registration
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.main.partner_registration') }}">
+                                    <i class="fas fa-handshake me-1"></i> Partner Registration
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="dropdown-header">Financial Institutions & SWIFT</li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('admin_tools.financial_institutions_tool') }}">
+                                    <i class="fas fa-landmark me-1"></i> Institutions Reference Tool
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('new_financial_institution') }}">
+                                    <i class="fas fa-plus-circle me-1"></i> Add New Institution
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('web.swift.new_fund_transfer') }}">
+                                    <i class="fas fa-exchange-alt me-1"></i> SWIFT Fund Transfer
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     {% endif %}
 
