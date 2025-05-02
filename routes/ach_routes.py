@@ -194,6 +194,21 @@ def download_ach_receipt(transaction_id):
         try:
             metadata = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
             metadata['sender_name'] = sender_name
+            
+            # Extract routing number for the PDF
+            if 'recipient_routing_number' in metadata:
+                metadata['routing_number'] = metadata['recipient_routing_number']
+                
+            # Format bank details for display
+            bank_details = []
+            if metadata.get('recipient_bank_name'):
+                bank_details.append(metadata['recipient_bank_name'])
+            if metadata.get('recipient_bank_address'):
+                bank_details.append(metadata['recipient_bank_address'])
+            
+            if bank_details:
+                metadata['recipient_bank_formatted'] = "\n".join(bank_details)
+                
         except json.JSONDecodeError:
             metadata = {'sender_name': sender_name}
         
