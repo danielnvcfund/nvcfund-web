@@ -257,26 +257,20 @@ TRANSACTION_RECEIPT_TEMPLATE = """
         
         {% if show_bank_info %}
         <div class="bank-info">
-            <div class="section-title">Bank Information</div>
+            <div class="section-title">Recipient Bank Information</div>
             <table class="info-table">
-                {% if transaction.recipient_bank_name %}
                 <tr>
                     <th>Bank Name</th>
-                    <td>{{ transaction.recipient_bank_name }}</td>
+                    <td>{{ transaction.recipient_bank_name if transaction.recipient_bank_name else "Not specified" }}</td>
                 </tr>
-                {% endif %}
-                {% if transaction.recipient_bank_address %}
                 <tr>
                     <th>Bank Address</th>
-                    <td class="address">{{ transaction.recipient_bank_address }}</td>
+                    <td class="address">{{ transaction.recipient_bank_address if transaction.recipient_bank_address else "Not specified" }}</td>
                 </tr>
-                {% endif %}
-                {% if transaction.recipient_routing_number %}
                 <tr>
                     <th>Routing Number</th>
-                    <td>{{ transaction.recipient_routing_number }}</td>
+                    <td>{% if transaction.recipient_routing_number %}{{ transaction.recipient_routing_number }}{% elif transaction.routing_number %}{{ transaction.routing_number }}{% else %}Not specified{% endif %}</td>
                 </tr>
-                {% endif %}
             </table>
         </div>
         {% endif %}
@@ -333,6 +327,15 @@ class PDFService:
                     "recipient_account": transaction.recipient_account
                 }
                 
+                # Extract additional fields if they exist on the transaction object
+                for field in [
+                    "recipient_bank_name", "recipient_bank_address", "recipient_routing_number",
+                    "recipient_address_line1", "recipient_address_line2", "recipient_city",
+                    "recipient_state", "recipient_zip", "routing_number"
+                ]:
+                    if hasattr(transaction, field) and getattr(transaction, field):
+                        transaction_dict[field] = getattr(transaction, field)
+                
                 # Handle metadata from transaction object
                 if hasattr(transaction, "tx_metadata_json") and transaction.tx_metadata_json:
                     import json
@@ -388,6 +391,22 @@ class PDFService:
             if not transaction_dict.get("sender_name"):
                 transaction_dict["sender_name"] = "NVC Banking Customer"
             
+            # Force show bank info if this is an ACH transaction
+            show_bank_info = transaction_dict.get('show_bank_info', False)
+            
+            # If it's not explicitly set, determine from available data
+            if not show_bank_info:
+                show_bank_info = any([
+                    transaction_dict.get("recipient_bank_name"),
+                    transaction_dict.get("recipient_bank_address"),
+                    transaction_dict.get("recipient_routing_number"),
+                    transaction_dict.get("routing_number")
+                ])
+                
+            # If it's an ACH transfer, always show the bank section
+            if transaction_dict.get('transaction_type') == 'ACH Transfer':
+                show_bank_info = True
+            
             # Set up rendering context
             context = {
                 "title": f"{transaction_type} Receipt",
@@ -395,11 +414,7 @@ class PDFService:
                 "header": "OFFICIAL TRANSACTION RECEIPT",
                 "generation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "transaction": transaction_dict,
-                "show_bank_info": any([
-                    transaction_dict.get("recipient_bank_name"),
-                    transaction_dict.get("recipient_bank_address"),
-                    transaction_dict.get("recipient_routing_number")
-                ])
+                "show_bank_info": show_bank_info
             }
             
             # Render template to HTML
@@ -484,6 +499,20 @@ class PDFService:
         Returns:
             bytes: PDF document as bytes
         """
+        # Make sure we have a metadata dictionary
+        if metadata is None:
+            metadata = {}
+            
+        # Add ACH-specific information
+        metadata['transaction_type'] = "ACH Transfer"
+        
+        # Ensure the bank information will be shown
+        metadata['show_bank_info'] = True
+        
+        # Make sure routing number is available in expected field
+        if 'recipient_routing_number' in metadata and 'routing_number' not in metadata:
+            metadata['routing_number'] = metadata['recipient_routing_number']
+        
         return PDFService.generate_transaction_pdf(
             transaction,
             transaction_type="ACH Transfer",
