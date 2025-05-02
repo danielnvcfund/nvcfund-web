@@ -368,10 +368,13 @@ class ApiAccessReviewForm(FlaskForm):
 class PartnerApiKeyForm(FlaskForm):
     """Form for managing partner API keys"""
     partner_name = StringField('Partner Name', validators=[DataRequired(), Length(max=100)])
+    partner_email = StringField('Partner Email', validators=[DataRequired(), Email(), Length(max=120)])
+    partner_type = SelectField('Partner Type', choices=[], validators=[DataRequired()])
     key_type = SelectField('Key Type', choices=[], validators=[DataRequired()])
     access_level = SelectField('Access Level', choices=[], validators=[DataRequired()])
     expiry_date = DateField('Expiry Date', validators=[Optional()])
     description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
+    is_active = BooleanField('Active', default=True)
     submit = SubmitField('Generate API Key')
     
     def __init__(self, *args, **kwargs):
@@ -388,6 +391,13 @@ class PartnerApiKeyForm(FlaskForm):
             ('standard', 'Standard'),
             ('elevated', 'Elevated'),
             ('admin', 'Admin')
+        ]
+        self.partner_type.choices = [
+            ('payment_processor', 'Payment Processor'),
+            ('financial_institution', 'Financial Institution'),
+            ('service_provider', 'Service Provider'),
+            ('technology_partner', 'Technology Partner'),
+            ('consultant', 'Consultant/Advisory')
         ]
 
 class EdiPartnerForm(FlaskForm):
