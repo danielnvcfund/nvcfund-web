@@ -5,6 +5,7 @@ This module provides functionality for processing ACH transfers within the US ba
 import json
 import logging
 import uuid
+import os
 from datetime import datetime, timedelta
 
 from flask import current_app
@@ -13,6 +14,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from models import Transaction, TransactionStatus, TransactionType, User, db
 from utils import generate_uuid
 from email_service import send_transaction_confirmation_email
+from pdf_service import pdf_service
 
 logger = logging.getLogger(__name__)
 
@@ -355,6 +357,79 @@ class ACHService:
         ) % 10
         
         return checksum == 0
+    
+    @staticmethod
+    def generate_transaction_pdf(transaction_id, save_path=None):
+        """
+        Generate a PDF receipt for an ACH transaction
+        
+        Args:
+            transaction_id (str): Transaction ID
+            save_path (str, optional): Path to save the PDF. If None, the PDF is returned as bytes.
+            
+        Returns:
+            bytes or str: PDF document as bytes or path where the PDF was saved
+        """
+        transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
+        
+        if not transaction:
+            logger.error(f"Transaction not found: {transaction_id}")
+            raise ValueError(f"Transaction not found: {transaction_id}")
+        
+        if transaction.transaction_type != TransactionType.EDI_ACH_TRANSFER:
+            logger.error(f"Transaction is not an ACH transfer: {transaction_id}")
+            raise ValueError(f"Transaction is not an ACH transfer: {transaction_id}")
+        
+        try:
+            # Get the user who initiated the transaction
+            user = User.query.get(transaction.user_id)
+            sender_name = f"{user.first_name} {user.last_name}" if user and user.first_name and user.last_name else None
+            
+            # Extract metadata
+            metadata = {}
+            if transaction.tx_metadata_json:
+                try:
+                    metadata = json.loads(transaction.tx_metadata_json)
+                except json.JSONDecodeError:
+                    logger.error(f"Failed to parse transaction metadata for {transaction_id}")
+            
+            # Add sender info to metadata if available
+            if sender_name:
+                metadata["sender_name"] = sender_name
+            
+            # Set entry class code description
+            if metadata.get("entry_class_code") in ACH_ENTRY_CLASSES:
+                metadata["entry_class_code_description"] = ACH_ENTRY_CLASSES[metadata["entry_class_code"]]
+            
+            # Set transaction code description
+            if metadata.get("transaction_code") in ACH_TRANSACTION_CODES:
+                metadata["transaction_code_description"] = ACH_TRANSACTION_CODES[metadata["transaction_code"]]
+            
+            # Generate the PDF
+            pdf_data = pdf_service.generate_ach_transaction_pdf(transaction, metadata)
+            
+            # If save_path is provided, save the PDF to disk
+            if save_path:
+                # Create directory if it doesn't exist
+                os.makedirs(os.path.dirname(os.path.abspath(save_path)), exist_ok=True)
+                
+                # If no extension provided, add .pdf
+                if not save_path.lower().endswith('.pdf'):
+                    save_path += '.pdf'
+                
+                # Save the PDF
+                with open(save_path, 'wb') as f:
+                    f.write(pdf_data)
+                
+                logger.info(f"ACH transaction PDF saved to {save_path}")
+                return save_path
+            
+            # Otherwise return the PDF data
+            return pdf_data
+            
+        except Exception as e:
+            logger.error(f"Error generating ACH transaction PDF: {str(e)}")
+            raise
 
 # Create a global instance
 ach_service = ACHService()
