@@ -4,7 +4,7 @@ from models import Transaction, TransactionStatus
 from auth import admin_required
 from app import db
 
-admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+admin_bp = Blueprint('transaction_admin', __name__, url_prefix='/transaction-admin')
 
 @admin_bp.route('/transactions', methods=['GET'])
 @login_required
@@ -32,7 +32,7 @@ def update_transaction_status(transaction_id):
     new_status = request.form.get('status')
     if not new_status or not hasattr(TransactionStatus, new_status):
         flash('Invalid status', 'error')
-        return redirect(url_for('admin.admin_transaction_detail', transaction_id=transaction_id))
+        return redirect(url_for('transaction_admin.admin_transaction_detail', transaction_id=transaction_id))
     
     old_status = transaction.status.name
     transaction.status = getattr(TransactionStatus, new_status)
@@ -48,7 +48,7 @@ def update_transaction_status(transaction_id):
     
     db.session.commit()
     flash(f'Transaction status updated to {new_status}', 'success')
-    return redirect(url_for('admin.admin_transaction_detail', transaction_id=transaction_id))
+    return redirect(url_for('transaction_admin.admin_transaction_detail', transaction_id=transaction_id))
 
 @admin_bp.route('/transaction/add-note/<transaction_id>', methods=['POST'])
 @login_required
@@ -60,7 +60,7 @@ def add_transaction_note(transaction_id):
     note = request.form.get('note')
     if not note:
         flash('Note cannot be empty', 'error')
-        return redirect(url_for('admin.admin_transaction_detail', transaction_id=transaction_id))
+        return redirect(url_for('transaction_admin.admin_transaction_detail', transaction_id=transaction_id))
     
     notes = transaction.metadata.get('admin_notes', [])
     notes.append({
@@ -72,4 +72,4 @@ def add_transaction_note(transaction_id):
     
     db.session.commit()
     flash('Note added', 'success')
-    return redirect(url_for('admin.admin_transaction_detail', transaction_id=transaction_id))
+    return redirect(url_for('transaction_admin.admin_transaction_detail', transaction_id=transaction_id))
