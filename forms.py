@@ -322,10 +322,9 @@ class ACHTransferForm(FlaskForm):
 
 class SwiftFreeFormatMessageForm(FlaskForm):
     """Form for creating a SWIFT MT799 free format message"""
-    sender_bank = SelectField('Sender Bank', coerce=int, validators=[DataRequired()])
-    receiver_bank = SelectField('Receiver Bank', coerce=int, validators=[DataRequired()])
-    related_reference = StringField('Related Reference', validators=[Optional()])
-    message_text = TextAreaField('Message Text', validators=[DataRequired()])
+    receiver_institution_id = SelectField('Receiver Institution', coerce=int, validators=[DataRequired()])
+    subject = StringField('Subject', validators=[DataRequired(), Length(max=100)])
+    message_body = TextAreaField('Message Text', validators=[DataRequired()])
     submit = SubmitField('Send Free Format Message')
 
 class SwiftMT542Form(FlaskForm):
