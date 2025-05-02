@@ -22,9 +22,14 @@
                         <i class="fas fa-landmark me-1"></i> Financial Institutions
                     </a>
                 {% endif %}
-                <a href="{{ url_for('web.main.new_payment') }}" class="btn btn-primary btn-lg shadow-sm">
-                    <i class="fas fa-credit-card me-1"></i> Make Payment
-                </a>
+                <div class="btn-group me-2">
+                    <a href="{{ url_for('web.main.new_payment') }}" class="btn btn-primary btn-lg shadow-sm">
+                        <i class="fas fa-credit-card me-1"></i> Make Payment
+                    </a>
+                    <a href="{{ url_for('web.ach.new_ach_transfer') }}" class="btn btn-success btn-lg shadow-sm">
+                        <i class="fas fa-money-bill-wave me-1"></i> ACH Transfer
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -471,6 +476,46 @@
                     <a href="#" class="btn btn-outline-primary">
                         <i class="fas fa-cog me-1"></i> Account Settings
                     </a>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card dashboard-widget border-0 shadow mb-4">
+                <div class="card-header bg-dark bg-opacity-10 border-0">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                            <i class="fas fa-bolt text-primary"></i>
+                        </div>
+                        <h5 class="mb-0 fw-bold">Quick Actions</h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <a href="{{ url_for('web.main.new_payment') }}" class="d-block p-3 rounded bg-light text-center text-decoration-none">
+                                <i class="fas fa-credit-card mb-2 fa-2x text-primary"></i>
+                                <div class="fw-medium">Make Payment</div>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('web.ach.new_ach_transfer') }}" class="d-block p-3 rounded bg-light text-center text-decoration-none">
+                                <i class="fas fa-money-bill-wave mb-2 fa-2x text-success"></i>
+                                <div class="fw-medium">ACH Transfer</div>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('web.swift.new_fund_transfer') }}" class="d-block p-3 rounded bg-light text-center text-decoration-none">
+                                <i class="fas fa-university mb-2 fa-2x text-info"></i>
+                                <div class="fw-medium">SWIFT Transfer</div>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('web.main.transactions') }}" class="d-block p-3 rounded bg-light text-center text-decoration-none">
+                                <i class="fas fa-list-alt mb-2 fa-2x text-secondary"></i>
+                                <div class="fw-medium">View Transactions</div>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
             
