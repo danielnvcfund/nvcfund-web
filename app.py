@@ -353,6 +353,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering KTT Telex routes: {str(e)}")
             logger.warning("Application will run without KTT Telex functionality")
+            
+        # Register PDF routes
+        try:
+            from routes.pdf_routes import register_pdf_routes
+            register_pdf_routes(app)
+            logger.info("PDF routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering PDF routes: {str(e)}")
+            logger.warning("Application will run without PDF generation functionality")
 
         # Create PHP test integration user
         try:
