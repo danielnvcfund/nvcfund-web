@@ -93,7 +93,7 @@
                     <h4 class="mb-0">Transaction Metadata</h4>
                 </div>
                 <div class="card-body">
-                    {% if hasattr(transaction, '_safe_metadata') and transaction._safe_metadata %}
+                    {% if transaction._safe_metadata is defined and transaction._safe_metadata %}
                         {% if transaction._safe_metadata is mapping %}
                             <pre class="bg-light p-3 rounded">{{ transaction._safe_metadata | tojson(indent=2) }}</pre>
                         {% else %}
@@ -133,7 +133,7 @@
                     <hr>
                     
                     <div class="notes-section">
-                        {% if hasattr(transaction, '_safe_metadata') and transaction._safe_metadata is mapping and transaction._safe_metadata.get('admin_notes') %}
+                        {% if transaction._safe_metadata is defined and transaction._safe_metadata is mapping and transaction._safe_metadata.get('admin_notes') %}
                             {% for note in transaction._safe_metadata.get('admin_notes') | reverse %}
                                 <div class="card mb-2">
                                     <div class="card-header d-flex justify-content-between align-items-center">
