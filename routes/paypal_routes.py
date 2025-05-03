@@ -1,174 +1,191 @@
 """
-PayPal Payment Routes for NVC Banking Platform
-
-This module handles routes for PayPal payments, payouts, and webhook handling.
+PayPal integration routes for the NVC Banking Platform.
+These routes handle PayPal payments, payouts, and callbacks.
 """
+
 import os
-import json
+import uuid
 import logging
 from datetime import datetime
-from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app, jsonify, session
+from typing import Optional, Dict, Any
 
-from forms import PayPalPaymentForm, PayPalPayoutForm
-from models import Transaction, TransactionStatus, TransactionType, PaymentGateway
-from paypal_service import paypal_service
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session, jsonify, current_app
 from flask_login import login_required, current_user
-from auth import admin_required
+import stripe
+
+from app import db
+import sys
+import os
+# Add the parent directory to sys.path to allow importing from the root
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from paypal_integration import PayPalService
+from forms import PayPalPaymentForm, PayPalPayoutForm
+from models import Transaction, TransactionStatus, TransactionType, PaymentGateway, PaymentGatewayType
 
 # Configure logging
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Create Blueprint
+# Create PayPal blueprint
 paypal_bp = Blueprint('paypal', __name__, url_prefix='/paypal')
 
-@paypal_bp.route('/dashboard', methods=['GET'])
+def get_paypal_gateway() -> Optional[PaymentGateway]:
+    """Get the PayPal payment gateway from the database"""
+    return PaymentGateway.query.filter_by(
+        gateway_type=PaymentGatewayType.PAYPAL, 
+        is_active=True
+    ).first()
+
+def register_paypal_blueprint(app):
+    """Register the PayPal blueprint with the Flask app"""
+    app.register_blueprint(paypal_bp)
+    logger.info("PayPal routes registered successfully")
+
+@paypal_bp.route('/dashboard')
 @login_required
 def dashboard():
-    """PayPal Dashboard showing transaction history"""
+    """PayPal dashboard page showing recent transactions"""
+    # Get user's PayPal transactions
     transactions = Transaction.query.filter_by(
         user_id=current_user.id,
-        payment_provider='paypal'
-    ).order_by(Transaction.created_at.desc()).all()
+        gateway_id=get_paypal_gateway().id if get_paypal_gateway() else None
+    ).order_by(Transaction.created_at.desc()).limit(10).all()
     
-    return render_template(
-        'paypal/dashboard.html',
-        transactions=transactions
-    )
+    return render_template('paypal/dashboard.html', transactions=transactions)
 
 @paypal_bp.route('/payment', methods=['GET', 'POST'])
 @login_required
 def payment():
-    """Create a new PayPal payment"""
+    """PayPal payment form and handler"""
     form = PayPalPaymentForm()
     
     if form.validate_on_submit():
-        # Get form data
-        amount = form.amount.data
-        currency = form.currency.data
-        recipient_email = form.recipient_email.data
-        description = form.description.data
+        # Create a unique transaction ID
+        transaction_id = f"PAYPAL-{uuid.uuid4().hex[:10]}"
         
-        # Generate return and cancel URLs
-        return_url = url_for('paypal.payment_success', _external=True)
+        # Generate the return and cancel URLs
+        return_url = url_for('paypal.payment_return', _external=True)
         cancel_url = url_for('paypal.payment_cancel', _external=True)
         
-        # Create PayPal payment
-        payment_result = paypal_service.create_payment(
-            amount=amount,
-            currency=currency,
-            description=description,
+        # Create the PayPal payment
+        payment_id, approval_url = PayPalService.create_payment(
+            amount=form.amount.data,
+            currency=form.currency.data,
+            description=form.description.data or "NVC Banking Platform Payment",
             return_url=return_url,
             cancel_url=cancel_url
         )
         
-        if not payment_result:
-            flash('Failed to create PayPal payment. Please try again.', 'danger')
-            return render_template('paypal/payment_form.html', form=form)
-        
-        # Extract payment ID and approval URL
-        payment_id = payment_result.get('id')
-        
-        # Create transaction record in database
-        transaction = paypal_service.create_transaction_record(
-            user_id=current_user.id,
-            amount=amount,
-            currency=currency,
-            paypal_payment_id=payment_id,
-            recipient_email=recipient_email,
-            transaction_type=TransactionType.PAYMENT,
-            status=TransactionStatus.PENDING,
-            description=description
-        )
-        
-        if not transaction:
-            flash('Failed to create transaction record. Payment may still be processed.', 'warning')
-        
-        # Find approval URL
-        for link in payment_result.get('links', []):
-            if link.get('rel') == 'approval_url':
-                approval_url = link.get('href')
-                # Redirect user to PayPal approval URL
-                return redirect(approval_url)
-        
-        flash('Invalid PayPal response. Please try again.', 'danger')
-        return render_template('paypal/payment_form.html', form=form)
+        if payment_id and approval_url:
+            # Save the transaction details to the database
+            gateway = get_paypal_gateway()
+            if not gateway:
+                flash("PayPal gateway not configured", "danger")
+                return redirect(url_for('paypal.dashboard'))
+            
+            transaction = Transaction(
+                transaction_id=transaction_id,
+                user_id=current_user.id,
+                amount=form.amount.data,
+                currency=form.currency.data,
+                transaction_type=TransactionType.PAYMENT,
+                status=TransactionStatus.PENDING,
+                description=form.description.data,
+                recipient_name=form.recipient_email.data,
+                gateway_id=gateway.id,
+                external_id=payment_id,  # Store PayPal payment ID
+                tx_metadata_json={"notes": form.notes.data} if form.notes.data else None
+            )
+            
+            db.session.add(transaction)
+            db.session.commit()
+            
+            # Store the transaction ID in the session for later reference
+            session['paypal_transaction_id'] = transaction_id
+            
+            # Redirect to PayPal's approval page
+            return redirect(approval_url)
+        else:
+            flash("Failed to create PayPal payment. Please try again.", "danger")
     
     return render_template('paypal/payment_form.html', form=form)
 
-@paypal_bp.route('/payment/success', methods=['GET'])
+@paypal_bp.route('/payment/return')
 @login_required
-def payment_success():
-    """Handle successful PayPal payment approval"""
+def payment_return():
+    """Handler for successful PayPal payment returns"""
+    # Get the parameters from the PayPal redirect
     payment_id = request.args.get('paymentId')
     payer_id = request.args.get('PayerID')
+    transaction_id = session.get('paypal_transaction_id')
     
     if not payment_id or not payer_id:
-        flash('Invalid payment response from PayPal', 'danger')
+        flash("Missing payment information from PayPal", "danger")
         return redirect(url_for('paypal.dashboard'))
     
-    # Execute the payment
-    execution_result = paypal_service.execute_payment(payment_id, payer_id)
-    
-    if not execution_result:
-        flash('Failed to execute PayPal payment', 'danger')
-        return redirect(url_for('paypal.dashboard'))
-    
-    # Update transaction status in database
+    # Find the transaction
     transaction = Transaction.query.filter_by(
-        external_transaction_id=payment_id,
-        payment_provider='paypal'
+        transaction_id=transaction_id,
+        external_id=payment_id
     ).first()
     
-    if transaction:
-        paypal_service.update_transaction_status(
-            transaction.id,
-            TransactionStatus.COMPLETED,
-            f"Payment completed successfully. Payer ID: {payer_id}"
-        )
+    if not transaction:
+        flash("Transaction not found", "danger")
+        return redirect(url_for('paypal.dashboard'))
     
-    flash('Payment completed successfully', 'success')
-    return redirect(url_for('paypal.payment_details', payment_id=payment_id))
+    # Execute the PayPal payment
+    success, payment_details = PayPalService.execute_payment(payment_id, payer_id)
+    
+    if success:
+        # Update the transaction
+        transaction.status = TransactionStatus.COMPLETED
+        transaction.external_transaction_id = payment_details.get('id', payment_id)
+        db.session.commit()
+        
+        flash("Payment completed successfully!", "success")
+        return redirect(url_for('paypal.payment_details', payment_id=payment_id))
+    else:
+        # Payment failed
+        transaction.status = TransactionStatus.FAILED
+        db.session.commit()
+        
+        flash("Payment execution failed. Please try again or contact support.", "danger")
+        return redirect(url_for('paypal.dashboard'))
 
-@paypal_bp.route('/payment/cancel', methods=['GET'])
+@paypal_bp.route('/payment/cancel')
 @login_required
 def payment_cancel():
-    """Handle cancelled PayPal payment"""
-    payment_id = request.args.get('paymentId')
+    """Handler for cancelled PayPal payments"""
+    transaction_id = session.get('paypal_transaction_id')
     
-    if payment_id:
-        # Update transaction status in database
-        transaction = Transaction.query.filter_by(
-            external_transaction_id=payment_id,
-            payment_provider='paypal'
-        ).first()
+    if transaction_id:
+        # Find the transaction
+        transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
         
         if transaction:
-            paypal_service.update_transaction_status(
-                transaction.id,
-                TransactionStatus.CANCELLED,
-                "Payment cancelled by user"
-            )
+            # Update the transaction status
+            transaction.status = TransactionStatus.CANCELLED
+            db.session.commit()
     
-    flash('Payment was cancelled', 'warning')
+    flash("Payment was cancelled.", "warning")
     return redirect(url_for('paypal.dashboard'))
 
-@paypal_bp.route('/payment/<payment_id>', methods=['GET'])
+@paypal_bp.route('/payment/<payment_id>')
 @login_required
 def payment_details(payment_id):
     """View details of a PayPal payment"""
-    # Get transaction from database
+    # Find the transaction
     transaction = Transaction.query.filter_by(
-        external_transaction_id=payment_id,
-        payment_provider='paypal'
-    ).first_or_404()
+        user_id=current_user.id,
+        external_id=payment_id
+    ).first()
     
-    # Check if user has permission to view this transaction
-    if transaction.user_id != current_user.id and not current_user.is_admin:
-        flash('You do not have permission to view this transaction', 'danger')
+    if not transaction:
+        flash("Transaction not found", "danger")
         return redirect(url_for('paypal.dashboard'))
     
-    # Get payment details from PayPal
-    payment_details = paypal_service.get_payment_details(payment_id)
+    # Get detailed payment information from PayPal
+    payment_details = PayPalService.get_payment_details(payment_id)
     
     return render_template(
         'paypal/payment_details.html',
@@ -179,161 +196,132 @@ def payment_details(payment_id):
 @paypal_bp.route('/payout', methods=['GET', 'POST'])
 @login_required
 def payout():
-    """Create a new PayPal payout"""
+    """PayPal payout form and handler"""
     form = PayPalPayoutForm()
     
     if form.validate_on_submit():
-        # Get form data
-        amount = form.amount.data
-        currency = form.currency.data
-        recipient_email = form.recipient_email.data
-        note = form.note.data
-        email_subject = form.email_subject.data
-        email_message = form.email_message.data
+        # Create a unique transaction ID
+        transaction_id = f"PAYPAL-PAYOUT-{uuid.uuid4().hex[:10]}"
         
-        # Create PayPal payout
-        payout_result = paypal_service.create_payout(
-            receiver_email=recipient_email,
-            amount=amount,
-            currency=currency,
-            note=note,
-            email_subject=email_subject,
-            email_message=email_message
+        # Create the PayPal payout
+        success, batch_id, payout_details = PayPalService.create_payout(
+            amount=form.amount.data,
+            currency=form.currency.data,
+            recipient_email=form.recipient_email.data,
+            note=form.note.data or "NVC Banking Platform Payout",
+            email_subject=form.email_subject.data,
+            email_message=form.email_message.data
         )
         
-        if not payout_result:
-            flash('Failed to create PayPal payout. Please try again.', 'danger')
-            return render_template('paypal/payout_form.html', form=form)
-        
-        # Extract payout batch ID and item ID
-        batch_id = payout_result.get('batch_header', {}).get('payout_batch_id')
-        payout_item = payout_result.get('items', [{}])[0] if payout_result.get('items') else {}
-        payout_item_id = payout_item.get('payout_item_id')
-        
-        # Create transaction record in database
-        transaction = paypal_service.create_transaction_record(
-            user_id=current_user.id,
-            amount=amount,
-            currency=currency,
-            paypal_payment_id=payout_item_id or batch_id,
-            recipient_email=recipient_email,
-            transaction_type=TransactionType.PAYOUT,
-            status=TransactionStatus.PENDING,
-            description=note
-        )
-        
-        if not transaction:
-            flash('Failed to create transaction record. Payout may still be processed.', 'warning')
-        
-        flash('Payout initiated successfully', 'success')
-        return redirect(url_for('paypal.payout_status', batch_id=batch_id))
+        if success and batch_id:
+            # Save the transaction details to the database
+            gateway = get_paypal_gateway()
+            if not gateway:
+                flash("PayPal gateway not configured", "danger")
+                return redirect(url_for('paypal.dashboard'))
+            
+            transaction = Transaction(
+                transaction_id=transaction_id,
+                user_id=current_user.id,
+                amount=form.amount.data,
+                currency=form.currency.data,
+                transaction_type=TransactionType.PAYOUT,
+                status=TransactionStatus.PROCESSING,  # Payouts are asynchronous
+                description=form.note.data,
+                recipient_name=form.recipient_email.data,
+                gateway_id=gateway.id,
+                external_id=batch_id,  # Store PayPal batch ID
+                tx_metadata_json={
+                    "email_subject": form.email_subject.data,
+                    "email_message": form.email_message.data
+                } if form.email_subject.data or form.email_message.data else None
+            )
+            
+            db.session.add(transaction)
+            db.session.commit()
+            
+            flash("Payout initiated successfully!", "success")
+            return redirect(url_for('paypal.payout_status', batch_id=batch_id))
+        else:
+            flash("Failed to create PayPal payout. Please try again.", "danger")
     
     return render_template('paypal/payout_form.html', form=form)
 
-@paypal_bp.route('/payout/<batch_id>', methods=['GET'])
+@paypal_bp.route('/payout/<batch_id>')
 @login_required
 def payout_status(batch_id):
-    """Check status of a PayPal payout batch"""
-    # Get payout details from PayPal
-    payout_details = paypal_service.get_payout_details(batch_id)
+    """View status of a PayPal payout"""
+    # Find the transaction
+    transaction = Transaction.query.filter_by(
+        user_id=current_user.id,
+        external_id=batch_id
+    ).first()
     
-    if not payout_details:
-        flash('Failed to retrieve payout details', 'danger')
+    if not transaction:
+        flash("Payout not found", "danger")
         return redirect(url_for('paypal.dashboard'))
+    
+    # Get detailed payout information from PayPal
+    payout_details = PayPalService.get_payout_details(batch_id)
+    
+    # Update transaction status based on payout status
+    if payout_details:
+        batch_status = payout_details.get('batch_header', {}).get('batch_status')
+        if batch_status == 'SUCCESS':
+            transaction.status = TransactionStatus.COMPLETED
+            db.session.commit()
+        elif batch_status == 'DENIED' or batch_status == 'FAILED':
+            transaction.status = TransactionStatus.FAILED
+            db.session.commit()
     
     return render_template(
         'paypal/payout_status.html',
+        transaction=transaction,
         payout_details=payout_details
     )
 
 @paypal_bp.route('/webhook', methods=['POST'])
 def webhook():
-    """Handle PayPal webhooks"""
-    # Verify webhook signature if webhook ID is configured
-    webhook_id = current_app.config.get('PAYPAL_WEBHOOK_ID')
+    """PayPal webhook endpoint for receiving event notifications"""
+    # Verify the webhook signature
+    event_body = request.data.decode('utf-8')
+    transmission_id = request.headers.get('PAYPAL-TRANSMISSION-ID')
+    timestamp = request.headers.get('PAYPAL-TRANSMISSION-TIME')
+    webhook_id = os.environ.get('PAYPAL_WEBHOOK_ID')
+    transmission_sig = request.headers.get('PAYPAL-TRANSMISSION-SIG')
+    cert_url = request.headers.get('PAYPAL-CERT-URL')
     
-    event_body = request.data
-    data = json.loads(event_body)
+    if not all([transmission_id, timestamp, webhook_id, transmission_sig, cert_url]):
+        logger.warning("Missing required webhook headers")
+        return jsonify({"success": False, "error": "Missing required headers"}), 400
     
-    # Log webhook event
-    logger.info(f"Received PayPal webhook: {data.get('event_type')}")
+    # Verify the webhook signature
+    if not PayPalService.is_webhook_signature_valid(
+        transmission_id, timestamp, webhook_id, event_body, transmission_sig, cert_url
+    ):
+        logger.warning("Invalid webhook signature")
+        return jsonify({"success": False, "error": "Invalid signature"}), 400
     
-    if webhook_id:
-        # Verify signature
-        signature_verified = paypal_service.verify_webhook_signature(
-            webhook_id,
-            event_body,
-            request.headers
-        )
+    # Process the webhook event
+    payload = request.json
+    event_type = payload.get('event_type')
+    
+    logger.info(f"Received PayPal webhook event: {event_type}")
+    
+    # Handle various event types
+    if event_type == 'PAYMENT.SALE.COMPLETED':
+        # Payment sale completed
+        resource = payload.get('resource', {})
+        transaction_id = resource.get('parent_payment')
         
-        if not signature_verified:
-            logger.warning("Invalid PayPal webhook signature")
-            return jsonify({"status": "Invalid signature"}), 401
-    else:
-        logger.warning("PayPal webhook ID not configured, skipping signature verification")
+        # Update the transaction status
+        if transaction_id:
+            transaction = Transaction.query.filter_by(external_id=transaction_id).first()
+            if transaction:
+                transaction.status = TransactionStatus.COMPLETED
+                db.session.commit()
+                logger.info(f"Updated transaction {transaction.transaction_id} to COMPLETED")
     
-    # Process webhook event
-    success = paypal_service.process_webhook_event(data)
+    # Handle other event types as needed
     
-    if success:
-        return jsonify({"status": "success"}), 200
-    else:
-        return jsonify({"status": "error"}), 500
-
-@paypal_bp.route('/admin/transactions', methods=['GET'])
-@login_required
-@admin_required
-def admin_transactions():
-    """Admin view of all PayPal transactions"""
-    transactions = Transaction.query.filter_by(
-        payment_provider='paypal'
-    ).order_by(Transaction.created_at.desc()).all()
-    
-    return render_template(
-        'paypal/admin_transactions.html',
-        transactions=transactions
-    )
-
-@paypal_bp.route('/admin/transaction/<int:transaction_id>/update', methods=['POST'])
-@login_required
-@admin_required
-def admin_update_transaction(transaction_id):
-    """Admin endpoint to update transaction status"""
-    transaction = Transaction.query.get_or_404(transaction_id)
-    
-    # Only allow updating PayPal transactions
-    if transaction.payment_provider != 'paypal':
-        flash('This is not a PayPal transaction', 'danger')
-        return redirect(url_for('paypal.admin_transactions'))
-    
-    new_status = request.form.get('status')
-    notes = request.form.get('notes')
-    
-    if not new_status:
-        flash('Status is required', 'danger')
-        return redirect(url_for('paypal.admin_transactions'))
-    
-    try:
-        # Convert string status to enum
-        new_status_enum = TransactionStatus[new_status]
-        
-        # Update transaction status
-        success = paypal_service.update_transaction_status(
-            transaction_id,
-            new_status_enum,
-            notes
-        )
-        
-        if success:
-            flash('Transaction status updated successfully', 'success')
-        else:
-            flash('Failed to update transaction status', 'danger')
-    except KeyError:
-        flash('Invalid status', 'danger')
-    
-    return redirect(url_for('paypal.admin_transactions'))
-
-def register_paypal_blueprint(app):
-    """Register the PayPal blueprint with the app"""
-    app.register_blueprint(paypal_bp)
-    logger.info("PayPal routes registered successfully")
+    return jsonify({"success": True}), 200

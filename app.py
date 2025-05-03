@@ -318,6 +318,29 @@ def create_app():
             from routes.paypal_routes import register_paypal_blueprint
             register_paypal_blueprint(app)
             logger.info("PayPal routes registered successfully")
+            
+            # Ensure PayPal gateway exists
+            try:
+                from models import PaymentGateway, PaymentGatewayType
+                paypal_gateway = PaymentGateway.query.filter_by(
+                    gateway_type=PaymentGatewayType.PAYPAL, 
+                    is_active=True
+                ).first()
+                
+                if not paypal_gateway:
+                    # Create a new PayPal gateway if it doesn't exist
+                    paypal_gateway = PaymentGateway(
+                        name="PayPal",
+                        gateway_type=PaymentGatewayType.PAYPAL,
+                        api_endpoint="https://api.paypal.com",
+                        is_active=True
+                    )
+                    db.session.add(paypal_gateway)
+                    db.session.commit()
+                    logger.info("Created new PayPal payment gateway")
+            except Exception as e:
+                logger.warning(f"Error setting up PayPal gateway: {str(e)}")
+                
         except Exception as e:
             logger.error(f"Error registering PayPal routes: {str(e)}")
             logger.warning("Application will run without PayPal functionality")

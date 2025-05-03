@@ -369,6 +369,38 @@
                         </ul>
                     </li>
 
+                    <!-- PayPal integration dropdown -->
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if '/paypal/' in request.path %}active fw-bold{% endif %}" href="#" id="paypalDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fab fa-paypal me-1"></i> PayPal
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-animated" aria-labelledby="paypalDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('paypal.dashboard') }}">
+                                    <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('paypal.payment') }}">
+                                    <i class="fas fa-paper-plane me-1"></i> Send Payment
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('paypal.payout') }}">
+                                    <i class="fas fa-money-bill-wave me-1"></i> Create Payout
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="/static/docs/paypal_payment_capabilities.html">
+                                    <i class="fas fa-book me-1"></i> PayPal Documentation
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% endif %}
+
                     <!-- Off-Ledger Transactions dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if '/rtgs/' in request.path or '/s2s/' in request.path %}active fw-bold{% endif %}" href="#" id="offLedgerDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
