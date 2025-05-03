@@ -205,7 +205,7 @@ class PaymentGatewayType(enum.Enum):
     # XRP_LEDGER = "xrp_ledger"
     # Very important: Using lowercase 'nvc_global' to match the database enum value exactly
     NVC_GLOBAL = "nvc_global"
-    # CUSTOM = "custom"
+    CUSTOM = "custom"  # Added CUSTOM type to support existing database entries
     
 class TelexMessageStatus(enum.Enum):
     """Telex message status"""
