@@ -244,21 +244,41 @@ class LetterOfCreditForm(FlaskForm):
 
 class SwiftFundTransferForm(FlaskForm):
     """Form for creating a SWIFT MT103/MT202 fund transfer"""
+    # Receiving Institution Information
     receiver_institution_id = SelectField('Receiving Institution', coerce=int, validators=[DataRequired()])
     receiver_institution_name = StringField('Institution Name', validators=[DataRequired()])
+    
+    # Receiving Bank Details
+    receiving_bank_name = StringField('Receiving Bank Name', validators=[DataRequired()])
+    receiving_bank_address = TextAreaField('Receiving Bank Address', validators=[DataRequired()])
+    receiving_bank_swift = StringField('Receiving Bank SWIFT/BIC Code', validators=[DataRequired()])
+    receiving_bank_routing = StringField('Receiving Bank Routing Number/ABA', validators=[Optional()])
+    
+    # Account Holder Details
+    account_holder_name = StringField('Account Holder Name', validators=[DataRequired()])
+    account_number = StringField('Account Number/IBAN', validators=[DataRequired()])
+    
+    # Correspondent & Intermediary Banks
     correspondent_bank_name = StringField('Correspondent Bank Name', validators=[Optional()])
     correspondent_bank_swift = StringField('Correspondent Bank SWIFT/BIC', validators=[Optional()])
     intermediary_bank_name = StringField('Intermediary Bank Name', validators=[Optional()])
     intermediary_bank_swift = StringField('Intermediary Bank SWIFT/BIC', validators=[Optional()])
+    
+    # Transfer Details
     amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
     currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
+    
+    # Sender & Recipient Information
     ordering_customer = TextAreaField('Ordering Customer/Institution', validators=[DataRequired()])
     beneficiary_customer = TextAreaField('Beneficiary Customer/Institution', validators=[DataRequired()])
     details_of_payment = TextAreaField('Payment Details', validators=[DataRequired()])
+    
+    # Transfer Type
     is_financial_institution = RadioField('Transfer Type', choices=[
         (0, 'Customer Transfer (MT103)'),
         (1, 'Financial Institution Transfer (MT202)')
     ], coerce=int, default=0)
+    
     submit = SubmitField('Create Fund Transfer')
 
 class ACHTransferForm(FlaskForm):

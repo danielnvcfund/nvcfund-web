@@ -90,6 +90,94 @@
               </div>
             </div>
             
+            <!-- Receiving Bank Details -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h3 class="h5 mb-0">Receiving Bank Details</h3>
+              </div>
+              <div class="card-body">
+                <div class="row g-3">
+                  <div class="col-md-12 mb-3">
+                    <label for="{{ form.receiving_bank_name.id }}" class="form-label required">Bank Name</label>
+                    {{ form.receiving_bank_name(class="form-control", required=True, placeholder="Enter receiving bank name") }}
+                    {% if form.receiving_bank_name.errors %}
+                      <div class="invalid-feedback d-block">
+                        {% for error in form.receiving_bank_name.errors %}
+                          {{ error }}
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-12 mb-3">
+                    <label for="{{ form.receiving_bank_address.id }}" class="form-label required">Bank Address</label>
+                    {{ form.receiving_bank_address(class="form-control", rows=2, required=True, placeholder="Enter complete bank address") }}
+                    {% if form.receiving_bank_address.errors %}
+                      <div class="invalid-feedback d-block">
+                        {% for error in form.receiving_bank_address.errors %}
+                          {{ error }}
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.receiving_bank_swift.id }}" class="form-label required">SWIFT/BIC Code</label>
+                    {{ form.receiving_bank_swift(class="form-control", required=True, placeholder="Enter SWIFT/BIC code") }}
+                    {% if form.receiving_bank_swift.errors %}
+                      <div class="invalid-feedback d-block">
+                        {% for error in form.receiving_bank_swift.errors %}
+                          {{ error }}
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.receiving_bank_routing.id }}" class="form-label">Routing Number/ABA</label>
+                    {{ form.receiving_bank_routing(class="form-control", placeholder="Enter routing number (if applicable)") }}
+                    {% if form.receiving_bank_routing.errors %}
+                      <div class="invalid-feedback d-block">
+                        {% for error in form.receiving_bank_routing.errors %}
+                          {{ error }}
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Account Holder Details -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h3 class="h5 mb-0">Account Holder Details</h3>
+              </div>
+              <div class="card-body">
+                <div class="row g-3">
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.account_holder_name.id }}" class="form-label required">Account Holder Name</label>
+                    {{ form.account_holder_name(class="form-control", required=True, placeholder="Enter account holder name") }}
+                    {% if form.account_holder_name.errors %}
+                      <div class="invalid-feedback d-block">
+                        {% for error in form.account_holder_name.errors %}
+                          {{ error }}
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.account_number.id }}" class="form-label required">Account Number/IBAN</label>
+                    {{ form.account_number(class="form-control", required=True, placeholder="Enter account number or IBAN") }}
+                    {% if form.account_number.errors %}
+                      <div class="invalid-feedback d-block">
+                        {% for error in form.account_number.errors %}
+                          {{ error }}
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             <!-- Correspondent & Intermediary Banks -->
             <div class="card mb-4">
               <div class="card-header bg-light">
