@@ -118,7 +118,7 @@ class MT103(SwiftMessage):
     def __init__(self, user_id, institution_id, amount, currency, ordering_customer, beneficiary_customer, details_of_payment, 
                  correspondent_bank_name=None, correspondent_bank_swift=None, intermediary_bank_name=None, intermediary_bank_swift=None,
                  receiving_bank_name=None, receiving_bank_address=None, receiving_bank_swift=None, receiving_bank_routing=None,
-                 account_holder_name=None, account_number=None):
+                 receiving_bank_officer=None, account_holder_name=None, account_number=None):
         super().__init__(user_id, institution_id)
         self.message_type = "MT103"
         self.amount = amount
@@ -138,6 +138,7 @@ class MT103(SwiftMessage):
         self.receiving_bank_address = receiving_bank_address
         self.receiving_bank_swift = receiving_bank_swift
         self.receiving_bank_routing = receiving_bank_routing
+        self.receiving_bank_officer = receiving_bank_officer
         
         # Account holder details
         self.account_holder_name = account_holder_name
@@ -166,12 +167,13 @@ class MT103(SwiftMessage):
         }
         
         # Add receiving bank details if provided
-        if any([self.receiving_bank_name, self.receiving_bank_address, self.receiving_bank_swift, self.receiving_bank_routing]):
+        if any([self.receiving_bank_name, self.receiving_bank_address, self.receiving_bank_swift, self.receiving_bank_routing, self.receiving_bank_officer]):
             result["receiving_bank"] = {
                 "name": self.receiving_bank_name,
                 "address": self.receiving_bank_address,
                 "swift": self.receiving_bank_swift,
-                "routing": self.receiving_bank_routing
+                "routing": self.receiving_bank_routing,
+                "officer": self.receiving_bank_officer
             }
             
         # Add account holder details if provided
@@ -224,7 +226,7 @@ class MT202(SwiftMessage):
     def __init__(self, user_id, institution_id, amount, currency, ordering_customer, beneficiary_customer, details_of_payment, 
                  correspondent_bank_name=None, correspondent_bank_swift=None, intermediary_bank_name=None, intermediary_bank_swift=None,
                  receiving_bank_name=None, receiving_bank_address=None, receiving_bank_swift=None, receiving_bank_routing=None,
-                 account_holder_name=None, account_number=None):
+                 receiving_bank_officer=None, account_holder_name=None, account_number=None):
         super().__init__(user_id, institution_id)
         self.message_type = "MT202"
         self.amount = amount
@@ -244,6 +246,7 @@ class MT202(SwiftMessage):
         self.receiving_bank_address = receiving_bank_address
         self.receiving_bank_swift = receiving_bank_swift
         self.receiving_bank_routing = receiving_bank_routing
+        self.receiving_bank_officer = receiving_bank_officer
         
         # Account holder details
         self.account_holder_name = account_holder_name
@@ -272,12 +275,13 @@ class MT202(SwiftMessage):
         }
         
         # Add receiving bank details if provided
-        if any([self.receiving_bank_name, self.receiving_bank_address, self.receiving_bank_swift, self.receiving_bank_routing]):
+        if any([self.receiving_bank_name, self.receiving_bank_address, self.receiving_bank_swift, self.receiving_bank_routing, self.receiving_bank_officer]):
             result["receiving_bank"] = {
                 "name": self.receiving_bank_name,
                 "address": self.receiving_bank_address,
                 "swift": self.receiving_bank_swift,
-                "routing": self.receiving_bank_routing
+                "routing": self.receiving_bank_routing,
+                "officer": self.receiving_bank_officer
             }
             
         # Add account holder details if provided
