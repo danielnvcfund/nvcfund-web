@@ -594,14 +594,14 @@
                 <div class="card-body p-4">
                     <div class="row g-4">
                         <div class="col-md-4">
-                            <div class="analytics-panel bg-dark bg-opacity-10 p-3 rounded-3 h-100 border border-1 border-light shadow-sm">
-                                <h6 class="fw-bold text-center mb-3 text-indigo">Transactions by Type</h6>
+                            <div class="analytics-panel bg-white bg-opacity-10 p-3 rounded-3 h-100 border border-0 shadow">
+                                <h6 class="fw-bold text-center mb-3 text-white">Transactions by Type</h6>
                                 <div class="chart-container position-relative" style="height: 220px;">
                                     <canvas id="transactionsByTypeChart" data-ethereum-address="{{ user.ethereum_address }}"></canvas>
                                 </div>
                                 <div class="text-center mt-2 chart-summary">
                                     <div class="d-flex justify-content-center mt-2">
-                                        <span class="badge bg-primary bg-opacity-75 px-3 py-2 me-2">
+                                        <span class="badge bg-primary px-3 py-2 me-2">
                                             <i class="fas fa-exchange-alt me-1"></i> <span id="typeChartTotal">0</span> transactions
                                         </span>
                                     </div>
@@ -609,14 +609,14 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="analytics-panel bg-dark bg-opacity-10 p-3 rounded-3 h-100 border border-1 border-light shadow-sm">
-                                <h6 class="fw-bold text-center mb-3 text-indigo">Transactions by Status</h6>
+                            <div class="analytics-panel bg-white bg-opacity-10 p-3 rounded-3 h-100 border border-0 shadow">
+                                <h6 class="fw-bold text-center mb-3 text-white">Transactions by Status</h6>
                                 <div class="chart-container position-relative" style="height: 220px;">
                                     <canvas id="transactionsByStatusChart" data-ethereum-address="{{ user.ethereum_address }}"></canvas>
                                 </div>
                                 <div class="text-center mt-2 chart-summary">
                                     <div class="d-flex justify-content-center flex-wrap mt-2">
-                                        <span class="badge bg-primary px-3 py-2 me-2 mb-1">
+                                        <span class="badge bg-info px-3 py-2 me-2 mb-1">
                                             <i class="fas fa-check-circle me-1"></i> <span id="statusDoneCount">0</span> completed
                                         </span>
                                         <span class="badge bg-warning px-3 py-2 mb-1">
@@ -627,14 +627,14 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="analytics-panel bg-dark bg-opacity-10 p-3 rounded-3 h-100 border border-1 border-light shadow-sm">
-                                <h6 class="fw-bold text-center mb-3 text-indigo">Transactions by Date</h6>
+                            <div class="analytics-panel bg-white bg-opacity-10 p-3 rounded-3 h-100 border border-0 shadow">
+                                <h6 class="fw-bold text-center mb-3 text-white">Transactions by Date</h6>
                                 <div class="chart-container position-relative" style="height: 220px;">
                                     <canvas id="transactionsByDateChart" data-ethereum-address="{{ user.ethereum_address }}"></canvas>
                                 </div>
                                 <div class="text-center mt-2 chart-summary">
                                     <div class="d-flex justify-content-center flex-wrap mt-2">
-                                        <span class="badge bg-purple px-3 py-2 me-2">
+                                        <span class="badge bg-light text-dark px-3 py-2 me-2">
                                             <i class="fas fa-file-invoice-dollar me-1"></i> Total: <span id="totalTransactionsCount">0</span>
                                         </span>
                                         <span class="badge bg-success px-3 py-2">
@@ -685,6 +685,19 @@
 
 .status-badge:hover {
     transform: scale(1.05);
+}
+
+/* Improve chart text contrast */
+.chart-container {
+    color: #f8f9fa;
+}
+
+.chart-container .text-muted {
+    color: #e9ecef !important;
+}
+
+.analytics-panel .chart-summary span {
+    font-weight: 500;
 }
 </style>
 {% endblock %}

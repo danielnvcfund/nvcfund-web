@@ -249,6 +249,12 @@ function initTransactionCharts() {
 
 // Helper function to display an error message in place of a chart
 function displayChartError(container, message) {
+    // Check if the container exists
+    if (!container) {
+        console.error('Chart container not found');
+        return;
+    }
+    
     // Clear the canvas
     while (container.firstChild) {
         container.removeChild(container.firstChild);
@@ -256,7 +262,7 @@ function displayChartError(container, message) {
     
     // Create and append error message
     const errorDiv = document.createElement('div');
-    errorDiv.className = 'alert alert-secondary text-center my-3';
+    errorDiv.className = 'alert alert-secondary bg-white bg-opacity-10 text-white border-0 text-center my-3';
     errorDiv.innerText = message;
     container.appendChild(errorDiv);
 }
@@ -368,13 +374,14 @@ function initTransactionsByDateChart(canvas, data) {
                     position: 'top',
                     labels: {
                         usePointStyle: true,
-                        boxWidth: 6
+                        boxWidth: 6,
+                        color: '#f8f9fa'
                     }
                 },
                 title: {
                     display: true,
                     text: 'Transaction Trends (' + data.start_date + ' to ' + data.end_date + ')',
-                    color: '#6c757d',
+                    color: '#f8f9fa',
                     font: {
                         size: 13
                     }
@@ -532,7 +539,7 @@ function initTransactionsByTypeChart(canvas, data) {
                 title: {
                     display: true,
                     text: 'Transaction Distribution by Type',
-                    color: '#6c757d',
+                    color: '#f8f9fa',
                     font: {
                         size: 13,
                         weight: 'normal'
