@@ -115,7 +115,10 @@ class MT760(SwiftMessage):
 class MT103(SwiftMessage):
     """SWIFT MT103 - Customer Credit Transfer"""
     
-    def __init__(self, user_id, institution_id, amount, currency, ordering_customer, beneficiary_customer, details_of_payment, correspondent_bank_name=None, correspondent_bank_swift=None, intermediary_bank_name=None, intermediary_bank_swift=None):
+    def __init__(self, user_id, institution_id, amount, currency, ordering_customer, beneficiary_customer, details_of_payment, 
+                 correspondent_bank_name=None, correspondent_bank_swift=None, intermediary_bank_name=None, intermediary_bank_swift=None,
+                 receiving_bank_name=None, receiving_bank_address=None, receiving_bank_swift=None, receiving_bank_routing=None,
+                 account_holder_name=None, account_number=None):
         super().__init__(user_id, institution_id)
         self.message_type = "MT103"
         self.amount = amount
@@ -123,10 +126,23 @@ class MT103(SwiftMessage):
         self.ordering_customer = ordering_customer
         self.beneficiary_customer = beneficiary_customer
         self.details_of_payment = details_of_payment
+        
+        # Correspondent and intermediary bank information
         self.correspondent_bank_name = correspondent_bank_name
         self.correspondent_bank_swift = correspondent_bank_swift
         self.intermediary_bank_name = intermediary_bank_name
         self.intermediary_bank_swift = intermediary_bank_swift
+        
+        # Receiving bank details
+        self.receiving_bank_name = receiving_bank_name
+        self.receiving_bank_address = receiving_bank_address
+        self.receiving_bank_swift = receiving_bank_swift
+        self.receiving_bank_routing = receiving_bank_routing
+        
+        # Account holder details
+        self.account_holder_name = account_holder_name
+        self.account_number = account_number
+        
         self.reference = f"FT{uuid.uuid4().hex[:10].upper()}"
         
     def to_json(self):
@@ -148,6 +164,22 @@ class MT103(SwiftMessage):
             "beneficiary_customer": self.beneficiary_customer,
             "details_of_payment": self.details_of_payment
         }
+        
+        # Add receiving bank details if provided
+        if any([self.receiving_bank_name, self.receiving_bank_address, self.receiving_bank_swift, self.receiving_bank_routing]):
+            result["receiving_bank"] = {
+                "name": self.receiving_bank_name,
+                "address": self.receiving_bank_address,
+                "swift": self.receiving_bank_swift,
+                "routing": self.receiving_bank_routing
+            }
+            
+        # Add account holder details if provided
+        if any([self.account_holder_name, self.account_number]):
+            result["account_holder"] = {
+                "name": self.account_holder_name,
+                "account_number": self.account_number
+            }
         
         # Add correspondent bank information if provided
         if self.correspondent_bank_name or self.correspondent_bank_swift:
@@ -189,7 +221,10 @@ class MT103(SwiftMessage):
 class MT202(SwiftMessage):
     """SWIFT MT202 - General Financial Institution Transfer"""
     
-    def __init__(self, user_id, institution_id, amount, currency, ordering_customer, beneficiary_customer, details_of_payment, correspondent_bank_name=None, correspondent_bank_swift=None, intermediary_bank_name=None, intermediary_bank_swift=None):
+    def __init__(self, user_id, institution_id, amount, currency, ordering_customer, beneficiary_customer, details_of_payment, 
+                 correspondent_bank_name=None, correspondent_bank_swift=None, intermediary_bank_name=None, intermediary_bank_swift=None,
+                 receiving_bank_name=None, receiving_bank_address=None, receiving_bank_swift=None, receiving_bank_routing=None,
+                 account_holder_name=None, account_number=None):
         super().__init__(user_id, institution_id)
         self.message_type = "MT202"
         self.amount = amount
@@ -197,10 +232,23 @@ class MT202(SwiftMessage):
         self.ordering_customer = ordering_customer
         self.beneficiary_customer = beneficiary_customer
         self.details_of_payment = details_of_payment
+        
+        # Correspondent and intermediary bank information
         self.correspondent_bank_name = correspondent_bank_name
         self.correspondent_bank_swift = correspondent_bank_swift
         self.intermediary_bank_name = intermediary_bank_name
         self.intermediary_bank_swift = intermediary_bank_swift
+        
+        # Receiving bank details
+        self.receiving_bank_name = receiving_bank_name
+        self.receiving_bank_address = receiving_bank_address
+        self.receiving_bank_swift = receiving_bank_swift
+        self.receiving_bank_routing = receiving_bank_routing
+        
+        # Account holder details
+        self.account_holder_name = account_holder_name
+        self.account_number = account_number
+        
         self.reference = f"IT{uuid.uuid4().hex[:10].upper()}"
         
     def to_json(self):
@@ -222,6 +270,22 @@ class MT202(SwiftMessage):
             "beneficiary_institution": self.beneficiary_customer,
             "details_of_payment": self.details_of_payment
         }
+        
+        # Add receiving bank details if provided
+        if any([self.receiving_bank_name, self.receiving_bank_address, self.receiving_bank_swift, self.receiving_bank_routing]):
+            result["receiving_bank"] = {
+                "name": self.receiving_bank_name,
+                "address": self.receiving_bank_address,
+                "swift": self.receiving_bank_swift,
+                "routing": self.receiving_bank_routing
+            }
+            
+        # Add account holder details if provided
+        if any([self.account_holder_name, self.account_number]):
+            result["account_holder"] = {
+                "name": self.account_holder_name,
+                "account_number": self.account_number
+            }
         
         # Add correspondent bank information if provided
         if self.correspondent_bank_name or self.correspondent_bank_swift:
@@ -480,7 +544,9 @@ class SwiftService:
     def create_swift_fund_transfer(user_id, receiver_institution_id, receiver_institution_name=None, amount=0, currency='USD', 
                                    ordering_customer='', beneficiary_customer='', details_of_payment='', is_financial_institution=False,
                                    correspondent_bank_name=None, correspondent_bank_swift=None, 
-                                   intermediary_bank_name=None, intermediary_bank_swift=None):
+                                   intermediary_bank_name=None, intermediary_bank_swift=None,
+                                   receiving_bank_name=None, receiving_bank_address=None, receiving_bank_swift=None, receiving_bank_routing=None,
+                                   account_holder_name=None, account_number=None):
         """Create a new SWIFT fund transfer (MT103 or MT202)"""
         try:
             # Get the institution from the database
@@ -518,7 +584,13 @@ class SwiftService:
                     correspondent_bank_name=correspondent_bank_name,
                     correspondent_bank_swift=correspondent_bank_swift,
                     intermediary_bank_name=intermediary_bank_name,
-                    intermediary_bank_swift=intermediary_bank_swift
+                    intermediary_bank_swift=intermediary_bank_swift,
+                    receiving_bank_name=receiving_bank_name,
+                    receiving_bank_address=receiving_bank_address,
+                    receiving_bank_swift=receiving_bank_swift,
+                    receiving_bank_routing=receiving_bank_routing,
+                    account_holder_name=account_holder_name,
+                    account_number=account_number
                 )
             else:
                 message = MT103(
@@ -532,7 +604,13 @@ class SwiftService:
                     correspondent_bank_name=correspondent_bank_name,
                     correspondent_bank_swift=correspondent_bank_swift,
                     intermediary_bank_name=intermediary_bank_name,
-                    intermediary_bank_swift=intermediary_bank_swift
+                    intermediary_bank_swift=intermediary_bank_swift,
+                    receiving_bank_name=receiving_bank_name,
+                    receiving_bank_address=receiving_bank_address,
+                    receiving_bank_swift=receiving_bank_swift,
+                    receiving_bank_routing=receiving_bank_routing,
+                    account_holder_name=account_holder_name,
+                    account_number=account_number
                 )
             
             # Generate transaction from the message
