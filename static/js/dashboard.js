@@ -287,6 +287,27 @@ function initTransactionsByDateChart(canvas, data) {
     const transactionCounts = dates.map(date => data.by_date[date].count);
     const transactionAmounts = dates.map(date => data.by_date[date].total_amount);
     
+    // Update the summary information
+    // Get total transactions
+    const totalTransactions = data.total_transactions || 
+        transactionCounts.reduce((sum, count) => sum + count, 0);
+    
+    // Get total amount
+    const totalAmount = data.total_amount || 
+        transactionAmounts.reduce((sum, amount) => sum + amount, 0);
+    
+    // Update the summary badges
+    const totalTransactionsCountEl = document.getElementById('totalTransactionsCount');
+    const totalTransactionsAmountEl = document.getElementById('totalTransactionsAmount');
+    
+    if (totalTransactionsCountEl) {
+        totalTransactionsCountEl.textContent = totalTransactions;
+    }
+    
+    if (totalTransactionsAmountEl) {
+        totalTransactionsAmountEl.textContent = formatCurrency(totalAmount);
+    }
+    
     // Create chart with improved styling
     const ctx = canvas.getContext('2d');
     const chart = new Chart(ctx, {
@@ -444,6 +465,13 @@ function initTransactionsByTypeChart(canvas, data) {
     const counts = types.map(type => data.by_type[type].count);
     const amounts = types.map(type => data.by_type[type].total_amount || 0);
     
+    // Update type summary badge
+    const typeChartTotalEl = document.getElementById('typeChartTotal');
+    if (typeChartTotalEl) {
+        const totalCount = counts.reduce((sum, count) => sum + count, 0);
+        typeChartTotalEl.textContent = totalCount;
+    }
+    
     // Define improved colors for different transaction types
     const colorMap = {
         'payment': 'rgba(0, 123, 255, 0.8)', // Bootstrap primary
@@ -549,6 +577,32 @@ function initTransactionsByStatusChart(canvas, data) {
     
     const counts = statuses.map(status => data.by_status[status].count);
     const amounts = statuses.map(status => data.by_status[status].total_amount || 0);
+    
+    // Update status summary badges
+    const statusDoneCountEl = document.getElementById('statusDoneCount');
+    const statusPendingCountEl = document.getElementById('statusPendingCount');
+    
+    if (statusDoneCountEl || statusPendingCountEl) {
+        let completedCount = 0;
+        let pendingCount = 0;
+        
+        statuses.forEach((status, index) => {
+            const lowerStatus = status.toLowerCase();
+            if (lowerStatus === 'completed') {
+                completedCount += counts[index];
+            } else if (lowerStatus === 'pending' || lowerStatus === 'processing') {
+                pendingCount += counts[index];
+            }
+        });
+        
+        if (statusDoneCountEl) {
+            statusDoneCountEl.textContent = completedCount;
+        }
+        
+        if (statusPendingCountEl) {
+            statusPendingCountEl.textContent = pendingCount;
+        }
+    }
     
     // Define colors using bootstrap theme colors
     const colorMap = {
