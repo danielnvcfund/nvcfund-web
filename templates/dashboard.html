@@ -116,35 +116,9 @@
     
     <!-- Quick Stats -->
     <div class="row g-4 mb-4">
-        <!-- ETH Balance Card -->
-        <div class="col-md-6 col-lg-3">
-            <div class="card dashboard-widget quick-stats-card h-100 border-0 shadow">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
-                            <i class="fas fa-wallet text-primary"></i>
-                        </div>
-                        <h3 class="h5 fw-bold mb-0">ETH Balance</h3>
-                    </div>
-                    <div class="value" id="blockchainBalance" data-address="{{ user.ethereum_address if user.ethereum_address else '' }}">
-                        {% if user.ethereum_address %}
-                            <div class="skeleton" style="width: 70%; height: 40px;"></div>
-                        {% else %}
-                            <span class="badge bg-secondary">No address</span>
-                        {% endif %}
-                    </div>
-                    {% if user.ethereum_address %}
-                    <button class="btn btn-sm btn-outline-primary mt-3 btn-refresh" data-target="blockchainBalance">
-                        <i class="fas fa-sync-alt me-1"></i> Refresh Balance
-                    </button>
-                    {% else %}
-                    <div class="alert alert-secondary mt-3 mb-0 p-2 small">
-                        <i class="fas fa-info-circle me-1"></i> No Ethereum address assigned to your account
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+        <!-- ETH Balance Card - Hidden temporarily -->
+        <!-- Blockchain data display is temporarily hidden while the API is in maintenance -->
+        
         
         <!-- Recent Transactions Count Card -->
         <div class="col-md-6 col-lg-3">
