@@ -21,26 +21,36 @@ def admin_transaction_detail(transaction_id):
     """Admin transaction detail page"""
     transaction = Transaction.query.filter_by(id=transaction_id).first_or_404()
     
-    # Ensure metadata is in a serializable format
-    from sqlalchemy.ext.declarative import DeclarativeMeta
-    from sqlalchemy.sql.schema import MetaData
-    import json
+    # Prepare metadata for safe display in template
+    metadata_display = None
+    metadata_is_mapping = False
+    admin_notes = []
     
-    # Handle SQLAlchemy MetaData objects (not JSON serializable)
-    if hasattr(transaction, 'metadata') and transaction.metadata is not None:
-        if isinstance(transaction.metadata, MetaData):
-            # Convert to a simple string representation
-            transaction._safe_metadata = str(transaction.metadata)
-        elif isinstance(transaction.metadata, dict):
-            # Keep as is, it's already serializable
-            transaction._safe_metadata = transaction.metadata
-        else:
-            # Fallback for any other type
-            transaction._safe_metadata = str(transaction.metadata)
-    else:
-        transaction._safe_metadata = None
+    try:
+        if transaction.metadata:
+            import json
+            # Try to convert to JSON to check if serializable
+            try:
+                json.dumps(transaction.metadata)
+                metadata_display = transaction.metadata
+                metadata_is_mapping = isinstance(transaction.metadata, dict)
+                
+                # Extract admin notes if available
+                if metadata_is_mapping and 'admin_notes' in transaction.metadata:
+                    admin_notes = transaction.metadata['admin_notes']
+            except (TypeError, ValueError):
+                # Not JSON serializable, convert to string
+                metadata_display = str(transaction.metadata)
+    except Exception as e:
+        metadata_display = f"Error accessing metadata: {str(e)}"
     
-    return render_template('admin/transaction_detail.html', transaction=transaction)
+    return render_template(
+        'admin/transaction_detail.html', 
+        transaction=transaction,
+        metadata_display=metadata_display,
+        metadata_is_mapping=metadata_is_mapping,
+        admin_notes=admin_notes
+    )
 
 @admin_bp.route('/transaction/update-status/<transaction_id>', methods=['POST'])
 @login_required

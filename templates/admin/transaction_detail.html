@@ -93,22 +93,13 @@
                     <h4 class="mb-0">Transaction Metadata</h4>
                 </div>
                 <div class="card-body">
-                    {% if transaction._safe_metadata is defined and transaction._safe_metadata %}
-                        {% if transaction._safe_metadata is mapping %}
-                            <pre class="bg-light p-3 rounded">{{ transaction._safe_metadata | tojson(indent=2) }}</pre>
+                    {% if metadata_display %}
+                        {% if metadata_is_mapping %}
+                            <pre class="bg-light p-3 rounded">{{ metadata_display | tojson(indent=2) }}</pre>
                         {% else %}
                             <div class="bg-light p-3 rounded">
-                                <p><strong>Metadata:</strong> {{ transaction._safe_metadata }}</p>
+                                <p><strong>Metadata:</strong> {{ metadata_display }}</p>
                                 <p class="text-muted small mt-2">Note: Complex metadata object converted to string representation</p>
-                            </div>
-                        {% endif %}
-                    {% elif transaction.metadata %}
-                        {% if transaction.metadata is mapping %}
-                            <pre class="bg-light p-3 rounded">{{ transaction.metadata | tojson(indent=2) }}</pre>
-                        {% else %}
-                            <div class="bg-light p-3 rounded">
-                                <p><strong>Metadata:</strong> {{ transaction.metadata }}</p>
-                                <p class="text-muted small mt-2">Note: Complex metadata object (not JSON serializable)</p>
                             </div>
                         {% endif %}
                     {% else %}
@@ -133,30 +124,8 @@
                     <hr>
                     
                     <div class="notes-section">
-                        {% if transaction._safe_metadata is defined and transaction._safe_metadata is mapping and transaction._safe_metadata.get('admin_notes') %}
-                            {% for note in transaction._safe_metadata.get('admin_notes') | reverse %}
-                                <div class="card mb-2">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <span>{{ note.user if note is mapping and 'user' in note else 'System' }}</span>
-                                        <small class="text-muted">{{ note.timestamp if note is mapping and 'timestamp' in note else 'N/A' }}</small>
-                                    </div>
-                                    <div class="card-body">
-                                        {% if note is mapping %}
-                                            {% if 'action' in note %}
-                                                <div class="alert alert-info mb-0">{{ note.action }}</div>
-                                            {% elif 'note' in note %}
-                                                <p class="mb-0">{{ note.note }}</p>
-                                            {% else %}
-                                                <p class="mb-0">{{ note }}</p>
-                                            {% endif %}
-                                        {% else %}
-                                            <p class="mb-0">{{ note }}</p>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% elif transaction.metadata and transaction.metadata is mapping and transaction.metadata.get('admin_notes') %}
-                            {% for note in transaction.metadata.get('admin_notes') | reverse %}
+                        {% if admin_notes %}
+                            {% for note in admin_notes | reverse %}
                                 <div class="card mb-2">
                                     <div class="card-header d-flex justify-content-between align-items-center">
                                         <span>{{ note.user if note is mapping and 'user' in note else 'System' }}</span>
