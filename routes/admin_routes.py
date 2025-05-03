@@ -68,14 +68,28 @@ def update_transaction_status(transaction_id):
     transaction.status = getattr(TransactionStatus, new_status)
     
     # Add a note about the status change
-    notes = transaction.metadata.get('admin_notes', [])
-    notes.append({
-        'timestamp': transaction.updated_at.isoformat(),
-        'user': current_user.username,
-        'action': f'Status changed from {old_status} to {new_status}'
-    })
-    transaction.metadata['admin_notes'] = notes
-    
+    try:
+        # Initialize metadata as a dictionary if it's not already
+        if not transaction.metadata or not isinstance(transaction.metadata, dict):
+            transaction.metadata = {}
+            
+        # Get existing notes or initialize an empty list
+        notes = transaction.metadata.get('admin_notes', [])
+        
+        # Add the new note
+        notes.append({
+            'timestamp': transaction.updated_at.isoformat(),
+            'user': current_user.username,
+            'action': f'Status changed from {old_status} to {new_status}'
+        })
+        
+        # Update the metadata
+        transaction.metadata['admin_notes'] = notes
+    except Exception as e:
+        # If there's any error with metadata, just update status without notes
+        flash(f'Status updated but could not add note: {str(e)}', 'warning')
+        
+    # Commit changes
     db.session.commit()
     flash(f'Transaction status updated to {new_status}', 'success')
     return redirect(url_for('transaction_admin.admin_transaction_detail', transaction_id=transaction_id))
@@ -92,14 +106,27 @@ def add_transaction_note(transaction_id):
         flash('Note cannot be empty', 'error')
         return redirect(url_for('transaction_admin.admin_transaction_detail', transaction_id=transaction_id))
     
-    notes = transaction.metadata.get('admin_notes', [])
-    notes.append({
-        'timestamp': transaction.updated_at.isoformat(),
-        'user': current_user.username,
-        'note': note
-    })
-    transaction.metadata['admin_notes'] = notes
+    try:
+        # Initialize metadata as a dictionary if it's not already
+        if not transaction.metadata or not isinstance(transaction.metadata, dict):
+            transaction.metadata = {}
+            
+        # Get existing notes or initialize an empty list
+        notes = transaction.metadata.get('admin_notes', [])
+        
+        # Add the new note
+        notes.append({
+            'timestamp': transaction.updated_at.isoformat(),
+            'user': current_user.username,
+            'note': note
+        })
+        
+        # Update the metadata
+        transaction.metadata['admin_notes'] = notes
+        db.session.commit()
+        flash('Note added', 'success')
+    except Exception as e:
+        # If there's any error with metadata, provide a helpful message
+        flash(f'Could not add note: {str(e)}', 'error')
     
-    db.session.commit()
-    flash('Note added', 'success')
     return redirect(url_for('transaction_admin.admin_transaction_detail', transaction_id=transaction_id))
