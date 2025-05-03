@@ -88,6 +88,56 @@
         </div>
         
         <div class="col-md-6">
+            <!-- SWIFT Transaction Details Card -->
+            {% if transaction.transaction_type.name in ['SWIFT_FUND_TRANSFER', 'SWIFT_INSTITUTION_TRANSFER'] and metadata_display and metadata_is_mapping %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">SWIFT Transaction Details</h4>
+                </div>
+                <div class="card-body">
+                    {% if metadata_display.receiving_bank is defined %}
+                    <h5 class="mb-3">Receiving Bank Information</h5>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Bank Name</th>
+                            <td>{{ metadata_display.receiving_bank.name or 'Not specified' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Bank Address</th>
+                            <td>{{ metadata_display.receiving_bank.address or 'Not specified' }}</td>
+                        </tr>
+                        <tr>
+                            <th>SWIFT/BIC Code</th>
+                            <td>{{ metadata_display.receiving_bank.swift or 'Not specified' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Routing Number</th>
+                            <td>{{ metadata_display.receiving_bank.routing or 'Not specified' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Bank Officer Contact</th>
+                            <td>{{ metadata_display.receiving_bank.officer or 'Not specified' }}</td>
+                        </tr>
+                    </table>
+                    {% endif %}
+
+                    {% if metadata_display.account_holder is defined %}
+                    <h5 class="mb-3 mt-4">Account Holder Information</h5>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Name</th>
+                            <td>{{ metadata_display.account_holder.name or 'Not specified' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Account Number/IBAN</th>
+                            <td>{{ metadata_display.account_holder.account_number or 'Not specified' }}</td>
+                        </tr>
+                    </table>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">Transaction Metadata</h4>

@@ -277,6 +277,12 @@ TRANSACTION_RECEIPT_TEMPLATE = """
                     <th>Routing Number</th>
                     <td>{{ transaction.recipient_routing_number or transaction.routing_number or "Not specified" }}</td>
                 </tr>
+                {% if transaction.recipient_bank_officer %}
+                <tr>
+                    <th>Bank Officer Contact</th>
+                    <td>{{ transaction.recipient_bank_officer }}</td>
+                </tr>
+                {% endif %}
             </table>
         </div>
         {% endif %}
