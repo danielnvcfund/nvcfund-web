@@ -409,7 +409,7 @@ function initTransactionsByDateChart(canvas, data) {
                         color: '#f8f9fa'
                     },
                     grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
+                        color: 'rgba(255, 255, 255, 0.1)'
                     }
                 },
                 y1: {
@@ -545,6 +545,13 @@ function initTransactionsByTypeChart(canvas, data) {
                         weight: 'normal'
                     }
                 }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#f8f9fa'
+                    }
+                }
             }
         }
     });
@@ -672,6 +679,13 @@ function initTransactionsByStatusChart(canvas, data) {
                     font: {
                         size: 13,
                         weight: 'normal'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#f8f9fa'
                     }
                 }
             }
