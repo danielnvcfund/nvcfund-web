@@ -1,0 +1,172 @@
+{% extends "layout.html" %}
+
+{% block title %}KTT Telex Messages{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-5 mb-4">
+                <i class="fas fa-envelope me-2"></i> Telex Messages
+            </h1>
+            <p class="lead">
+                View and manage all Telex messages.
+            </p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary mb-3">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-filter me-2"></i> Filter Messages
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{{ url_for('telex.message_list') }}">
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="">All Statuses</option>
+                                {% for status in status_options %}
+                                <option value="{{ status.name }}">{{ status.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message_type" class="form-label">Message Type</label>
+                            <select name="message_type" id="message_type" class="form-select">
+                                <option value="">All Types</option>
+                                {% for name, value in message_type_options %}
+                                {% if not name.startswith('_') and name.isupper() %}
+                                <option value="{{ value }}">{{ name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" name="start_date" id="start_date" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="date" name="end_date" id="end_date" class="form-control">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i> Apply Filters
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card border-primary mb-3">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-cogs me-2"></i> Quick Actions
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ url_for('telex.dashboard') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-tachometer-alt me-2"></i> Telex Dashboard
+                        </a>
+                        <a href="{{ url_for('telex.send_message') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-paper-plane me-2"></i> Send New Message
+                        </a>
+                        {% if current_user.role.value == 'ADMIN' or current_user.role == 'ADMIN' %}
+                        <a href="{{ url_for('telex.settings') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-wrench me-2"></i> Telex Settings
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-list me-2"></i> Message List
+                    </div>
+                    <a href="{{ url_for('telex.send_message') }}" class="btn btn-light btn-sm">
+                        <i class="fas fa-plus me-1"></i> New Message
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if messages %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Sender/Recipient</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for message in messages %}
+                                <tr>
+                                    <td>{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ message.message_id[:8] }}...</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ message.message_type }}</span>
+                                    </td>
+                                    <td>
+                                        {% if message.status.value == 'SENT' %}
+                                            <i class="fas fa-paper-plane me-1 text-info"></i> {{ message.recipient_bic }}
+                                        {% else %}
+                                            <i class="fas fa-inbox me-1 text-success"></i> {{ message.sender_reference }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if message.status.value == 'DRAFT' %}
+                                            <span class="badge bg-secondary">{{ message.status.value }}</span>
+                                        {% elif message.status.value == 'SENT' %}
+                                            <span class="badge bg-info">{{ message.status.value }}</span>
+                                        {% elif message.status.value == 'RECEIVED' %}
+                                            <span class="badge bg-success">{{ message.status.value }}</span>
+                                        {% elif message.status.value == 'PROCESSED' %}
+                                            <span class="badge bg-primary">{{ message.status.value }}</span>
+                                        {% elif message.status.value == 'FAILED' %}
+                                            <span class="badge bg-danger">{{ message.status.value }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ message.status.value }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if message.priority == 'HIGH' %}
+                                            <span class="badge bg-danger">{{ message.priority }}</span>
+                                        {% elif message.priority == 'NORMAL' %}
+                                            <span class="badge bg-secondary">{{ message.priority }}</span>
+                                        {% elif message.priority == 'LOW' %}
+                                            <span class="badge bg-info">{{ message.priority }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ message.priority }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('telex.message_detail', message_id=message.message_id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>No messages found matching your criteria.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends "layout.html" %}
+
+{% block title %}KTT Telex Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-5 mb-4">
+                <i class="fas fa-fax me-2"></i> KTT Telex Dashboard
+            </h1>
+            <p class="lead">
+                Secure communication for financial institutions using the KTT Telex protocol.
+            </p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary mb-3">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-cogs me-2"></i> Quick Actions
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ url_for('telex.send_message') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-paper-plane me-2"></i> Send New Message
+                        </a>
+                        <a href="{{ url_for('telex.message_list') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-list me-2"></i> View All Messages
+                        </a>
+                        {% if current_user.role.value == 'ADMIN' or current_user.role == 'ADMIN' %}
+                        <a href="{{ url_for('telex.settings') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-wrench me-2"></i> Telex Settings
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header bg-info text-white">
+                            <i class="fas fa-paper-plane me-2"></i> Recent Sent Messages
+                        </div>
+                        <div class="card-body p-0">
+                            {% if sent_messages %}
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Recipient</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for message in sent_messages %}
+                                        <tr>
+                                            <td>{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                            <td><span class="badge bg-info">{{ message.message_type }}</span></td>
+                                            <td>{{ message.recipient_bic }}</td>
+                                            <td>
+                                                <a href="{{ url_for('telex.message_detail', message_id=message.message_id) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="p-4 text-center text-muted">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <p>No sent messages yet.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer text-end">
+                            <a href="{{ url_for('telex.message_list') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header bg-success text-white">
+                            <i class="fas fa-inbox me-2"></i> Recent Received Messages
+                        </div>
+                        <div class="card-body p-0">
+                            {% if received_messages %}
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Sender</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for message in received_messages %}
+                                        <tr>
+                                            <td>{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                            <td><span class="badge bg-success">{{ message.message_type }}</span></td>
+                                            <td>{{ message.sender_reference }}</td>
+                                            <td>
+                                                <a href="{{ url_for('telex.message_detail', message_id=message.message_id) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="p-4 text-center text-muted">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <p>No received messages yet.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer text-end">
+                            <a href="{{ url_for('telex.message_list') }}?status=RECEIVED" class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-info-circle me-2"></i> About KTT Telex
+                </div>
+                <div class="card-body">
+                    <p>
+                        KTT Telex is a secure communication system for financial institutions, allowing them to exchange standardized 
+                        financial messages. It serves as a backbone for transactional communication between banking partners.
+                    </p>
+                    <p>
+                        Key features:
+                    </p>
+                    <ul>
+                        <li>Secure, encrypted message exchange</li>
+                        <li>Standardized message formats</li>
+                        <li>Automatic transaction reconciliation</li>
+                        <li>Real-time payment status tracking</li>
+                        <li>Compliant with international financial regulations</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
