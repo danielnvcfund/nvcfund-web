@@ -954,8 +954,46 @@
         </div>
     </footer>
 
+    <!-- Regulatory Info Modal -->
+    <div class="modal fade" id="regulatoryInfoModal" tabindex="-1" aria-labelledby="regulatoryInfoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-light">
+                    <h5 class="modal-title" id="regulatoryInfoModalLabel">
+                        <i class="fas fa-certificate text-warning me-2"></i>Regulatory Status
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>NVC Fund Bank is an Expressed Trust Bank</strong> pursuant to:</p>
+                    <ul>
+                        <li>African Union Treaty</li>
+                        <li>Laws and Jurisdictions under AFRA</li>
+                        <li>African Central Bank (ACB)</li>
+                        <li>Article XIV 1(e) of ECO-6 Treaty</li>
+                        <li>African Development Central Bank (ADCB)</li>
+                    </ul>
+                    <p class="small text-muted">This regulatory framework enables NVC Fund Bank to operate as a specialized financial institution with unique capabilities in the global banking ecosystem.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS Bundle with latest version -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    
+    <!-- Initialize tooltips -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
 
     <!-- Common Scripts -->
     {% block scripts %}{% endblock %}
