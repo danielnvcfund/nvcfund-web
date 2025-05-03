@@ -1,5 +1,44 @@
 /* NVC Banking Platform - Enhanced UI CSS
    Updated for better user experience, 2025 */
+   
+/* Custom Analytics Background Colors */
+.bg-indigo {
+    background-color: #4b0082 !important;
+}
+
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+
+.text-indigo {
+    color: #4b0082 !important;
+}
+
+/* Animation for analytics panels */
+.analytics-panel {
+    transition: all 0.3s ease;
+}
+
+.analytics-panel:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Chart summary badges */
+.chart-summary .badge {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Enhanced hover effects for charts */
+.chart-container {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.chart-container:hover {
+    transform: scale(1.02);
+}
 
 /* ==== Base Styling & Common Elements ==== */
 :root {

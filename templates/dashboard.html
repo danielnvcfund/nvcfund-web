@@ -578,15 +578,15 @@
     <div class="row mt-4">
         <div class="col-md-12">
             <div class="card dashboard-widget border-0 shadow">
-                <div class="card-header bg-dark bg-opacity-10 border-0">
+                <div class="card-header bg-indigo bg-gradient text-white border-0">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
-                                <i class="fas fa-chart-line text-primary"></i>
+                            <div class="rounded-circle bg-white bg-opacity-25 p-2 me-3">
+                                <i class="fas fa-chart-line text-white"></i>
                             </div>
                             <h5 class="mb-0 fw-bold">Transaction Analytics</h5>
                         </div>
-                        <button class="btn btn-sm btn-outline-primary" id="refreshAnalytics">
+                        <button class="btn btn-light btn-sm" id="refreshAnalytics">
                             <i class="fas fa-sync-alt me-1"></i> Refresh Charts
                         </button>
                     </div>
@@ -594,26 +594,53 @@
                 <div class="card-body p-4">
                     <div class="row g-4">
                         <div class="col-md-4">
-                            <div class="analytics-panel bg-light bg-opacity-50 p-3 rounded-3 h-100">
-                                <h6 class="fw-bold text-center mb-3">Transactions by Type</h6>
+                            <div class="analytics-panel bg-dark bg-opacity-10 p-3 rounded-3 h-100 border border-1 border-light shadow-sm">
+                                <h6 class="fw-bold text-center mb-3 text-indigo">Transactions by Type</h6>
                                 <div class="chart-container position-relative" style="height: 220px;">
                                     <canvas id="transactionsByTypeChart" data-ethereum-address="{{ user.ethereum_address }}"></canvas>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="analytics-panel bg-light bg-opacity-50 p-3 rounded-3 h-100">
-                                <h6 class="fw-bold text-center mb-3">Transactions by Status</h6>
-                                <div class="chart-container position-relative" style="height: 220px;">
-                                    <canvas id="transactionsByStatusChart" data-ethereum-address="{{ user.ethereum_address }}"></canvas>
+                                <div class="text-center mt-2 chart-summary">
+                                    <div class="d-flex justify-content-center mt-2">
+                                        <span class="badge bg-primary bg-opacity-75 px-3 py-2 me-2">
+                                            <i class="fas fa-exchange-alt me-1"></i> <span id="typeChartTotal">0</span> transactions
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="analytics-panel bg-light bg-opacity-50 p-3 rounded-3 h-100">
-                                <h6 class="fw-bold text-center mb-3">Transactions by Date</h6>
+                            <div class="analytics-panel bg-dark bg-opacity-10 p-3 rounded-3 h-100 border border-1 border-light shadow-sm">
+                                <h6 class="fw-bold text-center mb-3 text-indigo">Transactions by Status</h6>
+                                <div class="chart-container position-relative" style="height: 220px;">
+                                    <canvas id="transactionsByStatusChart" data-ethereum-address="{{ user.ethereum_address }}"></canvas>
+                                </div>
+                                <div class="text-center mt-2 chart-summary">
+                                    <div class="d-flex justify-content-center flex-wrap mt-2">
+                                        <span class="badge bg-primary px-3 py-2 me-2 mb-1">
+                                            <i class="fas fa-check-circle me-1"></i> <span id="statusDoneCount">0</span> completed
+                                        </span>
+                                        <span class="badge bg-warning px-3 py-2 mb-1">
+                                            <i class="fas fa-clock me-1"></i> <span id="statusPendingCount">0</span> pending
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="analytics-panel bg-dark bg-opacity-10 p-3 rounded-3 h-100 border border-1 border-light shadow-sm">
+                                <h6 class="fw-bold text-center mb-3 text-indigo">Transactions by Date</h6>
                                 <div class="chart-container position-relative" style="height: 220px;">
                                     <canvas id="transactionsByDateChart" data-ethereum-address="{{ user.ethereum_address }}"></canvas>
+                                </div>
+                                <div class="text-center mt-2 chart-summary">
+                                    <div class="d-flex justify-content-center flex-wrap mt-2">
+                                        <span class="badge bg-purple px-3 py-2 me-2">
+                                            <i class="fas fa-file-invoice-dollar me-1"></i> Total: <span id="totalTransactionsCount">0</span>
+                                        </span>
+                                        <span class="badge bg-success px-3 py-2">
+                                            <i class="fas fa-dollar-sign me-1"></i> <span id="totalTransactionsAmount">$0.00</span>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
