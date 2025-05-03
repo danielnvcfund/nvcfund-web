@@ -127,6 +127,10 @@
                     <th>Routing Number/ABA:</th>
                     <td>{{ swift_data.get('receiving_bank', {}).get('routing', 'Not specified') }}</td>
                   </tr>
+                  <tr>
+                    <th>Bank Officer Contact:</th>
+                    <td>{{ swift_data.get('receiving_bank', {}).get('officer', 'Not specified') }}</td>
+                  </tr>
                 </tbody>
               </table>
             </div>

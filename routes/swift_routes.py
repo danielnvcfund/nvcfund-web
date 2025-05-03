@@ -112,6 +112,7 @@ def new_fund_transfer():
                 receiving_bank_address=form.receiving_bank_address.data or None,
                 receiving_bank_swift=form.receiving_bank_swift.data or None,
                 receiving_bank_routing=form.receiving_bank_routing.data or None,
+                receiving_bank_officer=form.receiving_bank_officer.data or None,
                 # Account holder details
                 account_holder_name=form.account_holder_name.data or None,
                 account_number=form.account_number.data or None

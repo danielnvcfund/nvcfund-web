@@ -357,6 +357,7 @@ class PDFService:
                             transaction_dict['recipient_bank_address'] = receiving_bank.get('address')
                             transaction_dict['recipient_bank_swift'] = receiving_bank.get('swift')
                             transaction_dict['recipient_routing_number'] = receiving_bank.get('routing')
+                            transaction_dict['recipient_bank_officer'] = receiving_bank.get('officer')
                             
                         if 'account_holder' in tx_metadata:
                             # Extract and flatten account holder details
