@@ -20,7 +20,6 @@ function getAnalyticsData() {
         if (analyticsElement && analyticsElement.dataset && analyticsElement.dataset.analytics) {
             try {
                 console.log('Found analytics data in element. Length:', analyticsElement.dataset.analytics.length);
-                console.log('Analytics data preview:', analyticsElement.dataset.analytics.substring(0, 100));
                 
                 // Check if the data starts with expected characters
                 if (!analyticsElement.dataset.analytics.startsWith('{')) {
@@ -31,8 +30,14 @@ function getAnalyticsData() {
                 return JSON.parse(analyticsElement.dataset.analytics);
             } catch (e) {
                 console.error('Error parsing analytics data JSON:', e);
-                console.log('Raw analytics data:', analyticsElement.dataset.analytics);
+                console.log('Raw analytics data sample:', analyticsElement.dataset.analytics.substring(0, 100));
             }
+        } else {
+            console.warn('Analytics element or data attribute missing', {
+                elementExists: Boolean(analyticsElement),
+                datasetExists: Boolean(analyticsElement && analyticsElement.dataset),
+                analyticsExists: Boolean(analyticsElement && analyticsElement.dataset && analyticsElement.dataset.analytics)
+            });
         }
         
         // If that fails, try data attributes on individual charts (legacy approach)
@@ -48,8 +53,19 @@ function getAnalyticsData() {
             }
         }
         
-        console.warn('No valid analytics data found');
-        return null;
+        // If all else fails, create a default structure
+        console.warn('No valid analytics data found - using empty structure');
+        return {
+            days: 30,
+            start_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            end_date: new Date().toISOString().split('T')[0],
+            total_transactions: 0,
+            total_amount: 0.0,
+            by_type: {},
+            by_status: {},
+            by_date: {},
+            raw_data: []
+        };
     } catch (e) {
         console.error('Error in getAnalyticsData:', e);
         return null;
@@ -206,46 +222,117 @@ function initTransactionsByDateChart(canvas, data) {
     
     // Prepare data for chart
     const dates = Object.keys(data.by_date).sort();
+    
+    // Check if we have data
+    if (dates.length === 0) {
+        displayChartError(canvas, 'No transaction data for the selected period');
+        return;
+    }
+    
+    // Format the dates for display
+    const formattedDates = dates.map(date => {
+        const parts = date.split('-');
+        return `${parts[1]}/${parts[2]}`; // MM/DD format
+    });
+    
     const transactionCounts = dates.map(date => data.by_date[date].count);
     const transactionAmounts = dates.map(date => data.by_date[date].total_amount);
     
-    // Create chart
+    // Create chart with improved styling
     const ctx = canvas.getContext('2d');
     const chart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: dates,
+            labels: formattedDates,
             datasets: [
                 {
                     label: 'Transaction Count',
                     data: transactionCounts,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                    borderColor: 'rgba(0, 123, 255, 1)',
                     borderWidth: 2,
                     tension: 0.4,
-                    yAxisID: 'y'
+                    yAxisID: 'y',
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: 'rgba(0, 123, 255, 1)'
                 },
                 {
                     label: 'Transaction Amount',
                     data: transactionAmounts,
-                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                    borderColor: 'rgba(153, 102, 255, 1)',
+                    backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                    borderColor: 'rgba(40, 167, 69, 1)',
                     borderWidth: 2,
                     tension: 0.4,
-                    yAxisID: 'y1'
+                    yAxisID: 'y1',
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: 'rgba(40, 167, 69, 1)'
                 }
             ]
         },
         options: {
             responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.datasetIndex === 1) {
+                                label += '$' + context.raw.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+                            } else {
+                                label += context.raw;
+                            }
+                            return label;
+                        }
+                    }
+                },
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        boxWidth: 6
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Transaction Trends (' + data.start_date + ' to ' + data.end_date + ')',
+                    color: '#6c757d',
+                    font: {
+                        size: 13
+                    }
+                }
+            },
             scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#6c757d'
+                    }
+                },
                 y: {
                     type: 'linear',
                     display: true,
                     position: 'left',
                     title: {
                         display: true,
-                        text: 'Count'
+                        text: 'Count',
+                        color: 'rgba(0, 123, 255, 1)'
+                    },
+                    ticks: {
+                        color: '#6c757d'
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
                     }
                 },
                 y1: {
@@ -257,12 +344,30 @@ function initTransactionsByDateChart(canvas, data) {
                     },
                     title: {
                         display: true,
-                        text: 'Amount'
+                        text: 'Amount ($)',
+                        color: 'rgba(40, 167, 69, 1)'
+                    },
+                    ticks: {
+                        color: '#6c757d',
+                        callback: function(value) {
+                            return '$' + value.toFixed(0).replace(/\d(?=(\d{3})+$)/g, '$&,');
+                        }
                     }
                 }
             }
         }
     });
+    
+    // Add a tooltip to show total transaction count and amount
+    const totalElement = document.createElement('div');
+    totalElement.className = 'mt-3 text-center text-muted small';
+    totalElement.innerHTML = `
+        <div class="d-flex justify-content-center gap-3">
+            <span><i class="fas fa-hashtag me-1 text-primary"></i> Total: <strong>${transactionCounts.reduce((a, b) => a + b, 0)}</strong></span>
+            <span><i class="fas fa-dollar-sign me-1 text-success"></i> Total: <strong>$${transactionAmounts.reduce((a, b) => a + b, 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</strong></span>
+        </div>
+    `;
+    canvas.parentNode.appendChild(totalElement);
 }
 
 // Create transactions by type chart
@@ -275,42 +380,100 @@ function initTransactionsByTypeChart(canvas, data) {
     
     // Prepare data for chart
     const types = Object.keys(data.by_type);
+    
+    // Check if we have data
+    if (types.length === 0) {
+        displayChartError(canvas, 'No transaction type data available');
+        return;
+    }
+    
+    // Format the labels nicely with capitalization
+    const formattedLabels = types.map(type => {
+        return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+    });
+    
     const counts = types.map(type => data.by_type[type].count);
+    const amounts = types.map(type => data.by_type[type].total_amount || 0);
     
-    // Define colors for different transaction types
-    const backgroundColors = [
-        'rgba(75, 192, 192, 0.6)',
-        'rgba(153, 102, 255, 0.6)',
-        'rgba(255, 159, 64, 0.6)',
-        'rgba(255, 99, 132, 0.6)',
-        'rgba(54, 162, 235, 0.6)'
-    ];
+    // Define improved colors for different transaction types
+    const colorMap = {
+        'payment': 'rgba(0, 123, 255, 0.8)', // Bootstrap primary
+        'deposit': 'rgba(40, 167, 69, 0.8)', // Bootstrap success
+        'withdrawal': 'rgba(220, 53, 69, 0.8)', // Bootstrap danger
+        'transfer': 'rgba(255, 193, 7, 0.8)', // Bootstrap warning
+        'refund': 'rgba(108, 117, 125, 0.8)' // Bootstrap secondary
+    };
     
-    // Create chart
+    // Apply the color map or use defaults for unknown types
+    const backgroundColors = types.map(type => {
+        const lowerType = type.toLowerCase();
+        return colorMap[lowerType] || `rgba(${Math.floor(Math.random() * 200)}, ${Math.floor(Math.random() * 200)}, ${Math.floor(Math.random() * 200)}, 0.8)`;
+    });
+    
+    // Create chart with improved styling
     const ctx = canvas.getContext('2d');
     const chart = new Chart(ctx, {
         type: 'pie',
         data: {
-            labels: types,
+            labels: formattedLabels,
             datasets: [{
                 data: counts,
                 backgroundColor: backgroundColors,
-                borderWidth: 1
+                borderWidth: 1,
+                hoverOffset: 10,
+                borderColor: '#fff',
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: true,
             plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const index = context.dataIndex;
+                            const count = counts[index];
+                            const amount = amounts[index];
+                            const percentage = ((count / counts.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
+                            return [
+                                `${context.label}: ${count} (${percentage}%)`, 
+                                `Total Value: $${amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`
+                            ];
+                        }
+                    }
+                },
                 legend: {
-                    position: 'right'
+                    position: 'right',
+                    labels: {
+                        usePointStyle: true,
+                        font: {
+                            size: 11
+                        },
+                        padding: 15
+                    }
                 },
                 title: {
                     display: true,
-                    text: 'Transaction Types'
+                    text: 'Transaction Distribution by Type',
+                    color: '#6c757d',
+                    font: {
+                        size: 13,
+                        weight: 'normal'
+                    }
                 }
             }
         }
     });
+    
+    // Add summary information
+    const totalElement = document.createElement('div');
+    totalElement.className = 'mt-3 text-center text-muted small';
+    totalElement.innerHTML = `
+        <div class="d-flex justify-content-center">
+            <span><i class="fas fa-chart-pie me-1 text-primary"></i> Total: <strong>${counts.reduce((a, b) => a + b, 0)}</strong> transactions</span>
+        </div>
+    `;
+    canvas.parentNode.appendChild(totalElement);
 }
 
 // Create transactions by status chart
@@ -323,44 +486,105 @@ function initTransactionsByStatusChart(canvas, data) {
     
     // Prepare data for chart
     const statuses = Object.keys(data.by_status);
-    const counts = statuses.map(status => data.by_status[status].count);
     
-    // Define colors for different statuses
+    // Check if we have data
+    if (statuses.length === 0) {
+        displayChartError(canvas, 'No transaction status data available');
+        return;
+    }
+    
+    // Format the labels nicely with capitalization
+    const formattedLabels = statuses.map(status => {
+        return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+    });
+    
+    const counts = statuses.map(status => data.by_status[status].count);
+    const amounts = statuses.map(status => data.by_status[status].total_amount || 0);
+    
+    // Define colors using bootstrap theme colors
     const colorMap = {
-        'pending': 'rgba(255, 159, 64, 0.6)',
-        'processing': 'rgba(54, 162, 235, 0.6)',
-        'completed': 'rgba(75, 192, 192, 0.6)',
-        'failed': 'rgba(255, 99, 132, 0.6)',
-        'refunded': 'rgba(153, 102, 255, 0.6)'
+        'pending': 'rgba(255, 193, 7, 0.8)', // warning
+        'processing': 'rgba(0, 123, 255, 0.8)', // primary
+        'completed': 'rgba(40, 167, 69, 0.8)', // success
+        'failed': 'rgba(220, 53, 69, 0.8)', // danger
+        'refunded': 'rgba(108, 117, 125, 0.8)', // secondary
+        'cancelled': 'rgba(52, 58, 64, 0.8)' // dark
     };
     
-    const backgroundColors = statuses.map(status => colorMap[status] || 'rgba(128, 128, 128, 0.6)');
+    const backgroundColors = statuses.map(status => colorMap[status.toLowerCase()] || 'rgba(128, 128, 128, 0.6)');
     
-    // Create chart
+    // Create chart with improved styling
     const ctx = canvas.getContext('2d');
     const chart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: statuses,
+            labels: formattedLabels,
             datasets: [{
                 data: counts,
                 backgroundColor: backgroundColors,
-                borderWidth: 1
+                borderWidth: 1,
+                borderColor: '#fff',
+                hoverOffset: 10
             }]
         },
         options: {
             responsive: true,
+            cutout: '65%',
             plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const index = context.dataIndex;
+                            const count = counts[index];
+                            const amount = amounts[index];
+                            const percentage = ((count / counts.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
+                            return [
+                                `${context.label}: ${count} (${percentage}%)`, 
+                                `Total Value: $${amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`
+                            ];
+                        }
+                    }
+                },
                 legend: {
-                    position: 'right'
+                    position: 'right',
+                    labels: {
+                        usePointStyle: true,
+                        font: {
+                            size: 11
+                        },
+                        padding: 15
+                    }
                 },
                 title: {
                     display: true,
-                    text: 'Transaction Statuses'
+                    text: 'Transaction Status Distribution',
+                    color: '#6c757d',
+                    font: {
+                        size: 13,
+                        weight: 'normal'
+                    }
                 }
             }
         }
     });
+    
+    // Add center text with total count
+    const totalCount = counts.reduce((a, b) => a + b, 0);
+    
+    // Add a completion rate display
+    const completedIndex = statuses.findIndex(s => s.toLowerCase() === 'completed');
+    const completionRate = completedIndex >= 0 ? ((counts[completedIndex] / totalCount) * 100).toFixed(0) : 0;
+    
+    // Add summary information
+    const statusInfo = document.createElement('div');
+    statusInfo.className = 'mt-3 text-center text-muted small';
+    statusInfo.innerHTML = `
+        <div class="d-flex justify-content-center gap-3">
+            <span><i class="fas fa-check-circle me-1 text-success"></i> Completion Rate: <strong>${completionRate}%</strong></span>
+            <span><i class="fas fa-tasks me-1 text-primary"></i> Total Transactions: <strong>${totalCount}</strong></span>
+        </div>
+    `;
+    canvas.parentNode.appendChild(statusInfo);
 }
 
 // Initialize blockchain balance display
