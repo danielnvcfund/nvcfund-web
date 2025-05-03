@@ -344,6 +344,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering PayPal routes: {str(e)}")
             logger.warning("Application will run without PayPal functionality")
+            
+        # Register KTT Telex routes
+        try:
+            from routes.telex_routes import register_telex_routes
+            register_telex_routes(app)
+            logger.info("KTT Telex routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering KTT Telex routes: {str(e)}")
+            logger.warning("Application will run without KTT Telex functionality")
 
         # Create PHP test integration user
         try:

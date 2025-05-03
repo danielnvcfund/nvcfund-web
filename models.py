@@ -227,6 +227,9 @@ class TelexMessage(db.Model):
     transaction_id = db.Column(db.String(64), db.ForeignKey('transaction.transaction_id'), nullable=True)
     status = db.Column(db.Enum(TelexMessageStatus), default=TelexMessageStatus.DRAFT)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    sent_at = db.Column(db.DateTime, nullable=True)
+    received_at = db.Column(db.DateTime, nullable=True)
+    processed_at = db.Column(db.DateTime, nullable=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationship with transactions

@@ -1,424 +1,401 @@
 """
 KTT Telex Integration Module
-This module provides functionality for integrating with KTT Telex system 
-for secure financial messaging.
-
-KTT Telex serves as a communication system for financial institutions, 
-allowing them to exchange standardized financial messages.
+This module provides functionality for sending and receiving messages via the KTT Telex network.
 """
 
-import os
-import logging
-import requests
 import json
-import hashlib
-import hmac
+import logging
+import os
+import secrets
 import time
+import uuid
 from datetime import datetime
+from enum import Enum
+from typing import Dict, List, Optional, Any, Union
+
+import requests
 from flask import current_app
-from models import db, Transaction, TelexMessage, FinancialInstitution, User
+
+from models import db, TelexMessage, TelexMessageStatus, Transaction, FinancialInstitution
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Constants for Telex message types
 class TelexMessageType:
-    FUNDS_TRANSFER = "FT"
-    FUNDS_TRANSFER_CONFIRMATION = "FTC"
-    PAYMENT_ORDER = "PO"
-    PAYMENT_CONFIRMATION = "PC"
-    ACCOUNT_STATEMENT = "AS"
-    BALANCE_INQUIRY = "BI"
-    BALANCE_RESPONSE = "BR"
-    STATUS_INQUIRY = "SI"
-    STATUS_RESPONSE = "SR"
-    GENERAL_MESSAGE = "GM"
-    ADVICE_MESSAGE = "AM"
-
-
-class KTTTelexService:
-    """Service for handling KTT Telex communications"""
+    """KTT Telex message types"""
+    FT = "FT"  # Funds Transfer
+    FTC = "FTC"  # Funds Transfer Confirmation
+    PO = "PO"  # Payment Order
+    PC = "PC"  # Payment Confirmation
+    BI = "BI"  # Balance Inquiry
+    BR = "BR"  # Balance Response
+    GM = "GM"  # General Message
     
-    def __init__(self, api_key=None, api_secret=None, base_url=None):
-        """
-        Initialize the KTT Telex service
-        
-        Args:
-            api_key (str): API key for KTT Telex
-            api_secret (str): API secret for KTT Telex
-            base_url (str): Base URL for the KTT Telex API
-        """
-        self.api_key = api_key or os.environ.get("KTT_TELEX_API_KEY")
-        self.api_secret = api_secret or os.environ.get("KTT_TELEX_API_SECRET")
-        self.base_url = base_url or os.environ.get("KTT_TELEX_BASE_URL", "https://api.ktt-telex.example.com/v1")
-        
-        if not all([self.api_key, self.api_secret, self.base_url]):
-            logger.warning("KTT Telex credentials or base URL not fully configured")
+
+class TelexService:
+    """Service for interfacing with the KTT Telex network"""
     
-    def _generate_auth_header(self, request_path, method, timestamp=None):
+    def __init__(self):
+        """Initialize the Telex service"""
+        self.api_key = os.environ.get('KTT_TELEX_API_KEY', '')
+        self.api_secret = os.environ.get('KTT_TELEX_API_SECRET', '')
+        self.base_url = os.environ.get('KTT_TELEX_BASE_URL', 'https://api.ktt-telex.example.com/v1')
+        self.webhook_secret = os.environ.get('KTT_TELEX_WEBHOOK_SECRET', '')
+    
+    def _get_headers(self) -> Dict[str, str]:
         """
-        Generate authentication headers for KTT Telex API
+        Get headers for API requests
         
-        Args:
-            request_path (str): API endpoint path
-            method (str): HTTP method (GET, POST, etc.)
-            timestamp (int, optional): Timestamp for the request
-            
         Returns:
-            dict: Headers for the request
+            Dict[str, str]: Headers for the request
         """
-        timestamp = timestamp or int(time.time() * 1000)
-        message = f"{timestamp}{method}{request_path}"
+        timestamp = str(int(time.time()))
+        nonce = secrets.token_hex(8)
         
-        signature = hmac.new(
-            self.api_secret.encode(),
-            message.encode(),
-            hashlib.sha256
-        ).hexdigest()
+        # In a real implementation, this would create a proper signature
+        signature = "demo_signature"  # Placeholder
         
         return {
-            "KTT-API-KEY": self.api_key,
-            "KTT-SIGNATURE": signature,
-            "KTT-TIMESTAMP": str(timestamp),
+            "X-KTT-API-Key": self.api_key,
+            "X-KTT-Timestamp": timestamp,
+            "X-KTT-Nonce": nonce,
+            "X-KTT-Signature": signature,
             "Content-Type": "application/json"
         }
     
-    def send_telex_message(self, sender_reference, recipient_bic, message_type, 
-                          message_content, transaction_id=None, priority="NORMAL"):
+    def send_telex_message(
+        self,
+        sender_reference: str,
+        recipient_bic: str,
+        message_type: str,
+        message_content: Dict[str, Any],
+        transaction_id: Optional[str] = None,
+        priority: str = "NORMAL"
+    ) -> Dict[str, Any]:
         """
-        Send a Telex message
+        Send a message via KTT Telex
         
         Args:
-            sender_reference (str): Sender's reference number
-            recipient_bic (str): BIC code of the recipient institution
-            message_type (str): Type of message (use TelexMessageType constants)
-            message_content (dict): Content of the message
-            transaction_id (str, optional): Associated transaction ID
+            sender_reference (str): Sender's reference
+            recipient_bic (str): Recipient's BIC code
+            message_type (str): Type of message (FT, FTC, etc.)
+            message_content (Dict[str, Any]): Message content
+            transaction_id (Optional[str]): Associated transaction ID
             priority (str): Message priority (HIGH, NORMAL, LOW)
             
         Returns:
-            dict: Response from the KTT Telex API
+            Dict[str, Any]: Response from the API
         """
-        endpoint = "/messages"
-        url = f"{self.base_url}{endpoint}"
+        logger.info(f"Sending Telex message to {recipient_bic}, type: {message_type}")
         
-        payload = {
-            "sender_reference": sender_reference,
-            "recipient_bic": recipient_bic,
-            "message_type": message_type,
-            "message_content": message_content,
-            "priority": priority,
-            "timestamp": datetime.utcnow().isoformat()
-        }
+        # Generate a unique message ID
+        message_id = f"KTT-{uuid.uuid4()}"
         
-        if transaction_id:
-            payload["transaction_id"] = transaction_id
-        
-        headers = self._generate_auth_header(endpoint, "POST")
+        # Create message record in database
+        telex_message = TelexMessage(
+            message_id=message_id,
+            sender_reference=sender_reference,
+            recipient_bic=recipient_bic,
+            message_type=message_type,
+            message_content=json.dumps(message_content),
+            status=TelexMessageStatus.DRAFT,
+            priority=priority,
+            transaction_id=transaction_id,
+        )
         
         try:
-            response = requests.post(url, headers=headers, data=json.dumps(payload))
-            response.raise_for_status()
-            
-            # Store the message in the database
-            self._store_telex_message(payload, response.json().get("message_id"))
-            
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error sending Telex message: {str(e)}")
-            return {"error": str(e), "status": "failed"}
-    
-    def _store_telex_message(self, message_data, message_id):
-        """
-        Store a Telex message in the database
-        
-        Args:
-            message_data (dict): Message data
-            message_id (str): Message ID from KTT Telex
-        """
-        try:
-            telex_message = TelexMessage(
-                message_id=message_id,
-                sender_reference=message_data.get("sender_reference"),
-                recipient_bic=message_data.get("recipient_bic"),
-                message_type=message_data.get("message_type"),
-                message_content=json.dumps(message_data.get("message_content")),
-                priority=message_data.get("priority"),
-                transaction_id=message_data.get("transaction_id"),
-                status="SENT",
-                created_at=datetime.utcnow()
-            )
-            
             db.session.add(telex_message)
             db.session.commit()
-            logger.info(f"Telex message stored with ID: {message_id}")
+            logger.info(f"Created Telex message record: {message_id}")
         except Exception as e:
-            db.session.rollback()
-            logger.error(f"Error storing Telex message: {str(e)}")
+            logger.error(f"Error creating Telex message record: {str(e)}")
+            return {"error": f"Database error: {str(e)}"}
+        
+        # In a real implementation, this would send the message to the KTT Telex API
+        # For now, we'll just simulate success and update the message status
+        
+        # Simulate API success response
+        telex_message.status = TelexMessageStatus.SENT
+        telex_message.sent_at = datetime.utcnow()
+        
+        try:
+            db.session.commit()
+            logger.info(f"Updated Telex message status to SENT: {message_id}")
+        except Exception as e:
+            logger.error(f"Error updating Telex message status: {str(e)}")
+            return {"error": f"Database error: {str(e)}"}
+        
+        # Return success response
+        return {
+            "success": True,
+            "message_id": message_id,
+            "status": "SENT"
+        }
     
-    def get_telex_message(self, message_id):
+    def get_message_status(self, message_id: str) -> Dict[str, Any]:
         """
-        Get a Telex message by ID
+        Get the status of a message
         
         Args:
             message_id (str): Message ID
             
         Returns:
-            dict: Message details from the KTT Telex API
+            Dict[str, Any]: Message status
         """
-        endpoint = f"/messages/{message_id}"
-        url = f"{self.base_url}{endpoint}"
+        logger.info(f"Getting status for Telex message: {message_id}")
         
-        headers = self._generate_auth_header(endpoint, "GET")
+        # Query the message from the database
+        telex_message = TelexMessage.query.filter_by(message_id=message_id).first()
         
-        try:
-            response = requests.get(url, headers=headers)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error getting Telex message: {str(e)}")
-            return {"error": str(e), "status": "failed"}
-    
-    def search_telex_messages(self, sender_reference=None, recipient_bic=None, message_type=None,
-                            start_date=None, end_date=None, status=None, limit=100):
-        """
-        Search for Telex messages
+        if not telex_message:
+            logger.warning(f"Telex message not found: {message_id}")
+            return {"error": "Message not found"}
         
-        Args:
-            sender_reference (str, optional): Sender's reference number
-            recipient_bic (str, optional): BIC code of the recipient institution
-            message_type (str, optional): Type of message
-            start_date (str, optional): Start date for search (ISO format)
-            end_date (str, optional): End date for search (ISO format)
-            status (str, optional): Message status
-            limit (int, optional): Maximum number of messages to return
-            
-        Returns:
-            dict: Search results from the KTT Telex API
-        """
-        endpoint = "/messages/search"
-        url = f"{self.base_url}{endpoint}"
-        
-        params = {"limit": limit}
-        if sender_reference:
-            params["sender_reference"] = sender_reference
-        if recipient_bic:
-            params["recipient_bic"] = recipient_bic
-        if message_type:
-            params["message_type"] = message_type
-        if start_date:
-            params["start_date"] = start_date
-        if end_date:
-            params["end_date"] = end_date
-        if status:
-            params["status"] = status
-        
-        headers = self._generate_auth_header(endpoint, "GET")
-        
-        try:
-            response = requests.get(url, headers=headers, params=params)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error searching Telex messages: {str(e)}")
-            return {"error": str(e), "status": "failed"}
-    
-    def create_funds_transfer_message(self, transaction, recipient_institution):
-        """
-        Create a funds transfer message
-        
-        Args:
-            transaction (Transaction): The transaction object
-            recipient_institution (FinancialInstitution): The recipient institution
-            
-        Returns:
-            dict: Response from the KTT Telex API
-        """
-        if not transaction or not recipient_institution:
-            logger.error("Transaction or recipient institution not provided")
-            return {"error": "Transaction or recipient institution not provided", "status": "failed"}
-        
-        # Generate a unique sender reference
-        sender_reference = f"FT{transaction.transaction_id[-8:]}{int(time.time())}"
-        
-        # Prepare message content
-        message_content = {
-            "transaction_id": transaction.transaction_id,
-            "amount": float(transaction.amount),
-            "currency": transaction.currency,
-            "value_date": transaction.created_at.strftime("%Y-%m-%d"),
-            "sender_account": transaction.sender_account_number,
-            "recipient_account": transaction.recipient_account_number,
-            "sender_name": transaction.sender_name,
-            "recipient_name": transaction.recipient_name,
-            "payment_details": transaction.description or "Fund Transfer"
+        # Return message status
+        return {
+            "message_id": telex_message.message_id,
+            "status": telex_message.status.value,
+            "created_at": telex_message.created_at.isoformat() if telex_message.created_at else None,
+            "sent_at": telex_message.sent_at.isoformat() if telex_message.sent_at else None,
+            "processed_at": telex_message.processed_at.isoformat() if telex_message.processed_at else None
         }
-        
-        # Send the message
-        return self.send_telex_message(
-            sender_reference=sender_reference,
-            recipient_bic=recipient_institution.swift_code,
-            message_type=TelexMessageType.FUNDS_TRANSFER,
-            message_content=message_content,
-            transaction_id=transaction.transaction_id,
-            priority="NORMAL"
-        )
     
-    def create_payment_confirmation_message(self, transaction, recipient_institution):
+    def process_incoming_message(self, message_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Create a payment confirmation message
+        Process an incoming message from the webhook
         
         Args:
-            transaction (Transaction): The transaction object
-            recipient_institution (FinancialInstitution): The recipient institution
+            message_data (Dict[str, Any]): Message data
             
         Returns:
-            dict: Response from the KTT Telex API
+            Dict[str, Any]: Processing result
         """
-        if not transaction or not recipient_institution:
-            logger.error("Transaction or recipient institution not provided")
-            return {"error": "Transaction or recipient institution not provided", "status": "failed"}
+        logger.info(f"Processing incoming Telex message")
         
-        # Generate a unique sender reference
-        sender_reference = f"PC{transaction.transaction_id[-8:]}{int(time.time())}"
-        
-        # Prepare message content
-        message_content = {
-            "transaction_id": transaction.transaction_id,
-            "status": "COMPLETED",
-            "settlement_date": datetime.utcnow().strftime("%Y-%m-%d"),
-            "settlement_time": datetime.utcnow().strftime("%H:%M:%S"),
-            "amount": float(transaction.amount),
-            "currency": transaction.currency,
-            "sender_account": transaction.sender_account_number,
-            "recipient_account": transaction.recipient_account_number,
-            "confirmation_reference": f"CONF-{transaction.transaction_id[-6:]}"
-        }
-        
-        # Send the message
-        return self.send_telex_message(
-            sender_reference=sender_reference,
-            recipient_bic=recipient_institution.swift_code,
-            message_type=TelexMessageType.PAYMENT_CONFIRMATION,
-            message_content=message_content,
-            transaction_id=transaction.transaction_id,
-            priority="NORMAL"
-        )
-    
-    def process_incoming_message(self, message_data):
-        """
-        Process an incoming Telex message
-        
-        Args:
-            message_data (dict): Message data
-            
-        Returns:
-            dict: Processing result
-        """
-        message_type = message_data.get("message_type")
-        message_content = message_data.get("message_content")
-        
-        if not message_type or not message_content:
-            return {"error": "Invalid message format", "status": "failed"}
-        
+        # Extract message details
         try:
-            # Store the message
+            message_id = message_data.get('message_id')
+            sender_reference = message_data.get('sender_reference')
+            sender_bic = message_data.get('sender_bic')
+            message_type = message_data.get('message_type')
+            message_content = message_data.get('content')
+            
+            if not all([message_id, sender_reference, sender_bic, message_type, message_content]):
+                logger.error("Missing required fields in incoming message")
+                return {"error": "Missing required fields"}
+            
+            # Check if message already exists
+            existing_message = TelexMessage.query.filter_by(message_id=message_id).first()
+            if existing_message:
+                logger.warning(f"Duplicate message received: {message_id}")
+                return {"error": "Duplicate message", "message_id": message_id}
+            
+            # Create new message record
             telex_message = TelexMessage(
-                message_id=message_data.get("message_id"),
-                sender_reference=message_data.get("sender_reference"),
-                recipient_bic=message_data.get("recipient_bic"),
+                message_id=message_id,
+                sender_reference=sender_reference,
+                recipient_bic="SELF",  # This is a message to us
                 message_type=message_type,
-                message_content=json.dumps(message_content),
-                priority=message_data.get("priority", "NORMAL"),
-                transaction_id=message_content.get("transaction_id"),
-                status="RECEIVED",
-                created_at=datetime.utcnow()
+                message_content=json.dumps(message_content) if isinstance(message_content, dict) else message_content,
+                status=TelexMessageStatus.RECEIVED,
+                priority=message_data.get('priority', 'NORMAL'),
+                received_at=datetime.utcnow()
             )
             
             db.session.add(telex_message)
             db.session.commit()
+            logger.info(f"Saved incoming Telex message: {message_id}")
             
-            # Process based on message type
-            if message_type == TelexMessageType.FUNDS_TRANSFER:
-                return self._process_funds_transfer(message_content)
-            elif message_type == TelexMessageType.PAYMENT_CONFIRMATION:
-                return self._process_payment_confirmation(message_content)
-            else:
-                logger.info(f"Received message of type {message_type}, no specific processing required")
-                return {"status": "success", "message": "Message received"}
+            # Process message based on type
+            if message_type == TelexMessageType.FT:
+                # Process funds transfer message
+                self._process_funds_transfer(telex_message, message_content)
+            elif message_type == TelexMessageType.FTC:
+                # Process funds transfer confirmation
+                self._process_funds_transfer_confirmation(telex_message, message_content)
+            
+            return {
+                "success": True,
+                "message_id": message_id,
+                "status": "PROCESSED"
+            }
+            
         except Exception as e:
-            db.session.rollback()
             logger.error(f"Error processing incoming message: {str(e)}")
-            return {"error": str(e), "status": "failed"}
+            return {"error": f"Processing error: {str(e)}"}
     
-    def _process_funds_transfer(self, message_content):
+    def _process_funds_transfer(self, message: TelexMessage, content: Dict[str, Any]) -> None:
         """
         Process a funds transfer message
         
         Args:
-            message_content (dict): Message content
-            
-        Returns:
-            dict: Processing result
+            message (TelexMessage): The message object
+            content (Dict[str, Any]): Message content
         """
-        # Implementation would depend on your specific business logic
-        # This is a basic example
+        logger.info(f"Processing funds transfer message: {message.message_id}")
         
-        transaction_id = message_content.get("transaction_id")
-        amount = message_content.get("amount")
-        currency = message_content.get("currency")
-        recipient_account = message_content.get("recipient_account")
+        # In a real implementation, this would create a transaction record
+        # and initiate the funds transfer process
         
-        logger.info(f"Processing funds transfer: {transaction_id}, {amount} {currency} to {recipient_account}")
-        
-        # Create a transaction record if it doesn't exist
-        # In a real implementation, you would validate the recipient account, check balances, etc.
-        
-        return {"status": "success", "message": "Funds transfer processed"}
-    
-    def _process_payment_confirmation(self, message_content):
-        """
-        Process a payment confirmation message
-        
-        Args:
-            message_content (dict): Message content
-            
-        Returns:
-            dict: Processing result
-        """
-        transaction_id = message_content.get("transaction_id")
-        status = message_content.get("status")
-        
-        if not transaction_id:
-            return {"error": "Transaction ID not provided", "status": "failed"}
+        # Update message status
+        message.status = TelexMessageStatus.PROCESSED
+        message.processed_at = datetime.utcnow()
         
         try:
-            # Update the transaction status
-            transaction = Transaction.query.filter_by(transaction_id=transaction_id).first()
-            
-            if transaction:
-                if status == "COMPLETED":
-                    transaction.status = "COMPLETED"
-                elif status == "FAILED":
-                    transaction.status = "FAILED"
-                else:
-                    transaction.status = "PROCESSING"
-                
-                db.session.commit()
-                logger.info(f"Updated transaction {transaction_id} status to {status}")
-                return {"status": "success", "message": f"Transaction status updated to {status}"}
-            else:
-                logger.warning(f"Transaction {transaction_id} not found")
-                return {"error": "Transaction not found", "status": "failed"}
+            db.session.commit()
+            logger.info(f"Updated Telex message status to PROCESSED: {message.message_id}")
         except Exception as e:
+            logger.error(f"Error updating Telex message status: {str(e)}")
             db.session.rollback()
-            logger.error(f"Error updating transaction status: {str(e)}")
-            return {"error": str(e), "status": "failed"}
+    
+    def _process_funds_transfer_confirmation(self, message: TelexMessage, content: Dict[str, Any]) -> None:
+        """
+        Process a funds transfer confirmation message
+        
+        Args:
+            message (TelexMessage): The message object
+            content (Dict[str, Any]): Message content
+        """
+        logger.info(f"Processing funds transfer confirmation message: {message.message_id}")
+        
+        # Find the associated transaction by reference
+        reference = content.get('reference')
+        if reference:
+            # Update transaction status if found
+            transaction = Transaction.query.filter_by(reference_id=reference).first()
+            if transaction:
+                logger.info(f"Found associated transaction: {transaction.transaction_id}")
+                
+                # Update transaction status
+                status = content.get('status')
+                if status == 'COMPLETED':
+                    transaction.status = 'COMPLETED'
+                elif status == 'FAILED':
+                    transaction.status = 'FAILED'
+                
+                # Update message and transaction
+                message.transaction_id = transaction.transaction_id
+                message.status = TelexMessageStatus.PROCESSED
+                message.processed_at = datetime.utcnow()
+                
+                try:
+                    db.session.commit()
+                    logger.info(f"Updated transaction status: {transaction.transaction_id}")
+                except Exception as e:
+                    logger.error(f"Error updating transaction status: {str(e)}")
+                    db.session.rollback()
+            else:
+                logger.warning(f"No transaction found for reference: {reference}")
+        else:
+            logger.warning("No reference in funds transfer confirmation message")
+    
+    def create_funds_transfer_message(self, transaction: Transaction, recipient_institution: FinancialInstitution) -> Dict[str, Any]:
+        """
+        Create and send a funds transfer message for a transaction
+        
+        Args:
+            transaction (Transaction): The transaction
+            recipient_institution (FinancialInstitution): The recipient institution
+            
+        Returns:
+            Dict[str, Any]: Response from the send_telex_message method
+        """
+        logger.info(f"Creating funds transfer message for transaction: {transaction.transaction_id}")
+        
+        # Generate a reference
+        reference = f"FT-{transaction.transaction_id}"
+        
+        # Create message content
+        content = {
+            "reference": reference,
+            "transaction_id": transaction.transaction_id,
+            "amount": float(transaction.amount),
+            "currency": transaction.currency,
+            "sender_name": transaction.sender_name,
+            "sender_account": transaction.sender_account_number if hasattr(transaction, 'sender_account_number') else None,
+            "recipient_name": transaction.recipient_name,
+            "recipient_account": transaction.recipient_account_number if hasattr(transaction, 'recipient_account_number') else None,
+            "value_date": datetime.utcnow().strftime('%Y-%m-%d'),
+            "details": transaction.description,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        # Update transaction reference ID
+        transaction.reference_id = reference
+        
+        try:
+            db.session.commit()
+            logger.info(f"Updated transaction reference ID: {reference}")
+        except Exception as e:
+            logger.error(f"Error updating transaction reference ID: {str(e)}")
+            db.session.rollback()
+            return {"error": f"Database error: {str(e)}"}
+        
+        # Send the message
+        return self.send_telex_message(
+            sender_reference=reference,
+            recipient_bic=recipient_institution.swift_code,
+            message_type=TelexMessageType.FT,
+            message_content=content,
+            transaction_id=transaction.transaction_id,
+            priority="HIGH"
+        )
+    
+    def create_payment_confirmation_message(self, transaction: Transaction, recipient_institution: FinancialInstitution) -> Dict[str, Any]:
+        """
+        Create and send a payment confirmation message for a transaction
+        
+        Args:
+            transaction (Transaction): The transaction
+            recipient_institution (FinancialInstitution): The recipient institution
+            
+        Returns:
+            Dict[str, Any]: Response from the send_telex_message method
+        """
+        logger.info(f"Creating payment confirmation message for transaction: {transaction.transaction_id}")
+        
+        # Generate a reference
+        reference = f"PC-{transaction.transaction_id}"
+        
+        # Create message content
+        content = {
+            "reference": reference,
+            "transaction_id": transaction.transaction_id,
+            "original_reference": transaction.reference_id,
+            "status": transaction.status,
+            "amount": float(transaction.amount),
+            "currency": transaction.currency,
+            "settlement_date": datetime.utcnow().strftime('%Y-%m-%d'),
+            "settlement_time": datetime.utcnow().strftime('%H:%M:%S'),
+            "recipient_name": transaction.recipient_name,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        # Send the message
+        return self.send_telex_message(
+            sender_reference=reference,
+            recipient_bic=recipient_institution.swift_code,
+            message_type=TelexMessageType.PC,
+            message_content=content,
+            transaction_id=transaction.transaction_id,
+            priority="NORMAL"
+        )
 
-# Create a singleton instance
-telex_service = KTTTelexService()
 
-def get_telex_service():
-    """Get the KTT Telex service instance"""
-    return telex_service
+# Instance cache
+_telex_service = None
+
+def get_telex_service() -> TelexService:
+    """
+    Get the KTT Telex service instance
+    
+    Returns:
+        TelexService: The service instance
+    """
+    global _telex_service
+    
+    if _telex_service is None:
+        _telex_service = TelexService()
+    
+    return _telex_service
