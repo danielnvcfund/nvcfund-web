@@ -66,18 +66,18 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <!-- Regulatory Status Banner -->
-                <ul class="navbar-nav secondary-nav mb-2">
-                    <li class="nav-item d-flex align-items-center">
-                        <span class="text-light d-none d-md-inline-block small me-2">
+                <ul class="navbar-nav secondary-nav mb-2 w-100 px-2">
+                    <li class="nav-item d-flex align-items-center justify-content-center bg-dark bg-opacity-25 rounded px-2 py-1">
+                        <span class="text-light d-none d-md-inline-block small me-2 fw-semibold">
                             <i class="fas fa-certificate text-warning me-1"></i> Regulatory Status:
                         </span>
-                        <span class="text-light small text-truncate d-inline-block" style="max-width: 300px;" 
+                        <span class="text-light small text-truncate d-inline-block" style="max-width: 400px;" 
                               data-bs-toggle="tooltip" data-bs-placement="bottom" 
                               title="NVC Fund Bank is an Expressed Trust Bank pursuant to African Union Treaty, Laws and Jurisdictions under AFRA, ACB, Article XIV 1(e) of ECO-6 Treaty, and ADCB">
                             <span class="d-md-none me-1"><i class="fas fa-certificate text-warning"></i></span>
-                            NVC Fund Bank is an Expressed Trust Bank pursuant to African Union Treaty...
+                            <span class="fst-italic">NVC Fund Bank is an Expressed Trust Bank pursuant to African Union Treaty...</span>
                         </span>
-                        <button class="btn btn-sm btn-link text-light ms-1 p-0" type="button" 
+                        <button class="btn btn-sm btn-link text-warning ms-1 p-0" type="button" 
                                 data-bs-toggle="modal" data-bs-target="#regulatoryInfoModal">
                             <i class="fas fa-info-circle"></i>
                         </button>
@@ -957,26 +957,31 @@
     <!-- Regulatory Info Modal -->
     <div class="modal fade" id="regulatoryInfoModal" tabindex="-1" aria-labelledby="regulatoryInfoModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-light">
+            <div class="modal-content bg-dark bg-gradient text-light border-0">
+                <div class="modal-header border-bottom border-secondary">
                     <h5 class="modal-title" id="regulatoryInfoModalLabel">
                         <i class="fas fa-certificate text-warning me-2"></i>Regulatory Status
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p><strong>NVC Fund Bank is an Expressed Trust Bank</strong> pursuant to:</p>
-                    <ul>
-                        <li>African Union Treaty</li>
-                        <li>Laws and Jurisdictions under AFRA</li>
-                        <li>African Central Bank (ACB)</li>
-                        <li>Article XIV 1(e) of ECO-6 Treaty</li>
-                        <li>African Development Central Bank (ADCB)</li>
-                    </ul>
-                    <p class="small text-muted">This regulatory framework enables NVC Fund Bank to operate as a specialized financial institution with unique capabilities in the global banking ecosystem.</p>
+                    <div class="card bg-dark bg-opacity-50 mb-3 border-0">
+                        <div class="card-body">
+                            <h6 class="text-warning mb-3 fw-bold">NVC Fund Bank is an Expressed Trust Bank</h6>
+                            <p class="mb-2">Pursuant to the following regulatory frameworks:</p>
+                            <div class="ms-3">
+                                <p class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>African Union Treaty</p>
+                                <p class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Laws and Jurisdictions under AFRA</p>
+                                <p class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>African Central Bank (ACB)</p>
+                                <p class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Article XIV 1(e) of ECO-6 Treaty</p>
+                                <p class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>African Development Central Bank (ADCB)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="small text-light opacity-75">This regulatory framework enables NVC Fund Bank to operate as a specialized financial institution with unique capabilities in the global banking ecosystem.</p>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                <div class="modal-footer border-top border-secondary">
+                    <button type="button" class="btn btn-warning" data-bs-dismiss="modal"><i class="fas fa-times me-2"></i>Close</button>
                 </div>
             </div>
         </div>
