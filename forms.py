@@ -253,6 +253,8 @@ class SwiftFundTransferForm(FlaskForm):
     receiving_bank_address = TextAreaField('Receiving Bank Address', validators=[DataRequired()])
     receiving_bank_swift = StringField('Receiving Bank SWIFT/BIC Code', validators=[DataRequired()])
     receiving_bank_routing = StringField('Receiving Bank Routing Number/ABA', validators=[Optional()])
+    receiving_bank_officer = StringField('Bank Officer Contact', validators=[Optional()], 
+                                         description="Name and contact details of a bank officer for tracing transfers")
     
     # Account Holder Details
     account_holder_name = StringField('Account Holder Name', validators=[DataRequired()])

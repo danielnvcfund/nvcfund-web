@@ -546,7 +546,7 @@ class SwiftService:
                                    correspondent_bank_name=None, correspondent_bank_swift=None, 
                                    intermediary_bank_name=None, intermediary_bank_swift=None,
                                    receiving_bank_name=None, receiving_bank_address=None, receiving_bank_swift=None, receiving_bank_routing=None,
-                                   account_holder_name=None, account_number=None):
+                                   receiving_bank_officer=None, account_holder_name=None, account_number=None):
         """Create a new SWIFT fund transfer (MT103 or MT202)"""
         try:
             # Get the institution from the database
