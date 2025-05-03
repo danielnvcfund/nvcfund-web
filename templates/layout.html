@@ -401,6 +401,40 @@
                     </li>
                     {% endif %}
 
+                    <!-- KTT Telex integration dropdown -->
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if '/telex/' in request.path %}active fw-bold{% endif %}" href="#" id="telexDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-fax me-1"></i> KTT Telex
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-animated" aria-labelledby="telexDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('telex.dashboard') }}">
+                                    <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('telex.send_message') }}">
+                                    <i class="fas fa-paper-plane me-1"></i> Send Message
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('telex.message_list') }}">
+                                    <i class="fas fa-list me-1"></i> Message List
+                                </a>
+                            </li>
+                            {% if current_user.role.value == 'ADMIN' or current_user.role == 'ADMIN' %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('telex.settings') }}">
+                                    <i class="fas fa-cogs me-1"></i> Telex Settings
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    {% endif %}
+
                     <!-- Off-Ledger Transactions dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if '/rtgs/' in request.path or '/s2s/' in request.path %}active fw-bold{% endif %}" href="#" id="offLedgerDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
