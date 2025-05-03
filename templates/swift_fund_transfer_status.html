@@ -102,6 +102,60 @@
             </div>
           </div>
           
+          <!-- Receiving Bank Details Section -->
+          {% if swift_data.get('receiving_bank') %}
+          <div class="card mb-3">
+            <div class="card-header bg-light">
+              <h6 class="mb-0">Receiving Bank Details</h6>
+            </div>
+            <div class="card-body">
+              <table class="table table-striped">
+                <tbody>
+                  <tr>
+                    <th style="width: 200px;">Bank Name:</th>
+                    <td>{{ swift_data.get('receiving_bank', {}).get('name', 'Not specified') }}</td>
+                  </tr>
+                  <tr>
+                    <th>Bank Address:</th>
+                    <td>{{ swift_data.get('receiving_bank', {}).get('address', 'Not specified') }}</td>
+                  </tr>
+                  <tr>
+                    <th>SWIFT/BIC Code:</th>
+                    <td>{{ swift_data.get('receiving_bank', {}).get('swift', 'Not specified') }}</td>
+                  </tr>
+                  <tr>
+                    <th>Routing Number/ABA:</th>
+                    <td>{{ swift_data.get('receiving_bank', {}).get('routing', 'Not specified') }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {% endif %}
+          
+          <!-- Account Holder Details Section -->
+          {% if swift_data.get('account_holder') %}
+          <div class="card mb-3">
+            <div class="card-header bg-light">
+              <h6 class="mb-0">Account Holder Details</h6>
+            </div>
+            <div class="card-body">
+              <table class="table table-striped">
+                <tbody>
+                  <tr>
+                    <th style="width: 200px;">Account Holder Name:</th>
+                    <td>{{ swift_data.get('account_holder', {}).get('name', 'Not specified') }}</td>
+                  </tr>
+                  <tr>
+                    <th>Account Number/IBAN:</th>
+                    <td>{{ swift_data.get('account_holder', {}).get('account_number', 'Not specified') }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {% endif %}
+          
           <!-- Correspondent/Intermediary Banks Section -->
           {% if swift_data.get('correspondent_bank') or swift_data.get('intermediary_bank') %}
           <div class="card mb-3">
