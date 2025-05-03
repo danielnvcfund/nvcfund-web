@@ -14,7 +14,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // Get analytics data from the page - can be used by any function
 function getAnalyticsData() {
     try {
-        // First try the analytics-data element
+        // First check if the data is available in the global window object
+        // This is set in the template for more reliable access
+        if (window.dashboardAnalytics) {
+            console.log('Using pre-parsed analytics data from window object');
+            return window.dashboardAnalytics;
+        }
+        
+        // Then try the analytics-data element
         const analyticsElement = document.getElementById('analytics-data');
         
         if (analyticsElement && analyticsElement.dataset && analyticsElement.dataset.analytics) {
@@ -27,7 +34,12 @@ function getAnalyticsData() {
                         analyticsElement.dataset.analytics.substring(0, 5));
                 }
                 
-                return JSON.parse(analyticsElement.dataset.analytics);
+                const parsedData = JSON.parse(analyticsElement.dataset.analytics);
+                
+                // Cache the result in the window object for future use
+                window.dashboardAnalytics = parsedData;
+                
+                return parsedData;
             } catch (e) {
                 console.error('Error parsing analytics data JSON:', e);
                 console.log('Raw analytics data sample:', analyticsElement.dataset.analytics.substring(0, 100));
@@ -46,15 +58,55 @@ function getAnalyticsData() {
             const chartEl = document.getElementById(chartId);
             if (chartEl && chartEl.dataset && chartEl.dataset.transactions) {
                 try {
-                    return JSON.parse(chartEl.dataset.transactions);
+                    const chartData = JSON.parse(chartEl.dataset.transactions);
+                    window.dashboardAnalytics = chartData; // Cache for future use
+                    return chartData;
                 } catch (e) {
                     console.error(`Error parsing data from ${chartId}:`, e);
                 }
             }
         }
         
-        // If all else fails, create a default structure
+        // Check for analytics data element again, but this time try to extract the innerHTML
+        // This is a last resort method
+        if (analyticsElement) {
+            try {
+                const innerText = analyticsElement.textContent || analyticsElement.innerText;
+                if (innerText && innerText.trim().startsWith('{')) {
+                    console.log('Trying to parse analytics from element inner text');
+                    const parsedData = JSON.parse(innerText.trim());
+                    window.dashboardAnalytics = parsedData; // Cache for future use
+                    return parsedData;
+                }
+            } catch (e) {
+                console.error('Error parsing analytics from inner text:', e);
+            }
+        }
+        
+        // If we get here, we'll create an empty structure
         console.warn('No valid analytics data found - using empty structure');
+        
+        // Create an empty structure that matches what the charts expect
+        const defaultData = {
+            days: 30,
+            start_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            end_date: new Date().toISOString().split('T')[0],
+            total_transactions: 0,
+            total_amount: 0.0,
+            by_type: {},
+            by_status: {},
+            by_date: {},
+            raw_data: []
+        };
+        
+        // Cache in window for consistency
+        window.dashboardAnalytics = defaultData;
+        
+        return defaultData;
+    } catch (e) {
+        console.error('Error in getAnalyticsData:', e);
+        
+        // Always return a valid data structure even if there's an error
         return {
             days: 30,
             start_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -66,9 +118,6 @@ function getAnalyticsData() {
             by_date: {},
             raw_data: []
         };
-    } catch (e) {
-        console.error('Error in getAnalyticsData:', e);
-        return null;
     }
 }
 

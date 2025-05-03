@@ -36,7 +36,7 @@
 
     <!-- Analytics Data (Hidden) -->
     <div id="analytics-data" class="d-none" 
-         data-analytics="{{ analytics_json|safe }}" 
+         data-analytics='{{ analytics_json|safe }}' 
          data-jwt-token="{{ jwt_token }}"
          data-ethereum-address="{{ user.ethereum_address if user.ethereum_address else '' }}">
     </div>
@@ -47,6 +47,10 @@
         console.log("Dashboard template loading. Analytics data length:", 
                     "{{ analytics_json|length }}", 
                     "JWT token length:", "{{ jwt_token|length if jwt_token else 0 }}");
+        
+        // Store the analytics data directly in a JavaScript variable
+        window.dashboardAnalytics = JSON.parse('{{ analytics_json|safe }}');
+        console.log("Analytics data parsed:", window.dashboardAnalytics);
     </script>
     
     <!-- Developer Tools Panel - Only visible to users with Developer role -->
