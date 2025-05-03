@@ -198,12 +198,39 @@ class PaymentGatewayType(enum.Enum):
     """
     STRIPE = "stripe"
     PAYPAL = "paypal"
-    SQUARE = "square"
-    COINBASE = "coinbase"
-    XRP_LEDGER = "xrp_ledger"
+    # Adding additional gateway types as needed
+    # Commented out gateway types that aren't in the current database enum
+    # SQUARE = "square"
+    # COINBASE = "coinbase"
+    # XRP_LEDGER = "xrp_ledger"
     # Very important: Using lowercase 'nvc_global' to match the database enum value exactly
     NVC_GLOBAL = "nvc_global"
-    CUSTOM = "custom"
+    # CUSTOM = "custom"
+    
+class TelexMessageStatus(enum.Enum):
+    """Telex message status"""
+    DRAFT = "DRAFT"
+    SENT = "SENT"
+    RECEIVED = "RECEIVED"
+    PROCESSED = "PROCESSED"
+    FAILED = "FAILED"
+    
+class TelexMessage(db.Model):
+    """Model for KTT Telex messages"""
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.String(64), unique=True, nullable=False)
+    sender_reference = db.Column(db.String(64), index=True)
+    recipient_bic = db.Column(db.String(11), index=True)  # BIC/SWIFT code
+    message_type = db.Column(db.String(10), nullable=False)  # FT, FTC, PO, etc.
+    message_content = db.Column(db.Text, nullable=False)  # JSON content
+    priority = db.Column(db.String(10), default="NORMAL")  # HIGH, NORMAL, LOW
+    transaction_id = db.Column(db.String(64), db.ForeignKey('transaction.transaction_id'), nullable=True)
+    status = db.Column(db.Enum(TelexMessageStatus), default=TelexMessageStatus.DRAFT)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship with transactions
+    transaction = db.relationship('Transaction', backref=db.backref('telex_messages', lazy=True))
 
     @classmethod
     def from_string(cls, value: str):
