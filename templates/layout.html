@@ -800,54 +800,68 @@
     </nav>
 
     {% if current_user.is_authenticated %}
-    <!-- Quick Access Bar -->
-    <div class="bg-dark py-2 mb-3" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+    <!-- Enhanced Premium Quick Access Bar -->
+    <div class="quick-access-bar py-3 mb-3">
         <div class="container d-flex flex-wrap justify-content-center">
-            <!-- Common Quick Links -->
-            <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-sm btn-outline-light mx-1 mb-1">
-                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
-            </a>
-            <a href="{{ url_for('web.main.transactions') }}" class="btn btn-sm btn-outline-light mx-1 mb-1">
-                <i class="fas fa-list me-1"></i> Transactions
-            </a>
+            <!-- Core Navigation Group -->
+            <div class="btn-group me-3 mb-2" role="group" aria-label="Core Navigation">
+                <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-premium">
+                    <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                </a>
+                <a href="{{ url_for('web.main.transactions') }}" class="btn btn-premium">
+                    <i class="fas fa-list me-1"></i> Transactions
+                </a>
+            </div>
             
-            <!-- Banking Links -->
-            <a href="{{ url_for('web.swift.swift_messages') }}" class="btn btn-sm btn-outline-light mx-1 mb-1">
-                <i class="fas fa-university me-1"></i> SWIFT Banking
-            </a>
-            <a href="{{ url_for('web.swift.new_fund_transfer') }}" class="btn btn-sm btn-outline-light mx-1 mb-1">
-                <i class="fas fa-money-bill-wave me-1"></i> New Fund Transfer
-            </a>
-            <a href="{{ url_for('web.swift.new_free_format_message') }}" class="btn btn-sm btn-outline-light mx-1 mb-1">
-                <i class="fas fa-envelope me-1"></i> New SWIFT Message
-            </a>
+            <span class="section-divider d-none d-md-inline-block my-2"></span>
             
-            <!-- ACH Links -->
-            <a href="{{ url_for('web.ach.new_ach_transfer') }}" class="btn btn-sm btn-outline-light mx-1 mb-1">
-                <i class="fas fa-money-check me-1"></i> New ACH Transfer
-            </a>
+            <!-- SWIFT Banking Group -->
+            <div class="btn-group me-2 mb-2" role="group" aria-label="SWIFT Banking">
+                <a href="{{ url_for('web.swift.swift_messages') }}" class="btn btn-outline-light">
+                    <i class="fas fa-university me-1"></i> SWIFT Banking
+                </a>
+                <a href="{{ url_for('web.swift.new_fund_transfer') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-money-bill-wave me-1"></i> New Fund Transfer
+                </a>
+                <a href="{{ url_for('web.swift.new_free_format_message') }}" class="btn btn-outline-light">
+                    <i class="fas fa-envelope me-1"></i> New SWIFT Message
+                </a>
+            </div>
             
-            <!-- Treasury Link (visible to all) -->
-            <a href="{{ url_for('treasury.dashboard') }}" class="btn btn-sm btn-outline-warning mx-1 mb-1">
-                <i class="fas fa-university me-1"></i> Treasury
-            </a>
+            <!-- ACH Transfers Group -->
+            <div class="btn-group me-2 mb-2" role="group" aria-label="ACH Transfers">
+                <a href="{{ url_for('web.ach.new_ach_transfer') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-money-check me-1"></i> New ACH Transfer
+                </a>
+            </div>
             
-            <!-- Resources Link (visible to all) -->
-            <a href="{{ url_for('documentation.documentation_index') }}" class="btn btn-sm btn-outline-info mx-1 mb-1">
-                <i class="fas fa-book me-1"></i> Resources
-            </a>
+            <span class="section-divider d-none d-md-inline-block my-2"></span>
+            
+            <!-- Treasury & Resources Group -->
+            <div class="btn-group me-2 mb-2" role="group" aria-label="Resources">
+                <a href="{{ url_for('treasury.dashboard') }}" class="btn btn-gold">
+                    <i class="fas fa-university me-1"></i> Treasury
+                </a>
+                <a href="{{ url_for('documentation.documentation_index') }}" class="btn btn-outline-info">
+                    <i class="fas fa-book me-1"></i> Resources
+                </a>
+            </div>
             
             <!-- Admin Quick Links (only visible to admins) -->
             {% if current_user.is_authenticated and (current_user.username in ['admin', 'headadmin'] or current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' or current_user.role.name == 'ADMIN') %}
-            <a href="{{ url_for('web.main.admin_dashboard') }}" class="btn btn-sm btn-danger mx-1 mb-1">
-                <i class="fas fa-user-shield me-1"></i> Admin
-            </a>
-            <a href="{{ url_for('transaction_admin.admin_transactions') }}" class="btn btn-sm btn-primary mx-1 mb-1">
-                <i class="fas fa-tasks me-1"></i> Transaction Management
-            </a>
-            <a href="/admin-tools/financial-institutions" class="btn btn-sm btn-outline-info mx-1 mb-1">
-                <i class="fas fa-university me-1"></i> Manage Institutions
-            </a>
+            <span class="section-divider d-none d-md-inline-block my-2"></span>
+            
+            <div class="btn-group mb-2" role="group" aria-label="Admin Controls">
+                <a href="{{ url_for('web.main.admin_dashboard') }}" class="btn btn-danger">
+                    <i class="fas fa-user-shield me-1"></i> Admin
+                </a>
+                <a href="{{ url_for('transaction_admin.admin_transactions') }}" class="btn btn-primary">
+                    <i class="fas fa-tasks me-1"></i> Transaction Management
+                </a>
+                <a href="/admin-tools/financial-institutions" class="btn btn-outline-info">
+                    <i class="fas fa-university me-1"></i> Manage Institutions
+                </a>
+            </div>
             {% endif %}
         </div>
     </div>
