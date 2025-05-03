@@ -699,6 +699,26 @@
 .analytics-panel .chart-summary span {
     font-weight: 500;
 }
+
+/* Chart.js global styling - will apply to all charts */
+.chart-container canvas {
+    --chart-text-color: #f8f9fa;
+    --chart-grid-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Brighter chart legend text */
+.chart-js-legend text {
+    fill: #f8f9fa !important;
+}
+
+/* Ensure summary info is visible */
+.chart-container .mt-3 {
+    color: #f8f9fa !important;
+}
+
+.chart-container .mt-3 strong {
+    color: #fff !important;
+}
 </style>
 {% endblock %}
 

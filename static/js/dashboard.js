@@ -393,7 +393,7 @@ function initTransactionsByDateChart(canvas, data) {
                         display: false
                     },
                     ticks: {
-                        color: '#6c757d'
+                        color: '#f8f9fa'
                     }
                 },
                 y: {
@@ -403,10 +403,10 @@ function initTransactionsByDateChart(canvas, data) {
                     title: {
                         display: true,
                         text: 'Count',
-                        color: 'rgba(0, 123, 255, 1)'
+                        color: '#f8f9fa'
                     },
                     ticks: {
-                        color: '#6c757d'
+                        color: '#f8f9fa'
                     },
                     grid: {
                         color: 'rgba(0, 0, 0, 0.05)'
@@ -422,10 +422,10 @@ function initTransactionsByDateChart(canvas, data) {
                     title: {
                         display: true,
                         text: 'Amount ($)',
-                        color: 'rgba(40, 167, 69, 1)'
+                        color: '#f8f9fa'
                     },
                     ticks: {
-                        color: '#6c757d',
+                        color: '#f8f9fa',
                         callback: function(value) {
                             return '$' + value.toFixed(0).replace(/\d(?=(\d{3})+$)/g, '$&,');
                         }
@@ -668,7 +668,7 @@ function initTransactionsByStatusChart(canvas, data) {
                 title: {
                     display: true,
                     text: 'Transaction Status Distribution',
-                    color: '#6c757d',
+                    color: '#f8f9fa',
                     font: {
                         size: 13,
                         weight: 'normal'
