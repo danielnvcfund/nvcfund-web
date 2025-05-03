@@ -267,6 +267,12 @@ TRANSACTION_RECEIPT_TEMPLATE = """
                     <th>Bank Address</th>
                     <td class="address">{{ transaction.recipient_bank_address or "Not specified" }}</td>
                 </tr>
+                {% if transaction.recipient_bank_swift %}
+                <tr>
+                    <th>SWIFT/BIC Code</th>
+                    <td>{{ transaction.recipient_bank_swift }}</td>
+                </tr>
+                {% endif %}
                 <tr>
                     <th>Routing Number</th>
                     <td>{{ transaction.recipient_routing_number or transaction.routing_number or "Not specified" }}</td>
@@ -342,6 +348,21 @@ class PDFService:
                     try:
                         tx_metadata = json.loads(transaction.tx_metadata_json)
                         transaction_dict.update(tx_metadata)
+                        
+                        # Process nested SWIFT-specific fields
+                        if 'receiving_bank' in tx_metadata:
+                            # Extract and flatten receiving bank details for the template
+                            receiving_bank = tx_metadata['receiving_bank']
+                            transaction_dict['recipient_bank_name'] = receiving_bank.get('name')
+                            transaction_dict['recipient_bank_address'] = receiving_bank.get('address')
+                            transaction_dict['recipient_bank_swift'] = receiving_bank.get('swift')
+                            transaction_dict['recipient_routing_number'] = receiving_bank.get('routing')
+                            
+                        if 'account_holder' in tx_metadata:
+                            # Extract and flatten account holder details
+                            account_holder = tx_metadata['account_holder']
+                            transaction_dict['recipient_name'] = account_holder.get('name')
+                            transaction_dict['recipient_account'] = account_holder.get('account_number')
                         
                         # Ensure bank information fields are available in the main dictionary 
                         # for easy access in the template
@@ -537,6 +558,32 @@ class PDFService:
         Returns:
             bytes: PDF document as bytes
         """
+        # Make sure we have a metadata dictionary
+        if metadata is None:
+            metadata = {}
+            
+        # Add SWIFT-specific information
+        metadata['transaction_type'] = "SWIFT Transfer"
+        
+        # Ensure the bank information will be shown
+        metadata['show_bank_info'] = True
+        
+        # Add SWIFT-specific fields if they don't exist
+        if hasattr(transaction, "tx_metadata_json") and transaction.tx_metadata_json:
+            import json
+            try:
+                tx_metadata = json.loads(transaction.tx_metadata_json)
+                
+                # Extract SWIFT BIC code if available
+                if 'receiver_bic' in tx_metadata and 'recipient_bank_swift' not in metadata:
+                    metadata['recipient_bank_swift'] = tx_metadata['receiver_bic']
+                    
+                # Extract message type
+                if 'message_type' in tx_metadata:
+                    metadata['swift_message_type'] = tx_metadata['message_type']
+            except (json.JSONDecodeError, TypeError):
+                pass
+        
         return PDFService.generate_transaction_pdf(
             transaction,
             transaction_type="SWIFT Transfer",
