@@ -91,14 +91,22 @@ def new_fund_transfer():
     # We can safely use current_user
     user_id = current_user.id
     form = SwiftFundTransferForm()
+    
+    # Get all financial institutions for the select field
+    institutions = FinancialInstitution.query.filter_by(is_active=True).all()
+    form.receiver_institution_id.choices = [(i.id, f"{i.name} ({i.swift_code})") for i in institutions]
 
     if form.validate_on_submit():
         try:
+            # Get the selected institution name
+            selected_institution = FinancialInstitution.query.get(form.receiver_institution_id.data)
+            institution_name = selected_institution.name if selected_institution else ""
+            
             # Create the fund transfer with proper handling of None values
             transaction = SwiftService.create_swift_fund_transfer(
-                user_id=user_id,  # Use the user_id from session instead of current_user
+                user_id=user_id,
                 receiver_institution_id=form.receiver_institution_id.data,
-                receiver_institution_name=form.receiver_institution_name.data or '',
+                receiver_institution_name=institution_name or form.receiver_institution_name.data or '',
                 amount=form.amount.data or 0,
                 currency=form.currency.data or 'USD',
                 ordering_customer=form.ordering_customer.data or '',
@@ -134,19 +142,28 @@ def new_fund_transfer():
 def new_mt542():
     """Create a new SWIFT MT542 Deliver Against Payment message"""
     form = SwiftMT542Form()
-
+    
+    # Get all financial institutions for the select fields
+    institutions = FinancialInstitution.query.filter_by(is_active=True).all()
+    form.delivering_agent.choices = [(i.id, f"{i.name} ({i.swift_code})") for i in institutions]
+    form.receiving_agent.choices = [(i.id, f"{i.name} ({i.swift_code})") for i in institutions]
+    
     if form.validate_on_submit():
         try:
             # Create the MT542 message
             transaction = SwiftService.create_mt542_message(
                 user_id=current_user.id,
-                receiver_institution_id=form.receiver_institution_id.data,
+                receiver_institution_id=form.delivering_agent.data,  # Using delivering_agent as receiver
                 trade_date=form.trade_date.data,
                 settlement_date=form.settlement_date.data,
-                security_details=form.security_details.data,
+                security_code=form.security_code.data,
+                security_description=form.security_description.data,
                 quantity=form.quantity.data,
                 amount=form.amount.data,
-                currency=form.currency.data
+                currency=form.currency.data,
+                safekeeping_account=form.safekeeping_account.data,
+                delivering_agent=form.delivering_agent.data,
+                receiving_agent=form.receiving_agent.data
             )
 
             flash('MT542 message created successfully', 'success')
