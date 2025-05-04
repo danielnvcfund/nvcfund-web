@@ -65,7 +65,7 @@ class SwiftMessage:
 class MT760(SwiftMessage):
     """SWIFT MT760 - Standby Letter of Credit"""
     
-    def __init__(self, user_id, institution_id, amount, currency, beneficiary, expiry_date, terms_and_conditions):
+    def __init__(self, user_id, institution_id, amount, currency, beneficiary, expiry_date, terms_and_conditions, metadata=None):
         super().__init__(user_id, institution_id)
         self.message_type = "MT760"
         self.amount = amount
@@ -73,11 +73,13 @@ class MT760(SwiftMessage):
         self.beneficiary = beneficiary
         self.expiry_date = expiry_date
         self.terms_and_conditions = terms_and_conditions
+        self.metadata = metadata
         self.reference = f"LC{uuid.uuid4().hex[:10].upper()}"
         
     def to_json(self):
         """Convert letter of credit to JSON representation"""
-        return {
+        # Start with the standard fields
+        json_data = {
             "message_type": self.message_type,
             "reference": self.reference,
             "sender_bic": self.get_sender_bic(),
@@ -86,14 +88,103 @@ class MT760(SwiftMessage):
             "issue_date": datetime.now().strftime("%Y-%m-%d"),
             "expiry_date": self.expiry_date.strftime("%Y-%m-%d") if hasattr(self.expiry_date, 'strftime') else self.expiry_date,
             "amount": self.amount,
-            "currency": self.currency,
-            "beneficiary": self.beneficiary,
-            "terms_and_conditions": self.terms_and_conditions
+            "currency": self.currency
         }
+        
+        # Handle beneficiary data - parse if it's a string
+        if isinstance(self.beneficiary, str):
+            try:
+                json_data["beneficiary"] = json.loads(self.beneficiary)
+            except json.JSONDecodeError:
+                json_data["beneficiary"] = {"full_info": self.beneficiary}
+        else:
+            json_data["beneficiary"] = self.beneficiary
+            
+        # Handle terms and conditions data - parse if it's a string
+        if isinstance(self.terms_and_conditions, str):
+            try:
+                json_data["terms_and_conditions"] = json.loads(self.terms_and_conditions)
+            except json.JSONDecodeError:
+                json_data["terms_and_conditions"] = {"full_text": self.terms_and_conditions}
+        else:
+            json_data["terms_and_conditions"] = self.terms_and_conditions
+            
+        # Add any additional metadata if provided
+        if self.metadata:
+            try:
+                # If metadata is a JSON string, parse it
+                if isinstance(self.metadata, str):
+                    metadata_dict = json.loads(self.metadata)
+                else:
+                    metadata_dict = self.metadata
+                    
+                # Add applicant information from metadata if available
+                if "applicant" in metadata_dict:
+                    json_data["applicant"] = metadata_dict["applicant"]
+                    
+                # Add advising bank information
+                if "advising_bank_id" in metadata_dict:
+                    json_data["advising_bank_id"] = metadata_dict["advising_bank_id"]
+                    
+                # Add available with information
+                if "available_with" in metadata_dict:
+                    json_data["available_with"] = metadata_dict["available_with"]
+                    
+                # Add place of expiry
+                if "expiry_place" in metadata_dict:
+                    json_data["expiry_place"] = metadata_dict["expiry_place"]
+                    
+                # Add transaction type (standby, commercial, etc.)
+                if "transaction_type" in metadata_dict:
+                    json_data["transaction_type"] = metadata_dict["transaction_type"]
+                    
+                # Add goods/services description
+                if "goods_description" in metadata_dict:
+                    json_data["goods_description"] = metadata_dict["goods_description"]
+                    
+                # Add documents required information
+                if "documents_required" in metadata_dict:
+                    json_data["documents_required"] = metadata_dict["documents_required"]
+                    
+                # Add charges information
+                if "charges" in metadata_dict:
+                    json_data["charges"] = metadata_dict["charges"]
+                    
+                # Add additional fields
+                if "transferable" in metadata_dict:
+                    json_data["transferable"] = metadata_dict["transferable"]
+                    
+                if "confirmation_instructions" in metadata_dict:
+                    json_data["confirmation_instructions"] = metadata_dict["confirmation_instructions"]
+                    
+                if "presentation_period" in metadata_dict:
+                    json_data["presentation_period"] = metadata_dict["presentation_period"]
+                    
+                # Add any other fields from metadata that don't conflict with existing fields
+                for key, value in metadata_dict.items():
+                    if key not in json_data and key not in ["message_type", "reference", "amount", "currency"]:
+                        json_data[key] = value
+                        
+            except Exception as e:
+                logger.error(f"Error processing metadata in MT760: {str(e)}")
+                
+        return json_data
         
     def generate_transaction(self):
         """Create a transaction record for this letter of credit"""
-        description = f"Standby Letter of Credit {self.reference} for {self.amount} {self.currency}"
+        # Get beneficiary name for the description
+        beneficiary_name = "Unknown Beneficiary"
+        try:
+            if isinstance(self.beneficiary, str):
+                ben_data = json.loads(self.beneficiary)
+                if "name" in ben_data:
+                    beneficiary_name = ben_data["name"]
+            elif isinstance(self.beneficiary, dict) and "name" in self.beneficiary:
+                beneficiary_name = self.beneficiary["name"]
+        except Exception:
+            pass
+            
+        description = f"Standby Letter of Credit {self.reference} for {beneficiary_name} - {self.amount} {self.currency}"
         
         # Prepare metadata
         metadata = self.to_json()
