@@ -520,29 +520,70 @@ class MT199(SwiftMessage):
 class MT799(SwiftMessage):
     """SWIFT MT799 - Free Format Message"""
     
-    def __init__(self, user_id, institution_id, subject, message_body):
+    def __init__(self, user_id, institution_id, subject, message_body, **kwargs):
         super().__init__(user_id, institution_id)
         self.message_type = "MT799"
         self.subject = subject
         self.message_body = message_body
-        self.reference = f"FM{uuid.uuid4().hex[:10].upper()}"
+        
+        # Use provided reference number or generate one
+        self.reference = kwargs.get('reference_number') or f"FM{uuid.uuid4().hex[:10].upper()}"
+        self.related_reference = kwargs.get('related_reference')
+        
+        # Beneficiary information
+        self.beneficiary_name = kwargs.get('beneficiary_name')
+        self.beneficiary_account = kwargs.get('beneficiary_account')
+        self.beneficiary_bank = kwargs.get('beneficiary_bank')
+        self.beneficiary_bank_swift = kwargs.get('beneficiary_bank_swift')
+        
+        # Processing institution
+        self.processing_institution = kwargs.get('processing_institution')
+        
+        # Custom institution details (if provided)
+        self.custom_institution_name = kwargs.get('custom_institution_name')
+        self.custom_swift_code = kwargs.get('custom_swift_code')
         
     def to_json(self):
         """Convert free format message to JSON representation"""
         institution = FinancialInstitution.query.get(self.institution_id)
-        institution_name = institution.name if institution else "Unknown Institution"
         
-        return {
+        # Use custom institution details if provided, otherwise use the db record
+        institution_name = self.custom_institution_name or (institution.name if institution else "Unknown Institution")
+        institution_swift = self.custom_swift_code or (institution.swift_code if institution else None)
+        
+        # Build the complete metadata structure
+        data = {
             "message_type": self.message_type,
             "reference": self.reference,
             "sender_bic": self.get_sender_bic(),
-            "receiver_bic": self.get_receiver_bic(),
+            "receiver_bic": institution_swift or self.get_receiver_bic(),
             "sender_institution": "NVC Global Bank",
             "receiver_institution": institution_name,
             "creation_date": datetime.now().strftime("%Y-%m-%d"),
             "subject": self.subject,
             "message_body": self.message_body
         }
+        
+        # Add beneficiary information if provided
+        if self.beneficiary_name or self.beneficiary_account or self.beneficiary_bank:
+            data["beneficiary"] = {
+                "name": self.beneficiary_name,
+                "account": self.beneficiary_account,
+                "bank": {
+                    "name": self.beneficiary_bank,
+                    "swift": self.beneficiary_bank_swift
+                }
+            }
+        
+        # Add related reference if provided
+        if self.related_reference:
+            data["related_reference"] = self.related_reference
+            
+        # Add processing institution if provided
+        if self.processing_institution:
+            data["processing_institution"] = self.processing_institution
+            
+        return data
         
     def generate_transaction(self):
         """Create a transaction record for this free format message"""
@@ -726,15 +767,29 @@ class SwiftService:
             raise
     
     @staticmethod
-    def create_free_format_message(user_id, receiver_institution_id, subject, message_body):
-        """Create a new SWIFT free format message (MT799)"""
+    def create_free_format_message(user_id, receiver_institution_id, subject, message_body, 
+                                  reference_number=None, related_reference=None, 
+                                  beneficiary_name=None, beneficiary_account=None,
+                                  beneficiary_bank=None, beneficiary_bank_swift=None,
+                                  processing_institution=None,
+                                  custom_institution_name=None, custom_swift_code=None):
+        """Create a new SWIFT free format message (MT799) with enhanced information"""
         try:
-            # Create MT799 message
+            # Create MT799 message with all available optional parameters
             mt799 = MT799(
                 user_id=user_id,
                 institution_id=receiver_institution_id,
                 subject=subject,
-                message_body=message_body
+                message_body=message_body,
+                reference_number=reference_number,
+                related_reference=related_reference,
+                beneficiary_name=beneficiary_name,
+                beneficiary_account=beneficiary_account,
+                beneficiary_bank=beneficiary_bank,
+                beneficiary_bank_swift=beneficiary_bank_swift,
+                processing_institution=processing_institution,
+                custom_institution_name=custom_institution_name,
+                custom_swift_code=custom_swift_code
             )
             
             # Generate transaction from the message
@@ -742,7 +797,7 @@ class SwiftService:
             
             # In a real system, we would send this to SWIFT network
             # For now, simulate successful submission
-            logger.info(f"Free format message created: {transaction.transaction_id}")
+            logger.info(f"Enhanced free format message created: {transaction.transaction_id}")
             
             # Clear any saved form data for this user
             SwiftService._clear_saved_form_data(user_id, "swift_free_format_form")

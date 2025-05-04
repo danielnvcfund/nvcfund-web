@@ -493,9 +493,29 @@ class ACHTransferForm(FlaskForm):
 
 class SwiftFreeFormatMessageForm(FlaskForm):
     """Form for creating a SWIFT MT799 free format message"""
+    # Receiver Institution
     receiver_institution_id = SelectField('Receiver Institution', coerce=int, validators=[DataRequired()])
+    # Specify a custom swift code if not in the dropdown
+    custom_institution_name = StringField('Custom Institution Name (Optional)', validators=[Optional(), Length(max=100)])
+    custom_swift_code = StringField('Custom SWIFT Code (Optional)', validators=[Optional(), Length(max=11)])
+    
+    # Message Details
     subject = StringField('Subject', validators=[DataRequired(), Length(max=100)])
     message_body = TextAreaField('Message Text', validators=[DataRequired()])
+    
+    # Beneficiary Information
+    beneficiary_name = StringField('Beneficiary Name', validators=[Optional(), Length(max=100)])
+    beneficiary_account = StringField('Beneficiary Account Number', validators=[Optional(), Length(max=50)])
+    beneficiary_bank = StringField('Beneficiary Bank Name', validators=[Optional(), Length(max=100)])
+    beneficiary_bank_swift = StringField('Beneficiary Bank SWIFT Code', validators=[Optional(), Length(max=11)])
+    
+    # Processing Institution Details
+    processing_institution = StringField('Processing Institution', validators=[Optional(), Length(max=100)])
+    
+    # Reference Numbers
+    reference_number = StringField('Reference Number (Optional)', validators=[Optional(), Length(max=35)])
+    related_reference = StringField('Related Reference (Optional)', validators=[Optional(), Length(max=35)])
+    
     submit = SubmitField('Send Free Format Message')
 
 class SwiftMT542Form(FlaskForm):

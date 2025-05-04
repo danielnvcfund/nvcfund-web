@@ -222,7 +222,7 @@ def new_mt542():
 @swift.route('/free_format/new', methods=['GET', 'POST'])
 @login_required
 def new_free_format_message():
-    """Create a new SWIFT MT799 free format message"""
+    """Create a new SWIFT MT799 free format message with enhanced details"""
     # Flask-Login's login_required decorator ensures the user is authenticated
     # We can safely use current_user
     user_id = current_user.id
@@ -234,12 +234,22 @@ def new_free_format_message():
     
     if form.validate_on_submit():
         try:
-            # Create the free format message
+            # Create the free format message with all optional fields
             transaction = SwiftService.create_free_format_message(
                 user_id=user_id,
                 receiver_institution_id=form.receiver_institution_id.data,
                 subject=form.subject.data,
-                message_body=form.message_body.data
+                message_body=form.message_body.data,
+                # Include all of our new optional fields
+                reference_number=form.reference_number.data if hasattr(form, 'reference_number') else None,
+                related_reference=form.related_reference.data if hasattr(form, 'related_reference') else None,
+                beneficiary_name=form.beneficiary_name.data,
+                beneficiary_account=form.beneficiary_account.data,
+                beneficiary_bank=form.beneficiary_bank.data,
+                beneficiary_bank_swift=form.beneficiary_bank_swift.data,
+                processing_institution=form.processing_institution.data,
+                custom_institution_name=form.custom_institution_name.data,
+                custom_swift_code=form.custom_swift_code.data
             )
 
             flash(f'SWIFT MT799 message sent successfully. Reference: {transaction.transaction_id}', 'success')
