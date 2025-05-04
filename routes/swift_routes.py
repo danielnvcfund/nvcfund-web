@@ -342,14 +342,15 @@ def download_swift_receipt(transaction_id):
         flash('Transaction not found.', 'danger')
         return redirect(url_for('web.main.dashboard'))
     
-    # Check if this is a SWIFT transfer
+    # Check if this is a SWIFT message (including MT799 free format messages)
     swift_transaction_types = [
         TransactionType.SWIFT_FUND_TRANSFER, 
-        TransactionType.SWIFT_INSTITUTION_TRANSFER
+        TransactionType.SWIFT_INSTITUTION_TRANSFER,
+        TransactionType.SWIFT_FREE_FORMAT
     ]
     
     if transaction.transaction_type not in swift_transaction_types:
-        flash('This transaction is not a SWIFT fund transfer.', 'warning')
+        flash('This transaction is not a SWIFT message.', 'warning')
         return redirect(url_for('web.main.transaction_details', transaction_id=transaction.transaction_id))
     
     try:
@@ -364,9 +365,14 @@ def download_swift_receipt(transaction_id):
             metadata = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
             metadata['sender_name'] = sender_name
             
-            # Add message type info to PDF
-            if transaction.transaction_type == TransactionType.SWIFT_INSTITUTION_TRANSFER:
+            # First, check if message type is already in metadata
+            if 'message_type' in metadata:
+                message_type = metadata['message_type']
+            # Otherwise, determine based on transaction type
+            elif transaction.transaction_type == TransactionType.SWIFT_INSTITUTION_TRANSFER:
                 message_type = "MT202"
+            elif transaction.transaction_type == TransactionType.SWIFT_FREE_FORMAT:
+                message_type = "MT799"
             else:
                 message_type = "MT103"
                 
@@ -382,7 +388,10 @@ def download_swift_receipt(transaction_id):
         pdf_data = pdf_service.generate_swift_transaction_pdf(transaction, metadata)
         
         # Create a response with PDF
-        filename = f"SWIFT_{message_type}_Transfer_{transaction_id}.pdf"
+        if message_type == "MT799":
+            filename = f"SWIFT_{message_type}_Message_{transaction_id}.pdf"
+        else:
+            filename = f"SWIFT_{message_type}_Transfer_{transaction_id}.pdf"
         
         response = Response(
             pdf_data,
