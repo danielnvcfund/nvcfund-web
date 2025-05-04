@@ -135,12 +135,196 @@
           
           <div class="row mt-4">
             <div class="col-12">
-              <h4 class="h5 mb-3">Terms and Conditions</h4>
-              <div class="card">
-                <div class="card-body bg-light">
-                  <pre class="mb-0" style="white-space: pre-wrap;">{{ swift_data.get('terms_and_conditions', 'No terms and conditions specified.') }}</pre>
+              <h4 class="h5 mb-3">Transaction Details</h4>
+              
+              <!-- Terms and Conditions Section -->
+              <div class="card mb-4">
+                <div class="card-header bg-light">
+                  <h5 class="card-title h6 mb-0">Terms and Conditions</h5>
+                </div>
+                <div class="card-body">
+                  <!-- Access terms from either the direct field or the nested structure -->
+                  {% set terms = swift_data.get('terms_and_conditions') %}
+                  {% if not terms and swift_data.get('terms') %}
+                    {% set terms = swift_data.get('terms') %}
+                  {% endif %}
+                  
+                  {% if terms %}
+                    {% if terms is string %}
+                      <!-- Display text if it's just a string -->
+                      <pre class="mb-0" style="white-space: pre-wrap;">{{ terms }}</pre>
+                    {% else %}
+                      <!-- Display structured data if it's an object -->
+                      <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                          {% if terms.text %}
+                          <tr>
+                            <th class="table-light" style="width: 30%">General Terms</th>
+                            <td>{{ terms.text }}</td>
+                          </tr>
+                          {% endif %}
+                          
+                          {% if terms.transaction_type %}
+                          <tr>
+                            <th class="table-light">Transaction Type</th>
+                            <td>{{ terms.transaction_type }}</td>
+                          </tr>
+                          {% endif %}
+                          
+                          {% if terms.goods_description %}
+                          <tr>
+                            <th class="table-light">Goods Description</th>
+                            <td>{{ terms.goods_description }}</td>
+                          </tr>
+                          {% endif %}
+                          
+                          {% if terms.documents_required %}
+                          <tr>
+                            <th class="table-light">Documents Required</th>
+                            <td>{{ terms.documents_required }}</td>
+                          </tr>
+                          {% endif %}
+                          
+                          {% if terms.special_conditions %}
+                          <tr>
+                            <th class="table-light">Special Conditions</th>
+                            <td>{{ terms.special_conditions }}</td>
+                          </tr>
+                          {% endif %}
+                          
+                          {% if terms.charges %}
+                          <tr>
+                            <th class="table-light">Charges</th>
+                            <td>{{ terms.charges }}</td>
+                          </tr>
+                          {% endif %}
+                          
+                          {% if terms.partial_shipments is defined %}
+                          <tr>
+                            <th class="table-light">Partial Shipments</th>
+                            <td>{{ "Allowed" if terms.partial_shipments else "Not Allowed" }}</td>
+                          </tr>
+                          {% endif %}
+                          
+                          {% if terms.transferable is defined %}
+                          <tr>
+                            <th class="table-light">Transferable</th>
+                            <td>{{ terms.transferable }}</td>
+                          </tr>
+                          {% endif %}
+                          
+                          {% if terms.confirmation_instructions %}
+                          <tr>
+                            <th class="table-light">Confirmation Instructions</th>
+                            <td>{{ terms.confirmation_instructions }}</td>
+                          </tr>
+                          {% endif %}
+                          
+                          {% if terms.presentation_period %}
+                          <tr>
+                            <th class="table-light">Presentation Period</th>
+                            <td>{{ terms.presentation_period }}</td>
+                          </tr>
+                          {% endif %}
+                          
+                          {% if terms.additional_remarks %}
+                          <tr>
+                            <th class="table-light">Additional Remarks</th>
+                            <td>{{ terms.additional_remarks }}</td>
+                          </tr>
+                          {% endif %}
+                        </table>
+                      </div>
+                    {% endif %}
+                  {% else %}
+                    <p class="text-muted">No terms and conditions specified.</p>
+                  {% endif %}
                 </div>
               </div>
+              
+              <!-- Goods and Documents Section -->
+              {% if swift_data.get('goods_and_documents') %}
+              <div class="card mb-4">
+                <div class="card-header bg-light">
+                  <h5 class="card-title h6 mb-0">Goods and Documents</h5>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                      {% if swift_data.get('goods_and_documents').get('goods_description') %}
+                      <tr>
+                        <th class="table-light" style="width: 30%">Goods Description</th>
+                        <td>{{ swift_data.get('goods_and_documents').get('goods_description') }}</td>
+                      </tr>
+                      {% endif %}
+                      
+                      {% if swift_data.get('goods_and_documents').get('documents_required') %}
+                      <tr>
+                        <th class="table-light">Documents Required</th>
+                        <td>{{ swift_data.get('goods_and_documents').get('documents_required') }}</td>
+                      </tr>
+                      {% endif %}
+                    </table>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+              
+              <!-- Additional Details Section -->
+              {% if swift_data.get('additional_details') %}
+              <div class="card">
+                <div class="card-header bg-light">
+                  <h5 class="card-title h6 mb-0">Additional Details</h5>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                      {% if swift_data.get('additional_details').get('charges') %}
+                      <tr>
+                        <th class="table-light" style="width: 30%">Charges</th>
+                        <td>{{ swift_data.get('additional_details').get('charges') }}</td>
+                      </tr>
+                      {% endif %}
+                      
+                      {% if swift_data.get('additional_details').get('transferable') %}
+                      <tr>
+                        <th class="table-light">Transferable</th>
+                        <td>{{ swift_data.get('additional_details').get('transferable') }}</td>
+                      </tr>
+                      {% endif %}
+                      
+                      {% if swift_data.get('additional_details').get('confirmation_instructions') %}
+                      <tr>
+                        <th class="table-light">Confirmation Instructions</th>
+                        <td>{{ swift_data.get('additional_details').get('confirmation_instructions') }}</td>
+                      </tr>
+                      {% endif %}
+                      
+                      {% if swift_data.get('additional_details').get('presentation_period') %}
+                      <tr>
+                        <th class="table-light">Presentation Period</th>
+                        <td>{{ swift_data.get('additional_details').get('presentation_period') }}</td>
+                      </tr>
+                      {% endif %}
+                      
+                      {% if swift_data.get('additional_details').get('partial_shipments') is defined %}
+                      <tr>
+                        <th class="table-light">Partial Shipments</th>
+                        <td>{{ "Allowed" if swift_data.get('additional_details').get('partial_shipments') else "Not Allowed" }}</td>
+                      </tr>
+                      {% endif %}
+                      
+                      {% if swift_data.get('additional_details').get('remarks') %}
+                      <tr>
+                        <th class="table-light">Remarks</th>
+                        <td>{{ swift_data.get('additional_details').get('remarks') }}</td>
+                      </tr>
+                      {% endif %}
+                    </table>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
             </div>
           </div>
           
