@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container py-4">
   <div class="row justify-content-center">
-    <div class="col-lg-10">
+    <div class="col-lg-12">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
@@ -39,97 +39,429 @@
           <form method="POST" action="{{ url_for('web.swift.new_letter_of_credit') }}" class="needs-validation" novalidate>
             {{ form.hidden_tag() }}
             
-            <div class="row mb-4">
-              <div class="col-md-6">
-                <!-- Receiving Institution -->
-                <div class="form-group mb-3">
-                  {{ form.receiver_institution_id.label(class="form-label") }}
-                  {{ form.receiver_institution_id(class="form-select") }}
-                  {% if form.receiver_institution_id.errors %}
-                    <div class="invalid-feedback d-block">
-                      {% for error in form.receiver_institution_id.errors %}
-                        {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                  <small class="form-text text-muted">{{ form.receiver_institution_id.description }}</small>
-                </div>
-                
-                <!-- Amount and Currency -->
-                <div class="form-group mb-3">
-                  {{ form.amount.label(class="form-label") }}
-                  <div class="input-group">
-                    {{ form.amount(class="form-control", placeholder="Enter amount") }}
-                    {{ form.currency(class="form-select", style="max-width: 100px;") }}
-                  </div>
-                  {% if form.amount.errors %}
-                    <div class="invalid-feedback d-block">
-                      {% for error in form.amount.errors %}
-                        {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                  {% if form.currency.errors %}
-                    <div class="invalid-feedback d-block">
-                      {% for error in form.currency.errors %}
-                        {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                </div>
-                
-                <!-- Beneficiary -->
-                <div class="form-group mb-3">
-                  {{ form.beneficiary.label(class="form-label") }}
-                  {{ form.beneficiary(class="form-control", rows=4, placeholder="Enter beneficiary name and address") }}
-                  <small class="form-text text-muted">{{ form.beneficiary.description }}</small>
-                  {% if form.beneficiary.errors %}
-                    <div class="invalid-feedback d-block">
-                      {% for error in form.beneficiary.errors %}
-                        {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                </div>
+            <!-- Bank Information Section -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h3 class="h6 mb-0">Bank Information</h3>
               </div>
-              
-              <div class="col-md-6">
-                <!-- Expiry Date -->
-                <div class="form-group mb-3">
-                  {{ form.expiry_date.label(class="form-label") }}
-                  {{ form.expiry_date(class="form-control", type="date") }}
-                  {% if form.expiry_date.errors %}
-                    <div class="invalid-feedback d-block">
-                      {% for error in form.expiry_date.errors %}
-                        {{ error }}
-                      {% endfor %}
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <!-- Issuing Bank -->
+                    <div class="form-group mb-3">
+                      {{ form.issuing_bank_id.label(class="form-label") }}
+                      {{ form.issuing_bank_id(class="form-select") }}
+                      {% if form.issuing_bank_id.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.issuing_bank_id.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                      <small class="form-text text-muted">{{ form.issuing_bank_id.description }}</small>
                     </div>
-                  {% endif %}
-                  <small class="form-text text-muted">{{ form.expiry_date.description }}</small>
-                </div>
-                
-                <!-- Terms and Conditions -->
-                <div class="form-group mb-3">
-                  {{ form.terms_and_conditions.label(class="form-label") }}
-                  {{ form.terms_and_conditions(class="form-control", rows=10, placeholder="Enter the terms and conditions for this Letter of Credit") }}
-                  <small class="form-text text-muted">{{ form.terms_and_conditions.description }}</small>
-                  {% if form.terms_and_conditions.errors %}
-                    <div class="invalid-feedback d-block">
-                      {% for error in form.terms_and_conditions.errors %}
-                        {{ error }}
-                      {% endfor %}
+                  </div>
+                  <div class="col-md-6">
+                    <!-- Advising Bank -->
+                    <div class="form-group mb-3">
+                      {{ form.advising_bank_id.label(class="form-label") }}
+                      {{ form.advising_bank_id(class="form-select") }}
+                      {% if form.advising_bank_id.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.advising_bank_id.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                      <small class="form-text text-muted">{{ form.advising_bank_id.description }}</small>
                     </div>
-                  {% endif %}
-                  <div class="mt-1 text-end">
-                    <small class="text-muted" id="char-count">
-                      <span id="current-chars">0</span>/<span id="max-chars">2000</span> characters
-                    </small>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div class="row">
+            <!-- Applicant Information Section -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h3 class="h6 mb-0">Applicant Information</h3>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <!-- Applicant Name -->
+                    <div class="form-group mb-3">
+                      {{ form.applicant_name.label(class="form-label") }}
+                      {{ form.applicant_name(class="form-control", placeholder="Full legal name of applicant") }}
+                      <small class="form-text text-muted">{{ form.applicant_name.description }}</small>
+                      {% if form.applicant_name.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.applicant_name.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <!-- Applicant Reference -->
+                    <div class="form-group mb-3">
+                      {{ form.applicant_reference.label(class="form-label") }}
+                      {{ form.applicant_reference(class="form-control", placeholder="Your reference number (optional)") }}
+                      <small class="form-text text-muted">{{ form.applicant_reference.description }}</small>
+                      {% if form.applicant_reference.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.applicant_reference.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <!-- Applicant Address -->
+                    <div class="form-group mb-3">
+                      {{ form.applicant_address.label(class="form-label") }}
+                      {{ form.applicant_address(class="form-control", rows=3, placeholder="Complete address of the applicant") }}
+                      <small class="form-text text-muted">{{ form.applicant_address.description }}</small>
+                      {% if form.applicant_address.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.applicant_address.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Beneficiary Information Section -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h3 class="h6 mb-0">Beneficiary Information</h3>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <!-- Beneficiary Name -->
+                    <div class="form-group mb-3">
+                      {{ form.beneficiary_name.label(class="form-label") }}
+                      {{ form.beneficiary_name(class="form-control", placeholder="Full legal name of beneficiary") }}
+                      <small class="form-text text-muted">{{ form.beneficiary_name.description }}</small>
+                      {% if form.beneficiary_name.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.beneficiary_name.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <!-- Beneficiary Account/IBAN -->
+                    <div class="form-group mb-3">
+                      {{ form.beneficiary_account.label(class="form-label") }}
+                      {{ form.beneficiary_account(class="form-control", placeholder="Account number or IBAN of beneficiary") }}
+                      <small class="form-text text-muted">{{ form.beneficiary_account.description }}</small>
+                      {% if form.beneficiary_account.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.beneficiary_account.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <!-- Beneficiary Address -->
+                    <div class="form-group mb-3">
+                      {{ form.beneficiary_address.label(class="form-label") }}
+                      {{ form.beneficiary_address(class="form-control", rows=3, placeholder="Complete address of the beneficiary") }}
+                      <small class="form-text text-muted">{{ form.beneficiary_address.description }}</small>
+                      {% if form.beneficiary_address.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.beneficiary_address.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <!-- Beneficiary Bank -->
+                    <div class="form-group mb-3">
+                      {{ form.beneficiary_bank.label(class="form-label") }}
+                      {{ form.beneficiary_bank(class="form-control", placeholder="Name of beneficiary's bank") }}
+                      <small class="form-text text-muted">{{ form.beneficiary_bank.description }}</small>
+                      {% if form.beneficiary_bank.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.beneficiary_bank.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <!-- Beneficiary Bank SWIFT -->
+                    <div class="form-group mb-3">
+                      {{ form.beneficiary_bank_swift.label(class="form-label") }}
+                      {{ form.beneficiary_bank_swift(class="form-control", placeholder="SWIFT/BIC code of beneficiary's bank") }}
+                      <small class="form-text text-muted">{{ form.beneficiary_bank_swift.description }}</small>
+                      {% if form.beneficiary_bank_swift.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.beneficiary_bank_swift.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Letter of Credit Terms Section -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h3 class="h6 mb-0">Letter of Credit Terms</h3>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-4">
+                    <!-- Amount and Currency -->
+                    <div class="form-group mb-3">
+                      {{ form.amount.label(class="form-label") }}
+                      <div class="input-group">
+                        {{ form.amount(class="form-control", placeholder="Enter amount") }}
+                        {{ form.currency(class="form-select", style="max-width: 100px;") }}
+                      </div>
+                      {% if form.amount.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.amount.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                      {% if form.currency.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.currency.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <!-- Transaction Type -->
+                    <div class="form-group mb-3">
+                      {{ form.transaction_type.label(class="form-label") }}
+                      {{ form.transaction_type(class="form-select") }}
+                      <small class="form-text text-muted">{{ form.transaction_type.description }}</small>
+                      {% if form.transaction_type.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.transaction_type.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <!-- Available With -->
+                    <div class="form-group mb-3">
+                      {{ form.available_with.label(class="form-label") }}
+                      {{ form.available_with(class="form-select") }}
+                      <small class="form-text text-muted">{{ form.available_with.description }}</small>
+                      {% if form.available_with.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.available_with.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-4">
+                    <!-- Issue Date -->
+                    <div class="form-group mb-3">
+                      {{ form.issue_date.label(class="form-label") }}
+                      {{ form.issue_date(class="form-control", type="date") }}
+                      <small class="form-text text-muted">{{ form.issue_date.description }}</small>
+                      {% if form.issue_date.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.issue_date.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <!-- Expiry Date -->
+                    <div class="form-group mb-3">
+                      {{ form.expiry_date.label(class="form-label") }}
+                      {{ form.expiry_date(class="form-control", type="date") }}
+                      <small class="form-text text-muted">{{ form.expiry_date.description }}</small>
+                      {% if form.expiry_date.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.expiry_date.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <!-- Place of Expiry -->
+                    <div class="form-group mb-3">
+                      {{ form.expiry_place.label(class="form-label") }}
+                      {{ form.expiry_place(class="form-control", placeholder="Location where L/C expires") }}
+                      <small class="form-text text-muted">{{ form.expiry_place.description }}</small>
+                      {% if form.expiry_place.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.expiry_place.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Goods and Documents Section -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h3 class="h6 mb-0">Goods/Services and Documentation</h3>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-12">
+                    <!-- Goods Description -->
+                    <div class="form-group mb-3">
+                      {{ form.goods_description.label(class="form-label") }}
+                      {{ form.goods_description(class="form-control", rows=3, placeholder="Detailed description of goods or services covered") }}
+                      <small class="form-text text-muted">{{ form.goods_description.description }}</small>
+                      {% if form.goods_description.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.goods_description.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <!-- Documents Required -->
+                    <div class="form-group mb-3">
+                      {{ form.documents_required.label(class="form-label") }}
+                      {{ form.documents_required(class="form-control", rows=3, placeholder="List of required documents (e.g., commercial invoice, packing list, etc.)") }}
+                      <small class="form-text text-muted">{{ form.documents_required.description }}</small>
+                      {% if form.documents_required.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.documents_required.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Additional Terms & Special Conditions -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h3 class="h6 mb-0">Terms and Special Conditions</h3>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-12">
+                    <!-- Terms and Conditions -->
+                    <div class="form-group mb-3">
+                      {{ form.terms_and_conditions.label(class="form-label") }}
+                      {{ form.terms_and_conditions(class="form-control", rows=5, placeholder="Enter the terms and conditions for this Letter of Credit") }}
+                      <small class="form-text text-muted">{{ form.terms_and_conditions.description }}</small>
+                      {% if form.terms_and_conditions.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.terms_and_conditions.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                      <div class="mt-1 text-end">
+                        <small class="text-muted" id="char-count">
+                          <span id="current-chars">0</span>/<span id="max-chars">2000</span> characters
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row">
+                  <div class="col-md-6">
+                    <!-- Additional Instructions -->
+                    <div class="form-group mb-3">
+                      {{ form.additional_instructions.label(class="form-label") }}
+                      {{ form.additional_instructions(class="form-control", rows=3, placeholder="Any special instructions for handling") }}
+                      <small class="form-text text-muted">{{ form.additional_instructions.description }}</small>
+                      {% if form.additional_instructions.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.additional_instructions.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <!-- Charges -->
+                    <div class="form-group mb-3">
+                      {{ form.charges.label(class="form-label") }}
+                      {{ form.charges(class="form-select") }}
+                      <small class="form-text text-muted">{{ form.charges.description }}</small>
+                      {% if form.charges.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.charges.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                    
+                    <!-- Transferable -->
+                    <div class="form-check mb-3">
+                      {{ form.transferable(class="form-check-input") }}
+                      {{ form.transferable.label(class="form-check-label") }}
+                      <div class="form-text text-muted mt-0">{{ form.transferable.description }}</div>
+                      {% if form.transferable.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.transferable.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row mb-4">
               <div class="col-md-6">
                 <div class="alert alert-warning">
                   <strong>Important:</strong> Once submitted, a Letter of Credit cannot be easily modified. Please ensure all information is correct before submitting.
