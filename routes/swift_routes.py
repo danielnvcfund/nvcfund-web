@@ -32,21 +32,67 @@ def new_letter_of_credit():
     user_id = current_user.id
     form = LetterOfCreditForm()
     
-    # Get all financial institutions for the select field
+    # Get all financial institutions for the select fields
     institutions = FinancialInstitution.query.filter_by(is_active=True).all()
-    form.receiver_institution_id.choices = [(i.id, f"{i.name} ({i.swift_code})") for i in institutions]
+    form.issuing_bank_id.choices = [(i.id, f"{i.name} ({i.swift_code})") for i in institutions]
+    form.advising_bank_id.choices = [(i.id, f"{i.name} ({i.swift_code})") for i in institutions]
     
     if form.validate_on_submit():
         try:
-            # Create the letter of credit
+            # Construct a complete beneficiary object from submitted components
+            beneficiary = {
+                "name": form.beneficiary_name.data,
+                "address": form.beneficiary_address.data,
+                "account": form.beneficiary_account.data,
+                "bank": {
+                    "name": form.beneficiary_bank.data,
+                    "swift": form.beneficiary_bank_swift.data
+                }
+            }
+            
+            # Construct a comprehensive terms and conditions object
+            terms_and_conditions = {
+                "transaction_type": form.transaction_type.data,
+                "goods_description": form.goods_description.data,
+                "documents_required": form.documents_required.data,
+                "special_conditions": form.special_conditions.data,
+                "charges": form.charges.data,
+                "partial_shipments": form.partial_shipments.data,
+                "transferable": form.transferable.data,
+                "confirmation_instructions": form.confirmation_instructions.data,
+                "presentation_period": form.presentation_period.data,
+                "additional_remarks": form.remarks.data
+            }
+            
+            # Add applicant information
+            applicant = {
+                "name": form.applicant_name.data,
+                "address": form.applicant_address.data,
+                "reference": form.applicant_reference.data
+            }
+            
+            # Create metadata for the transaction
+            metadata = {
+                "message_type": "MT760",
+                "beneficiary": beneficiary,
+                "applicant": applicant,
+                "available_with": form.available_with.data,
+                "issue_date": form.issue_date.data.isoformat() if form.issue_date.data else None,
+                "expiry_place": form.expiry_place.data,
+                "terms": terms_and_conditions
+            }
+            
+            # Create the letter of credit with the comprehensive data
+            # Note: Using advising_bank_id as the receiver_institution_id
             transaction = SwiftService.create_letter_of_credit(
                 user_id=user_id,
-                receiver_institution_id=form.receiver_institution_id.data,
+                receiver_institution_id=form.advising_bank_id.data,
                 amount=form.amount.data,
                 currency=form.currency.data,
-                beneficiary=form.beneficiary.data,
+                beneficiary=json.dumps(beneficiary),
                 expiry_date=form.expiry_date.data,
-                terms_and_conditions=form.terms_and_conditions.data
+                terms_and_conditions=json.dumps(terms_and_conditions),
+                metadata=json.dumps(metadata)
             )
 
             flash(f'Standby Letter of Credit created successfully. Reference: {transaction.transaction_id}', 'success')

@@ -230,25 +230,108 @@ class BankTransferForm(FlaskForm):
 
 class LetterOfCreditForm(FlaskForm):
     """Form for creating a standby letter of credit via SWIFT MT760"""
-    # Institution Information
-    receiver_institution_id = SelectField('Receiving Institution', coerce=int, validators=[DataRequired()],
-                                         description="The financial institution that will issue the Letter of Credit")
+    # Issuing Bank Information
+    issuing_bank_id = SelectField('Issuing Bank', coerce=int, validators=[DataRequired()],
+                                 description="The financial institution that will issue the Letter of Credit")
     
-    # Date Information
-    expiry_date = DateField('Expiry Date', validators=[DataRequired()],
-                           description="The date until which the Letter of Credit is valid")
+    # Advising Bank Information
+    advising_bank_id = SelectField('Advising Bank', coerce=int, validators=[DataRequired()],
+                                  description="The bank that will advise the beneficiary of the Letter of Credit")
     
-    # Financial Information
-    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
-    currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
+    # Application Information
+    applicant_name = StringField('Applicant Name', validators=[DataRequired(), Length(max=100)],
+                                description="Full legal name of the party requesting the Letter of Credit")
+    applicant_address = TextAreaField('Applicant Address', validators=[DataRequired()],
+                                     description="Complete address of the applicant")
+    applicant_reference = StringField('Applicant Reference', validators=[Optional(), Length(max=35)],
+                                     description="Your reference number for this transaction")
     
     # Beneficiary Information
-    beneficiary = TextAreaField('Beneficiary', validators=[DataRequired()], 
-                               description="Full name and address of the beneficiary")
+    beneficiary_name = StringField('Beneficiary Name', validators=[DataRequired(), Length(max=100)],
+                                  description="Full legal name of the party receiving the Letter of Credit")
+    beneficiary_address = TextAreaField('Beneficiary Address', validators=[DataRequired()],
+                                       description="Complete address of the beneficiary")
+    beneficiary_account = StringField('Beneficiary Account/IBAN', validators=[Optional(), Length(max=34)],
+                                     description="Account number or IBAN of the beneficiary")
+    beneficiary_bank = StringField('Beneficiary Bank', validators=[Optional(), Length(max=100)],
+                                  description="Name of the beneficiary's bank")
+    beneficiary_bank_swift = StringField('Beneficiary Bank SWIFT', validators=[Optional(), Length(min=8, max=11)],
+                                        description="SWIFT/BIC code of the beneficiary's bank")
+    
+    # Financial Information
+    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)],
+                       description="Monetary value of the Letter of Credit")
+    currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()],
+                          description="Currency of the Letter of Credit")
+    available_with = SelectField('Available With', choices=[
+        ('issuing', 'Issuing Bank'),
+        ('advising', 'Advising Bank'),
+        ('any', 'Any Bank')
+    ], validators=[DataRequired()],
+    description="Where the Letter of Credit can be negotiated")
+    
+    # Date Information
+    issue_date = DateField('Issue Date', validators=[Optional()],
+                          description="Date when the Letter of Credit is issued")
+    expiry_date = DateField('Expiry Date', validators=[DataRequired()],
+                           description="The date until which the Letter of Credit is valid")
+    expiry_place = StringField('Place of Expiry', validators=[Optional(), Length(max=100)],
+                              description="Location where the Letter of Credit expires")
+    
+    # Transaction Information
+    transaction_type = SelectField('Transaction Type', choices=[
+        ('standby', 'Standby Letter of Credit'),
+        ('commercial', 'Commercial Letter of Credit'),
+        ('performance', 'Performance Guarantee'),
+        ('advance_payment', 'Advance Payment Guarantee'),
+        ('bid_bond', 'Bid Bond')
+    ], validators=[DataRequired()],
+    description="Type of Letter of Credit or guarantee")
+    
+    # Goods/Services Information
+    goods_description = TextAreaField('Goods/Services Description', validators=[DataRequired()],
+                                     description="Description of the goods or services covered by this Letter of Credit")
+    
+    # Documents Required
+    documents_required = TextAreaField('Documents Required', validators=[Optional()],
+                                      description="List of documents that must be presented for payment")
     
     # Terms and Conditions
-    terms_and_conditions = TextAreaField('Terms and Conditions', validators=[DataRequired()],
-                                        description="Detailed terms and conditions of the Letter of Credit")
+    special_conditions = TextAreaField('Special Terms and Conditions', validators=[Optional()],
+                                      description="Any special terms or conditions beyond standard boilerplate")
+    
+    # Additional Fields
+    charges = SelectField('Bank Charges', choices=[
+        ('applicant', 'All charges for Applicant account'),
+        ('beneficiary', 'All charges for Beneficiary account'),
+        ('shared', 'Charges shared between parties')
+    ], validators=[Optional()],
+    description="Who will pay the bank charges")
+    
+    partial_shipments = SelectField('Partial Shipments', choices=[
+        ('allowed', 'Allowed'),
+        ('not_allowed', 'Not Allowed')
+    ], validators=[Optional()],
+    description="Whether partial shipments are permitted")
+    
+    transferable = SelectField('Transferable', choices=[
+        ('yes', 'Yes'),
+        ('no', 'No')
+    ], default='no', validators=[Optional()],
+    description="Whether this Letter of Credit can be transferred to another beneficiary")
+    
+    confirmation_instructions = SelectField('Confirmation Instructions', choices=[
+        ('confirm', 'Confirm'),
+        ('may_add', 'May Add'),
+        ('without', 'Without')
+    ], validators=[Optional()],
+    description="Instructions regarding confirmation of the Letter of Credit")
+    
+    presentation_period = StringField('Presentation Period', validators=[Optional(), Length(max=50)],
+                                     description="Period after shipment within which documents must be presented")
+    
+    remarks = TextAreaField('Additional Remarks', validators=[Optional()],
+                           description="Any additional information relevant to this Letter of Credit")
     
     submit = SubmitField('Issue Letter of Credit')
 

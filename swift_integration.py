@@ -515,10 +515,11 @@ class SwiftService:
         return institutions
     
     @staticmethod
-    def create_letter_of_credit(user_id, receiver_institution_id, amount, currency, beneficiary, expiry_date, terms_and_conditions):
+    def create_letter_of_credit(user_id, receiver_institution_id, amount, currency, beneficiary, expiry_date, 
+                               terms_and_conditions, metadata=None):
         """Create a new Standby Letter of Credit (MT760)"""
         try:
-            # Create MT760 message
+            # Create MT760 message with enhanced fields
             mt760 = MT760(
                 user_id=user_id,
                 institution_id=receiver_institution_id,
@@ -526,7 +527,8 @@ class SwiftService:
                 currency=currency,
                 beneficiary=beneficiary,
                 expiry_date=expiry_date,
-                terms_and_conditions=terms_and_conditions
+                terms_and_conditions=terms_and_conditions,
+                metadata=metadata
             )
             
             # Generate transaction from the message
