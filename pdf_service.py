@@ -588,6 +588,28 @@ class PDFService:
                 # Extract message type
                 if 'message_type' in tx_metadata:
                     metadata['swift_message_type'] = tx_metadata['message_type']
+                    
+                # Add beneficiary information if it exists
+                if 'beneficiary' in tx_metadata:
+                    beneficiary = tx_metadata['beneficiary']
+                    if 'name' in beneficiary and beneficiary['name']:
+                        metadata['recipient_name'] = beneficiary['name']
+                    if 'account' in beneficiary and beneficiary['account']:
+                        metadata['recipient_account'] = beneficiary['account']
+                    if 'bank' in beneficiary:
+                        bank = beneficiary['bank']
+                        if 'name' in bank and bank['name']:
+                            metadata['recipient_bank_name'] = bank['name']
+                        if 'swift' in bank and bank['swift']:
+                            metadata['recipient_bank_swift'] = bank['swift']
+                    
+                # Add processing institution if it exists
+                if 'processing_institution' in tx_metadata and tx_metadata['processing_institution']:
+                    metadata['processing_institution'] = tx_metadata['processing_institution']
+                    
+                # Add related reference if it exists
+                if 'related_reference' in tx_metadata and tx_metadata['related_reference']:
+                    metadata['related_reference'] = tx_metadata['related_reference']
             except (json.JSONDecodeError, TypeError):
                 pass
         

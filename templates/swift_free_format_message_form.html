@@ -38,42 +38,216 @@
           <form method="POST" action="{{ url_for('web.swift.new_free_format_message') }}" id="swift-message-form">
             {{ form.hidden_tag() }}
             
-            <div class="form-group mb-3">
-              <label class="form-label">{{ form.receiver_institution_id.label }}</label>
-              {{ form.receiver_institution_id(class="form-select") }}
-              {% if form.receiver_institution_id.errors %}
-                <div class="invalid-feedback d-block">
-                  {% for error in form.receiver_institution_id.errors %}
-                    {{ error }}
-                  {% endfor %}
+            <!-- Receiver Institution Section -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h5 class="mb-0">Receiver Institution Details</h5>
+              </div>
+              <div class="card-body">
+                <div class="form-group mb-3">
+                  <label class="form-label">{{ form.receiver_institution_id.label }}</label>
+                  {{ form.receiver_institution_id(class="form-select") }}
+                  {% if form.receiver_institution_id.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.receiver_institution_id.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Select the receiving institution from our database</small>
                 </div>
-              {% endif %}
+                
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">{{ form.custom_institution_name.label }}</label>
+                      {{ form.custom_institution_name(class="form-control", placeholder="Enter institution name if not in dropdown") }}
+                      {% if form.custom_institution_name.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.custom_institution_name.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                      <small class="form-text text-muted">Use this if the institution is not in the dropdown</small>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">{{ form.custom_swift_code.label }}</label>
+                      {{ form.custom_swift_code(class="form-control", placeholder="e.g., BOFAUS3N") }}
+                      {% if form.custom_swift_code.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.custom_swift_code.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                      <small class="form-text text-muted">8 or 11 character SWIFT/BIC code</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             
-            <div class="form-group mb-3">
-              <label class="form-label">{{ form.subject.label }}</label>
-              {{ form.subject(class="form-control", placeholder="Enter subject") }}
-              {% if form.subject.errors %}
-                <div class="invalid-feedback d-block">
-                  {% for error in form.subject.errors %}
-                    {{ error }}
-                  {% endfor %}
+            <!-- Reference Information Section -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h5 class="mb-0">Reference Information</h5>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">{{ form.reference_number.label }}</label>
+                      {{ form.reference_number(class="form-control", placeholder="Enter reference number") }}
+                      {% if form.reference_number.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.reference_number.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                      <small class="form-text text-muted">Unique reference for this message</small>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">{{ form.related_reference.label }}</label>
+                      {{ form.related_reference(class="form-control", placeholder="Enter related reference") }}
+                      {% if form.related_reference.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.related_reference.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                      <small class="form-text text-muted">Reference to a related message, if applicable</small>
+                    </div>
+                  </div>
                 </div>
-              {% endif %}
-              <small class="form-text text-muted">Provide a clear subject for your message</small>
+              </div>
             </div>
             
-            <div class="form-group mb-3">
-              <label class="form-label">{{ form.message_body.label }}</label>
-              {{ form.message_body(class="form-control", rows=8, placeholder="Enter your message content") }}
-              {% if form.message_body.errors %}
-                <div class="invalid-feedback d-block">
-                  {% for error in form.message_body.errors %}
-                    {{ error }}
-                  {% endfor %}
+            <!-- Message Content Section -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h5 class="mb-0">Message Content</h5>
+              </div>
+              <div class="card-body">
+                <div class="form-group mb-3">
+                  <label class="form-label">{{ form.subject.label }}</label>
+                  {{ form.subject(class="form-control", placeholder="Enter subject") }}
+                  {% if form.subject.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.subject.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Provide a clear subject for your message</small>
                 </div>
-              {% endif %}
-              <small class="form-text text-muted">Enter the full message content. Be concise and clear.</small>
+                
+                <div class="form-group mb-3">
+                  <label class="form-label">{{ form.message_body.label }}</label>
+                  {{ form.message_body(class="form-control", rows=8, placeholder="Enter your message content") }}
+                  {% if form.message_body.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.message_body.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Enter the full message content. Be concise and clear.</small>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Beneficiary Information Section -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h5 class="mb-0">Beneficiary Information</h5>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">{{ form.beneficiary_name.label }}</label>
+                      {{ form.beneficiary_name(class="form-control", placeholder="Enter beneficiary name") }}
+                      {% if form.beneficiary_name.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.beneficiary_name.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">{{ form.beneficiary_account.label }}</label>
+                      {{ form.beneficiary_account(class="form-control", placeholder="Enter account number") }}
+                      {% if form.beneficiary_account.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.beneficiary_account.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">{{ form.beneficiary_bank.label }}</label>
+                      {{ form.beneficiary_bank(class="form-control", placeholder="Enter bank name") }}
+                      {% if form.beneficiary_bank.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.beneficiary_bank.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">{{ form.beneficiary_bank_swift.label }}</label>
+                      {{ form.beneficiary_bank_swift(class="form-control", placeholder="Enter SWIFT code") }}
+                      {% if form.beneficiary_bank_swift.errors %}
+                        <div class="invalid-feedback d-block">
+                          {% for error in form.beneficiary_bank_swift.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Processing Institution Section -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h5 class="mb-0">Additional Details</h5>
+              </div>
+              <div class="card-body">
+                <div class="form-group mb-3">
+                  <label class="form-label">{{ form.processing_institution.label }}</label>
+                  {{ form.processing_institution(class="form-control", placeholder="Enter processing institution name") }}
+                  {% if form.processing_institution.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in form.processing_institution.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Specify a processing or intermediary financial institution, if applicable</small>
+                </div>
+              </div>
             </div>
             
             <div class="mt-4 d-flex justify-content-between">
@@ -120,9 +294,27 @@
     setInterval(function() {
       const formData = new FormData(form);
       const data = {
+        // Receiver Institution
         receiver_institution_id: formData.get('receiver_institution_id'),
+        custom_institution_name: formData.get('custom_institution_name'),
+        custom_swift_code: formData.get('custom_swift_code'),
+        
+        // Reference Information
+        reference_number: formData.get('reference_number'),
+        related_reference: formData.get('related_reference'),
+        
+        // Message Content
         subject: formData.get('subject'),
-        message_body: formData.get('message_body')
+        message_body: formData.get('message_body'),
+        
+        // Beneficiary Information
+        beneficiary_name: formData.get('beneficiary_name'),
+        beneficiary_account: formData.get('beneficiary_account'),
+        beneficiary_bank: formData.get('beneficiary_bank'),
+        beneficiary_bank_swift: formData.get('beneficiary_bank_swift'),
+        
+        // Additional Details
+        processing_institution: formData.get('processing_institution')
       };
       
       // Save form data
