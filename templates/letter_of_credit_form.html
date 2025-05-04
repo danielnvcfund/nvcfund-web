@@ -41,6 +41,7 @@
             
             <div class="row mb-4">
               <div class="col-md-6">
+                <!-- Receiving Institution -->
                 <div class="form-group mb-3">
                   {{ form.receiver_institution_id.label(class="form-label") }}
                   {{ form.receiver_institution_id(class="form-select") }}
@@ -51,9 +52,10 @@
                       {% endfor %}
                     </div>
                   {% endif %}
-                  <small class="form-text text-muted">The financial institution that will issue the Letter of Credit</small>
+                  <small class="form-text text-muted">{{ form.receiver_institution_id.description }}</small>
                 </div>
                 
+                <!-- Amount and Currency -->
                 <div class="form-group mb-3">
                   {{ form.amount.label(class="form-label") }}
                   <div class="input-group">
@@ -76,6 +78,7 @@
                   {% endif %}
                 </div>
                 
+                <!-- Beneficiary -->
                 <div class="form-group mb-3">
                   {{ form.beneficiary.label(class="form-label") }}
                   {{ form.beneficiary(class="form-control", rows=4, placeholder="Enter beneficiary name and address") }}
@@ -91,6 +94,7 @@
               </div>
               
               <div class="col-md-6">
+                <!-- Expiry Date -->
                 <div class="form-group mb-3">
                   {{ form.expiry_date.label(class="form-label") }}
                   {{ form.expiry_date(class="form-control", type="date") }}
@@ -101,9 +105,10 @@
                       {% endfor %}
                     </div>
                   {% endif %}
-                  <small class="form-text text-muted">The date until which this Letter of Credit is valid</small>
+                  <small class="form-text text-muted">{{ form.expiry_date.description }}</small>
                 </div>
                 
+                <!-- Terms and Conditions -->
                 <div class="form-group mb-3">
                   {{ form.terms_and_conditions.label(class="form-label") }}
                   {{ form.terms_and_conditions(class="form-control", rows=10, placeholder="Enter the terms and conditions for this Letter of Credit") }}
@@ -132,7 +137,7 @@
               </div>
               <div class="col-md-6 text-end">
                 <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-secondary me-2">Cancel</a>
-                <button type="submit" class="btn btn-primary">Issue Letter of Credit</button>
+                {{ form.submit(class="btn btn-primary") }}
               </div>
             </div>
           </form>

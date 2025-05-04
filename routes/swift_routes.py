@@ -31,16 +31,19 @@ def new_letter_of_credit():
     # We can safely use current_user
     user_id = current_user.id
     form = LetterOfCreditForm()
-
+    
+    # Get all financial institutions for the select field
+    institutions = FinancialInstitution.query.filter_by(is_active=True).all()
+    form.receiver_institution_id.choices = [(i.id, f"{i.name} ({i.swift_code})") for i in institutions]
+    
     if form.validate_on_submit():
         try:
             # Create the letter of credit
             transaction = SwiftService.create_letter_of_credit(
-                user_id=user_id,  # Use the user_id from session instead of current_user
+                user_id=user_id,
                 receiver_institution_id=form.receiver_institution_id.data,
                 amount=form.amount.data,
                 currency=form.currency.data,
-
                 beneficiary=form.beneficiary.data,
                 expiry_date=form.expiry_date.data,
                 terms_and_conditions=form.terms_and_conditions.data
@@ -161,12 +164,16 @@ def new_free_format_message():
     # We can safely use current_user
     user_id = current_user.id
     form = SwiftFreeFormatMessageForm()
-
+    
+    # Get all financial institutions for the select field
+    institutions = FinancialInstitution.query.filter_by(is_active=True).all()
+    form.receiver_institution_id.choices = [(i.id, f"{i.name} ({i.swift_code})") for i in institutions]
+    
     if form.validate_on_submit():
         try:
             # Create the free format message
             transaction = SwiftService.create_free_format_message(
-                user_id=user_id,  # Use the user_id from session instead of current_user
+                user_id=user_id,
                 receiver_institution_id=form.receiver_institution_id.data,
                 subject=form.subject.data,
                 message_body=form.message_body.data

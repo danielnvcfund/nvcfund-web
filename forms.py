@@ -229,23 +229,28 @@ class BankTransferForm(FlaskForm):
     description = TextAreaField('Description', validators=[Optional()])
 
 class LetterOfCreditForm(FlaskForm):
-    """Form for creating a letter of credit"""
-    applicant_name = StringField('Applicant Name', validators=[DataRequired()])
-    beneficiary_name = StringField('Beneficiary Name', validators=[DataRequired()])
-    receiver_institution_id = SelectField('Receiving Institution', coerce=int, validators=[DataRequired()])
-    issuing_bank = SelectField('Issuing Bank', coerce=int, validators=[DataRequired()])
-    advising_bank = SelectField('Advising Bank', coerce=int, validators=[DataRequired()])
+    """Form for creating a standby letter of credit via SWIFT MT760"""
+    # Institution Information
+    receiver_institution_id = SelectField('Receiving Institution', coerce=int, validators=[DataRequired()],
+                                         description="The financial institution that will issue the Letter of Credit")
+    
+    # Date Information
+    expiry_date = DateField('Expiry Date', validators=[DataRequired()],
+                           description="The date until which the Letter of Credit is valid")
+    
+    # Financial Information
     amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
     currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
-    expiry_date = DateField('Expiry Date', validators=[DataRequired()])
-    description = TextAreaField('Description', validators=[DataRequired()])
-    goods_description = TextAreaField('Goods Description', validators=[DataRequired()])
-    terms_conditions = TextAreaField('Terms and Conditions', validators=[DataRequired()])
+    
+    # Beneficiary Information
     beneficiary = TextAreaField('Beneficiary', validators=[DataRequired()], 
                                description="Full name and address of the beneficiary")
+    
+    # Terms and Conditions
     terms_and_conditions = TextAreaField('Terms and Conditions', validators=[DataRequired()],
                                         description="Detailed terms and conditions of the Letter of Credit")
-    submit = SubmitField('Create Letter of Credit')
+    
+    submit = SubmitField('Issue Letter of Credit')
 
 class SwiftFundTransferForm(FlaskForm):
     """Form for creating a SWIFT MT103/MT202 fund transfer"""
