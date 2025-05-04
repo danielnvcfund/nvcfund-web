@@ -43,6 +43,10 @@
                   <td>{{ swift_data.get('reference', transaction.transaction_id) }}</td>
                 </tr>
                 <tr>
+                  <th class="table-light">Transaction Type</th>
+                  <td>{{ swift_data.get('transaction_type', swift_data.get('terms', {}).get('transaction_type', 'Standby Letter of Credit')) }}</td>
+                </tr>
+                <tr>
                   <th class="table-light">Amount</th>
                   <td>{{ transaction.amount | round(2) }} {{ transaction.currency }}</td>
                 </tr>
@@ -50,10 +54,35 @@
                   <th class="table-light">Issuing Bank</th>
                   <td>{{ swift_data.get('issuing_bank', 'NVC Global Bank') }}</td>
                 </tr>
+                {% if swift_data.get('beneficiary') %}
+                  {% if swift_data.get('beneficiary').get('name') %}
+                  <tr>
+                    <th class="table-light">Beneficiary</th>
+                    <td>{{ swift_data.get('beneficiary').get('name', 'Not specified') }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if swift_data.get('beneficiary').get('account') %}
+                  <tr>
+                    <th class="table-light">Beneficiary Account</th>
+                    <td>{{ swift_data.get('beneficiary').get('account', 'Not specified') }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if swift_data.get('beneficiary').get('bank', {}).get('name') %}
+                  <tr>
+                    <th class="table-light">Beneficiary Bank</th>
+                    <td>{{ swift_data.get('beneficiary').get('bank', {}).get('name') }} 
+                        {% if swift_data.get('beneficiary').get('bank', {}).get('swift') %}
+                          (SWIFT: {{ swift_data.get('beneficiary').get('bank', {}).get('swift') }})
+                        {% endif %}
+                    </td>
+                  </tr>
+                  {% endif %}
+                {% else %}
                 <tr>
                   <th class="table-light">Beneficiary</th>
-                  <td>{{ swift_data.get('beneficiary', 'Not specified') }}</td>
+                  <td>Not specified</td>
                 </tr>
+                {% endif %}
                 <tr>
                   <th class="table-light">Issue Date</th>
                   <td>{{ swift_data.get('issue_date', transaction.created_at.isoformat()).split('T')[0] }}</td>
@@ -61,6 +90,10 @@
                 <tr>
                   <th class="table-light">Expiry Date</th>
                   <td>{{ swift_data.get('expiry_date', '') }}</td>
+                </tr>
+                <tr>
+                  <th class="table-light">Expiry Place</th>
+                  <td>{{ swift_data.get('expiry_place', 'Not specified') }}</td>
                 </tr>
               </table>
             </div>

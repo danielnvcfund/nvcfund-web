@@ -416,12 +416,12 @@
                   <div class="col-md-6">
                     <!-- Additional Instructions -->
                     <div class="form-group mb-3">
-                      {{ form.additional_instructions.label(class="form-label") }}
-                      {{ form.additional_instructions(class="form-control", rows=3, placeholder="Any special instructions for handling") }}
-                      <small class="form-text text-muted">{{ form.additional_instructions.description }}</small>
-                      {% if form.additional_instructions.errors %}
+                      {{ form.special_conditions.label(class="form-label") }}
+                      {{ form.special_conditions(class="form-control", rows=3, placeholder="Any special instructions for handling") }}
+                      <small class="form-text text-muted">{{ form.special_conditions.description }}</small>
+                      {% if form.special_conditions.errors %}
                         <div class="invalid-feedback d-block">
-                          {% for error in form.additional_instructions.errors %}
+                          {% for error in form.special_conditions.errors %}
                             {{ error }}
                           {% endfor %}
                         </div>
@@ -444,10 +444,10 @@
                     </div>
                     
                     <!-- Transferable -->
-                    <div class="form-check mb-3">
-                      {{ form.transferable(class="form-check-input") }}
-                      {{ form.transferable.label(class="form-check-label") }}
-                      <div class="form-text text-muted mt-0">{{ form.transferable.description }}</div>
+                    <div class="form-group mb-3">
+                      {{ form.transferable.label(class="form-label") }}
+                      {{ form.transferable(class="form-select") }}
+                      <small class="form-text text-muted">{{ form.transferable.description }}</small>
                       {% if form.transferable.errors %}
                         <div class="invalid-feedback d-block">
                           {% for error in form.transferable.errors %}
