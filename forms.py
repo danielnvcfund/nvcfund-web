@@ -232,6 +232,7 @@ class LetterOfCreditForm(FlaskForm):
     """Form for creating a letter of credit"""
     applicant_name = StringField('Applicant Name', validators=[DataRequired()])
     beneficiary_name = StringField('Beneficiary Name', validators=[DataRequired()])
+    receiver_institution_id = SelectField('Receiving Institution', coerce=int, validators=[DataRequired()])
     issuing_bank = SelectField('Issuing Bank', coerce=int, validators=[DataRequired()])
     advising_bank = SelectField('Advising Bank', coerce=int, validators=[DataRequired()])
     amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
@@ -240,6 +241,10 @@ class LetterOfCreditForm(FlaskForm):
     description = TextAreaField('Description', validators=[DataRequired()])
     goods_description = TextAreaField('Goods Description', validators=[DataRequired()])
     terms_conditions = TextAreaField('Terms and Conditions', validators=[DataRequired()])
+    beneficiary = TextAreaField('Beneficiary', validators=[DataRequired()], 
+                               description="Full name and address of the beneficiary")
+    terms_and_conditions = TextAreaField('Terms and Conditions', validators=[DataRequired()],
+                                        description="Detailed terms and conditions of the Letter of Credit")
     submit = SubmitField('Create Letter of Credit')
 
 class SwiftFundTransferForm(FlaskForm):
