@@ -162,7 +162,7 @@
             <h2>Institutional Information</h2>
             <div class="info-box">
                 <p><strong>Institution Name:</strong> NVC Fund Bank</p>
-                <p><strong>SWIFT/BIC Code:</strong> <span class="code important">NVCGLOBAL</span></p>
+                <p><strong>SWIFT/BIC Code:</strong> <span class="code important">NVCFBKAU</span> (Registration in progress)</p>
                 <p><strong>Regulatory Status:</strong> Expressed Trust Bank pursuant to African Union Treaty, Laws and Jurisdictions under AFRA, ACB, Article XIV 1(e) of ECO-6 Treaty, and ADCB</p>
             </div>
         </div>
@@ -234,7 +234,7 @@
             
             <h3>KTT Telex Identification</h3>
             <div class="info-box">
-                <p><strong>Telex Code:</strong> <span class="code important">NVCGLOBAL</span> (Same as our SWIFT/BIC code)</p>
+                <p><strong>Telex Code:</strong> <span class="code important">NVCFBKAU</span> (Same as our SWIFT/BIC code)</p>
                 <p><strong>Webhook Endpoint:</strong> <span class="code">/telex/api/webhook</span></p>
             </div>
             
@@ -291,7 +291,7 @@
   "message_id": "KTT-a1b2c3d4-e5f6-7890-abcd-1234567890ab",
   "sender_reference": "REF1683924765",
   "sender_bic": "SOMEBANK123",
-  "recipient_bic": "NVCGLOBAL",
+  "recipient_bic": "NVCFBKAU",
   "message_type": "FT",
   "content": {
     "reference": "FT-TX123456789",
@@ -315,7 +315,7 @@
             <h3>For SWIFT Integration</h3>
             <p>To send SWIFT messages to our institution:</p>
             <ol>
-                <li>Use our BIC code <span class="code">NVCGLOBAL</span> as the recipient identifier</li>
+                <li>Use our BIC code <span class="code">NVCFBKAU</span> as the recipient identifier</li>
                 <li>Follow SWIFT standards for message formatting and field requirements</li>
                 <li>For MT103 messages, ensure field 59 (Beneficiary) contains complete and accurate account information</li>
                 <li>For foreign exchange transactions, include conversion details in field 72</li>
@@ -324,7 +324,7 @@
             <h3>For KTT Telex Integration</h3>
             <p>To send KTT Telex messages to our institution:</p>
             <ol>
-                <li>Use our Telex code <span class="code">NVCGLOBAL</span> as the recipient identifier</li>
+                <li>Use our Telex code <span class="code">NVCFBKAU</span> as the recipient identifier</li>
                 <li>Send webhook requests to our endpoint with proper authentication</li>
                 <li>Include all required fields specific to the message type</li>
                 <li>For sensitive transactions, use HIGH priority and request acknowledgment</li>
