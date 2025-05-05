@@ -155,7 +155,7 @@
                                 {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <div class="detail-label">Bank Information</div>
+                                <div class="detail-label">Recipient Bank Information</div>
                                 <div class="detail-value">
                                     {% if metadata.recipient_bank_name %}
                                         {{ metadata.recipient_bank_name }}
@@ -178,6 +178,30 @@
                             <div class="col-md-6 mb-3">
                                 <div class="detail-label">Account Type</div>
                                 <div class="detail-value">{{ metadata.recipient_account_type|capitalize if metadata.recipient_account_type else 'Checking' }}</div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <hr class="my-3">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <div class="detail-label">Originating Institution</div>
+                                <div class="detail-value">{{ status_data.originating_institution or 'NVC Fund Bank' }}</div>
+                                <div class="detail-value mt-1 text-muted small">
+                                    Supranational Sovereign Financial Institution<br>
+                                    Established under African Union Treaty
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="detail-label">ACH Routing Number</div>
+                                <div class="detail-value">031176110</div>
+                                <div class="detail-value mt-1 text-muted small">
+                                    Fed Wire Enabled: {{ 'Yes' if status_data.fed_wire_enabled else 'No' }}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="detail-label">Settlement Platform</div>
+                                <div class="detail-value">{{ status_data.settlement_platform or 'NVC Global Settlement Network' }}</div>
                             </div>
                         </div>
 

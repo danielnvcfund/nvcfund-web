@@ -139,6 +139,10 @@ class ACHService:
             if not company_entry_description:
                 company_entry_description = description[:10] if description else "PAYMENT"
             
+            # Get NVC Fund Bank information (including routing number)
+            from models import FinancialInstitution
+            nvc_bank = FinancialInstitution.query.filter_by(name="NVC Fund Bank").first()
+            
             # Create metadata dictionary
             metadata = {
                 # Recipient Details
@@ -163,6 +167,13 @@ class ACHService:
                 "sender_name": sender_name,
                 "sender_identification": sender_identification,
                 "batch_id": batch_id,
+                
+                # NVC Fund Bank details for Fed wire clearing
+                "originating_institution": "NVC Fund Bank",
+                "originating_routing_number": nvc_bank.ach_routing_number if nvc_bank else "031176110",
+                "originating_swift_code": nvc_bank.swift_code if nvc_bank else "NVCFBKAU",
+                "fed_wire_enabled": True,
+                "settlement_platform": "NVC Global Settlement Network",
             }
             
             # Add any additional metadata
@@ -256,6 +267,11 @@ class ACHService:
             # Recipient Bank Info
             "recipient_bank_name": metadata.get("recipient_bank_name"),
             "recipient_bank_address": metadata.get("recipient_bank_address"),
+            
+            # Originating Bank Info (NVC Fund Bank)
+            "originating_institution": metadata.get("originating_institution", "NVC Fund Bank"),
+            "fed_wire_enabled": metadata.get("fed_wire_enabled", True),
+            "settlement_platform": metadata.get("settlement_platform", "NVC Global Settlement Network"),
             
             # Transaction Details
             "description": transaction.description,
@@ -404,6 +420,18 @@ class ACHService:
             # Set transaction code description
             if metadata.get("transaction_code") in ACH_TRANSACTION_CODES:
                 metadata["transaction_code_description"] = ACH_TRANSACTION_CODES[metadata["transaction_code"]]
+                
+            # Add NVC Fund Bank details if not present
+            if not metadata.get("originating_institution"):
+                metadata["originating_institution"] = "NVC Fund Bank"
+                metadata["originating_routing_number"] = "031176110"
+                metadata["originating_swift_code"] = "NVCFBKAU"
+                metadata["fed_wire_enabled"] = True
+                metadata["settlement_platform"] = "NVC Global Settlement Network"
+                
+            # Add NVC Fund Bank status information for the PDF
+            metadata["nvc_bank_status"] = "Supranational Sovereign Financial Institution"
+            metadata["nvc_bank_jurisdiction"] = "African Union Treaty, Article XIV 1(e) of the ECO-6 Treaty, and AFRA jurisdiction"
             
             # Generate the PDF
             pdf_data = pdf_service.generate_ach_transaction_pdf(transaction, metadata)
