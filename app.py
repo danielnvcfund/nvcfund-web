@@ -363,6 +363,15 @@ def create_app():
             logger.error(f"Error registering PDF routes: {str(e)}")
             logger.warning("Application will run without PDF generation functionality")
 
+        # Register Stablecoin routes for peer-to-peer closed-loop system
+        try:
+            from routes.stablecoin_routes import register_routes
+            register_routes(app)
+            logger.info("NVC Token Stablecoin routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering NVC Token Stablecoin routes: {str(e)}")
+            logger.warning("Application will run without Stablecoin functionality")
+            
         # Create PHP test integration user
         try:
             from auth import create_php_test_user

@@ -1,0 +1,217 @@
+{% extends "layout.html" %}
+
+{% block title %}Transfer NVC Token Stablecoin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-4">Transfer Stablecoins</h1>
+                    
+                    <!-- Registration Status Alert -->
+                    <div class="alert alert-warning mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <div>
+                                <strong>Important Notice:</strong> The NVC Token Stablecoin operates within a closed-loop system. External banking credentials 
+                                (ACH Routing Number 031176110 and SWIFT/BIC Code NVCFBKAU) are pending official registration with their respective authorities.
+                                Connection to external financial systems is facilitated through correspondent banking partners when required.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if accounts %}
+                        <form action="{{ url_for('stablecoin.transfer') }}" method="POST">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="from_account_id" class="form-label">From Account</label>
+                                        <select class="form-select" id="from_account_id" name="from_account_id" required>
+                                            <option value="" selected disabled>Select source account</option>
+                                            {% for account in accounts %}
+                                                <option value="{{ account.id }}" 
+                                                    {% if request.args.get('from_account_id')|int == account.id %}selected{% endif %}
+                                                    data-balance="{{ account.balance }}" 
+                                                    data-currency="{{ account.currency }}">
+                                                    {{ account.account_number }} ({{ account.balance }} {{ account.currency }})
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="form-text">Select the account to transfer funds from.</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="to_account_number" class="form-label">To Account Number</label>
+                                        <input type="text" class="form-control" id="to_account_number" name="to_account_number" 
+                                               placeholder="NVCT-XXXXXX" required pattern="NVCT-[A-Z0-9]+" 
+                                               title="Enter a valid NVC Token account number starting with NVCT-">
+                                        <div class="form-text">Enter the recipient's account number (e.g., NVCT-1A2B3C).</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="amount" class="form-label">Amount</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="amount" name="amount" 
+                                                   step="0.01" min="0.01" required>
+                                            <span class="input-group-text" id="currency-addon">NVCT</span>
+                                        </div>
+                                        <div class="form-text">Enter the amount to transfer.</div>
+                                        <div id="balance-warning" class="text-danger small mt-1 d-none">
+                                            Insufficient balance in the selected account.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label">Description (Optional)</label>
+                                        <input type="text" class="form-control" id="description" name="description" 
+                                               placeholder="Payment for services">
+                                        <div class="form-text">Enter a description for this transfer.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card bg-light my-4">
+                                <div class="card-body">
+                                    <h5 class="card-title h6">Transfer Summary</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <span class="text-muted">From: </span>
+                                                <span id="summary-from">Select an account</span>
+                                            </p>
+                                            <p class="mb-2">
+                                                <span class="text-muted">To: </span>
+                                                <span id="summary-to">Enter an account number</span>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <span class="text-muted">Amount: </span>
+                                                <span id="summary-amount">0.00 NVCT</span>
+                                            </p>
+                                            <p class="mb-2">
+                                                <span class="text-muted">Fee: </span>
+                                                <span id="summary-fee">0.00 NVCT</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Total:</span>
+                                        <span id="summary-total" class="fw-bold">0.00 NVCT</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <div class="d-flex">
+                                    <i class="fas fa-lightbulb me-3 mt-1"></i>
+                                    <div>
+                                        <strong>Transfer Information:</strong>
+                                        <ul class="mb-0 mt-1">
+                                            <li>Transfers between accounts in the closed-loop system are processed instantly</li>
+                                            <li>There are no fees for transfers within the NVC Token Stablecoin ecosystem</li>
+                                            <li>Always double-check the recipient's account number before confirming</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                <a href="{{ url_for('stablecoin.accounts') }}" class="btn btn-outline-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary" id="submit-transfer">Confirm Transfer</button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <p class="mb-0">You don't have any stablecoin accounts to transfer from.</p>
+                        </div>
+                        <div class="text-center mt-4">
+                            <a href="{{ url_for('stablecoin.create_account') }}" class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-2"></i> Create Your First Account
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fromAccountSelect = document.getElementById('from_account_id');
+        const toAccountInput = document.getElementById('to_account_number');
+        const amountInput = document.getElementById('amount');
+        const descriptionInput = document.getElementById('description');
+        const balanceWarning = document.getElementById('balance-warning');
+        const submitButton = document.getElementById('submit-transfer');
+        
+        // Summary elements
+        const summaryFrom = document.getElementById('summary-from');
+        const summaryTo = document.getElementById('summary-to');
+        const summaryAmount = document.getElementById('summary-amount');
+        const summaryFee = document.getElementById('summary-fee');
+        const summaryTotal = document.getElementById('summary-total');
+        
+        function updateSummary() {
+            // Update From account summary
+            if (fromAccountSelect.selectedIndex > 0) {
+                const selectedOption = fromAccountSelect.options[fromAccountSelect.selectedIndex];
+                summaryFrom.textContent = selectedOption.text;
+            } else {
+                summaryFrom.textContent = 'Select an account';
+            }
+            
+            // Update To account summary
+            if (toAccountInput.value) {
+                summaryTo.textContent = toAccountInput.value;
+            } else {
+                summaryTo.textContent = 'Enter an account number';
+            }
+            
+            // Update Amount summary
+            const amount = parseFloat(amountInput.value) || 0;
+            summaryAmount.textContent = amount.toFixed(2) + ' NVCT';
+            
+            // Fee is always 0 in this closed-loop system
+            summaryFee.textContent = '0.00 NVCT';
+            
+            // Update Total
+            summaryTotal.textContent = amount.toFixed(2) + ' NVCT';
+            
+            // Check if amount exceeds balance
+            if (fromAccountSelect.selectedIndex > 0 && amount > 0) {
+                const selectedOption = fromAccountSelect.options[fromAccountSelect.selectedIndex];
+                const accountBalance = parseFloat(selectedOption.getAttribute('data-balance'));
+                
+                if (amount > accountBalance) {
+                    balanceWarning.classList.remove('d-none');
+                    submitButton.disabled = true;
+                } else {
+                    balanceWarning.classList.add('d-none');
+                    submitButton.disabled = false;
+                }
+            }
+        }
+        
+        // Add event listeners to update the summary when inputs change
+        fromAccountSelect.addEventListener('change', updateSummary);
+        toAccountInput.addEventListener('input', updateSummary);
+        amountInput.addEventListener('input', updateSummary);
+        
+        // Initialize the summary
+        updateSummary();
+    });
+</script>
+{% endblock %}

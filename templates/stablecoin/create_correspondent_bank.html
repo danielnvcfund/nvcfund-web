@@ -1,0 +1,169 @@
+{% extends "layout.html" %}
+
+{% block title %}Add Correspondent Banking Partner{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-4">Add Correspondent Banking Partner</h1>
+                    
+                    <!-- Registration Status Alert -->
+                    <div class="alert alert-warning mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <div>
+                                <strong>Important Notice:</strong> The NVC Token Stablecoin operates within a closed-loop system. External banking credentials 
+                                (ACH Routing Number 031176110 and SWIFT/BIC Code NVCFBKAU) are pending official registration with their respective authorities.
+                                Configure correspondent banking partners here to facilitate connections to external financial systems.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form action="{{ url_for('stablecoin.create_correspondent_bank') }}" method="POST">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Institution Name</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                    <div class="form-text">Enter the full legal name of the banking institution.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="bank_code" class="form-label">Bank Code</label>
+                                    <input type="text" class="form-control" id="bank_code" name="bank_code" required>
+                                    <div class="form-text">Enter a unique code for this banking partner (used internally).</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="swift_code" class="form-label">SWIFT/BIC Code (Optional)</label>
+                                    <input type="text" class="form-control" id="swift_code" name="swift_code" 
+                                           pattern="[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?" maxlength="11"
+                                           title="Enter a valid SWIFT/BIC code (8 or 11 characters)">
+                                    <div class="form-text">Enter the SWIFT/BIC code if the bank supports SWIFT messaging.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="ach_routing_number" class="form-label">ACH Routing Number (Optional)</label>
+                                    <input type="text" class="form-control" id="ach_routing_number" name="ach_routing_number" 
+                                           pattern="[0-9]{9}" maxlength="9"
+                                           title="Enter a valid 9-digit ACH routing number">
+                                    <div class="form-text">Enter the ACH routing number if the bank supports ACH transfers.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title h6">Settlement Configuration</h5>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="settlement_threshold" class="form-label">Settlement Threshold</label>
+                                                    <div class="input-group">
+                                                        <input type="number" class="form-control" id="settlement_threshold" 
+                                                               name="settlement_threshold" value="10000" min="0" step="1000">
+                                                        <span class="input-group-text">USD</span>
+                                                    </div>
+                                                    <div class="form-text">Minimum amount required to trigger a settlement batch.</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="settlement_fee_percentage" class="form-label">Settlement Fee Percentage</label>
+                                                    <div class="input-group">
+                                                        <input type="number" class="form-control" id="settlement_fee_percentage" 
+                                                               name="settlement_fee_percentage" value="0.5" min="0" max="10" step="0.1">
+                                                        <span class="input-group-text">%</span>
+                                                    </div>
+                                                    <div class="form-text">Fee percentage charged for settlement processing.</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mt-3">
+                                            <label class="form-label">Supported Clearing Methods</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="supports_ach" name="supports_ach">
+                                                <label class="form-check-label" for="supports_ach">
+                                                    ACH Transfer Support
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="supports_swift" name="supports_swift">
+                                                <label class="form-check-label" for="supports_swift">
+                                                    SWIFT Messaging Support
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="supports_wire" name="supports_wire">
+                                                <label class="form-check-label" for="supports_wire">
+                                                    Wire Transfer Support
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-4">
+                            <div class="d-flex">
+                                <i class="fas fa-lightbulb me-3 mt-1"></i>
+                                <div>
+                                    <strong>Important Information:</strong>
+                                    <ul class="mb-0 mt-1">
+                                        <li>Each correspondent bank will receive its own stablecoin account for settlement operations</li>
+                                        <li>Make sure to enter accurate banking identifiers for external system connectivity</li>
+                                        <li>Configure settlement thresholds based on expected transaction volumes</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{{ url_for('stablecoin.correspondent_banks') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create Partner</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const swiftCodeInput = document.getElementById('swift_code');
+        const supportsSwift = document.getElementById('supports_swift');
+        
+        const achRoutingInput = document.getElementById('ach_routing_number');
+        const supportsAch = document.getElementById('supports_ach');
+        
+        // Auto-check SWIFT support when a SWIFT code is entered
+        swiftCodeInput.addEventListener('input', function() {
+            if (this.value.trim().length >= 8) {
+                supportsSwift.checked = true;
+            }
+        });
+        
+        // Auto-check ACH support when an ACH routing number is entered
+        achRoutingInput.addEventListener('input', function() {
+            if (this.value.trim().length === 9) {
+                supportsAch.checked = true;
+            }
+        });
+    });
+</script>
+{% endblock %}

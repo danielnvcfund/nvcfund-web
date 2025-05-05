@@ -1,0 +1,235 @@
+{% extends "layout.html" %}
+
+{% block title %}Create Settlement Batch{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-4">Create Settlement Batch</h1>
+                    
+                    <!-- Registration Status Alert -->
+                    <div class="alert alert-warning mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <div>
+                                <strong>Important Notice:</strong> The NVC Token Stablecoin operates within a closed-loop system. External banking credentials 
+                                (ACH Routing Number 031176110 and SWIFT/BIC Code NVCFBKAU) are pending official registration with their respective authorities.
+                                Settlement batches facilitate bulk transactions with external financial systems through correspondent banking partners.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if banks %}
+                        <form action="{{ url_for('stablecoin.create_settlement') }}" method="POST">
+                            <div class="mb-3">
+                                <label for="correspondent_bank_id" class="form-label">Correspondent Banking Partner</label>
+                                <select class="form-select" id="correspondent_bank_id" name="correspondent_bank_id" required>
+                                    <option value="" selected disabled>Select a banking partner</option>
+                                    {% for bank in banks %}
+                                        <option value="{{ bank.id }}" 
+                                                data-bank-code="{{ bank.bank_code }}"
+                                                data-supports-ach="{{ bank.supports_ach|int }}"
+                                                data-supports-swift="{{ bank.supports_swift|int }}"
+                                                data-supports-wire="{{ bank.supports_wire|int }}">
+                                            {{ bank.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Select the correspondent banking partner to create a settlement batch with.</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="settlement_method" class="form-label">Settlement Method</label>
+                                <select class="form-select" id="settlement_method" name="settlement_method" required>
+                                    <option value="" selected disabled>Select a settlement method</option>
+                                    <option value="ACH">ACH Transfer</option>
+                                    <option value="SWIFT">SWIFT Transfer</option>
+                                    <option value="WIRE">Wire Transfer</option>
+                                </select>
+                                <div class="form-text" id="settlement-method-info">Select the method to use for this settlement batch.</div>
+                                <div class="alert alert-danger mt-2 d-none" id="method-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <span id="method-warning-text">This settlement method is not supported by the selected banking partner.</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="total_amount" class="form-label">Total Settlement Amount</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="total_amount" name="total_amount" 
+                                           step="0.01" min="0.01" required>
+                                    <span class="input-group-text">USD</span>
+                                </div>
+                                <div class="form-text">Enter the total amount to be settled with the correspondent bank.</div>
+                            </div>
+                            
+                            <div class="card bg-light my-4">
+                                <div class="card-body">
+                                    <h5 class="card-title h6">Settlement Summary</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <span class="text-muted">Banking Partner:</span>
+                                                <span id="summary-bank">Select a bank</span>
+                                            </p>
+                                            <p class="mb-2">
+                                                <span class="text-muted">Settlement Method:</span>
+                                                <span id="summary-method">Select a method</span>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <span class="text-muted">Settlement Amount:</span>
+                                                <span id="summary-amount">0.00 USD</span>
+                                            </p>
+                                            <p class="mb-2">
+                                                <span class="text-muted">Fee Amount:</span>
+                                                <span id="summary-fee">0.00 USD</span>
+                                            </p>
+                                            <p class="mb-2">
+                                                <span class="text-muted">Net Amount:</span>
+                                                <span id="summary-net" class="fw-bold">0.00 USD</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <div class="d-flex">
+                                    <i class="fas fa-lightbulb me-3 mt-1"></i>
+                                    <div>
+                                        <strong>Settlement Process:</strong>
+                                        <ol class="mb-0 mt-1">
+                                            <li>Create the settlement batch in the closed-loop system</li>
+                                            <li>Initiate the external settlement using the selected method with your correspondent bank</li>
+                                            <li>Record the external reference number once the settlement is confirmed</li>
+                                            <li>Mark the batch as completed in the system</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                <a href="{{ url_for('stablecoin.settlements') }}" class="btn btn-outline-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary" id="submit-settlement">Create Settlement</button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <p class="mb-0">No correspondent banking partners have been configured yet.</p>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{{ url_for('stablecoin.create_correspondent_bank') }}" class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-2"></i> Add Banking Partner
+                            </a>
+                            <a href="{{ url_for('stablecoin.settlements') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i> Back to Settlements
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const bankSelect = document.getElementById('correspondent_bank_id');
+        const methodSelect = document.getElementById('settlement_method');
+        const amountInput = document.getElementById('total_amount');
+        const methodWarning = document.getElementById('method-warning');
+        const methodWarningText = document.getElementById('method-warning-text');
+        const submitBtn = document.getElementById('submit-settlement');
+        
+        // Summary elements
+        const summaryBank = document.getElementById('summary-bank');
+        const summaryMethod = document.getElementById('summary-method');
+        const summaryAmount = document.getElementById('summary-amount');
+        const summaryFee = document.getElementById('summary-fee');
+        const summaryNet = document.getElementById('summary-net');
+        
+        function updateSummary() {
+            // Update bank summary
+            if (bankSelect.selectedIndex > 0) {
+                const selectedBank = bankSelect.options[bankSelect.selectedIndex];
+                summaryBank.textContent = selectedBank.text;
+            } else {
+                summaryBank.textContent = 'Select a bank';
+            }
+            
+            // Update method summary
+            if (methodSelect.selectedIndex > 0) {
+                summaryMethod.textContent = methodSelect.options[methodSelect.selectedIndex].text;
+            } else {
+                summaryMethod.textContent = 'Select a method';
+            }
+            
+            // Update amount summary
+            const amount = parseFloat(amountInput.value) || 0;
+            summaryAmount.textContent = amount.toFixed(2) + ' USD';
+            
+            // Calculate fee (assuming we can get fee percentage from somewhere)
+            let feePercentage = 0.5; // Default fee percentage
+            const fee = amount * (feePercentage / 100);
+            summaryFee.textContent = fee.toFixed(2) + ' USD';
+            
+            // Calculate net amount
+            const netAmount = amount - fee;
+            summaryNet.textContent = netAmount.toFixed(2) + ' USD';
+        }
+        
+        function validateSettlementMethod() {
+            if (bankSelect.selectedIndex > 0 && methodSelect.selectedIndex > 0) {
+                const selectedBank = bankSelect.options[bankSelect.selectedIndex];
+                const selectedMethod = methodSelect.value;
+                
+                let isSupported = false;
+                let warningMessage = '';
+                
+                if (selectedMethod === 'ACH') {
+                    isSupported = selectedBank.getAttribute('data-supports-ach') === '1';
+                    warningMessage = 'The selected bank does not support ACH transfers.';
+                } else if (selectedMethod === 'SWIFT') {
+                    isSupported = selectedBank.getAttribute('data-supports-swift') === '1';
+                    warningMessage = 'The selected bank does not support SWIFT transfers.';
+                } else if (selectedMethod === 'WIRE') {
+                    isSupported = selectedBank.getAttribute('data-supports-wire') === '1';
+                    warningMessage = 'The selected bank does not support wire transfers.';
+                }
+                
+                if (!isSupported) {
+                    methodWarning.classList.remove('d-none');
+                    methodWarningText.textContent = warningMessage;
+                    submitBtn.disabled = true;
+                } else {
+                    methodWarning.classList.add('d-none');
+                    submitBtn.disabled = false;
+                }
+            }
+        }
+        
+        // Add event listeners to update the summary when inputs change
+        bankSelect.addEventListener('change', function() {
+            updateSummary();
+            validateSettlementMethod();
+        });
+        
+        methodSelect.addEventListener('change', function() {
+            updateSummary();
+            validateSettlementMethod();
+        });
+        
+        amountInput.addEventListener('input', updateSummary);
+        
+        // Initialize the summary
+        updateSummary();
+    });
+</script>
+{% endblock %}
