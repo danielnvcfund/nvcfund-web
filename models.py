@@ -181,6 +181,7 @@ class FinancialInstitution(db.Model):
     api_key = db.Column(db.String(256))
     ethereum_address = db.Column(db.String(64))
     swift_code = db.Column(db.String(11))  # SWIFT/BIC code for the institution
+    ach_routing_number = db.Column(db.String(9))  # ACH routing number (ABA RTN) for US institutions
     account_number = db.Column(db.String(64))  # Main account number for the institution
     metadata_json = db.Column(db.Text)  # JSON metadata for various integrations (SWIFT, etc.)
     is_active = db.Column(db.Boolean, default=True)

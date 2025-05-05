@@ -1,0 +1,68 @@
+"""
+Script to add ACH routing number for NVC Fund Bank
+"""
+import os
+import sys
+from app import db, create_app
+from models import FinancialInstitution
+from ach_service import ACHService
+
+# The official ACH routing number for NVC Fund Bank
+# Routing number format: XXXXXXYYY where
+# - XXXXXX is the Federal Reserve Routing Symbol
+# - YYY is the ABA institution identifier 
+NVC_ROUTING_NUMBER = "031176110"  # This is our assigned routing number
+
+def validate_routing_number():
+    """Validate the NVC routing number using the checksum algorithm"""
+    is_valid = ACHService.validate_routing_number(NVC_ROUTING_NUMBER)
+    if not is_valid:
+        print(f"ERROR: The routing number {NVC_ROUTING_NUMBER} failed validation!")
+        sys.exit(1)
+    else:
+        print(f"✓ Routing number {NVC_ROUTING_NUMBER} successfully validated")
+
+def update_nvc_routing_number():
+    """Update NVC Fund Bank with the official routing number"""
+    # Find NVC Fund Bank entry
+    nvc_bank = FinancialInstitution.query.filter_by(name="NVC Fund Bank").first()
+    
+    if not nvc_bank:
+        print("ERROR: NVC Fund Bank entry not found in the database!")
+        print("Creating a new entry...")
+        # Create the entry if it doesn't exist
+        from models import FinancialInstitutionType
+        nvc_bank = FinancialInstitution(
+            name="NVC Fund Bank",
+            institution_type=FinancialInstitutionType.BANK,
+            swift_code="NVCFBKAU",
+            ach_routing_number=NVC_ROUTING_NUMBER,
+            rtgs_enabled=True,
+            s2s_enabled=True
+        )
+        db.session.add(nvc_bank)
+    else:
+        # Update existing entry
+        print(f"Updating NVC Fund Bank (ID: {nvc_bank.id}) with routing number: {NVC_ROUTING_NUMBER}")
+        nvc_bank.ach_routing_number = NVC_ROUTING_NUMBER
+    
+    # Commit changes
+    db.session.commit()
+    print("✓ Successfully updated NVC Fund Bank with ACH routing number")
+
+def main():
+    """Main entry point for the script"""
+    app = create_app()
+    with app.app_context():
+        print("Starting ACH routing number update...")
+        
+        # First validate the routing number is correct
+        validate_routing_number()
+        
+        # Update NVC Fund Bank with routing number
+        update_nvc_routing_number()
+        
+        print("ACH routing number update completed successfully!")
+
+if __name__ == "__main__":
+    main()
