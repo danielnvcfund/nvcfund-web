@@ -116,6 +116,11 @@
                                     <i class="fas fa-link me-1"></i> Blockchain
                                 </a>
                             </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('stablecoin.index') }}">
+                                    <i class="fas fa-coins me-1"></i> NVC Token Stablecoin
+                                </a>
+                            </li>
                         </ul>
                     </li>
 
@@ -138,6 +143,23 @@
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('payment_processor.employee_list') }}">
                                     <i class="fas fa-money-bill-wave me-1"></i> Payments
+                                </a>
+                            </li>
+                            <li class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Closed-Loop Ecosystem</h6></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('stablecoin.index') }}">
+                                    <i class="fas fa-coins me-1"></i> NVC Token Stablecoin
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('stablecoin.accounts') }}">
+                                    <i class="fas fa-wallet me-1"></i> Stablecoin Accounts
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('stablecoin.transfer') }}">
+                                    <i class="fas fa-exchange-alt me-1"></i> Transfer Stablecoins
                                 </a>
                             </li>
                         </ul>
@@ -192,6 +214,18 @@
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('web.swift.new_fund_transfer') }}">
                                     <i class="fas fa-exchange-alt me-1"></i> SWIFT Fund Transfer
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="dropdown-header">Closed-Loop Ecosystem Management</li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('stablecoin.correspondent_banks') }}">
+                                    <i class="fas fa-university me-1"></i> Correspondent Banks
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('stablecoin.settlements') }}">
+                                    <i class="fas fa-file-invoice-dollar me-1"></i> Settlement Batches
                                 </a>
                             </li>
                         </ul>
