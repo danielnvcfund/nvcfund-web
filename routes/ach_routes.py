@@ -160,6 +160,16 @@ def validate_routing_number():
     if not routing_number:
         return jsonify({'valid': False, 'message': 'Routing number is required'})
     
+    # Check if it's our own routing number
+    if routing_number == "031176110":
+        return jsonify({
+            'valid': True, 
+            'message': 'This is NVC Fund Bank routing number (valid format)',
+            'registration_status': 'pending',
+            'registration_message': 'This routing number is still in the registration process with U.S. banking authorities.',
+            'is_nvc_routing': True
+        })
+    
     # Validate using the ACH service
     valid = ach_service.validate_routing_number(routing_number)
     
