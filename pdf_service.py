@@ -520,7 +520,29 @@ class PDFService:
             # Render HTML template
             html_content = PDFService.render_transaction_html(transaction, transaction_type, metadata)
             
-            # Try using pdfkit to generate PDF
+            # Try using WeasyPrint to generate PDF (preferred method)
+            try:
+                import weasyprint
+                from io import BytesIO
+                
+                # Create a BytesIO buffer for the PDF
+                pdf_buffer = BytesIO()
+                
+                # Generate PDF using WeasyPrint
+                html_obj = weasyprint.HTML(string=html_content)
+                html_obj.write_pdf(pdf_buffer)
+                
+                # Get the PDF content
+                pdf_buffer.seek(0)
+                pdf_data = pdf_buffer.getvalue()
+                return pdf_data
+            
+            except ImportError:
+                logger.warning("WeasyPrint not available, trying alternative method...")
+            except Exception as e:
+                logger.warning(f"WeasyPrint error: {str(e)}, trying alternative method...")
+            
+            # Try using pdfkit as a fallback
             try:
                 import pdfkit
                 pdf_data = pdfkit.from_string(html_content, False)
@@ -530,36 +552,34 @@ class PDFService:
             except Exception as e:
                 logger.warning(f"pdfkit error: {str(e)}, trying alternative method...")
             
-            # Save HTML to a temporary file and try wkhtmltopdf directly
-            try:
-                import tempfile
-                import subprocess
-                
-                with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as temp_html:
-                    temp_html.write(html_content.encode('utf-8'))
-                    temp_html_path = temp_html.name
-                
-                output_pdf_path = temp_html_path.replace('.html', '.pdf')
-                
-                # Try to call wkhtmltopdf directly
-                subprocess.run(["wkhtmltopdf", temp_html_path, output_pdf_path], check=True)
-                
-                with open(output_pdf_path, 'rb') as pdf_file:
-                    pdf_data = pdf_file.read()
-                
-                # Clean up temporary files
-                try:
-                    os.unlink(temp_html_path)
-                    os.unlink(output_pdf_path)
-                except:
-                    pass
-                
-                return pdf_data
-            except Exception as e:
-                logger.warning(f"wkhtmltopdf error: {str(e)}, falling back to text...")
-                
-                # Final fallback: just return the HTML as bytes
-                return html_content.encode('utf-8')
+            # Final fallback: just return the HTML as bytes with a warning header
+            fallback_html = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    .warning-banner {
+                        background-color: #fff3cd;
+                        border: 1px solid #ffeeba;
+                        padding: 10px;
+                        margin-bottom: 20px;
+                        border-radius: 4px;
+                        color: #856404;
+                        font-family: Arial, sans-serif;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="warning-banner">
+                    <strong>PDF Generation Warning:</strong> The system was unable to generate a proper PDF document.
+                    This is an HTML version of the receipt instead. For a properly formatted PDF, please contact support.
+                </div>
+            """ + html_content + """
+            </body>
+            </html>
+            """
+            
+            return fallback_html.encode('utf-8')
             
         except Exception as e:
             logger.error(f"Error generating transaction PDF: {str(e)}")
