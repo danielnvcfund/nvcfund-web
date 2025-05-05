@@ -308,8 +308,20 @@ TRANSACTION_RECEIPT_TEMPLATE = """
                     <td>{{ transaction.originating_routing_number or "031176110" }}</td>
                 </tr>
                 <tr>
+                    <th>Registration Status</th>
+                    <td style="color: #856404; background-color: #fff3cd; padding: 3px 6px; border-radius: 3px;">
+                        {{ transaction.routing_registration_status or "Pending Official Registration" }}
+                    </td>
+                </tr>
+                <tr>
                     <th>SWIFT/BIC Code</th>
                     <td>{{ transaction.originating_swift_code or "NVCFBKAU" }}</td>
+                </tr>
+                <tr>
+                    <th>SWIFT Status</th>
+                    <td style="color: #856404; background-color: #fff3cd; padding: 3px 6px; border-radius: 3px;">
+                        {{ transaction.swift_registration_status or "Pending SWIFT Network Integration" }}
+                    </td>
                 </tr>
                 <tr>
                     <th>Fed Wire Enabled</th>
@@ -325,6 +337,19 @@ TRANSACTION_RECEIPT_TEMPLATE = """
         
         <div class="footer">
             <p>This document serves as an official receipt for the transaction detailed above.</p>
+            
+            {% if show_originating_bank_info %}
+            <div style="margin: 15px 0; padding: 10px; border: 1px solid #fff3cd; background-color: #fff3cdaa; border-radius: 4px;">
+                <p style="font-weight: bold; font-size: 11pt; color: #856404; margin-top: 0;">IMPORTANT NOTICE:</p>
+                <p style="font-size: 10pt; color: #856404; margin-bottom: 0;">
+                    The ACH routing number 031176110 is currently in the registration process with U.S. banking authorities.
+                    The SWIFT/BIC code NVCFBKAU is pending integration into the SWIFT network. 
+                    For external ACH transactions or international wire transfers, please contact our treasury department at 
+                    treasury@nvcfund.com for current processing instructions.
+                </p>
+            </div>
+            {% endif %}
+            
             <p class="disclaimer">
                 This is a computer-generated document and does not require a signature.
                 For questions or concerns regarding this transaction, please contact customer support
