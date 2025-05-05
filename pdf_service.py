@@ -287,6 +287,42 @@ TRANSACTION_RECEIPT_TEMPLATE = """
         </div>
         {% endif %}
         
+        {% if show_originating_bank_info %}
+        <div class="bank-info">
+            <div class="section-title">Originating Bank Information</div>
+            <table class="info-table">
+                <tr>
+                    <th>Bank Name</th>
+                    <td>{{ transaction.originating_institution or "NVC Fund Bank" }}</td>
+                </tr>
+                <tr>
+                    <th>Status</th>
+                    <td>{{ transaction.nvc_bank_status or "Supranational Sovereign Financial Institution" }}</td>
+                </tr>
+                <tr>
+                    <th>Jurisdiction</th>
+                    <td class="address">{{ transaction.nvc_bank_jurisdiction or "African Union Treaty, Article XIV 1(e) of the ECO-6 Treaty, and AFRA jurisdiction" }}</td>
+                </tr>
+                <tr>
+                    <th>ACH Routing Number</th>
+                    <td>{{ transaction.originating_routing_number or "031176110" }}</td>
+                </tr>
+                <tr>
+                    <th>SWIFT/BIC Code</th>
+                    <td>{{ transaction.originating_swift_code or "NVCFBKAU" }}</td>
+                </tr>
+                <tr>
+                    <th>Fed Wire Enabled</th>
+                    <td>{{ "Yes" if transaction.fed_wire_enabled else "No" }}</td>
+                </tr>
+                <tr>
+                    <th>Settlement Platform</th>
+                    <td>{{ transaction.settlement_platform or "NVC Global Settlement Network" }}</td>
+                </tr>
+            </table>
+        </div>
+        {% endif %}
+        
         <div class="footer">
             <p>This document serves as an official receipt for the transaction detailed above.</p>
             <p class="disclaimer">
@@ -441,6 +477,13 @@ class PDFService:
             if transaction_dict.get('transaction_type') == 'ACH Transfer':
                 show_bank_info = True
             
+            # Check if we should show the originating bank info (NVC Fund Bank)
+            show_originating_bank_info = transaction_dict.get('show_originating_bank_info', False)
+            
+            # For ACH transfers, always show NVC Fund Bank info
+            if transaction_dict.get('transaction_type') == 'ACH Transfer':
+                show_originating_bank_info = True
+                
             # Set up rendering context
             context = {
                 "title": f"{transaction_type} Receipt",
@@ -448,7 +491,8 @@ class PDFService:
                 "header": "OFFICIAL TRANSACTION RECEIPT",
                 "generation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "transaction": transaction_dict,
-                "show_bank_info": show_bank_info
+                "show_bank_info": show_bank_info,
+                "show_originating_bank_info": show_originating_bank_info
             }
             
             # Render template to HTML
@@ -542,10 +586,23 @@ class PDFService:
         
         # Ensure the bank information will be shown
         metadata['show_bank_info'] = True
+        metadata['show_originating_bank_info'] = True
         
         # Make sure routing number is available in expected field
         if 'recipient_routing_number' in metadata and 'routing_number' not in metadata:
             metadata['routing_number'] = metadata['recipient_routing_number']
+            
+        # Add NVC Fund Bank details if not present
+        if not metadata.get("originating_institution"):
+            metadata["originating_institution"] = "NVC Fund Bank"
+            metadata["originating_routing_number"] = "031176110"
+            metadata["originating_swift_code"] = "NVCFBKAU"
+            metadata["fed_wire_enabled"] = True
+            metadata["settlement_platform"] = "NVC Global Settlement Network"
+            
+        # Add NVC Fund Bank status information for the PDF
+        metadata["nvc_bank_status"] = "Supranational Sovereign Financial Institution"
+        metadata["nvc_bank_jurisdiction"] = "African Union Treaty, Article XIV 1(e) of the ECO-6 Treaty, and AFRA jurisdiction"
         
         return PDFService.generate_transaction_pdf(
             transaction,
