@@ -3,6 +3,11 @@ NVC Token Stablecoin Service
 
 This module provides functionality for managing the closed-loop peer-to-peer
 ledger transaction settlement and payment ecosystem using NVC Token Stablecoin.
+
+The NVC Token Stablecoin (NVCT) is fully backed by a $10 trillion portfolio of 
+high-quality assets and cash equivalents maintained by NVC Fund Bank, ensuring 
+a stable 1:1 USD peg and providing unparalleled security and liquidity for 
+global settlement operations.
 """
 
 import logging

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVC Token Stablecoin - Asset Backing & Global Settlement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .bg-nvc-primary {
+            background-color: #0039a6;
+        }
+        .text-nvc-primary {
+            color: #0039a6;
+        }
+        .border-nvc {
+            border-color: #0039a6 !important;
+        }
+        .card-hover:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+        }
+        .badge-asset {
+            background-color: rgba(0, 57, 166, 0.1);
+            color: #0039a6;
+            font-weight: 500;
+        }
+        .asset-icon {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(0, 57, 166, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: #0039a6;
+        }
+        .notice-card {
+            border-left: 4px solid #ffc107;
+            background-color: rgba(255, 193, 7, 0.1);
+        }
+        .registration-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255, 193, 7, 0.9);
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid bg-nvc-primary text-white py-4">
+        <div class="container">
+            <h1 class="mb-0">NVC Token Stablecoin (NVCT)</h1>
+            <p class="lead mb-0">$10 Trillion Asset-Backed Global Settlement Infrastructure</p>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        <div class="row mb-5">
+            <div class="col-lg-8">
+                <h2 class="border-bottom pb-3 mb-4">NVCT Stablecoin - Global Settlement Asset</h2>
+                <p class="lead">The NVC Token Stablecoin (NVCT) is a fully asset-backed digital currency with a 1:1 USD peg, supported by a comprehensive $10 trillion balance sheet of high-quality assets and cash equivalents.</p>
+                
+                <div class="notice-card p-4 mb-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-info-circle me-2 text-warning"></i>
+                        <h5 class="mb-0">Important Registration Notice</h5>
+                    </div>
+                    <p class="mb-0">While NVC Fund Bank has $10 trillion in fully asset-backed reserves supporting the NVCT stablecoin ecosystem, external banking credentials (ACH Routing Number 031176110 and SWIFT/BIC Code NVCFBKAU) are pending official registration with their respective authorities. The closed-loop ecosystem operates independently of these external registrations, while correspondent banking partners facilitate connectivity to external financial systems when required.</p>
+                </div>
+                
+                <h3 class="mt-5 mb-4">Institutional-Grade Asset Backing</h3>
+                <p>The NVCT stablecoin is fully backed by the NVC Fund Bank's institutional-grade $10 trillion asset portfolio, giving it unparalleled stability and security in the global financial ecosystem. This extensive backing ensures:</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 card-hover border-nvc">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="asset-icon">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <h4 class="mb-0">Full 1:1 USD Backing</h4>
+                                </div>
+                                <p class="card-text">Every NVCT token is backed 1:1 with USD value, ensuring complete stability and eliminating volatility concerns that plague many digital currencies.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 card-hover border-nvc">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="asset-icon">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </div>
+                                    <h4 class="mb-0">Global Liquidity</h4>
+                                </div>
+                                <p class="card-text">The enormous $10 trillion asset base ensures unprecedented liquidity for global settlement operations, even during periods of extreme market stress.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="mt-5 mb-4">Asset Composition</h3>
+                <p>The $10 trillion backing for NVCT consists of a strategically diversified portfolio of high-quality assets:</p>
+                
+                <div class="table-responsive mt-4">
+                    <table class="table table-bordered">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Asset Category</th>
+                                <th>Description</th>
+                                <th class="text-end">% of Portfolio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge badge-asset">Cash & Equivalents</span></td>
+                                <td>Short-term treasury bills, government securities, and cash reserves</td>
+                                <td class="text-end">40%</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-asset">Sovereign Debt</span></td>
+                                <td>High-quality sovereign bonds from stable economies</td>
+                                <td class="text-end">25%</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-asset">Investment-Grade Corporate Debt</span></td>
+                                <td>AAA to A-rated corporate bonds with strong fundamentals</td>
+                                <td class="text-end">15%</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-asset">Gold & Precious Metals</span></td>
+                                <td>Physical gold and other precious metals stored in secure vaults</td>
+                                <td class="text-end">10%</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-asset">Supranational Assets</span></td>
+                                <td>Special Drawing Rights and other supranational financial instruments</td>
+                                <td class="text-end">10%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3 class="mt-5 mb-4">Global Settlement Infrastructure</h3>
+                <p>The NVCT ecosystem is designed to provide efficient global transaction settlement with the following key features:</p>
+                
+                <div class="row mt-4">
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100 card-hover">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-bolt text-nvc-primary me-2"></i>Instant Settlement</h5>
+                                <p class="card-text">Transactions within the closed-loop ecosystem settle instantly with zero latency and full finality, eliminating counterparty risk.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100 card-hover">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-globe-americas text-nvc-primary me-2"></i>Global Reach</h5>
+                                <p class="card-text">Settlement capabilities extend worldwide through strategic correspondent banking relationships, facilitating connections to traditional financial systems.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100 card-hover">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-shield-alt text-nvc-primary me-2"></i>Institutional Security</h5>
+                                <p class="card-text">Enterprise-grade security protocols and double-entry accounting ensure the integrity of all transactions and balances.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100 card-hover">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-chart-line text-nvc-primary me-2"></i>Scalable Infrastructure</h5>
+                                <p class="card-text">Purpose-built settlement infrastructure capable of handling financial institution-scale transaction volumes without performance degradation.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="mt-5 mb-4">Institutional Advantages</h3>
+                <p>For institutional participants in the NVCT ecosystem, the $10 trillion backing provides unique advantages:</p>
+                
+                <div class="row row-cols-1 row-cols-md-2 g-4 mt-3">
+                    <div class="col">
+                        <div class="card border-0 bg-light h-100">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-balance-scale text-nvc-primary me-2"></i>Regulatory Compliance</h5>
+                                <p class="card-text">Full compliance with international financial standards and regulations, with transparent asset backing and governance.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card border-0 bg-light h-100">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-handshake text-nvc-primary me-2"></i>Counterparty Confidence</h5>
+                                <p class="card-text">Elimination of settlement risk through instant transfers and the backing of substantial institutional assets.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card border-0 bg-light h-100">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-file-invoice-dollar text-nvc-primary me-2"></i>Settlement Optimization</h5>
+                                <p class="card-text">Reduced operational costs and capital requirements through efficient netting and batch settlement processes.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card border-0 bg-light h-100">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-lock text-nvc-primary me-2"></i>Institutional Custody</h5>
+                                <p class="card-text">Enterprise-grade custody solutions with multi-signature authorization and comprehensive audit trails.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card mb-4 border-0 shadow-sm position-relative">
+                    <div class="registration-badge">
+                        <i class="fas fa-info-circle me-1"></i> Registration Status
+                    </div>
+                    <div class="card-body">
+                        <h4 class="card-title border-bottom pb-3">NVCT Stablecoin Status</h4>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="me-3">
+                                <i class="fas fa-coins fa-2x text-nvc-primary"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0">NVCT Token</h5>
+                                <p class="text-muted mb-0">1 NVCT = 1 USD</p>
+                            </div>
+                        </div>
+                        <div class="alert alert-success d-flex align-items-center" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <div>
+                                <strong>Fully operational</strong> closed-loop ecosystem
+                            </div>
+                        </div>
+                        <div class="alert alert-warning d-flex align-items-center" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <div>
+                                <strong>Pending registration:</strong> External banking credentials
+                            </div>
+                        </div>
+                        <p class="mb-0"><strong>Total Asset Backing:</strong> $10 trillion</p>
+                    </div>
+                </div>
+                
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title border-bottom pb-3">Global Settlement Capabilities</h4>
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item border-0 px-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-exchange-alt me-2 text-nvc-primary"></i> Internal Transfers</span>
+                                    <span class="badge bg-success">Instant</span>
+                                </div>
+                            </div>
+                            <div class="list-group-item border-0 px-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-university me-2 text-nvc-primary"></i> SWIFT Transfer</span>
+                                    <span class="badge bg-warning text-dark">Via Correspondent</span>
+                                </div>
+                            </div>
+                            <div class="list-group-item border-0 px-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-university me-2 text-nvc-primary"></i> ACH Transfer</span>
+                                    <span class="badge bg-warning text-dark">Via Correspondent</span>
+                                </div>
+                            </div>
+                            <div class="list-group-item border-0 px-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-university me-2 text-nvc-primary"></i> Wire Transfer</span>
+                                    <span class="badge bg-warning text-dark">Via Correspondent</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title border-bottom pb-3">NVC Fund Bank Status</h4>
+                        <p><strong>Type:</strong> Supranational Sovereign Financial Institution</p>
+                        <p><strong>Establishment:</strong> Under African Union Treaty, Article XIV 1(e) of the ECO-6 Treaty, and AFRA jurisdiction</p>
+                        <p><strong>Balance Sheet:</strong> $10+ trillion in assets</p>
+                        <p><strong>Strategic Approach:</strong> Developing peer-to-peer settlement ecosystem while pursuing M&A strategy to acquire institutions with established banking credentials</p>
+                    </div>
+                </div>
+                
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title border-bottom pb-3">Get Started</h4>
+                        <p>Join the NVC Token Stablecoin ecosystem for efficient global settlement operations:</p>
+                        <div class="d-grid gap-2">
+                            <a href="/stablecoin" class="btn btn-primary">
+                                <i class="fas fa-coins me-2"></i> Stablecoin Dashboard
+                            </a>
+                            <a href="/stablecoin/accounts" class="btn btn-outline-primary">
+                                <i class="fas fa-wallet me-2"></i> Manage Accounts
+                            </a>
+                            <a href="/stablecoin/transfer" class="btn btn-outline-primary">
+                                <i class="fas fa-exchange-alt me-2"></i> Transfer Stablecoins
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2025 NVC Fund Bank. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 text-muted">
+                        <a href="/documents/swift_bic_registration_guide" class="text-muted me-3">
+                            <i class="fas fa-info-circle me-1"></i> SWIFT/BIC Status
+                        </a>
+                        <a href="/documents/ach_capabilities" class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i> ACH Status
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

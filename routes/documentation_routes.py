@@ -382,3 +382,52 @@ def acquisition_strategy_pdf():
     except Exception as e:
         current_app.logger.error(f"Error generating PDF: {str(e)}")
         return "An error occurred while generating the PDF. Please try again later.", 500
+        
+@documentation_bp.route('/nvct_stablecoin_backing', methods=['GET'])
+def nvct_backing():
+    """Display the NVCT Stablecoin Backing documentation"""
+    try:
+        # Get the HTML content
+        html_path = os.path.join(current_app.root_path, 'static/docs/nvct_stablecoin_backing.html')
+        
+        # Read the HTML content and return directly
+        with open(html_path, 'r') as f:
+            html_content = f.read()
+        
+        return render_template('documentation/guide.html', 
+                              guide_html=html_content, 
+                              title="$10 Trillion Asset-Backed NVC Token Stablecoin")
+    
+    except Exception as e:
+        current_app.logger.error(f"Error loading NVCT backing document: {str(e)}")
+        return "An error occurred while loading the document. Please try again later.", 500
+        
+@documentation_bp.route('/nvct_stablecoin_backing_pdf', methods=['GET'])
+def nvct_backing_pdf():
+    """Generate a PDF of the NVCT Stablecoin Backing documentation"""
+    try:
+        # Get the HTML content
+        html_path = os.path.join(current_app.root_path, 'static/docs/nvct_stablecoin_backing.html')
+        
+        # Read the HTML content
+        with open(html_path, 'r') as f:
+            html_content = f.read()
+        
+        # Generate PDF with page numbers
+        pdf = generate_pdf_with_logo(html_content, base_url=os.path.dirname(html_path))
+        
+        # Create a BytesIO object
+        pdf_io = BytesIO(pdf)
+        pdf_io.seek(0)
+        
+        # Send the PDF as a response
+        return send_file(
+            pdf_io,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name='NVC_Token_Stablecoin_10T_Asset_Backing.pdf'
+        )
+    
+    except Exception as e:
+        current_app.logger.error(f"Error generating PDF: {str(e)}")
+        return "An error occurred while generating the PDF. Please try again later.", 500
