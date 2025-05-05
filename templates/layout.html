@@ -711,6 +711,17 @@
                                     <i class="fas fa-server me-1"></i> S2S Integration Guide
                                 </a>
                             </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('documentation.ach_capabilities_pdf') }}">
+                                    <i class="fas fa-university me-1"></i> ACH Capabilities
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('documentation.swift_bic_registration_pdf') }}">
+                                    <i class="fas fa-globe me-1"></i> SWIFT/BIC Registration Status
+                                </a>
+                            </li>
                             {% if current_user.is_authenticated and (current_user.role.value != 'DEVELOPER' and current_user.role != 'DEVELOPER') %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
@@ -938,6 +949,8 @@
                         <li classmb-2"><a href="{{ url_for('web.main.api_docs') }}" class="text-muted text-decoration-none"><i class="fas fa-code me-2"></i>API Reference</a></li>
                         <li class="mb-2"><a href="{{ url_for('documentation.funds_transfer_pdf') }}" class="text-muted text-decoration-none"><i class="fas fa-file-pdf me-2"></i>Funds Transfer Guide</a></li>
                         <li class="mb-2"><a href="{{ url_for('documentation.server_to_server_pdf') }}" class="text-muted text-decoration-none"><i class="fas fa-server me-2"></i>S2S Integration Guide</a></li>
+                        <li class="mb-2"><a href="{{ url_for('documentation.ach_capabilities_pdf') }}" class="text-muted text-decoration-none"><i class="fas fa-university me-2"></i>ACH Capabilities</a></li>
+                        <li class="mb-2"><a href="{{ url_for('documentation.swift_bic_registration_pdf') }}" class="text-muted text-decoration-none"><i class="fas fa-globe me-2"></i>SWIFT/BIC Registration Status</a></li>
                         <li class="mb-2"><a href="{{ url_for('web.main.terms_of_service') }}" class="text-muted text-decoration-none"><i class="fas fa-gavel me-2"></i>Terms of Service</a></li>
                         <li><a href="{{ url_for('web.main.privacy_policy') }}" class="text-muted text-decoration-none"><i class="fas fa-shield-alt me-2"></i>Privacy Policy</a></li>
                     </ul>

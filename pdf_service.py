@@ -355,6 +355,18 @@ TRANSACTION_RECEIPT_TEMPLATE = """
                 For questions or concerns regarding this transaction, please contact customer support
                 with the transaction ID referenced above.
             </p>
+            
+            <div style="margin-top: 20px; padding: 10px; border: 1px solid #ffc107; background-color: #fff3cd; border-radius: 4px;">
+                <p style="font-size: 10pt; color: #856404; margin: 0 0 5px 0;"><strong>Important Notice: Banking Credentials Registration Status</strong></p>
+                <p style="font-size: 9pt; margin: 0 0 5px 0;">
+                    The ACH routing number (031176110) and SWIFT/BIC code (NVCFBKAU) used by NVC Fund Bank are currently pending official registration with 
+                    their respective authorities. During this pre-registration period, transactions may need alternative processing methods.
+                </p>
+                <p style="font-size: 9pt; margin: 0;">
+                    For high-priority transactions requiring immediate processing, please contact our treasury operations department
+                    at treasury@nvcfundbank.com for alternative routing instructions.
+                </p>
+            </div>
         </div>
         
         <!-- Optional Barcode -->
