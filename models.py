@@ -16,6 +16,9 @@ class PartnerType(enum.Enum):
     FINANCIAL_INSTITUTION = "Financial Institution"
     ASSET_MANAGER = "Asset Manager"
     BUSINESS_PARTNER = "Business Partner"
+    CORRESPONDENT_BANK = "Correspondent Bank"
+    SETTLEMENT_PARTNER = "Settlement Partner"
+    STABLECOIN_ISSUER = "Stablecoin Issuer"
 
 class IntegrationType(enum.Enum):
     API = "API"
@@ -98,7 +101,10 @@ class TransactionType(enum.Enum):
     BILL_PAYMENT = "BILL_PAYMENT"                      # For bill payments to service providers
     CONTRACT_PAYMENT = "CONTRACT_PAYMENT"              # For payments to contractors/vendors under contracts
     BULK_PAYROLL = "BULK_PAYROLL"                      # For processing multiple salary payments at once
-    SWIFT_DELIVER_AGAINST_PAYMENT = "SWIFT_DELIVER_AGAINST_PAYMENT" #Added SWIFT MT542
+    SWIFT_DELIVER_AGAINST_PAYMENT = "SWIFT_DELIVER_AGAINST_PAYMENT" # Added SWIFT MT542
+    STABLECOIN_TRANSFER = "STABLECOIN_TRANSFER"        # For NVC Token Stablecoin transfers
+    P2P_LEDGER_TRANSFER = "P2P_LEDGER_TRANSFER"        # For Peer-to-Peer ledger transfers
+    CORRESPONDENT_SETTLEMENT = "CORRESPONDENT_SETTLEMENT" # For settlements with correspondent banks
 
 
 class GatewayType(enum.Enum):
@@ -275,6 +281,131 @@ class BlockchainAccount(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = db.relationship('User', backref=db.backref('blockchain_accounts', lazy=True))
+    
+class StablecoinAccount(db.Model):
+    """Account for NVC Token Stablecoin within the closed-loop system"""
+    id = db.Column(db.Integer, primary_key=True)
+    account_number = db.Column(db.String(64), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    balance = db.Column(db.Float, default=0.0)
+    currency = db.Column(db.String(10), default="NVCT")
+    is_active = db.Column(db.Boolean, default=True)
+    account_type = db.Column(db.String(20), default="INDIVIDUAL")  # INDIVIDUAL, BUSINESS, INSTITUTION, PARTNER
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = db.relationship('User', backref=db.backref('stablecoin_accounts', lazy=True))
+    
+    def deposit(self, amount):
+        if amount <= 0:
+            raise ValueError("Deposit amount must be positive")
+        self.balance += amount
+        self.updated_at = datetime.utcnow()
+        
+    def withdraw(self, amount):
+        if amount <= 0:
+            raise ValueError("Withdrawal amount must be positive")
+        if amount > self.balance:
+            raise ValueError("Insufficient funds")
+        self.balance -= amount
+        self.updated_at = datetime.utcnow()
+        
+    def transfer(self, destination_account, amount, description=None):
+        """Transfer stablecoins to another account"""
+        if amount <= 0:
+            raise ValueError("Transfer amount must be positive")
+        if amount > self.balance:
+            raise ValueError("Insufficient funds")
+            
+        self.withdraw(amount)
+        destination_account.deposit(amount)
+        
+        # Create transfer transaction record
+        from app import db
+        transaction_id = secrets.token_hex(16)
+        transaction = Transaction(
+            transaction_id=transaction_id,
+            user_id=self.user_id,
+            amount=amount,
+            currency=self.currency,
+            transaction_type=TransactionType.STABLECOIN_TRANSFER,
+            status=TransactionStatus.COMPLETED,
+            description=description or f"Transfer to {destination_account.account_number}",
+            recipient_name=f"Account: {destination_account.account_number}",
+            recipient_account=destination_account.account_number
+        )
+        db.session.add(transaction)
+        
+        # Create ledger entries
+        debit_entry = LedgerEntry(
+            transaction_id=transaction_id,
+            account_id=self.id,
+            entry_type='DEBIT',
+            amount=amount,
+            description=f"Transfer to {destination_account.account_number}"
+        )
+        db.session.add(debit_entry)
+        
+        credit_entry = LedgerEntry(
+            transaction_id=transaction_id,
+            account_id=destination_account.id,
+            entry_type='CREDIT',
+            amount=amount,
+            description=f"Transfer from {self.account_number}"
+        )
+        db.session.add(credit_entry)
+        
+        return transaction
+    
+class CorrespondentBank(db.Model):
+    """Model for correspondent banks in the closed-loop system"""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), nullable=False)
+    bank_code = db.Column(db.String(20), unique=True, nullable=False)
+    swift_code = db.Column(db.String(11))
+    ach_routing_number = db.Column(db.String(9))
+    clearing_account_number = db.Column(db.String(64))
+    stablecoin_account_id = db.Column(db.Integer, db.ForeignKey('stablecoin_account.id'))
+    settlement_threshold = db.Column(db.Float, default=10000.0)  # Threshold for settlement with external system
+    settlement_fee_percentage = db.Column(db.Float, default=0.5)  # Fee percentage for settlement
+    is_active = db.Column(db.Boolean, default=True)
+    supports_ach = db.Column(db.Boolean, default=False)
+    supports_swift = db.Column(db.Boolean, default=False)
+    supports_wire = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    stablecoin_account = db.relationship('StablecoinAccount', backref=db.backref('correspondent_bank', uselist=False))
+    
+class LedgerEntry(db.Model):
+    """Double-entry accounting ledger for the closed-loop system"""
+    id = db.Column(db.Integer, primary_key=True)
+    transaction_id = db.Column(db.String(64), nullable=False, index=True)
+    account_id = db.Column(db.Integer, db.ForeignKey('stablecoin_account.id'), nullable=False)
+    entry_type = db.Column(db.String(10), nullable=False)  # DEBIT or CREDIT
+    amount = db.Column(db.Float, nullable=False)
+    balance_after = db.Column(db.Float)  # Running balance after this entry
+    description = db.Column(db.String(256))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    account = db.relationship('StablecoinAccount', backref=db.backref('ledger_entries', lazy=True))
+    
+class SettlementBatch(db.Model):
+    """Model for batched settlements with correspondent banks"""
+    id = db.Column(db.Integer, primary_key=True)
+    batch_id = db.Column(db.String(64), unique=True, nullable=False)
+    correspondent_bank_id = db.Column(db.Integer, db.ForeignKey('correspondent_bank.id'), nullable=False)
+    total_amount = db.Column(db.Float, nullable=False)
+    fee_amount = db.Column(db.Float, nullable=False)
+    net_amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), default="USD")
+    status = db.Column(db.Enum(TransactionStatus), default=TransactionStatus.PENDING)
+    settlement_method = db.Column(db.String(20))  # ACH, SWIFT, WIRE
+    external_reference = db.Column(db.String(64))  # Reference from external system
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)
+    
+    correspondent_bank = db.relationship('CorrespondentBank', backref=db.backref('settlement_batches', lazy=True))
 
 class SwiftMessageStatus(enum.Enum):
     RECEIVED = "RECEIVED"

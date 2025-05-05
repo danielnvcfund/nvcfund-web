@@ -1,0 +1,205 @@
+{% extends "layout.html" %}
+
+{% block title %}NVC Token Stablecoin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h1 class="h3 mb-0">NVC Token Stablecoin Dashboard</h1>
+                        <a href="{{ url_for('stablecoin.accounts') }}" class="btn btn-outline-primary">Manage Accounts</a>
+                    </div>
+                    <p class="text-muted">
+                        Welcome to the NVC closed-loop peer-to-peer ledger transaction settlement and payment ecosystem.
+                        This system uses the NVC Token Stablecoin as the native currency for secure and efficient transactions.
+                    </p>
+
+                    <!-- Registration Status Alert -->
+                    <div class="alert alert-warning mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <div>
+                                <strong>Important Notice:</strong> The NVC Token Stablecoin operates within a closed-loop system. External banking credentials 
+                                (ACH Routing Number 031176110 and SWIFT/BIC Code NVCFBKAU) are pending official registration with their respective authorities.
+                                Connection to external financial systems is facilitated through correspondent banking partners when required.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Your Stablecoin Accounts</h5>
+                                    {% if accounts %}
+                                        <div class="list-group">
+                                            {% for account in accounts %}
+                                                <a href="{{ url_for('stablecoin.account_details', account_id=account.id) }}" class="list-group-item list-group-item-action">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h6 class="mb-1">{{ account.account_number }}</h6>
+                                                        <span class="badge bg-primary rounded-pill">{{ account.balance }} {{ account.currency }}</span>
+                                                    </div>
+                                                    <p class="mb-1 text-muted small">{{ account.account_type }}</p>
+                                                </a>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted">You don't have any stablecoin accounts yet.</p>
+                                        <a href="{{ url_for('stablecoin.create_account') }}" class="btn btn-primary">Create Account</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card bg-light h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Quick Actions</h5>
+                                    <div class="d-grid gap-2">
+                                        {% if accounts %}
+                                            <a href="{{ url_for('stablecoin.transfer') }}" class="btn btn-primary">
+                                                <i class="fas fa-exchange-alt me-2"></i> Transfer Stablecoins
+                                            </a>
+                                            <a href="{{ url_for('stablecoin.create_account') }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-plus-circle me-2"></i> Create New Account
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ url_for('stablecoin.create_account') }}" class="btn btn-primary">
+                                                <i class="fas fa-plus-circle me-2"></i> Create Your First Account
+                                            </a>
+                                        {% endif %}
+                                        
+                                        {% if current_user.role.name == 'ADMIN' %}
+                                            <hr>
+                                            <h6>Administrator Actions</h6>
+                                            <a href="{{ url_for('stablecoin.correspondent_banks') }}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-university me-2"></i> Manage Correspondent Banks
+                                            </a>
+                                            <a href="{{ url_for('stablecoin.settlements') }}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-file-invoice-dollar me-2"></i> Settlement Batches
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- System Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="h5 mb-3">About the NVC Closed-Loop Ecosystem</h3>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="rounded-circle bg-primary p-2 me-3 text-white">
+                                            <i class="fas fa-coins"></i>
+                                        </div>
+                                        <h5 class="card-title mb-0">NVC Token Stablecoin</h5>
+                                    </div>
+                                    <p class="card-text">The native digital currency of our closed-loop ecosystem, providing stable value and seamless transfers between participants.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="rounded-circle bg-primary p-2 me-3 text-white">
+                                            <i class="fas fa-network-wired"></i>
+                                        </div>
+                                        <h5 class="card-title mb-0">Peer-to-Peer Ledger</h5>
+                                    </div>
+                                    <p class="card-text">Our secure distributed ledger technology tracks all transactions with full transparency and accountability between parties.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="rounded-circle bg-primary p-2 me-3 text-white">
+                                            <i class="fas fa-university"></i>
+                                        </div>
+                                        <h5 class="card-title mb-0">Correspondent Banking</h5>
+                                    </div>
+                                    <p class="card-text">Our partner financial institutions provide connectivity to external financial systems when needed for settlement and exchange.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if correspondent_banks %}
+    <!-- Correspondent Banks Section (Admin Only) -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h3 class="h5 mb-0">Correspondent Banking Partners</h3>
+                        <a href="{{ url_for('stablecoin.create_correspondent_bank') }}" class="btn btn-sm btn-outline-primary">Add New</a>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Bank Code</th>
+                                    <th>Clearing Capabilities</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bank in correspondent_banks %}
+                                <tr>
+                                    <td>{{ bank.name }}</td>
+                                    <td><code>{{ bank.bank_code }}</code></td>
+                                    <td>
+                                        {% if bank.supports_ach %}
+                                        <span class="badge bg-success me-1">ACH</span>
+                                        {% endif %}
+                                        {% if bank.supports_swift %}
+                                        <span class="badge bg-success me-1">SWIFT</span>
+                                        {% endif %}
+                                        {% if bank.supports_wire %}
+                                        <span class="badge bg-success me-1">Wire</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if bank.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
