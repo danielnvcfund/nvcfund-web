@@ -7,11 +7,53 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
     <style>
+        /* Base styles */
         body {
             font-family: 'Arial', sans-serif;
             color: #333;
             background-color: white;
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
         }
+        
+        /* Container styles */
+        .container {
+            width: 100%;
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        /* Row and column styles */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-right: -15px;
+            margin-left: -15px;
+        }
+        .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8 {
+            position: relative;
+            width: 100%;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+        .col-md-2 { width: 16.666667%; }
+        .col-md-3 { width: 25%; }
+        .col-md-4 { width: 33.333333%; }
+        .col-md-5 { width: 41.666667%; }
+        .col-md-6 { width: 50%; }
+        .col-md-7 { width: 58.333333%; }
+        .col-md-8 { width: 66.666667%; }
+        
+        /* Alignment classes */
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .text-light { color: rgba(255,255,255,0.8); }
+        .text-muted { color: #6c757d; }
+        .align-items-center { align-items: center; }
+        
+        /* Header styles */
         .header {
             background-color: #002855; /* Dark navy blue */
             color: white;
@@ -19,20 +61,24 @@
             margin-bottom: 2rem;
         }
         .header img {
-            max-height: 90px;
+            max-height: 80px;
             background-color: white;
             padding: 5px;
             border-radius: 5px;
         }
         .header h1 {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
+            margin-top: 0;
         }
         .header .lead {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             opacity: 0.9;
+            margin-bottom: 0;
         }
+        
+        /* Content section styles */
         .section {
             background-color: white;
             border-radius: 8px;
@@ -41,6 +87,14 @@
             margin-bottom: 1.5rem;
             page-break-inside: avoid;
         }
+        .section h3 {
+            color: #002855;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        /* Table styles */
         .table-container {
             background-color: white;
             border-radius: 8px;
@@ -48,12 +102,49 @@
             padding: 0.5rem;
             margin-bottom: 1.5rem;
         }
+        .table {
+            width: 100%;
+            margin-bottom: 1rem;
+            color: #212529;
+            border-collapse: collapse;
+        }
+        .table th, .table td {
+            padding: 0.75rem;
+            vertical-align: top;
+            border-top: 1px solid #dee2e6;
+        }
+        .table thead th {
+            vertical-align: bottom;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .table-sm th, .table-sm td {
+            padding: 0.3rem;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0,0,0,0.05);
+        }
+        .thead-dark th {
+            color: #fff;
+            background-color: #343a40;
+            border-color: #454d55;
+        }
+        
+        /* Footer styles */
         .footer {
             background-color: #002855;
             color: white;
             padding: 1.5rem 0;
             margin-top: 2rem;
         }
+        .footer h5 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+        .footer p {
+            margin-bottom: 0;
+        }
+        
+        /* Utility styles */
         .value-highlight {
             font-weight: bold;
             color: #002855;
@@ -65,16 +156,63 @@
             border-top: 1px solid #eee;
             padding-top: 1rem;
         }
+        .mb-0 { margin-bottom: 0; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 1rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .py-3 { padding-top: 1rem; padding-bottom: 1rem; }
+        .img-fluid { max-width: 100%; height: auto; }
+        
+        /* Card styles */
+        .card {
+            border: 1px solid rgba(0,0,0,.125);
+            border-radius: .25rem;
+            margin-bottom: 1rem;
+        }
+        .card-header {
+            padding: .75rem 1.25rem;
+            background-color: rgba(0,0,0,.03);
+            border-bottom: 1px solid rgba(0,0,0,.125);
+        }
+        .card-body {
+            padding: 1.25rem;
+        }
+        .bg-light { background-color: #f8f9fa; }
+        
+        /* Alert styles */
+        .alert {
+            padding: 0.75rem 1.25rem;
+            border: 1px solid transparent;
+            border-radius: 0.25rem;
+        }
+        .alert-info {
+            color: #0c5460;
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        
+        /* Badge styles */
+        .badge {
+            display: inline-block;
+            padding: 0.25em 0.4em;
+            font-size: 75%;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+        }
+        .badge-success { background-color: #28a745; color: white; }
+        .badge-warning { background-color: #ffc107; color: #212529; }
+        .badge-secondary { background-color: #6c757d; color: white; }
         
         /* Print-specific styles */
         @media print {
             body {
                 font-size: 11pt;
                 background-color: white;
-            }
-            .container {
-                width: 100%;
-                max-width: none;
+                color: black;
             }
             .section, .table-container {
                 border: 1px solid #ddd;
@@ -83,23 +221,26 @@
             h3 {
                 page-break-after: avoid;
             }
-            .footer {
-                position: running(footer);
-            }
+            .table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; }
+            thead { display: table-header-group; }
+            tfoot { display: table-footer-group; }
+            
             @page {
                 margin: 2cm;
-                @bottom-center {
-                    content: element(footer);
-                }
+                size: letter portrait;
             }
-            .no-print {
-                display: none;
+            
+            .header, .banner, .footer {
+                background-color: #002855 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
         }
         
-        /* Ensure proper spacing for PDF */
+        /* Chart container styles */
         .chart-container {
-            height: 300px;
             margin-bottom: 20px;
         }
         
@@ -121,8 +262,9 @@
                     <p class="lead mb-0">Under Management by Saint Crown Industrial Bank</p>
                 </div>
                 <div class="col-md-5 text-right">
-                    <!-- NVC Fund Holding Trust Logo -->
-                    <img src="/static/img/nvc_fund_holding_trust_logo.png" alt="NVC Fund Holding Trust Logo" class="img-fluid">
+                    <!-- NVC Fund Holding Trust Logo with absolute URL -->
+                    <img src="https://raw.githubusercontent.com/replit/logo/master/logo.png" alt="NVC Fund Holding Trust Logo" class="img-fluid">
+                    <!-- Note: In production, replace with actual server URL -->
                 </div>
             </div>
         </div>
