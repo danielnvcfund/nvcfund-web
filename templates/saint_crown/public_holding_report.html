@@ -369,8 +369,13 @@
                 data: {
                     labels: [
                         {% if assets %}
-                            {% set sorted_assets = assets|sort(attribute='value', reverse=true) %}
-                            {% for asset in sorted_assets[:5] %}
+                            {% set top_assets = [] %}
+                            {% for asset in assets|sort(attribute='value', reverse=true) %}
+                                {% if loop.index <= 5 %}
+                                    {% set _ = top_assets.append(asset) %}
+                                {% endif %}
+                            {% endfor %}
+                            {% for asset in top_assets %}
                                 "{{ asset.name[:15] + '...' if asset.name|length > 15 else asset.name }}"{% if not loop.last %},{% endif %}
                             {% endfor %}
                         {% else %}
@@ -381,7 +386,7 @@
                         label: 'Value (USD)',
                         data: [
                             {% if assets %}
-                                {% for asset in sorted_assets[:5] %}
+                                {% for asset in top_assets %}
                                     {{ asset.value|float }}{% if not loop.last %},{% endif %}
                                 {% endfor %}
                             {% else %}
