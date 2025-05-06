@@ -100,7 +100,7 @@
                                         <td>{{ asset.name }}</td>
                                         <td>{{ asset.asset_type.value }}</td>
                                         <td>${{ "{:,.2f}".format(asset.value|float) }}</td>
-                                        <td>{{ "{:,.2f}".format(asset.value|float / 250.0) }} AFD1</td>
+                                        <td>{{ "{:,.2f}".format(asset.value|float / afd1_unit_value) }} AFD1</td>
                                         <td>
                                             {% if asset.afd1_liquidity_pool_status == "ACTIVE" %}
                                                 <span class="badge badge-success">ACTIVE</span>

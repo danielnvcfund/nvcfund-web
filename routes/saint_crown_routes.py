@@ -215,10 +215,19 @@ def api_assets():
             managing_institution_id=institution.id if institution else None
         ).all()
         
+        # Get current gold price and calculate AFD1 unit value
+        gold_price, gold_metadata = saint_crown.get_gold_price()
+        afd1_unit_value = gold_price * 0.1  # AFD1 = 10% of gold price
+        
+        # Calculate total values
+        total_value_usd = sum(float(asset.value) for asset in assets if asset.currency == "USD")
+        total_value_afd1 = total_value_usd / afd1_unit_value if afd1_unit_value else 0
+        
         asset_list = [{
             "asset_id": asset.asset_id,
             "name": asset.name,
-            "value": float(asset.value),
+            "value_usd": float(asset.value),
+            "value_afd1": float(asset.value) / afd1_unit_value if asset.currency == "USD" and afd1_unit_value else 0,
             "currency": asset.currency,
             "type": asset.asset_type.value,
             "afd1_status": asset.afd1_liquidity_pool_status,
@@ -228,9 +237,14 @@ def api_assets():
         return jsonify({
             "success": True,
             "managing_institution": institution.name if institution else "Saint Crown Industrial Bank",
+            "gold_price_usd": gold_price,
+            "gold_price_metadata": gold_metadata,
+            "afd1_unit_value_usd": afd1_unit_value,
             "assets": asset_list,
             "total_assets": len(asset_list),
-            "total_value_usd": sum(asset["value"] for asset in asset_list if asset["currency"] == "USD"),
+            "total_value_usd": total_value_usd,
+            "total_value_afd1": total_value_afd1,
+            "nvct_usd_ratio": 1.0  # NVCT is pegged 1:1 to USD
         })
             
     except Exception as e:
