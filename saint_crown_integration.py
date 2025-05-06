@@ -235,32 +235,89 @@ class SaintCrownIntegration:
             # Try to get the latest gold price from Kitco
             import requests
             from bs4 import BeautifulSoup
+            import re
             
+            # First try the Kitco gold charts page
             kitco_url = "https://www.kitco.com/charts/gold"
-            response = requests.get(kitco_url, timeout=5)
+            response = requests.get(kitco_url, timeout=10)
             
             if response.status_code == 200:
                 soup = BeautifulSoup(response.text, 'html.parser')
                 
-                # Look for the gold price in the page
-                # The price is typically in a span with class 'last-price'
-                price_element = soup.select_one('.last-price, .text-2xl')
+                # Try multiple selectors - Kitco may update their website structure
+                selectors = [
+                    '.last-price', 
+                    '.text-2xl', 
+                    '.price',
+                    '#sp-ask',
+                    '.ask',
+                    'span:contains("$")'
+                ]
                 
-                if price_element:
-                    # Extract the price and clean it up
-                    price_text = price_element.get_text(strip=True)
-                    # Remove any currency symbols or commas
-                    price_text = price_text.replace('$', '').replace(',', '').strip()
-                    # Convert to float
-                    gold_price = float(price_text)
+                # Try each selector
+                for selector in selectors:
+                    price_element = None
+                    try:
+                        if ':contains' in selector:
+                            # Handle custom contains selector
+                            for span in soup.find_all('span'):
+                                if '$' in span.text:
+                                    price_element = span
+                                    break
+                        else:
+                            price_element = soup.select_one(selector)
+                            
+                        if price_element:
+                            # Extract the price and clean it up
+                            price_text = price_element.get_text(strip=True)
+                            # Remove any currency symbols or commas
+                            price_text = re.sub(r'[^\d.]', '', price_text)
+                            # Convert to float
+                            gold_price = float(price_text)
+                            
+                            if 100 <= gold_price <= 10000:  # Reasonable gold price range check
+                                logger.info(f"Successfully fetched gold price from Kitco: ${gold_price}")
+                                return gold_price, {
+                                    "source": "Kitco Gold Charts",
+                                    "source_url": kitco_url,
+                                    "timestamp": datetime.utcnow().isoformat(),
+                                    "base": "XAU",
+                                    "fetched_at": datetime.utcnow().isoformat(),
+                                    "live_chart_url": kitco_url
+                                }
+                    except Exception as selector_err:
+                        logger.debug(f"Selector {selector} failed: {str(selector_err)}")
+                        continue
+                
+            # If first method fails, try alternative URL    
+            try:
+                alt_kitco_url = "https://www.kitco.com/gold-price-today-usa/"
+                alt_response = requests.get(alt_kitco_url, timeout=10)
+                
+                if alt_response.status_code == 200:
+                    alt_soup = BeautifulSoup(alt_response.text, 'html.parser')
                     
-                    return gold_price, {
-                        "source": "Kitco Gold Charts",
-                        "source_url": kitco_url,
-                        "timestamp": datetime.utcnow().isoformat(),
-                        "base": "XAU",
-                        "fetched_at": datetime.utcnow().isoformat()
-                    }
+                    # Try to find the price in the XAU table
+                    price_cell = alt_soup.select_one('td.price')
+                    
+                    if price_cell:
+                        price_text = price_cell.get_text(strip=True)
+                        # Clean up the text
+                        price_text = re.sub(r'[^\d.]', '', price_text)
+                        gold_price = float(price_text)
+                        
+                        if 100 <= gold_price <= 10000:  # Reasonable gold price range check
+                            logger.info(f"Successfully fetched gold price from Kitco alternative: ${gold_price}")
+                            return gold_price, {
+                                "source": "Kitco Gold Price Today",
+                                "source_url": alt_kitco_url,
+                                "timestamp": datetime.utcnow().isoformat(),
+                                "base": "XAU",
+                                "fetched_at": datetime.utcnow().isoformat(),
+                                "live_chart_url": kitco_url
+                            }
+            except Exception as alt_err:
+                logger.warning(f"Failed to fetch gold price from alternative Kitco URL: {str(alt_err)}")
                 
             logger.warning("Could not extract gold price from Kitco website")
             
@@ -274,7 +331,8 @@ class SaintCrownIntegration:
             "timestamp": datetime.utcnow().isoformat(),
             "base": "XAU",
             "note": "This is a fallback value. In production, this would fetch live data from Kitco.",
-            "kitco_url": "https://www.kitco.com/charts/gold"
+            "kitco_url": "https://www.kitco.com/charts/gold",
+            "live_chart_url": "https://www.kitco.com/charts/gold"
         }
     
     def calculate_afd1_value(self, usd_value):
