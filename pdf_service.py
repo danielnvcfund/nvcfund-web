@@ -790,9 +790,9 @@ class PDFService:
                 'no-stop-slow-scripts': ''
             }
             
-            # Render the template with the data
+            # Render the special print template for PDF output
             html_content = render_template(
-                'saint_crown/public_holding_report.html',
+                'saint_crown/public_holding_report_print.html',
                 assets=data.get('assets', []),
                 total_value=data.get('total_value', 0),
                 total_value_afd1=data.get('total_value_afd1', 0),
@@ -801,8 +801,7 @@ class PDFService:
                 afd1_unit_value=data.get('afd1_unit_value', 0),
                 asset_count=len(data.get('assets', [])),
                 institution=data.get('institution'),
-                report_date=data.get('report_date', datetime.utcnow()),
-                print_mode=True  # Flag to indicate PDF rendering mode
+                report_date=data.get('report_date', datetime.utcnow())
             )
             
             # Generate PDF
