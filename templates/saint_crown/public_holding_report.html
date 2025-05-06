@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NVC Fund Holding Trust Report</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -98,6 +99,19 @@
                         <div class="card-body">
                             <p class="mb-0">Source: {{ gold_metadata.source }}</p>
                             <p class="mb-0">Fetched at: {{ gold_metadata.fetched_at }}</p>
+                            {% if gold_metadata.source_url %}
+                            <p class="mt-2">
+                                <a href="{{ gold_metadata.source_url }}" target="_blank" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-chart-line mr-1"></i> View Live Gold Chart
+                                </a>
+                            </p>
+                            {% elif gold_metadata.kitco_url %}
+                            <p class="mt-2">
+                                <a href="{{ gold_metadata.kitco_url }}" target="_blank" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-chart-line mr-1"></i> View Live Gold Chart
+                                </a>
+                            </p>
+                            {% endif %}
                             {% if gold_metadata.note %}
                             <p class="small text-muted mt-2">{{ gold_metadata.note }}</p>
                             {% endif %}

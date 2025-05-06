@@ -225,44 +225,56 @@ class SaintCrownIntegration:
     def get_gold_price(self):
         """
         Get the current gold price in USD per ounce
-        Attempts to fetch from a public source, falls back to default value if unavailable
+        Attempts to fetch from Kitco website, falls back to default value if unavailable
 
         Returns:
             float: Current gold price in USD per ounce
             dict: Additional metadata about the gold price
         """
         try:
-            # In production, this would use a paid API with proper authentication
-            # For demonstration, we attempt to fetch from a public source
+            # Try to get the latest gold price from Kitco
             import requests
+            from bs4 import BeautifulSoup
             
-            # Try to get the latest gold price from a public source
-            response = requests.get("https://api.metalpriceapi.com/v1/latest?api_key=demo&base=XAU&currencies=USD", 
-                                    timeout=3)
+            kitco_url = "https://www.kitco.com/charts/gold"
+            response = requests.get(kitco_url, timeout=5)
             
             if response.status_code == 200:
-                data = response.json()
-                if 'rates' in data and 'USD' in data['rates']:
-                    # This API returns price per gram, convert to ounces (1 troy oz = 31.1035 grams)
-                    price_per_gram = 1 / data['rates']['USD']
-                    price_per_oz = price_per_gram * 31.1035
+                soup = BeautifulSoup(response.text, 'html.parser')
+                
+                # Look for the gold price in the page
+                # The price is typically in a span with class 'last-price'
+                price_element = soup.select_one('.last-price, .text-2xl')
+                
+                if price_element:
+                    # Extract the price and clean it up
+                    price_text = price_element.get_text(strip=True)
+                    # Remove any currency symbols or commas
+                    price_text = price_text.replace('$', '').replace(',', '').strip()
+                    # Convert to float
+                    gold_price = float(price_text)
                     
-                    return price_per_oz, {
-                        "source": "Metal Price API",
-                        "timestamp": data.get('timestamp', None),
-                        "base": data.get('base', 'XAU'),
+                    return gold_price, {
+                        "source": "Kitco Gold Charts",
+                        "source_url": kitco_url,
+                        "timestamp": datetime.utcnow().isoformat(),
+                        "base": "XAU",
                         "fetched_at": datetime.utcnow().isoformat()
                     }
-        except Exception as e:
-            logger.warning(f"Failed to fetch gold price from external API: {str(e)}")
+                
+            logger.warning("Could not extract gold price from Kitco website")
             
-        # Default fallback value if API fails
+        except Exception as e:
+            logger.warning(f"Failed to fetch gold price from Kitco website: {str(e)}")
+            
+        # Default fallback value if scraping fails
         # Current gold price as of May 2025 (estimated based on trends)
         return 2500.00, {
             "source": "Default estimated value",
             "timestamp": datetime.utcnow().isoformat(),
             "base": "XAU",
-            "note": "This is a fallback value. In production, this would fetch from a paid API service."
+            "note": "This is a fallback value. In production, this would fetch live data from Kitco.",
+            "kitco_url": "https://www.kitco.com/charts/gold"
         }
     
     def calculate_afd1_value(self, usd_value):
@@ -295,26 +307,32 @@ class SaintCrownIntegration:
             afd1_liquidity_pool_status="ACTIVE"
         ).all()
         
-        if not assets:
-            logger.warning("No assets found in AFD1 liquidity pool")
-            return {"error": "No assets found"}
-        
         # Get current gold price and AFD1 unit value
         gold_price, gold_metadata = self.get_gold_price()
         afd1_unit_value = gold_price * 0.1  # AFD1 = 10% of gold price
         
-        total_value_usd = sum(float(asset.value) for asset in assets if asset.currency == "USD")
+        # Use real NVC Fund Holdings value: $2.5 trillion USD for total value
+        total_value_usd = 2500000000000  # $2.5 trillion as requested
         total_value_afd1 = self.calculate_afd1_value(total_value_usd)
         
-        asset_list = [{
-            "asset_id": asset.asset_id,
-            "name": asset.name,
-            "value_usd": float(asset.value),
-            "value_afd1": self.calculate_afd1_value(float(asset.value)),
-            "currency": asset.currency,
-            "type": asset.asset_type,
-            "last_verified": asset.last_verified_date.isoformat() if asset.last_verified_date else None
-        } for asset in assets]
+        # Add Kitco URL for live gold price reference
+        if "kitco_url" in gold_metadata:
+            gold_metadata["live_chart_url"] = gold_metadata["kitco_url"]
+        elif "source_url" in gold_metadata:
+            gold_metadata["live_chart_url"] = gold_metadata["source_url"]
+        
+        # Process asset data if available
+        asset_list = []
+        if assets:
+            asset_list = [{
+                "asset_id": asset.asset_id,
+                "name": asset.name,
+                "value_usd": float(asset.value),
+                "value_afd1": self.calculate_afd1_value(float(asset.value)),
+                "currency": asset.currency,
+                "type": asset.asset_type,
+                "last_verified": asset.last_verified_date.isoformat() if asset.last_verified_date else None
+            } for asset in assets]
         
         report_data = {
             "managing_institution": "Saint Crown Industrial Bank",
@@ -323,11 +341,13 @@ class SaintCrownIntegration:
             "gold_price_usd": gold_price,
             "gold_price_metadata": gold_metadata,
             "afd1_unit_value_usd": afd1_unit_value,
-            "total_assets": len(assets),
+            "total_assets": len(assets if assets else []),
             "total_value_usd": total_value_usd,
             "total_value_afd1": total_value_afd1,
             "nvct_usd_ratio": 1.0,  # NVCT is pegged 1:1 to USD
-            "assets": asset_list
+            "assets": asset_list,
+            "nvc_fund_total_holdings_usd": total_value_usd,
+            "nvc_fund_total_holdings_afd1": total_value_afd1
         }
         
         return report_data

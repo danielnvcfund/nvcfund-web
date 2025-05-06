@@ -219,8 +219,8 @@ def api_assets():
         gold_price, gold_metadata = saint_crown.get_gold_price()
         afd1_unit_value = gold_price * 0.1  # AFD1 = 10% of gold price
         
-        # Calculate total values
-        total_value_usd = sum(float(asset.value) for asset in assets if asset.currency == "USD")
+        # Use real NVC Fund Holdings value: $2.5 trillion USD for total value
+        total_value_usd = 2500000000000  # $2.5 trillion as requested
         total_value_afd1 = total_value_usd / afd1_unit_value if afd1_unit_value else 0
         
         asset_list = [{
@@ -234,6 +234,12 @@ def api_assets():
             "last_verified": asset.last_verified_date.isoformat() if asset.last_verified_date else None
         } for asset in assets]
         
+        # Add Kitco URL for live gold price reference
+        if "kitco_url" in gold_metadata:
+            gold_metadata["live_chart_url"] = gold_metadata["kitco_url"]
+        elif "source_url" in gold_metadata:
+            gold_metadata["live_chart_url"] = gold_metadata["source_url"]
+        
         return jsonify({
             "success": True,
             "managing_institution": institution.name if institution else "Saint Crown Industrial Bank",
@@ -244,7 +250,9 @@ def api_assets():
             "total_assets": len(asset_list),
             "total_value_usd": total_value_usd,
             "total_value_afd1": total_value_afd1,
-            "nvct_usd_ratio": 1.0  # NVCT is pegged 1:1 to USD
+            "nvct_usd_ratio": 1.0,  # NVCT is pegged 1:1 to USD
+            "nvc_fund_total_holdings_usd": total_value_usd,
+            "nvc_fund_total_holdings_afd1": total_value_afd1
         })
             
     except Exception as e:
