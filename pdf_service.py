@@ -755,6 +755,75 @@ class PDFService:
         except Exception as e:
             logger.error(f"Error saving PDF to file: {str(e)}")
             raise
+    
+    def generate_holding_report_pdf(self, data):
+        """
+        Generate a PDF for the NVC Fund Holding Trust Public Holding Report
+        
+        Args:
+            data (dict): Report data including assets, totals, and other information
+            
+        Returns:
+            bytes: PDF document as bytes
+        """
+        try:
+            from flask import render_template
+            
+            # Set PDF options
+            options = {
+                'page-size': 'Letter',
+                'margin-top': '0.5in',
+                'margin-right': '0.5in',
+                'margin-bottom': '0.5in',
+                'margin-left': '0.5in',
+                'encoding': "UTF-8",
+                'no-outline': None,
+                'title': 'NVC Fund Holding Trust Report',
+                'footer-center': '[page] of [topage]',
+                'footer-font-size': '8',
+                'footer-line': '',
+                'header-center': 'NVC Fund Holding Trust Report',
+                'header-font-size': '8',
+                'header-line': '',
+                'enable-javascript': '',
+                'javascript-delay': '1000',  # Wait for charts to render
+                'no-stop-slow-scripts': ''
+            }
+            
+            # Render the template with the data
+            html_content = render_template(
+                'saint_crown/public_holding_report.html',
+                assets=data.get('assets', []),
+                total_value=data.get('total_value', 0),
+                total_value_afd1=data.get('total_value_afd1', 0),
+                gold_price=data.get('gold_price', 0),
+                gold_metadata=data.get('gold_metadata', {}),
+                afd1_unit_value=data.get('afd1_unit_value', 0),
+                asset_count=len(data.get('assets', [])),
+                institution=data.get('institution'),
+                report_date=data.get('report_date', datetime.utcnow()),
+                print_mode=True  # Flag to indicate PDF rendering mode
+            )
+            
+            # Generate PDF
+            try:
+                # First try with pdfkit (wkhtmltopdf)
+                import pdfkit
+                pdf_content = pdfkit.from_string(html_content, False, options=options)
+            except Exception as e:
+                logger.warning(f"Error generating PDF with pdfkit: {str(e)}")
+                # Fallback to WeasyPrint
+                from weasyprint import HTML
+                pdf_buffer = io.BytesIO()
+                HTML(string=html_content).write_pdf(pdf_buffer)
+                pdf_content = pdf_buffer.getvalue()
+                pdf_buffer.close()
+            
+            return pdf_content
+            
+        except Exception as e:
+            logger.error(f"Error generating holding report PDF: {str(e)}")
+            raise
 
 
 # Create a global instance
