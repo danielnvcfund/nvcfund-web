@@ -181,7 +181,11 @@ def public_holding_report():
         total_value_usd = 2500000000000  # $2.5 trillion as requested
         total_value_afd1 = total_value_usd / afd1_unit_value
         
-        logger.info(f"Public report: {total_value_usd} USD = {total_value_afd1} AFD1 (Gold at ${gold_price}, AFD1 at ${afd1_unit_value})")
+        # Format values for better logging
+        formatted_total_usd = f"${total_value_usd:,.2f}"
+        formatted_total_afd1 = f"{total_value_afd1:,.2f}"
+        
+        logger.info(f"Public report: {formatted_total_usd} USD = {formatted_total_afd1} AFD1 (Gold at ${gold_price:,.2f}, AFD1 at ${afd1_unit_value:,.2f})")
         
         return render_template(
             'saint_crown/public_holding_report.html',
