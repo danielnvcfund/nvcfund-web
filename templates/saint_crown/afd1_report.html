@@ -1,0 +1,145 @@
+{% extends "layout.html" %}
+
+{% block title %}AFD1 Liquidity Pool Report{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('saint_crown.dashboard') }}">Saint Crown Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">AFD1 Liquidity Pool Report</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">American Federation Dollar (AFD1) Liquidity Pool Report</h3>
+                    <div>
+                        <button onclick="window.print()" class="btn btn-light">
+                            <i class="fas fa-print mr-1"></i> Print Report
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h4>Pool Information</h4>
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th width="40%">Report Date:</th>
+                                        <td>{{ generated_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Pool Name:</th>
+                                        <td>{{ report.liquidity_pool }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Managing Institution:</th>
+                                        <td>{{ report.managing_institution }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Summary</h4>
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th width="40%">Total Assets:</th>
+                                        <td>{{ report.total_assets }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Total Value (USD):</th>
+                                        <td>${{ "{:,.2f}".format(report.total_value_usd) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h4>Assets in AFD1 Liquidity Pool</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Asset ID</th>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Value</th>
+                                    <th>Last Verified</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if report.assets %}
+                                    {% for asset in report.assets %}
+                                    <tr>
+                                        <td><small class="text-muted">{{ asset.asset_id }}</small></td>
+                                        <td>{{ asset.name }}</td>
+                                        <td>{{ asset.type }}</td>
+                                        <td>{{ asset.currency }} {{ "{:,.2f}".format(asset.value) }}</td>
+                                        <td>
+                                            {% if asset.last_verified %}
+                                                <small>{{ asset.last_verified }}</small>
+                                            {% else %}
+                                                <small class="text-muted">Not verified</small>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-3">
+                                            <div class="alert alert-info mb-0">
+                                                No assets currently in the AFD1 liquidity pool.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-primary">
+                                <h5 class="alert-heading">About the American Federation Dollar (AFD1)</h5>
+                                <p>
+                                    The American Federation Dollar (AFD1) is a liquidity pool administered by Saint Crown Industrial Bank, 
+                                    consisting of high-quality assets managed by NVC Fund Bank. These assets provide stability and 
+                                    backing for financial transactions in the global marketplace.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>
+                        Report generated on {{ generated_at.strftime('%Y-%m-%d %H:%M:%S') }} UTC | 
+                        For official use only | Reference ID: {{ 'AFD1-' + generated_at.strftime('%Y%m%d%H%M%S') }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 text-center mb-4">
+            <a href="{{ url_for('saint_crown.dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left mr-1"></i> Back to Dashboard
+            </a>
+            <a href="{{ url_for('saint_crown.public_holding_report') }}" class="btn btn-primary" target="_blank">
+                <i class="fas fa-globe mr-1"></i> View Public Report
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

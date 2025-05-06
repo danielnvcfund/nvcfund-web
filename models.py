@@ -256,6 +256,78 @@ class TelexMessage(db.Model):
             # Add other special cases here if needed in the future
             raise
 
+class AssetType(enum.Enum):
+    """Asset types"""
+    CASH = "CASH"
+    TREASURY_BOND = "TREASURY_BOND"
+    CORPORATE_BOND = "CORPORATE_BOND"
+    SOVEREIGN_BOND = "SOVEREIGN_BOND"
+    EQUITY = "EQUITY"
+    REAL_ESTATE = "REAL_ESTATE"
+    COMMODITY = "COMMODITY"
+    INFRASTRUCTURE = "INFRASTRUCTURE"
+    LOAN = "LOAN"
+    COLLATERALIZED_DEBT = "COLLATERALIZED_DEBT"
+    OTHER = "OTHER"
+
+class Asset(db.Model):
+    """Model for assets under management"""
+    id = db.Column(db.Integer, primary_key=True)
+    asset_id = db.Column(db.String(64), unique=True, nullable=False)
+    name = db.Column(db.String(256), nullable=False)
+    description = db.Column(db.Text)
+    asset_type = db.Column(db.Enum(AssetType), nullable=False)
+    value = db.Column(db.Numeric(20, 2), nullable=False)  # Numeric for precise financial values
+    currency = db.Column(db.String(3), default="USD")
+    location = db.Column(db.String(256))
+    custodian = db.Column(db.String(256))
+    managing_institution_id = db.Column(db.Integer, db.ForeignKey('financial_institution.id'), nullable=True)
+    is_active = db.Column(db.Boolean, default=True)
+    is_verified = db.Column(db.Boolean, default=False)
+    verification_date = db.Column(db.DateTime, nullable=True)
+    last_valuation_date = db.Column(db.DateTime, nullable=True)
+    last_verified_date = db.Column(db.DateTime, nullable=True)
+    documentation_url = db.Column(db.String(512))
+    metadata_json = db.Column(db.Text)  # Additional metadata as JSON
+    afd1_liquidity_pool_status = db.Column(db.String(32), default="INACTIVE")  # ACTIVE, INACTIVE, PENDING
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    managing_institution = db.relationship('FinancialInstitution', backref=db.backref('managed_assets', lazy=True))
+
+class AssetReporting(db.Model):
+    """Model for asset reporting and verification records"""
+    id = db.Column(db.Integer, primary_key=True)
+    asset_id = db.Column(db.String(64), db.ForeignKey('asset.asset_id'), nullable=False)
+    institution_id = db.Column(db.Integer, db.ForeignKey('financial_institution.id'), nullable=True)
+    report_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    report_type = db.Column(db.String(64), nullable=False)  # VALUATION, VERIFICATION, AUDIT, etc.
+    report_status = db.Column(db.String(32), default="PENDING")  # PENDING, COMPLETE, REJECTED
+    report_data = db.Column(db.Text)  # Report data as JSON
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    asset = db.relationship('Asset', backref=db.backref('reports', lazy=True))
+    institution = db.relationship('FinancialInstitution', backref=db.backref('asset_reports', lazy=True))
+
+class LiquidityPool(db.Model):
+    """Model for liquidity pools like AFD1"""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), nullable=False)
+    code = db.Column(db.String(32), unique=True, nullable=False)  # Like "AFD1"
+    description = db.Column(db.Text)
+    manager_institution_id = db.Column(db.Integer, db.ForeignKey('financial_institution.id'), nullable=True)
+    total_value = db.Column(db.Numeric(24, 2))  # Total value of assets in the pool
+    currency = db.Column(db.String(3), default="USD")
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    manager_institution = db.relationship('FinancialInstitution', backref=db.backref('managed_liquidity_pools', lazy=True))
+
 class PaymentGateway(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), nullable=False)

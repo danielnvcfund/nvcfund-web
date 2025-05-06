@@ -1,0 +1,251 @@
+{% extends "layout.html" %}
+
+{% block title %}Asset Details: {{ asset.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('saint_crown.dashboard') }}">Saint Crown Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Asset Details</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Asset Details</h3>
+                    <div>
+                        <form action="{{ url_for('saint_crown.verify_asset', asset_id=asset.asset_id) }}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-light">Verify Asset</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Basic Information</h4>
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th>Asset ID:</th>
+                                        <td>{{ asset.asset_id }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Name:</th>
+                                        <td>{{ asset.name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Type:</th>
+                                        <td>{{ asset.asset_type.value }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Value:</th>
+                                        <td>{{ asset.currency }} {{ "{:,.2f}".format(asset.value|float) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Location:</th>
+                                        <td>{{ asset.location or 'N/A' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Custodian:</th>
+                                        <td>{{ asset.custodian or 'N/A' }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Management Status</h4>
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th>Managing Institution:</th>
+                                        <td>{{ asset.managing_institution.name if asset.managing_institution else "Saint Crown Industrial Bank" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Active Status:</th>
+                                        <td>
+                                            {% if asset.is_active %}
+                                                <span class="badge badge-success">ACTIVE</span>
+                                            {% else %}
+                                                <span class="badge badge-secondary">INACTIVE</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Verification Status:</th>
+                                        <td>
+                                            {% if asset.is_verified %}
+                                                <span class="badge badge-success">VERIFIED</span>
+                                            {% else %}
+                                                <span class="badge badge-warning">UNVERIFIED</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Last Verified:</th>
+                                        <td>{{ asset.last_verified_date.strftime('%Y-%m-%d %H:%M:%S') if asset.last_verified_date else 'Never' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Last Valuation:</th>
+                                        <td>{{ asset.last_valuation_date.strftime('%Y-%m-%d') if asset.last_valuation_date else 'Not available' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>AFD1 Pool Status:</th>
+                                        <td>
+                                            {% if asset.afd1_liquidity_pool_status == "ACTIVE" %}
+                                                <span class="badge badge-success">ACTIVE</span>
+                                            {% elif asset.afd1_liquidity_pool_status == "PENDING" %}
+                                                <span class="badge badge-warning">PENDING</span>
+                                            {% else %}
+                                                <span class="badge badge-secondary">INACTIVE</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {% if asset.description %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h4>Description</h4>
+                            <p>{{ asset.description }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if asset.metadata_json %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h4>Additional Metadata</h4>
+                            <pre class="bg-light p-3 rounded"><code>{{ asset.metadata_json }}</code></pre>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Verification History</h4>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Report Type</th>
+                                    <th>Status</th>
+                                    <th>Institution</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if reports %}
+                                    {% for report in reports %}
+                                    <tr>
+                                        <td>{{ report.report_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                        <td>{{ report.report_type }}</td>
+                                        <td>
+                                            {% if report.report_status == "COMPLETE" %}
+                                                <span class="badge badge-success">COMPLETE</span>
+                                            {% elif report.report_status == "PENDING" %}
+                                                <span class="badge badge-warning">PENDING</span>
+                                            {% else %}
+                                                <span class="badge badge-secondary">{{ report.report_status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ report.institution.name if report.institution else "Saint Crown Industrial Bank" }}</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#reportModal{{ report.id }}">
+                                                View Details
+                                            </button>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Report Details Modal -->
+                                    <div class="modal fade" id="reportModal{{ report.id }}" tabindex="-1" role="dialog" aria-labelledby="reportModalLabel{{ report.id }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="reportModalLabel{{ report.id }}">Report Details</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <h6>Report Information</h6>
+                                                    <table class="table table-sm">
+                                                        <tbody>
+                                                            <tr>
+                                                                <th width="30%">Asset ID:</th>
+                                                                <td>{{ report.asset_id }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Report Type:</th>
+                                                                <td>{{ report.report_type }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Report Date:</th>
+                                                                <td>{{ report.report_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Status:</th>
+                                                                <td>{{ report.report_status }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Institution:</th>
+                                                                <td>{{ report.institution.name if report.institution else "Saint Crown Industrial Bank" }}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+
+                                                    <h6 class="mt-4">Report Data</h6>
+                                                    {% if report.report_data %}
+                                                        <pre class="bg-light p-3 rounded"><code>{{ report.report_data }}</code></pre>
+                                                    {% else %}
+                                                        <div class="alert alert-info">No detailed report data available.</div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-3">
+                                            <div class="alert alert-info mb-0">
+                                                No verification reports available for this asset.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% if reports %}
+                <div class="card-footer">
+                    <small class="text-muted">Showing {{ reports|length }} verification reports</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
