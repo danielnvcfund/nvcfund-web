@@ -918,6 +918,16 @@
                 </a>
             </div>
             
+            <!-- Reports Group -->
+            <div class="btn-group me-2 mb-2" role="group" aria-label="Reports">
+                <a href="/nvc-fund-holding-trust-report.html" class="btn btn-info" target="_blank">
+                    <i class="fas fa-file-alt me-1"></i> NVC Fund Report
+                </a>
+                <a href="{{ url_for('saint_crown.afd1_report') }}" class="btn btn-outline-info">
+                    <i class="fas fa-chart-line me-1"></i> AFD1 Report
+                </a>
+            </div>
+            
             <!-- Admin Quick Links (only visible to admins) -->
             {% if current_user.is_authenticated and (current_user.username in ['admin', 'headadmin'] or current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' or current_user.role.name == 'ADMIN') %}
             <span class="section-divider d-none d-md-inline-block my-2"></span>
