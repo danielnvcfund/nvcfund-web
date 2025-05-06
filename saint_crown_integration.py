@@ -13,7 +13,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any, Union
 
 from flask import current_app
-from models import db, FinancialInstitution, Asset, AssetReporting, LiquidityPool
+from models import db, FinancialInstitution, FinancialInstitutionType, Asset, AssetReporting, LiquidityPool
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -40,14 +40,16 @@ class SaintCrownIntegration:
             institution = FinancialInstitution(
                 name="Saint Crown Industrial Bank",
                 swift_code="SCIBUSAA",  # Example code - replace with actual if known
-                institution_type="INDUSTRIAL_BANK",
-                country="US",
-                address="Saint Crown Financial District",
-                website="https://saintcrownindustrialbank.com",
-                status="ACTIVE",
-                is_correspondent=True,
-                is_rtgs_enabled=True,
-                description="Administrator of NVC Fund assets and AFD1 Liquidity Pool"
+                institution_type=FinancialInstitutionType.OTHER,
+                metadata_json=json.dumps({
+                    "country": "US",
+                    "address": "Saint Crown Financial District",
+                    "website": "https://saintcrownindustrialbank.com",
+                    "description": "Administrator of NVC Fund assets and AFD1 Liquidity Pool",
+                    "is_correspondent": True
+                }),
+                rtgs_enabled=True,
+                is_active=True
             )
             
             try:
