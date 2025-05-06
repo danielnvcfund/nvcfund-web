@@ -40,6 +40,14 @@ def dashboard():
     # Get AFD1 liquidity pool
     pool = LiquidityPool.query.filter_by(code="AFD1").first()
     
+    # Get current gold price and calculate AFD1 unit value
+    gold_price, gold_metadata = saint_crown.get_gold_price()
+    afd1_unit_value = gold_price * 0.1  # AFD1 = 10% of gold price
+    
+    # Calculate total values
+    total_value_usd = sum(float(asset.value) for asset in assets if asset.currency == "USD")
+    total_value_afd1 = total_value_usd / afd1_unit_value
+    
     return render_template(
         'saint_crown/dashboard.html',
         title='Saint Crown Asset Management',
@@ -47,7 +55,11 @@ def dashboard():
         assets=assets,
         pool=pool,
         asset_count=len(assets),
-        total_value=sum(float(asset.value) for asset in assets if asset.currency == "USD"),
+        total_value=total_value_usd,
+        total_value_afd1=total_value_afd1,
+        gold_price=gold_price,
+        gold_metadata=gold_metadata,
+        afd1_unit_value=afd1_unit_value,
         status=status
     )
 

@@ -28,16 +28,30 @@
                         </div>
                         <div class="col-md-6">
                             <h4>AFD1 Liquidity Pool</h4>
-                            <p>
-                                <strong>Pool Name:</strong> {{ pool.name if pool else "American Federation Dollar (AFD1)" }}<br>
-                                <strong>Total Assets:</strong> {{ asset_count }}<br>
-                                <strong>Gold Price (per oz):</strong> $2,500.00 USD<br>
-                                <strong>AFD1 Unit Value:</strong> $250.00 USD (10% of gold price)<br>
-                                <strong>Total Value (USD):</strong> ${{ "{:,.2f}".format(total_value) }} USD<br>
-                                <strong>Total Value (AFD1):</strong> {{ "{:,.2f}".format(total_value / 250.0) }} AFD1<br>
-                                <strong>Status:</strong> <span class="badge badge-success">ACTIVE</span>
-                            </p>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <p>
+                                        <strong>Pool Name:</strong> {{ pool.name if pool else "American Federation Dollar (AFD1)" }}<br>
+                                        <strong>Total Assets:</strong> {{ asset_count }}<br>
+                                        <strong>Gold Price (per oz):</strong> ${{ "{:,.2f}".format(gold_price) }} USD<br>
+                                        <strong>AFD1 Unit Value:</strong> ${{ "{:,.2f}".format(afd1_unit_value) }} USD (10% of gold price)<br>
+                                        <strong>Total Value (USD):</strong> ${{ "{:,.2f}".format(total_value) }} USD<br>
+                                        <strong>Total Value (AFD1):</strong> {{ "{:,.2f}".format(total_value_afd1) }} AFD1<br>
+                                        <strong>Status:</strong> <span class="badge badge-success">ACTIVE</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light mb-3 small">
+                                        <div class="card-header py-2">Gold Price Data</div>
+                                        <div class="card-body py-2">
+                                            <small>Source: {{ gold_metadata.source }}</small><br>
+                                            <small>Updated: {{ gold_metadata.fetched_at }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <a href="{{ url_for('saint_crown.afd1_report') }}" class="btn btn-primary btn-sm">View AFD1 Report</a>
+                            <a href="{{ url_for('saint_crown.public_holding_report') }}" class="btn btn-outline-primary btn-sm" target="_blank">Public Report</a>
                         </div>
                     </div>
                 </div>

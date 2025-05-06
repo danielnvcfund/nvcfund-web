@@ -27,6 +27,24 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    <!-- Large AFD1 Total Banner -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="alert alert-primary p-4 shadow-sm">
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <h4 class="alert-heading mb-1">Total AFD1 Liquidity Pool Holdings:</h4>
+                                        <p class="mb-0">Based on current gold price: ${{ "{:,.2f}".format(report.gold_price_usd) }} USD per oz</p>
+                                    </div>
+                                    <div class="col-md-6 text-right">
+                                        <h2 class="display-4 mb-0 font-weight-bold">{{ "{:,.2f}".format(report.total_value_afd1) }} AFD1</h2>
+                                        <p class="mb-0 lead">${{ "{:,.2f}".format(report.total_value_usd) }} USD equivalent</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <h4>Pool Information</h4>
@@ -46,6 +64,20 @@
                                     </tr>
                                 </tbody>
                             </table>
+                            
+                            <!-- Gold Price Metadata Card -->
+                            <div class="card bg-light mt-3">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Gold Price Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-1"><strong>Source:</strong> {{ report.gold_price_metadata.source }}</p>
+                                    <p class="mb-1"><strong>Last Updated:</strong> {{ report.gold_price_metadata.fetched_at }}</p>
+                                    {% if report.gold_price_metadata.note %}
+                                    <p class="mb-0 small text-muted">{{ report.gold_price_metadata.note }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <h4>Summary</h4>
@@ -61,15 +93,19 @@
                                     </tr>
                                     <tr>
                                         <th>AFD1 Unit Value:</th>
-                                        <td>${{ "{:,.2f}".format(report.afd1_unit_value_usd) }} USD</td>
+                                        <td>${{ "{:,.2f}".format(report.afd1_unit_value_usd) }} USD <span class="text-muted">(10% of gold price)</span></td>
+                                    </tr>
+                                    <tr>
+                                        <th>NVCT/USD Ratio:</th>
+                                        <td>{{ report.nvct_usd_ratio }}:1 <span class="text-muted">(NVCT is pegged to USD)</span></td>
                                     </tr>
                                     <tr>
                                         <th>Total Value (USD):</th>
-                                        <td>${{ "{:,.2f}".format(report.total_value_usd) }}</td>
+                                        <td class="font-weight-bold">${{ "{:,.2f}".format(report.total_value_usd) }}</td>
                                     </tr>
                                     <tr>
                                         <th>Total Value (AFD1):</th>
-                                        <td>{{ "{:,.2f}".format(report.total_value_afd1) }} AFD1</td>
+                                        <td class="font-weight-bold">{{ "{:,.2f}".format(report.total_value_afd1) }} AFD1</td>
                                     </tr>
                                 </tbody>
                             </table>
