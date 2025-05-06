@@ -27,8 +27,11 @@ def swift_telex_capabilities():
     # Get institution data
     institution = FinancialInstitution.query.filter_by(name='NVC BANK').first()
     if not institution:
-        # Try alternate name
-        institution = FinancialInstitution.query.filter(FinancialInstitution.swift_code == 'NVCGLOBAL').first()
+        # Try with SWIFT/BIC code
+        institution = FinancialInstitution.query.filter(FinancialInstitution.swift_code == 'NVCFBKAU').first()
+        # Try alternate code (for backwards compatibility)
+        if not institution:
+            institution = FinancialInstitution.query.filter(FinancialInstitution.swift_code == 'NVCGLOBAL').first()
     
     # Use default values if institution not found
     if institution:
@@ -36,7 +39,7 @@ def swift_telex_capabilities():
         swift_code = institution.swift_code
     else:
         bank_name = "NVC Fund Bank"
-        swift_code = "NVCGLOBAL"
+        swift_code = "NVCFBKAU"
     
     # Prepare template context
     context = {
@@ -61,6 +64,16 @@ def swift_telex_capabilities():
     except Exception as e:
         logger.error(f"Error generating PDF: {str(e)}")
         return f"Error generating PDF: {str(e)}", 500
+
+@pdf_bp.route('/swift-telex-capabilities-static')
+def swift_telex_capabilities_static():
+    """Serve the pre-generated SWIFT/Telex capabilities PDF"""
+    try:
+        pdf_path = os.path.join(current_app.static_folder, 'docs', 'swift_telex_capabilities.pdf')
+        return send_file(pdf_path, mimetype='application/pdf')
+    except Exception as e:
+        logger.error(f"Error serving static PDF: {str(e)}")
+        return f"Error serving PDF: {str(e)}", 500
 
 # Register the blueprint
 def register_pdf_routes(app):
