@@ -361,3 +361,40 @@ def generate_afd1_report():
     """
     service = get_saint_crown_integration()
     return service.generate_afd1_liquidity_report()
+    
+def get_gold_price():
+    """
+    Get the current gold price in USD per ounce
+    This is a wrapper around the SaintCrownIntegration.get_gold_price method
+    
+    Returns:
+        tuple: (gold_price, metadata)
+            - gold_price (float): Current gold price in USD per ounce
+            - metadata (dict): Additional metadata about the price
+    """
+    service = get_saint_crown_integration()
+    return service.get_gold_price()
+    
+def get_afd1_liquidity_pool_assets():
+    """
+    Get all assets in the AFD1 liquidity pool
+    
+    Returns:
+        list: List of Asset objects in the AFD1 liquidity pool
+    """
+    service = get_saint_crown_integration()
+    institution = service.institution
+    
+    # Query assets under Saint Crown management with ACTIVE status in the AFD1 pool
+    assets = Asset.query.filter_by(
+        managing_institution_id=institution.id if institution else None,
+        afd1_liquidity_pool_status="ACTIVE"
+    ).all()
+    
+    # If no assets found, use all assets regardless of status
+    if not assets:
+        assets = Asset.query.filter_by(
+            managing_institution_id=institution.id if institution else None
+        ).all()
+    
+    return assets
