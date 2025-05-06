@@ -19,6 +19,7 @@ class PartnerType(enum.Enum):
     CORRESPONDENT_BANK = "Correspondent Bank"
     SETTLEMENT_PARTNER = "Settlement Partner"
     STABLECOIN_ISSUER = "Stablecoin Issuer"
+    INDUSTRIAL_BANK = "Industrial Bank"
 
 class IntegrationType(enum.Enum):
     API = "API"
