@@ -78,10 +78,13 @@
                 </div>
                 <div class="col-md-7 text-right">
                     <h1 style="font-size: 2.8rem; font-weight: bold; letter-spacing: -1px;">
-                        10,000,000,000.00 AFD1
+                        {{ "{:,.2f}".format(total_value_afd1) }} AFD1
                     </h1>
                     <p class="lead" style="font-size: 1.4rem;">
                         $2,500,000,000,000.00 USD equivalent
+                    </p>
+                    <p class="text-light" style="font-size: 0.9rem; margin-top: -5px;">
+                        Based on AFD1 value of ${{ "{:,.2f}".format(afd1_unit_value) }} (10% of current gold price)
                     </p>
                 </div>
             </div>
@@ -152,7 +155,7 @@
                             </tr>
                             <tr>
                                 <th>Total Value (AFD1):</th>
-                                <td class="value-highlight">10,000,000,000.00 AFD1</td>
+                                <td class="value-highlight">{{ "{:,.2f}".format(total_value_afd1) }} AFD1</td>
                             </tr>
                         </tbody>
                     </table>
@@ -211,8 +214,9 @@
                                 <td colspan="6" class="text-center py-3">
                                     <div class="alert alert-info mb-0">
                                         <strong>Note:</strong> While individual assets are not displayed for security reasons, 
-                                        the total NVC Fund holdings of $2,500,000,000,000.00 USD (10,000,000,000.00 AFD1) 
-                                        are fully verified and backed by high-quality assets managed by Saint Crown Industrial Bank.
+                                        the total NVC Fund holdings of $2,500,000,000,000.00 USD ({{ "{:,.2f}".format(total_value_afd1) }} AFD1) 
+                                        are fully verified and backed by high-quality assets managed by Saint Crown Industrial Bank. 
+                                        <br><small class="text-muted">The AFD1 value fluctuates based on the current gold price of ${{ "{:,.2f}".format(gold_price) }} per ounce.</small>
                                     </div>
                                 </td>
                             </tr>
