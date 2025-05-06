@@ -222,6 +222,35 @@ class SaintCrownIntegration:
         
         return verification_data
     
+    def get_gold_price(self):
+        """
+        Get the current gold price in USD per ounce
+        In a production environment, this would call an external API
+
+        Returns:
+            float: Current gold price in USD per ounce
+        """
+        # In a production environment, this would fetch real-time gold prices
+        # from a service like Gold Price API, CoinGecko, or similar
+        # For now, we'll use a realistic fixed value
+        # Current gold price as of May 2025 (estimated based on trends)
+        return 2500.00  # USD per ounce
+    
+    def calculate_afd1_value(self, usd_value):
+        """
+        Calculate AFD1 value based on gold price
+        AFD1 is worth 10% of the daily price of one ounce of gold
+        
+        Args:
+            usd_value (float): Value in USD
+            
+        Returns:
+            float: Value in AFD1
+        """
+        gold_price = self.get_gold_price()
+        afd1_unit_value = gold_price * 0.1  # AFD1 = 10% of gold price
+        return usd_value / afd1_unit_value
+    
     def generate_afd1_liquidity_report(self):
         """
         Generate a report of NVC Fund assets in the AFD1 liquidity pool
@@ -241,12 +270,18 @@ class SaintCrownIntegration:
             logger.warning("No assets found in AFD1 liquidity pool")
             return {"error": "No assets found"}
         
+        # Get current gold price and AFD1 unit value
+        gold_price = self.get_gold_price()
+        afd1_unit_value = gold_price * 0.1  # AFD1 = 10% of gold price
+        
         total_value_usd = sum(float(asset.value) for asset in assets if asset.currency == "USD")
+        total_value_afd1 = self.calculate_afd1_value(total_value_usd)
         
         asset_list = [{
             "asset_id": asset.asset_id,
             "name": asset.name,
-            "value": float(asset.value),
+            "value_usd": float(asset.value),
+            "value_afd1": self.calculate_afd1_value(float(asset.value)),
             "currency": asset.currency,
             "type": asset.asset_type,
             "last_verified": asset.last_verified_date.isoformat() if asset.last_verified_date else None
@@ -256,8 +291,12 @@ class SaintCrownIntegration:
             "managing_institution": "Saint Crown Industrial Bank",
             "liquidity_pool": "American Federation Dollar (AFD1)",
             "report_date": datetime.utcnow().isoformat(),
+            "gold_price_usd": gold_price,
+            "afd1_unit_value_usd": afd1_unit_value,
             "total_assets": len(assets),
             "total_value_usd": total_value_usd,
+            "total_value_afd1": total_value_afd1,
+            "nvct_usd_ratio": 1.0,  # NVCT is pegged 1:1 to USD
             "assets": asset_list
         }
         

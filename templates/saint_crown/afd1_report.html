@@ -56,8 +56,20 @@
                                         <td>{{ report.total_assets }}</td>
                                     </tr>
                                     <tr>
+                                        <th>Gold Price (per oz):</th>
+                                        <td>${{ "{:,.2f}".format(report.gold_price_usd) }} USD</td>
+                                    </tr>
+                                    <tr>
+                                        <th>AFD1 Unit Value:</th>
+                                        <td>${{ "{:,.2f}".format(report.afd1_unit_value_usd) }} USD</td>
+                                    </tr>
+                                    <tr>
                                         <th>Total Value (USD):</th>
                                         <td>${{ "{:,.2f}".format(report.total_value_usd) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Total Value (AFD1):</th>
+                                        <td>{{ "{:,.2f}".format(report.total_value_afd1) }} AFD1</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -74,7 +86,8 @@
                                     <th>Asset ID</th>
                                     <th>Name</th>
                                     <th>Type</th>
-                                    <th>Value</th>
+                                    <th>Value (USD)</th>
+                                    <th>Value (AFD1)</th>
                                     <th>Last Verified</th>
                                 </tr>
                             </thead>
@@ -85,7 +98,8 @@
                                         <td><small class="text-muted">{{ asset.asset_id }}</small></td>
                                         <td>{{ asset.name }}</td>
                                         <td>{{ asset.type }}</td>
-                                        <td>{{ asset.currency }} {{ "{:,.2f}".format(asset.value) }}</td>
+                                        <td>${{ "{:,.2f}".format(asset.value_usd) }}</td>
+                                        <td>{{ "{:,.2f}".format(asset.value_afd1) }} AFD1</td>
                                         <td>
                                             {% if asset.last_verified %}
                                                 <small>{{ asset.last_verified }}</small>

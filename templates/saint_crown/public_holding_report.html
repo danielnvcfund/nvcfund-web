@@ -87,12 +87,24 @@
                                 <td>{{ institution.name if institution else "Saint Crown Industrial Bank" }}</td>
                             </tr>
                             <tr>
+                                <th>Gold Price (per oz):</th>
+                                <td>$2,500.00 USD</td>
+                            </tr>
+                            <tr>
+                                <th>AFD1 Unit Value:</th>
+                                <td>$250.00 USD (10% of gold price)</td>
+                            </tr>
+                            <tr>
                                 <th>Total Assets:</th>
                                 <td>{{ asset_count }}</td>
                             </tr>
                             <tr>
-                                <th>Total Value:</th>
+                                <th>Total Value (USD):</th>
                                 <td class="value-highlight">${{ "{:,.2f}".format(total_value) }} USD</td>
+                            </tr>
+                            <tr>
+                                <th>Total Value (AFD1):</th>
+                                <td class="value-highlight">{{ "{:,.2f}".format(total_value / 250.0) }} AFD1</td>
                             </tr>
                         </tbody>
                     </table>
@@ -121,7 +133,8 @@
                             <th>Asset ID</th>
                             <th>Name</th>
                             <th>Type</th>
-                            <th>Value</th>
+                            <th>Value (USD)</th>
+                            <th>Value (AFD1)</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -132,7 +145,8 @@
                                 <td><small class="text-muted">{{ asset.asset_id }}</small></td>
                                 <td>{{ asset.name }}</td>
                                 <td>{{ asset.asset_type.value }}</td>
-                                <td>{{ asset.currency }} {{ "{:,.2f}".format(asset.value|float) }}</td>
+                                <td>${{ "{:,.2f}".format(asset.value|float) }}</td>
+                                <td>{{ "{:,.2f}".format(asset.value|float / 250.0) }} AFD1</td>
                                 <td>
                                     {% if asset.afd1_liquidity_pool_status == "ACTIVE" %}
                                         <span class="badge badge-success">ACTIVE</span>
@@ -146,7 +160,7 @@
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="5" class="text-center py-3">
+                                <td colspan="6" class="text-center py-3">
                                     <div class="alert alert-info mb-0">
                                         No assets currently in the AFD1 liquidity pool.
                                     </div>

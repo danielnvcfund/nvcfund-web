@@ -31,7 +31,10 @@
                             <p>
                                 <strong>Pool Name:</strong> {{ pool.name if pool else "American Federation Dollar (AFD1)" }}<br>
                                 <strong>Total Assets:</strong> {{ asset_count }}<br>
-                                <strong>Total Value:</strong> ${{ "{:,.2f}".format(total_value) }} USD<br>
+                                <strong>Gold Price (per oz):</strong> $2,500.00 USD<br>
+                                <strong>AFD1 Unit Value:</strong> $250.00 USD (10% of gold price)<br>
+                                <strong>Total Value (USD):</strong> ${{ "{:,.2f}".format(total_value) }} USD<br>
+                                <strong>Total Value (AFD1):</strong> {{ "{:,.2f}".format(total_value / 250.0) }} AFD1<br>
                                 <strong>Status:</strong> <span class="badge badge-success">ACTIVE</span>
                             </p>
                             <a href="{{ url_for('saint_crown.afd1_report') }}" class="btn btn-primary btn-sm">View AFD1 Report</a>
@@ -68,7 +71,8 @@
                                     <th>Asset ID</th>
                                     <th>Name</th>
                                     <th>Type</th>
-                                    <th>Value</th>
+                                    <th>Value (USD)</th>
+                                    <th>Value (AFD1)</th>
                                     <th>AFD1 Status</th>
                                     <th>Last Verified</th>
                                     <th>Actions</th>
@@ -81,7 +85,8 @@
                                         <td><small class="text-muted">{{ asset.asset_id }}</small></td>
                                         <td>{{ asset.name }}</td>
                                         <td>{{ asset.asset_type.value }}</td>
-                                        <td>{{ asset.currency }} {{ "{:,.2f}".format(asset.value|float) }}</td>
+                                        <td>${{ "{:,.2f}".format(asset.value|float) }}</td>
+                                        <td>{{ "{:,.2f}".format(asset.value|float / 250.0) }} AFD1</td>
                                         <td>
                                             {% if asset.afd1_liquidity_pool_status == "ACTIVE" %}
                                                 <span class="badge badge-success">ACTIVE</span>
@@ -108,7 +113,7 @@
                                     {% endfor %}
                                 {% else %}
                                     <tr>
-                                        <td colspan="7" class="text-center py-3">
+                                        <td colspan="8" class="text-center py-3">
                                             <div class="alert alert-info mb-0">
                                                 No assets currently registered with Saint Crown Industrial Bank.
                                                 <button type="button" class="btn btn-primary btn-sm ml-3" data-toggle="modal" data-target="#registerAssetsModal">
