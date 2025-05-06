@@ -161,13 +161,25 @@ def public_holding_report():
             afd1_liquidity_pool_status="ACTIVE"
         ).all()
         
+        # Get current gold price and calculate AFD1 unit value
+        gold_price, gold_metadata = saint_crown.get_gold_price()
+        afd1_unit_value = gold_price * 0.1  # AFD1 = 10% of gold price
+        
+        # Calculate total values
         total_value_usd = sum(float(asset.value) for asset in assets if asset.currency == "USD")
+        total_value_afd1 = total_value_usd / afd1_unit_value
+        
+        logger.info(f"Public report: {total_value_usd} USD = {total_value_afd1} AFD1 (Gold at ${gold_price}, AFD1 at ${afd1_unit_value})")
         
         return render_template(
             'saint_crown/public_holding_report.html',
             title='NVC Fund Holding Trust Report',
             assets=assets,
             total_value=total_value_usd,
+            total_value_afd1=total_value_afd1,
+            gold_price=gold_price,
+            gold_metadata=gold_metadata,
+            afd1_unit_value=afd1_unit_value,
             asset_count=len(assets),
             institution=institution,
             report_date=datetime.utcnow()

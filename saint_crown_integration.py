@@ -225,16 +225,45 @@ class SaintCrownIntegration:
     def get_gold_price(self):
         """
         Get the current gold price in USD per ounce
-        In a production environment, this would call an external API
+        Attempts to fetch from a public source, falls back to default value if unavailable
 
         Returns:
             float: Current gold price in USD per ounce
+            dict: Additional metadata about the gold price
         """
-        # In a production environment, this would fetch real-time gold prices
-        # from a service like Gold Price API, CoinGecko, or similar
-        # For now, we'll use a realistic fixed value
+        try:
+            # In production, this would use a paid API with proper authentication
+            # For demonstration, we attempt to fetch from a public source
+            import requests
+            
+            # Try to get the latest gold price from a public source
+            response = requests.get("https://api.metalpriceapi.com/v1/latest?api_key=demo&base=XAU&currencies=USD", 
+                                    timeout=3)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'rates' in data and 'USD' in data['rates']:
+                    # This API returns price per gram, convert to ounces (1 troy oz = 31.1035 grams)
+                    price_per_gram = 1 / data['rates']['USD']
+                    price_per_oz = price_per_gram * 31.1035
+                    
+                    return price_per_oz, {
+                        "source": "Metal Price API",
+                        "timestamp": data.get('timestamp', None),
+                        "base": data.get('base', 'XAU'),
+                        "fetched_at": datetime.utcnow().isoformat()
+                    }
+        except Exception as e:
+            logger.warning(f"Failed to fetch gold price from external API: {str(e)}")
+            
+        # Default fallback value if API fails
         # Current gold price as of May 2025 (estimated based on trends)
-        return 2500.00  # USD per ounce
+        return 2500.00, {
+            "source": "Default estimated value",
+            "timestamp": datetime.utcnow().isoformat(),
+            "base": "XAU",
+            "note": "This is a fallback value. In production, this would fetch from a paid API service."
+        }
     
     def calculate_afd1_value(self, usd_value):
         """
@@ -247,7 +276,7 @@ class SaintCrownIntegration:
         Returns:
             float: Value in AFD1
         """
-        gold_price = self.get_gold_price()
+        gold_price, metadata = self.get_gold_price()
         afd1_unit_value = gold_price * 0.1  # AFD1 = 10% of gold price
         return usd_value / afd1_unit_value
     
@@ -271,7 +300,7 @@ class SaintCrownIntegration:
             return {"error": "No assets found"}
         
         # Get current gold price and AFD1 unit value
-        gold_price = self.get_gold_price()
+        gold_price, gold_metadata = self.get_gold_price()
         afd1_unit_value = gold_price * 0.1  # AFD1 = 10% of gold price
         
         total_value_usd = sum(float(asset.value) for asset in assets if asset.currency == "USD")
@@ -292,6 +321,7 @@ class SaintCrownIntegration:
             "liquidity_pool": "American Federation Dollar (AFD1)",
             "report_date": datetime.utcnow().isoformat(),
             "gold_price_usd": gold_price,
+            "gold_price_metadata": gold_metadata,
             "afd1_unit_value_usd": afd1_unit_value,
             "total_assets": len(assets),
             "total_value_usd": total_value_usd,

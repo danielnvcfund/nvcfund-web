@@ -73,6 +73,20 @@
                 <div class="col-md-6">
                     <h3>American Federation Dollar (AFD1)</h3>
                     <p>The American Federation Dollar (AFD1) is a liquidity pool administered by Saint Crown Industrial Bank, consisting of high-quality assets managed by NVC Fund Bank. These assets provide stability and backing for financial transactions in the global marketplace.</p>
+                    <p><strong>Each AFD1 is valued at 10% of the daily gold price.</strong> This ties the AFD1 directly to gold as a stable store of value.</p>
+                    
+                    <div class="card bg-light mb-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">Gold Price Data</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0">Source: {{ gold_metadata.source }}</p>
+                            <p class="mb-0">Fetched at: {{ gold_metadata.fetched_at }}</p>
+                            {% if gold_metadata.note %}
+                            <p class="small text-muted mt-2">{{ gold_metadata.note }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-6">
                     <h3>Summary</h3>
@@ -88,11 +102,11 @@
                             </tr>
                             <tr>
                                 <th>Gold Price (per oz):</th>
-                                <td>$2,500.00 USD</td>
+                                <td>${{ "{:,.2f}".format(gold_price) }} USD</td>
                             </tr>
                             <tr>
                                 <th>AFD1 Unit Value:</th>
-                                <td>$250.00 USD (10% of gold price)</td>
+                                <td>${{ "{:,.2f}".format(afd1_unit_value) }} USD (10% of gold price)</td>
                             </tr>
                             <tr>
                                 <th>Total Assets:</th>
@@ -104,7 +118,7 @@
                             </tr>
                             <tr>
                                 <th>Total Value (AFD1):</th>
-                                <td class="value-highlight">{{ "{:,.2f}".format(total_value / 250.0) }} AFD1</td>
+                                <td class="value-highlight">{{ "{:,.2f}".format(total_value_afd1) }} AFD1</td>
                             </tr>
                         </tbody>
                     </table>
