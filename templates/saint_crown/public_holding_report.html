@@ -19,7 +19,16 @@
             margin-bottom: 2rem;
         }
         .header img {
-            max-height: 80px;
+            max-height: 90px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .header .lead {
+            font-size: 1.2rem;
+            opacity: 0.9;
         }
         .section {
             background-color: white;
@@ -61,8 +70,8 @@
                     <p class="lead mb-0">Assets Under Management by Saint Crown Industrial Bank</p>
                 </div>
                 <div class="col-md-4 text-right">
-                    <!-- Logo placeholder - update path to actual logo -->
-                    <img src="/static/img/logo.png" alt="NVC Fund Bank Logo" class="img-fluid">
+                    <!-- NVC Fund Holding Trust Logo -->
+                    <img src="/static/img/nvc_fund_holding_trust_logo.png" alt="NVC Fund Holding Trust Logo" class="img-fluid">
                 </div>
             </div>
         </div>
@@ -85,7 +94,7 @@
                     </p>
                     <p class="text-light" style="font-size: 0.9rem; margin-top: -5px;">
                         Based on AFD1 value of ${{ "{:,.2f}".format(afd1_unit_value) }} (10% of current gold price)
-                        <br><small>Updated: {{ report_date.strftime('%H:%M:%S') }}</small>
+                        <br><small>Updated: {{ report_date.strftime('%B %d, %Y %H:%M:%S') }}</small>
                     </p>
                 </div>
             </div>
