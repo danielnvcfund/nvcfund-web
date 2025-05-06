@@ -62,17 +62,61 @@
             font-size: 0.8rem;
             color: #6c757d;
         }
+        
+        /* Print-specific styles */
+        @media print {
+            body {
+                background-color: white !important;
+                color: black !important;
+            }
+            .header, .footer {
+                background-color: white !important;
+                color: #002855 !important;
+                padding: 1rem 0;
+            }
+            .section, .table-container {
+                border: 1px solid #dee2e6;
+                page-break-inside: avoid;
+            }
+            button, .btn {
+                display: none !important;
+            }
+            a[href]:after {
+                content: none !important;
+            }
+            .value-highlight {
+                color: #002855 !important;
+            }
+            canvas {
+                max-width: 100%;
+                height: auto !important;
+            }
+            table {
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid #dee2e6 !important;
+            }
+            .text-light, .text-white {
+                color: #002855 !important;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-md-8">
+                <div class="col-md-7">
                     <h1>NVC Fund Holding Trust Report</h1>
                     <p class="lead mb-0">Under Management by Saint Crown Industrial Bank</p>
                 </div>
-                <div class="col-md-4 text-right">
+                <div class="col-md-3 text-right">
+                    <button onclick="window.print()" class="btn btn-light btn-lg mb-2">
+                        <i class="fas fa-print mr-2"></i> Print Report
+                    </button>
+                </div>
+                <div class="col-md-2 text-right">
                     <!-- NVC Fund Holding Trust Logo -->
                     <img src="/static/img/nvc_fund_holding_trust_logo.png" alt="NVC Fund Holding Trust Logo" class="img-fluid">
                 </div>
