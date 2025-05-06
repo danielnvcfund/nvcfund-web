@@ -297,8 +297,8 @@ def ach_capabilities_pdf():
 def swift_telex_capabilities_pdf():
     """Generate a PDF of the SWIFT & Telex Messaging Capabilities document"""
     try:
-        # Get the HTML content from the templates directory
-        html_path = os.path.join(current_app.root_path, 'templates/pdf/swift_telex_capabilities.html')
+        # Use the static document that already has the correct values
+        html_path = os.path.join(current_app.root_path, 'static/docs/swift_telex_capabilities.html')
         
         # Read the HTML content
         with open(html_path, 'r') as f:
