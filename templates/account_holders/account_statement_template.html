@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
     <style>
         @page {
             size: letter portrait;
-            margin: 2cm;
-            @top-center {
-                content: "{{ header }}";
-                font-size: 10pt;
-                color: #666;
+            margin: 1.5cm;
+            @top-right {
+                content: "NVC Fund Bank";
+                font-size: 9pt;
+                color: #1a4f8a;
             }
             @bottom-center {
                 content: "Page " counter(page) " of " counter(pages);
-                font-size: 10pt;
+                font-size: 9pt;
                 color: #666;
             }
             @bottom-left {
@@ -22,299 +23,308 @@
                 font-size: 8pt;
                 color: #999;
             }
-            @bottom-right {
-                content: "NVC Global Banking Platform";
-                font-size: 8pt;
-                color: #999;
-            }
         }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            font-size: 12pt;
+            font-size: 10pt;
             line-height: 1.5;
             color: #333;
         }
-        .document {
-            padding: 10px;
-        }
+        
         .header {
             border-bottom: 1px solid #ddd;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        .document-title {
-            font-size: 24pt;
-            font-weight: bold;
-            color: #1a4f8a;
-            margin-bottom: 5px;
-        }
-        .document-subtitle {
-            font-size: 14pt;
-            color: #666;
+            padding-bottom: 15px;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .logo {
-            float: right;
-            height: 70px;
+        
+        .header-logo {
+            text-align: left;
+        }
+        
+        .header-logo img {
+            height: 60px;
             width: auto;
         }
-        .statement-info {
-            margin-bottom: 30px;
+        
+        .header-title {
+            text-align: right;
         }
-        .section-title {
-            font-size: 14pt;
+        
+        .statement-title {
+            font-size: 20pt;
             font-weight: bold;
             color: #1a4f8a;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
+            margin: 0;
         }
+        
+        .statement-subtitle {
+            font-size: 11pt;
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        
+        .account-info, .account-holder-info {
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #1a4f8a;
+            margin: 15px 0 10px 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 3px;
+        }
+        
         .info-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        .info-table th {
-            text-align: left;
-            padding: 8px;
-            background-color: #f5f5f5;
-            border-bottom: 1px solid #ddd;
-            font-weight: bold;
-            width: 30%;
-        }
-        .info-table td {
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-        }
-        .transaction-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
             font-size: 10pt;
         }
-        .transaction-table th {
-            background-color: #1a4f8a;
-            color: white;
-            text-align: left;
-            padding: 8px;
-            border: 1px solid #ddd;
+        
+        .info-table td {
+            padding: 3px 5px;
         }
-        .transaction-table td {
-            padding: 8px;
-            border: 1px solid #ddd;
-        }
-        .transaction-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .transaction-table tr:hover {
-            background-color: #f1f1f1;
-        }
-        .amount {
+        
+        .info-table .label {
             font-weight: bold;
-            font-size: 14pt;
-            color: #2a6e38;
+            width: 40%;
+            color: #555;
         }
-        .amount-positive {
-            color: #2a6e38;
-        }
-        .amount-negative {
-            color: #dc3545;
-        }
-        .summary-box {
-            margin-top: 20px;
-            border: 1px solid #ddd;
-            padding: 15px;
+        
+        .statement-summary {
+            margin: 20px 0;
             background-color: #f9f9f9;
-            border-radius: 5px;
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 4px;
         }
+        
         .summary-table {
             width: 100%;
             border-collapse: collapse;
         }
-        .summary-table th {
-            text-align: left;
-            padding: 8px;
+        
+        .summary-table td {
+            padding: 3px 5px;
+        }
+        
+        .summary-table .label {
             font-weight: bold;
             width: 60%;
-            border-bottom: 1px solid #ddd;
+            color: #555;
         }
-        .summary-table td {
+        
+        .summary-table .amount {
             text-align: right;
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-        }
-        .summary-table tr:last-child th,
-        .summary-table tr:last-child td {
-            border-top: 2px solid #1a4f8a;
             font-weight: bold;
-            font-size: 14pt;
         }
-        .address {
-            white-space: pre-line;
+        
+        .transactions {
+            margin-top: 20px;
         }
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-            font-size: 10pt;
-            color: #666;
-        }
-        .disclaimer {
+        
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 9pt;
-            color: #999;
-            margin-top: 10px;
         }
-        .date-range {
+        
+        .transactions-table th {
+            background-color: #1a4f8a;
+            color: white;
+            text-align: left;
+            padding: 5px;
+            font-weight: normal;
+        }
+        
+        .transactions-table td {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .transactions-table .amount {
+            text-align: right;
+        }
+        
+        .transactions-table .balance {
+            text-align: right;
             font-weight: bold;
-            color: #1a4f8a;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            font-size: 8pt;
+            color: #999;
+        }
+        
+        .credit {
+            color: #28a745;
+        }
+        
+        .debit {
+            color: #dc3545;
+        }
+        
+        .total-row {
+            font-weight: bold;
+            border-top: 2px solid #ddd;
+        }
+        
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 100pt;
+            color: rgba(200, 200, 200, 0.1);
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .no-transactions {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #999;
+        }
+        
+        @media print {
+            .page-break {
+                page-break-before: always;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="document">
-        <div class="header">
-            <!-- <img src="logo.png" alt="NVC Global Banking" class="logo"> -->
-            <div class="document-title">{{ title }}</div>
-            <div class="document-subtitle">{{ subtitle }}</div>
+    <div class="watermark">STATEMENT</div>
+    
+    <div class="header">
+        <div class="header-logo">
+            <div style="font-size: 16pt; font-weight: bold; color: #1a4f8a;">NVC FUND BANK</div>
+            <div style="font-size: 9pt; color: #666;">Supranational Sovereign Financial Institution</div>
         </div>
-        
-        <div class="statement-info">
-            <div class="section-title">Account Information</div>
-            <table class="info-table">
-                <tr>
-                    <th>Account Holder</th>
-                    <td>{{ account_holder.name }}</td>
-                </tr>
-                <tr>
-                    <th>Account Number</th>
-                    <td>{{ account.account_number }}</td>
-                </tr>
-                <tr>
-                    <th>Account Type</th>
-                    <td>{{ account.account_type.value }}</td>
-                </tr>
-                <tr>
-                    <th>Currency</th>
-                    <td>{{ account.currency.value }}</td>
-                </tr>
-                <tr>
-                    <th>Statement Period</th>
-                    <td class="date-range">{{ start_date }} to {{ end_date }}</td>
-                </tr>
-            </table>
+        <div class="header-title">
+            <h1 class="statement-title">Account Statement</h1>
+            <p class="statement-subtitle">{{ subtitle }}</p>
         </div>
+    </div>
+    
+    <div class="account-holder-info">
+        <div class="section-title">Account Holder</div>
+        <table class="info-table">
+            <tr>
+                <td class="label">Name:</td>
+                <td>{{ account_holder.name }}</td>
+            </tr>
+            {% if has_address %}
+            <tr>
+                <td class="label">Address:</td>
+                <td>{{ primary_address }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td class="label">Email:</td>
+                <td>{{ account_holder.email }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="account-info">
+        <div class="section-title">Account Information</div>
+        <table class="info-table">
+            <tr>
+                <td class="label">Account Number:</td>
+                <td>{{ account.account_number }}</td>
+            </tr>
+            <tr>
+                <td class="label">Account Type:</td>
+                <td>{{ account.account_type.value }}</td>
+            </tr>
+            <tr>
+                <td class="label">Currency:</td>
+                <td>{{ account.currency.value }}</td>
+            </tr>
+            <tr>
+                <td class="label">Statement Period:</td>
+                <td>{{ start_date }} to {{ end_date }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="statement-summary">
+        <div class="section-title">Statement Summary</div>
+        <table class="summary-table">
+            <tr>
+                <td class="label">Opening Balance:</td>
+                <td class="amount">{{ "{:,.2f}".format(opening_balance) }} {{ account.currency.value }}</td>
+            </tr>
+            <tr>
+                <td class="label">Total Credits:</td>
+                <td class="amount credit">{{ "{:,.2f}".format(total_credits) }} {{ account.currency.value }}</td>
+            </tr>
+            <tr>
+                <td class="label">Total Debits:</td>
+                <td class="amount debit">{{ "{:,.2f}".format(total_debits) }} {{ account.currency.value }}</td>
+            </tr>
+            <tr>
+                <td class="label">Net Change:</td>
+                <td class="amount {% if net_change >= 0 %}credit{% else %}debit{% endif %}">
+                    {{ "{:,.2f}".format(net_change) }} {{ account.currency.value }}
+                </td>
+            </tr>
+            <tr>
+                <td class="label">Closing Balance:</td>
+                <td class="amount">{{ "{:,.2f}".format(account.balance) }} {{ account.currency.value }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="transactions">
+        <div class="section-title">Transaction History</div>
         
-        <div class="balance-summary">
-            <div class="section-title">Balance Summary</div>
-            <table class="info-table">
+        {% if transactions %}
+        <table class="transactions-table">
+            <thead>
                 <tr>
-                    <th>Opening Balance</th>
-                    <td class="amount">{{ account.currency.value }} {{ "%.2f"|format(opening_balance) }}</td>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Reference</th>
+                    <th class="amount">Amount</th>
+                    <th class="balance">Balance</th>
                 </tr>
+            </thead>
+            <tbody>
+                {% for tx in transactions %}
                 <tr>
-                    <th>Closing Balance</th>
-                    <td class="amount">{{ account.currency.value }} {{ "%.2f"|format(account.balance) }}</td>
+                    <td>{{ tx.date }}</td>
+                    <td>{{ tx.description }}</td>
+                    <td>{{ tx.reference }}</td>
+                    <td class="amount {% if tx.amount >= 0 %}credit{% else %}debit{% endif %}">
+                        {{ "{:,.2f}".format(tx.amount) }}
+                    </td>
+                    <td class="balance">{{ "{:,.2f}".format(tx.balance) }}</td>
                 </tr>
-                <tr>
-                    <th>Available Balance</th>
-                    <td class="amount">{{ account.currency.value }} {{ "%.2f"|format(account.available_balance) }}</td>
-                </tr>
-            </table>
-        </div>
-        
-        {% if has_address %}
-        <div class="address-info">
-            <div class="section-title">Address Information</div>
-            <table class="info-table">
-                <tr>
-                    <th>Primary Address</th>
-                    <td class="address">{{ primary_address }}</td>
-                </tr>
-            </table>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="no-transactions">
+            No transactions recorded during this period.
         </div>
         {% endif %}
-        
-        <div class="transaction-section">
-            <div class="section-title">Transaction History</div>
-            {% if transactions %}
-            <table class="transaction-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Description</th>
-                        <th>Reference</th>
-                        <th>Debit</th>
-                        <th>Credit</th>
-                        <th>Balance</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for transaction in transactions %}
-                    <tr>
-                        <td>{{ transaction.date }}</td>
-                        <td>{{ transaction.description }}</td>
-                        <td>{{ transaction.reference }}</td>
-                        <td class="amount-negative">
-                            {% if transaction.amount < 0 %}
-                                {{ account.currency.value }} {{ "%.2f"|format(transaction.amount|abs) }}
-                            {% endif %}
-                        </td>
-                        <td class="amount-positive">
-                            {% if transaction.amount > 0 %}
-                                {{ account.currency.value }} {{ "%.2f"|format(transaction.amount) }}
-                            {% endif %}
-                        </td>
-                        <td>{{ account.currency.value }} {{ "%.2f"|format(transaction.balance) }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <p>No transactions found for this statement period.</p>
-            {% endif %}
-        </div>
-        
-        <div class="summary-box">
-            <div class="section-title">Transaction Summary</div>
-            <table class="summary-table">
-                <tr>
-                    <th>Total Credits</th>
-                    <td class="amount-positive">{{ account.currency.value }} {{ "%.2f"|format(total_credits) }}</td>
-                </tr>
-                <tr>
-                    <th>Total Debits</th>
-                    <td class="amount-negative">{{ account.currency.value }} {{ "%.2f"|format(total_debits) }}</td>
-                </tr>
-                <tr>
-                    <th>Net Change</th>
-                    <td class="{{ 'amount-positive' if net_change >= 0 else 'amount-negative' }}">
-                        {{ account.currency.value }} {{ "%.2f"|format(net_change) }}
-                    </td>
-                </tr>
-            </table>
-        </div>
-        
-        <div class="footer">
-            <p>This document serves as an official bank statement for the account detailed above.</p>
-            
-            <div style="margin-top: 20px; padding: 10px; border: 1px solid #ffc107; background-color: #fff3cd; border-radius: 4px;">
-                <p style="font-size: 10pt; color: #856404; margin: 0 0 5px 0;"><strong>Important Notice: Banking Credentials Registration Status</strong></p>
-                <p style="font-size: 9pt; margin: 0 0 5px 0;">
-                    The ACH routing number (031176110) and SWIFT/BIC code (NVCFBKAU) used by NVC Fund Bank are currently pending official registration with 
-                    their respective authorities. During this pre-registration period, transactions may need alternative processing methods.
-                </p>
-                <p style="font-size: 9pt; margin: 0;">
-                    For high-priority transactions requiring immediate processing, please contact our treasury operations department
-                    at treasury@nvcfundbank.com for alternative routing instructions.
-                </p>
-            </div>
-            
-            <p class="disclaimer">
-                This is a computer-generated document and does not require a signature.
-                For questions or concerns regarding this statement, please contact customer support.
-            </p>
-        </div>
+    </div>
+    
+    <div class="footer">
+        <p><strong>IMPORTANT:</strong> This is an official statement from NVC Fund Bank. Please review all transactions and report any discrepancies within 30 days.</p>
+        <p>For inquiries, please contact customer support at support@nvcfundbank.com or visit our website at www.nvcfundbank.com</p>
+        <p>NVC Fund Bank operates as a Supranational Sovereign Financial Institution established under African Union Treaty, Article XIV 1(e) of the ECO-6 Treaty, and AFRA jurisdiction.</p>
     </div>
 </body>
 </html>

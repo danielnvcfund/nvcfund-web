@@ -158,9 +158,9 @@
                     {% endif %}
                     
                     <div class="mt-4">
-                        <a href="{{ url_for('account_holders.account_statement', account_id=account.id) }}" class="btn btn-success btn-block">
+                        <button type="button" id="showStatementModal" class="btn btn-success btn-block">
                             <i class="fa fa-file-pdf"></i> Generate Account Statement
-                        </a>
+                        </button>
                         <a href="{{ url_for('account_holders.accounts', account_holder_id=account.account_holder.id) }}" class="btn btn-primary btn-block mt-2">
                             View All Accounts
                         </a>
