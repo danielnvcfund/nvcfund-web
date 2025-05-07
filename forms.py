@@ -943,8 +943,7 @@ class POSTransactionFilterForm(FlaskForm):
     date_to = DateField('To Date', format='%Y-%m-%d', validators=[Optional()])
     transaction_type = SelectField('Transaction Type', choices=[
         ('', 'All Types'),
-        ('PAYMENT', 'Payment (Incoming)'),
-        ('PAYOUT', 'Payout (Outgoing)')
+        ('PAYMENT', 'All Transactions')
     ], validators=[Optional()])
     status = SelectField('Status', choices=[
         ('', 'All Statuses'),

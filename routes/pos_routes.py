@@ -45,8 +45,10 @@ def pos_dashboard():
     """Render the POS dashboard"""
     # Get recent transactions (last 30 days)
     thirty_days_ago = datetime.utcnow() - timedelta(days=30)
-    # Create a list of payment types to filter by
-    payment_types = [TransactionType.PAYMENT.value, TransactionType.PAYOUT.value]
+    # IMPORTANT: The database doesn't have a PAYOUT transaction type,
+    # we need to use PAYMENT to represent all POS transactions
+    # Instead, we'll distinguish them by the metadata
+    payment_types = [TransactionType.PAYMENT.value]
     
     recent_transactions = Transaction.query.filter(
         Transaction.user_id == current_user.id,
@@ -77,16 +79,27 @@ def pos_dashboard():
                 total_payments += tx.amount * 1.25  # Simplified GBP to USD conversion
             elif tx.currency == 'NVCT':
                 total_payments += tx.amount  # 1:1 with USD
-        elif tx.transaction_type == TransactionType.PAYOUT.value:
-            # Convert to USD for display consistency (simplified)
-            if tx.currency == 'USD':
-                total_payouts += tx.amount
-            elif tx.currency == 'EUR':
-                total_payouts += tx.amount * 1.1  # Simplified EUR to USD conversion
-            elif tx.currency == 'GBP':
-                total_payouts += tx.amount * 1.25  # Simplified GBP to USD conversion
-            elif tx.currency == 'NVCT':
-                total_payouts += tx.amount  # 1:1 with USD
+        # For payouts, check the metadata to determine if it's a payout
+        elif tx.transaction_type == TransactionType.PAYMENT.value:
+            # Parse the metadata to check if it's a payout
+            metadata = {}
+            if tx.tx_metadata_json:
+                try:
+                    metadata = json.loads(tx.tx_metadata_json)
+                except:
+                    pass
+                
+            # If payment_type is 'pos_payout', consider it a payout
+            if metadata.get('payment_type') == 'pos_payout':
+                # Convert to USD for display consistency (simplified)
+                if tx.currency == 'USD':
+                    total_payouts += tx.amount
+                elif tx.currency == 'EUR':
+                    total_payouts += tx.amount * 1.1  # Simplified EUR to USD conversion
+                elif tx.currency == 'GBP':
+                    total_payouts += tx.amount * 1.25  # Simplified GBP to USD conversion
+                elif tx.currency == 'NVCT':
+                    total_payouts += tx.amount  # 1:1 with USD
     
     return render_template(
         'pos/dashboard.html',
@@ -218,16 +231,19 @@ def send_payment():
     
     if form.validate_on_submit():
         # Create new transaction record
+        # IMPORTANT: Using PAYMENT type instead of PAYOUT since PAYOUT doesn't exist
+        # in the database's enum type. We distinguish between payments and payouts
+        # using the metadata.
         transaction = Transaction(
             transaction_id=f"POS-{uuid.uuid4().hex[:8].upper()}",
             user_id=current_user.id,
-            transaction_type=TransactionType.PAYOUT,
+            transaction_type=TransactionType.PAYMENT,  # Use PAYMENT type for all POS transactions
             amount=form.amount.data,
             currency=form.currency.data,
             description=form.description.data or f"Payout to {form.recipient_name.data}",
             status=TransactionStatus.PENDING,
             tx_metadata_json=json.dumps({
-                'payment_type': 'pos_payout',
+                'payment_type': 'pos_payout',  # Use metadata to indicate it's a payout
                 'recipient_name': form.recipient_name.data,
                 'recipient_email': form.recipient_email.data,
                 'card_last4': form.card_last4.data,
@@ -279,8 +295,10 @@ def transactions():
     """Show transaction history with filters"""
     form = POSTransactionFilterForm(request.args)
     
-    # Create a list of payment types to filter by
-    payment_types = [TransactionType.PAYMENT.value, TransactionType.PAYOUT.value]
+    # IMPORTANT: The database doesn't have a PAYOUT transaction type,
+    # we need to use PAYMENT to represent all POS transactions
+    # We distinguish payment types by metadata
+    payment_types = [TransactionType.PAYMENT.value]
     
     # Base query for user's POS transactions
     query = Transaction.query.filter(
