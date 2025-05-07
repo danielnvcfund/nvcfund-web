@@ -23,20 +23,35 @@ def main():
     
     with app.app_context():
         try:
-            # Import the import_test_account_holder function
-            from import_account_holders import import_test_account_holder
+            # Import both the test account function and the CSV import function
+            from import_account_holders import import_test_account_holder, import_account_holders
             
-            # Run the test import function
-            imported, skipped, errors = import_test_account_holder()
+            # First, run the test import function
+            test_imported, test_skipped, test_errors = import_test_account_holder()
+            
+            # Log the test result
+            logger.info(f"Test import completed: {test_imported} imported, {test_skipped} skipped, {test_errors} errors")
+            
+            # Now import the real data from CSV
+            csv_file_path = 'attached_assets/NVC PB ACCOUNTS HOLDERS.csv'
+            
+            if not os.path.exists(csv_file_path):
+                logger.error(f"CSV file not found: {csv_file_path}")
+                sys.exit(1)
+            
+            # Run the actual import from CSV
+            logger.info(f"Starting import from CSV file: {csv_file_path}")
+            imported, skipped, errors = import_account_holders(csv_file_path)
             
             # Log the result
-            logger.info(f"Test import completed: {imported} imported, {skipped} skipped, {errors} errors")
+            logger.info(f"CSV import completed: {imported} imported, {skipped} skipped, {errors} errors")
             
-            if errors > 0:
-                logger.warning("Test import completed with errors. Please check the logs.")
+            total_errors = test_errors + errors
+            if total_errors > 0:
+                logger.warning(f"Import completed with {total_errors} errors. Please check the logs.")
                 sys.exit(1)
             else:
-                logger.info("Test import completed successfully!")
+                logger.info(f"All imports completed successfully! Total: {test_imported + imported} accounts imported.")
                 sys.exit(0)
                 
         except Exception as e:
