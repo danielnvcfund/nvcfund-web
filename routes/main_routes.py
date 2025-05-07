@@ -35,6 +35,9 @@ from models import (
     BlockchainAccount, Invitation, InvitationType, InvitationStatus, 
     AssetManager, BusinessPartner, PartnerType, Webhook, FormData
 )
+from account_holder_models import (
+    AccountHolder, BankAccount, Address, PhoneNumber
+)
 from auth import (
     login_required, admin_required, api_key_required, authenticate_user,
     register_user, generate_jwt_token, verify_reset_token, generate_reset_token
@@ -612,6 +615,14 @@ def dashboard():
     recent_transactions = Transaction.query.filter_by(user_id=user.id)\
         .order_by(Transaction.created_at.desc())\
         .limit(5).all()
+    
+    # Get account holders (limit to the latest 5 for dashboard)
+    recent_account_holders = AccountHolder.query\
+        .order_by(AccountHolder.created_at.desc())\
+        .limit(5).all()
+    
+    # Get total count of account holders
+    total_account_holders = AccountHolder.query.count()
     
     # Get transaction analytics
     analytics = get_transaction_analytics(user.id, days=30)
