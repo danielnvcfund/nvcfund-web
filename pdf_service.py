@@ -998,7 +998,7 @@ class PDFService:
             <style>
                 @page {
                     size: letter portrait;
-                    margin: 2cm;
+                    margin: 1.5cm;
                     @top-center {
                         content: "{{ header }}";
                         font-size: 10pt;
@@ -1022,12 +1022,12 @@ class PDFService:
                 }
                 body {
                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-                    font-size: 12pt;
-                    line-height: 1.5;
+                    font-size: 10pt;
+                    line-height: 1.3;
                     color: #333;
                 }
                 .document {
-                    padding: 10px;
+                    padding: 5px;
                     position: relative;
                 }
                 .watermark {
@@ -1035,64 +1035,65 @@ class PDFService:
                     top: 50%;
                     left: 50%;
                     transform: translate(-50%, -50%) rotate(-45deg);
-                    font-size: 100px;
+                    font-size: 80px;
                     color: rgba(200, 200, 200, 0.2);
                     font-weight: bold;
                     z-index: -1;
                 }
                 .header {
                     border-bottom: 1px solid #ddd;
-                    padding-bottom: 20px;
-                    margin-bottom: 30px;
+                    padding-bottom: 10px;
+                    margin-bottom: 15px;
+                    text-align: center;
                 }
                 .document-title {
-                    font-size: 24pt;
+                    font-size: 18pt;
                     font-weight: bold;
                     color: #1a4f8a;
-                    margin-bottom: 5px;
+                    margin-bottom: 0;
                 }
                 .document-subtitle {
-                    font-size: 14pt;
+                    font-size: 12pt;
                     color: #666;
-                    margin-bottom: 20px;
+                    margin-bottom: 10px;
                 }
-                .logo {
-                    float: right;
-                    height: 70px;
-                    width: auto;
+                .content-columns {
+                    display: flex;
+                    justify-content: space-between;
+                    flex-wrap: wrap;
                 }
-                .transaction-info {
-                    margin-bottom: 30px;
+                .column {
+                    width: 48%;
                 }
                 .section-title {
-                    font-size: 14pt;
+                    font-size: 12pt;
                     font-weight: bold;
                     color: #1a4f8a;
-                    margin-top: 20px;
-                    margin-bottom: 10px;
+                    margin-top: 10px;
+                    margin-bottom: 5px;
                     border-bottom: 1px solid #eee;
-                    padding-bottom: 5px;
+                    padding-bottom: 3px;
                 }
                 .info-table {
                     width: 100%;
                     border-collapse: collapse;
-                    margin-bottom: 20px;
+                    margin-bottom: 15px;
                 }
                 .info-table th {
                     text-align: left;
-                    padding: 8px;
+                    padding: 5px;
                     background-color: #f5f5f5;
                     border-bottom: 1px solid #ddd;
                     font-weight: bold;
-                    width: 30%;
+                    width: 40%;
                 }
                 .info-table td {
-                    padding: 8px;
+                    padding: 5px;
                     border-bottom: 1px solid #ddd;
                 }
                 .amount {
                     font-weight: bold;
-                    font-size: 14pt;
+                    font-size: 12pt;
                     color: #2a6e38;
                 }
                 .exchange-rate {
@@ -1101,39 +1102,27 @@ class PDFService:
                 }
                 .transaction-status {
                     display: inline-block;
-                    padding: 5px 10px;
-                    border-radius: 4px;
+                    padding: 3px 6px;
+                    border-radius: 3px;
                     font-weight: bold;
                     text-transform: uppercase;
-                    font-size: 10pt;
-                }
-                .status-pending {
-                    background-color: #fff3cd;
-                    color: #856404;
+                    font-size: 9pt;
                 }
                 .status-completed {
                     background-color: #d4edda;
                     color: #155724;
                 }
-                .status-failed {
+                .status-pending, .status-failed, .status-cancelled {
                     background-color: #f8d7da;
                     color: #721c24;
                 }
-                .status-cancelled {
-                    background-color: #e2e3e5;
-                    color: #383d41;
-                }
                 .footer {
-                    margin-top: 40px;
-                    padding-top: 20px;
+                    margin-top: 15px;
+                    padding-top: 10px;
                     border-top: 1px solid #ddd;
-                    font-size: 10pt;
-                    color: #666;
-                }
-                .disclaimer {
                     font-size: 9pt;
-                    color: #999;
-                    margin-top: 10px;
+                    color: #666;
+                    text-align: center;
                 }
             </style>
         </head>
@@ -1145,77 +1134,77 @@ class PDFService:
                     <div class="document-subtitle">{{ subtitle }}</div>
                 </div>
                 
-                <div class="transaction-info">
-                    <div class="section-title">Transaction Details</div>
-                    <table class="info-table">
-                        <tr>
-                            <th>Reference Number</th>
-                            <td>{{ transaction.reference }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status</th>
-                            <td>
-                                <span class="transaction-status status-{{ transaction.status.lower() }}">
-                                    {{ transaction.status }}
-                                </span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Date</th>
-                            <td>{{ transaction.date }}</td>
-                        </tr>
-                        <tr>
-                            <th>Account Holder</th>
-                            <td>{{ transaction.sender_name }}</td>
-                        </tr>
-                    </table>
-                </div>
-                
-                <div class="exchange-details">
-                    <div class="section-title">Exchange Details</div>
-                    <table class="info-table">
-                        <tr>
-                            <th>Exchange Type</th>
-                            <td>{{ transaction.description }}</td>
-                        </tr>
-                        <tr>
-                            <th>From Amount</th>
-                            <td class="amount">{{ transaction.exchange_from_currency }} {{ "%.2f"|format(transaction.exchange_from_amount) }}</td>
-                        </tr>
-                        <tr>
-                            <th>To Amount</th>
-                            <td class="amount">{{ transaction.exchange_to_currency }} {{ "%.2f"|format(transaction.exchange_to_amount) }}</td>
-                        </tr>
-                        <tr>
-                            <th>Exchange Rate</th>
-                            <td class="exchange-rate">1 {{ transaction.exchange_from_currency }} = {{ "%.6f"|format(transaction.exchange_rate) }} {{ transaction.exchange_to_currency }}</td>
-                        </tr>
-                        {% if transaction.exchange_fee > 0 %}
-                        <tr>
-                            <th>Fee</th>
-                            <td>{{ transaction.exchange_fee_currency }} {{ "%.2f"|format(transaction.exchange_fee) }}</td>
-                        </tr>
-                        {% endif %}
-                    </table>
-                </div>
-                
-                <div class="account-info">
-                    <div class="section-title">Account Information</div>
-                    <table class="info-table">
-                        <tr>
-                            <th>From Account</th>
-                            <td>{{ transaction.sender_account_masked }} ({{ transaction.sender_account_type }})</td>
-                        </tr>
-                        <tr>
-                            <th>To Account</th>
-                            <td>{{ transaction.recipient_account_masked }} ({{ transaction.recipient_account_type }})</td>
-                        </tr>
-                    </table>
+                <div class="content-columns">
+                    <div class="column">
+                        <div class="section-title">Transaction Details</div>
+                        <table class="info-table">
+                            <tr>
+                                <th>Reference Number</th>
+                                <td>{{ transaction.reference }}</td>
+                            </tr>
+                            <tr>
+                                <th>Status</th>
+                                <td>
+                                    <span class="transaction-status status-{{ transaction.status.lower() }}">
+                                        {{ transaction.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Date</th>
+                                <td>{{ transaction.date }}</td>
+                            </tr>
+                            <tr>
+                                <th>Account Holder</th>
+                                <td>{{ transaction.sender_name }}</td>
+                            </tr>
+                        </table>
+                        
+                        <div class="section-title">Account Information</div>
+                        <table class="info-table">
+                            <tr>
+                                <th>From Account</th>
+                                <td>{{ transaction.sender_account_masked }} ({{ transaction.sender_account_type }})</td>
+                            </tr>
+                            <tr>
+                                <th>To Account</th>
+                                <td>{{ transaction.recipient_account_masked }} ({{ transaction.recipient_account_type }})</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="column">
+                        <div class="section-title">Exchange Details</div>
+                        <table class="info-table">
+                            <tr>
+                                <th>Exchange Type</th>
+                                <td>{{ transaction.description }}</td>
+                            </tr>
+                            <tr>
+                                <th>From Amount</th>
+                                <td class="amount">{{ transaction.exchange_from_currency }} {{ "%.2f"|format(transaction.exchange_from_amount) }}</td>
+                            </tr>
+                            <tr>
+                                <th>To Amount</th>
+                                <td class="amount">{{ transaction.exchange_to_currency }} {{ "%.2f"|format(transaction.exchange_to_amount) }}</td>
+                            </tr>
+                            <tr>
+                                <th>Exchange Rate</th>
+                                <td class="exchange-rate">1 {{ transaction.exchange_from_currency }} = {{ "%.6f"|format(transaction.exchange_rate) }} {{ transaction.exchange_to_currency }}</td>
+                            </tr>
+                            {% if transaction.exchange_fee > 0 %}
+                            <tr>
+                                <th>Fee</th>
+                                <td>{{ transaction.exchange_fee_currency }} {{ "%.2f"|format(transaction.exchange_fee) }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
                 </div>
                 
                 <div class="footer">
                     <p>This document serves as an official receipt for the currency exchange transaction detailed above.</p>
-                    <p class="disclaimer">For questions or concerns regarding this transaction, please contact NVC Fund Bank customer support.</p>
+                    <p>For questions or concerns regarding this transaction, please contact NVC Fund Bank customer support.</p>
                 </div>
             </div>
         </body>
