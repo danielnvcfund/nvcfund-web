@@ -17,6 +17,10 @@ class ExchangeType(enum.Enum):
     CRYPTO_TO_NVCT = "crypto_to_nvct"
     FIAT_TO_FIAT = "fiat_to_fiat"
     CRYPTO_TO_CRYPTO = "crypto_to_crypto"
+    NVCT_TO_AFD1 = "nvct_to_afd1"
+    AFD1_TO_NVCT = "afd1_to_nvct"
+    AFD1_TO_FIAT = "afd1_to_fiat"
+    FIAT_TO_AFD1 = "fiat_to_afd1"
     
 class ExchangeStatus(enum.Enum):
     """Status of currency exchange transactions"""

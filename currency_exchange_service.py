@@ -11,6 +11,7 @@ from decimal import Decimal, ROUND_HALF_DOWN
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
+from saint_crown_integration import SaintCrownIntegration
 from account_holder_models import (
     CurrencyType, 
     ExchangeType, 
@@ -155,6 +156,18 @@ class CurrencyExchangeService:
             CurrencyExchangeService.update_exchange_rate(CurrencyType.BTC, CurrencyType.USD, 62000.0, "system")
             CurrencyExchangeService.update_exchange_rate(CurrencyType.ETH, CurrencyType.USD, 3000.0, "system")
             
+            # Add AFD1 rate (AFD1 = 10% of gold price)
+            sc_integration = SaintCrownIntegration()
+            gold_price, _ = sc_integration.get_gold_price()
+            afd1_unit_value = gold_price * 0.1  # AFD1 = 10% of gold price
+            
+            # Add AFD1 to USD rate (based on gold price) 
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.AFD1, CurrencyType.USD, afd1_unit_value, "system")
+            
+            # Add NVCT to AFD1 rate
+            nvct_to_afd1_rate = 1.0 / afd1_unit_value  # 1 NVCT = 1 USD, convert to AFD1
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.NVCT, CurrencyType.AFD1, nvct_to_afd1_rate, "system")
+            
             return True
         except Exception as e:
             logger.error(f"Error initializing default exchange rates: {str(e)}")
@@ -216,11 +229,41 @@ class CurrencyExchangeService:
                 converted_amount = amount_after_fee * rate
                 
             # Determine exchange type
+            fiat_currencies = [CurrencyType.USD, CurrencyType.EUR, CurrencyType.GBP, CurrencyType.NGN]
+            crypto_currencies = [CurrencyType.BTC, CurrencyType.ETH, CurrencyType.ZCASH]
+            
+            # NVCT exchanges
             if from_account.currency == CurrencyType.NVCT:
-                exchange_type = ExchangeType.NVCT_TO_FIAT if to_account.currency in [CurrencyType.USD, CurrencyType.EUR, CurrencyType.GBP, CurrencyType.NGN] else ExchangeType.NVCT_TO_CRYPTO
+                if to_account.currency == CurrencyType.AFD1:
+                    exchange_type = ExchangeType.NVCT_TO_AFD1
+                elif to_account.currency in fiat_currencies:
+                    exchange_type = ExchangeType.NVCT_TO_FIAT
+                else:
+                    exchange_type = ExchangeType.NVCT_TO_CRYPTO
+                    
+            # AFD1 exchanges
+            elif from_account.currency == CurrencyType.AFD1:
+                if to_account.currency == CurrencyType.NVCT:
+                    exchange_type = ExchangeType.AFD1_TO_NVCT
+                elif to_account.currency in fiat_currencies:
+                    exchange_type = ExchangeType.AFD1_TO_FIAT
+                else:
+                    # Default to FIAT_TO_FIAT for other AFD1 exchanges
+                    exchange_type = ExchangeType.FIAT_TO_FIAT
+                    
+            # Other exchanges
             elif to_account.currency == CurrencyType.NVCT:
-                exchange_type = ExchangeType.FIAT_TO_NVCT if from_account.currency in [CurrencyType.USD, CurrencyType.EUR, CurrencyType.GBP, CurrencyType.NGN] else ExchangeType.CRYPTO_TO_NVCT
-            elif from_account.currency in [CurrencyType.BTC, CurrencyType.ETH, CurrencyType.ZCASH] and to_account.currency in [CurrencyType.BTC, CurrencyType.ETH, CurrencyType.ZCASH]:
+                if from_account.currency in fiat_currencies:
+                    exchange_type = ExchangeType.FIAT_TO_NVCT
+                else:
+                    exchange_type = ExchangeType.CRYPTO_TO_NVCT
+            elif to_account.currency == CurrencyType.AFD1:
+                if from_account.currency in fiat_currencies:
+                    exchange_type = ExchangeType.FIAT_TO_AFD1
+                else:
+                    # Default to FIAT_TO_FIAT for other exchanges to AFD1
+                    exchange_type = ExchangeType.FIAT_TO_FIAT
+            elif from_account.currency in crypto_currencies and to_account.currency in crypto_currencies:
                 exchange_type = ExchangeType.CRYPTO_TO_CRYPTO
             else:
                 exchange_type = ExchangeType.FIAT_TO_FIAT
