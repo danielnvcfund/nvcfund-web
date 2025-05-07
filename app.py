@@ -406,8 +406,9 @@ def create_app():
             
             # Register POS Payment routes
             try:
-                from routes.pos_routes import register_pos_routes
-                register_pos_routes(app)
+                from routes.pos_routes import pos_bp, register_routes
+                app.register_blueprint(pos_bp)
+                register_routes(app)
                 logger.info("POS Payment routes registered successfully")
             except ImportError as e:
                 logger.warning(f"Could not register POS routes: {str(e)}")

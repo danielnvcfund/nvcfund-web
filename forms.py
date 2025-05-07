@@ -179,6 +179,65 @@ class PayPalPayoutForm(FlaskForm):
     ])
     submit = SubmitField('Send PayPal Payout')
 
+
+class POSPaymentForm(BaseForm):
+    """Form for accepting credit card payments via POS"""
+    amount = FloatField('Amount', validators=[
+        DataRequired(),
+        NumberRange(min=0.01, message="Amount must be greater than 0.01")
+    ])
+    currency = SelectField('Currency', choices=[
+        ('USD', 'USD - US Dollar'),
+        ('EUR', 'EUR - Euro'),
+        ('GBP', 'GBP - British Pound'),
+        ('NVCT', 'NVCT - NVC Token')
+    ], default='USD', validators=[DataRequired()])
+    customer_name = StringField('Customer Name', validators=[
+        DataRequired(),
+        Length(min=2, max=100, message="Name must be between 2 and 100 characters")
+    ])
+    customer_email = StringField('Customer Email (Optional)', validators=[
+        Optional(),
+        Email(message="Please enter a valid email address"),
+        Length(max=120, message="Email must be 120 characters or less")
+    ])
+    description = TextAreaField('Description (Optional)', validators=[
+        Optional(),
+        Length(max=250, message="Description must be 250 characters or less")
+    ])
+
+
+class POSSendPaymentForm(BaseForm):
+    """Form for sending money to credit cards via POS"""
+    amount = FloatField('Amount', validators=[
+        DataRequired(),
+        NumberRange(min=0.01, message="Amount must be greater than 0.01")
+    ])
+    currency = SelectField('Currency', choices=[
+        ('USD', 'USD - US Dollar'),
+        ('EUR', 'EUR - Euro'),
+        ('GBP', 'GBP - British Pound'),
+        ('NVCT', 'NVCT - NVC Token')
+    ], default='USD', validators=[DataRequired()])
+    recipient_name = StringField('Recipient Name', validators=[
+        DataRequired(),
+        Length(min=2, max=100, message="Name must be between 2 and 100 characters")
+    ])
+    recipient_email = StringField('Recipient Email (Optional)', validators=[
+        Optional(),
+        Email(message="Please enter a valid email address"),
+        Length(max=120, message="Email must be 120 characters or less")
+    ])
+    card_number = StringField('Last 4 Digits of Card', validators=[
+        DataRequired(),
+        Length(min=4, max=4, message="Please enter exactly 4 digits"),
+        Regexp(r'^\d{4}$', message="Please enter only digits")
+    ])
+    description = TextAreaField('Description (Optional)', validators=[
+        Optional(),
+        Length(max=250, message="Description must be 250 characters or less")
+    ])
+
 class ClientRegistrationForm(FlaskForm):
     """Form for client registration"""
     username = StringField('Username', validators=[DataRequired(), Length(min=4, max=64)])

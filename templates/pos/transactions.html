@@ -1,26 +1,27 @@
-{% extends 'base.html' %}
+{% extends 'layout.html' %}
 
 {% block title %}POS Transactions{% endblock %}
 
 {% block styles %}
 <style>
-    .transaction-table {
-        font-size: 0.95rem;
+    .filter-card {
+        border-left: 4px solid #0d6efd;
     }
-    .transaction-status {
-        width: 100px;
+    .transaction-table th,
+    .transaction-table td {
+        white-space: nowrap;
     }
-    .transaction-type {
-        min-width: 100px;
+    .badge-currency {
+        font-size: 0.8rem;
+        padding: 0.4rem;
+        margin-right: 0.5rem;
     }
-    .search-container {
-        margin-bottom: 20px;
+    .transaction-detail-row {
+        display: none;
+        background-color: #f8f9fa;
     }
-    .badge-payment {
-        background-color: #0d6efd;
-    }
-    .badge-payout {
-        background-color: #6f42c1;
+    .transaction-detail-container {
+        padding: 1.5rem;
     }
 </style>
 {% endblock %}
@@ -36,42 +37,74 @@
                 </ol>
             </nav>
             <h1 class="display-5 fw-bold mb-4">
-                <i class="fas fa-history me-2"></i> POS Transactions
+                <i class="fas fa-history me-2"></i> Transaction History
             </h1>
-            <p class="lead">View and manage your credit card payment transactions.</p>
+            <p class="lead">Review all your payment transactions processed through the POS payment system.</p>
             <hr>
         </div>
     </div>
     
-    <!-- Search and Filters -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <div class="search-container">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="search-transactions" placeholder="Search transactions...">
-                    <button class="btn btn-outline-secondary" type="button">
-                        <i class="fas fa-search"></i>
-                    </button>
+    <!-- Filter Card -->
+    <div class="card mb-4 filter-card">
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-center">
+                <div class="col-md-3 mb-2">
+                    <label for="transaction_type" class="form-label">Transaction Type</label>
+                    <select id="transaction_type" name="transaction_type" class="form-select">
+                        <option value="">All Types</option>
+                        <option value="PAYMENT" {% if request.args.get('transaction_type') == 'PAYMENT' %}selected{% endif %}>Payment</option>
+                        <option value="PAYOUT" {% if request.args.get('transaction_type') == 'PAYOUT' %}selected{% endif %}>Payout</option>
+                    </select>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="d-flex justify-content-end">
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">All</button>
-                    <button type="button" class="btn btn-outline-primary filter-btn" data-filter="payment">Payments</button>
-                    <button type="button" class="btn btn-outline-primary filter-btn" data-filter="payout">Payouts</button>
+                <div class="col-md-3 mb-2">
+                    <label for="status" class="form-label">Status</label>
+                    <select id="status" name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="COMPLETED" {% if request.args.get('status') == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                        <option value="PENDING" {% if request.args.get('status') == 'PENDING' %}selected{% endif %}>Pending</option>
+                        <option value="FAILED" {% if request.args.get('status') == 'FAILED' %}selected{% endif %}>Failed</option>
+                        <option value="CANCELLED" {% if request.args.get('status') == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+                    </select>
                 </div>
-            </div>
+                <div class="col-md-3 mb-2">
+                    <label for="date_range" class="form-label">Date Range</label>
+                    <select id="date_range" name="date_range" class="form-select">
+                        <option value="all" {% if request.args.get('date_range') == 'all' %}selected{% endif %}>All Time</option>
+                        <option value="today" {% if request.args.get('date_range') == 'today' %}selected{% endif %}>Today</option>
+                        <option value="week" {% if request.args.get('date_range') == 'week' %}selected{% endif %}>This Week</option>
+                        <option value="month" {% if request.args.get('date_range') == 'month' %}selected{% endif %}>This Month</option>
+                        <option value="year" {% if request.args.get('date_range') == 'year' %}selected{% endif %}>This Year</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label for="search" class="form-label">Search</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="search" name="search" placeholder="Transaction ID, Name..." value="{{ request.args.get('search', '') }}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
     
     <!-- Transactions Table -->
     <div class="card">
         <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">
-                <i class="fas fa-exchange-alt me-2"></i> Transaction History
-            </h5>
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i> Transaction Records
+                </h5>
+                <div>
+                    <button class="btn btn-sm btn-light" id="export-csv">
+                        <i class="fas fa-file-csv me-1"></i> Export CSV
+                    </button>
+                    <button class="btn btn-sm btn-light ms-2" id="print-transactions">
+                        <i class="fas fa-print me-1"></i> Print
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="card-body p-0">
             {% if transactions %}
@@ -79,28 +112,35 @@
                 <table class="table table-striped table-hover transaction-table mb-0">
                     <thead class="table-light">
                         <tr>
+                            <th scope="col"></th>
                             <th scope="col">Transaction ID</th>
                             <th scope="col">Date</th>
-                            <th scope="col" class="transaction-type">Type</th>
+                            <th scope="col">Type</th>
                             <th scope="col">Amount</th>
+                            <th scope="col">Status</th>
                             <th scope="col">Recipient</th>
-                            <th scope="col" class="transaction-status">Status</th>
-                            <th scope="col">Description</th>
                             <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for tx in transactions %}
-                        <tr class="transaction-row" data-type="{{ tx.transaction_type.value|lower }}">
+                        <tr class="transaction-row" data-transaction-id="{{ tx.transaction_id }}">
+                            <td>
+                                <button class="btn btn-sm btn-outline-secondary toggle-details" data-transaction-id="{{ tx.transaction_id }}">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </td>
                             <td>{{ tx.transaction_id }}</td>
                             <td>{{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                             <td>
-                                <span class="badge {% if tx.transaction_type.value == 'PAYMENT' %}badge-payment{% else %}badge-payout{% endif %}">
+                                <span class="badge {% if tx.transaction_type.value == 'PAYMENT' %}bg-primary{% else %}bg-success{% endif %}">
                                     {{ tx.transaction_type.value }}
                                 </span>
                             </td>
-                            <td>{{ tx.currency }} {{ "%.2f"|format(tx.amount) }}</td>
-                            <td>{{ tx.recipient_name or 'N/A' }}</td>
+                            <td>
+                                <span class="badge bg-secondary badge-currency">{{ tx.currency }}</span>
+                                {{ "%.2f"|format(tx.amount) }}
+                            </td>
                             <td>
                                 <span class="badge 
                                     {% if tx.status.value == 'COMPLETED' %}bg-success
@@ -111,23 +151,82 @@
                                     {{ tx.status.value }}
                                 </span>
                             </td>
+                            <td>{{ tx.recipient_name|truncate(20) }}</td>
                             <td>
-                                <span class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ tx.description }}">
-                                    {{ tx.description }}
-                                </span>
+                                <div class="btn-group">
+                                    <a href="{{ url_for('pos.view_receipt', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-receipt"></i>
+                                    </a>
+                                    {% if tx.status.value == 'PENDING' %}
+                                    <a href="{{ url_for('pos.cancel_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to cancel this transaction?')">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
                             </td>
-                            <td>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton{{ loop.index }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ loop.index }}">
-                                        <li><a class="dropdown-item" href="#" onclick="viewTransactionDetails('{{ tx.transaction_id }}')"><i class="fas fa-eye me-2"></i> View Details</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="printReceipt('{{ tx.transaction_id }}')"><i class="fas fa-print me-2"></i> Print Receipt</a></li>
-                                        {% if tx.status.value == 'PENDING' %}
-                                        <li><a class="dropdown-item" href="#" onclick="cancelTransaction('{{ tx.transaction_id }}')"><i class="fas fa-times me-2"></i> Cancel</a></li>
-                                        {% endif %}
-                                    </ul>
+                        </tr>
+                        <tr class="transaction-detail-row" id="details-{{ tx.transaction_id }}">
+                            <td colspan="8">
+                                <div class="transaction-detail-container">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h5>Transaction Details</h5>
+                                            <table class="table table-sm">
+                                                <tr>
+                                                    <th>Transaction ID:</th>
+                                                    <td>{{ tx.transaction_id }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Type:</th>
+                                                    <td>{{ tx.transaction_type.value }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Amount:</th>
+                                                    <td>{{ tx.currency }} {{ "%.2f"|format(tx.amount) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Status:</th>
+                                                    <td>{{ tx.status.value }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Created At:</th>
+                                                    <td>{{ tx.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                                </tr>
+                                                {% if tx.completed_at %}
+                                                <tr>
+                                                    <th>Completed At:</th>
+                                                    <td>{{ tx.completed_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                                </tr>
+                                                {% endif %}
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h5>Recipient Information</h5>
+                                            <table class="table table-sm">
+                                                <tr>
+                                                    <th>Name:</th>
+                                                    <td>{{ tx.recipient_name }}</td>
+                                                </tr>
+                                                {% if tx.metadata and tx.metadata.get('customer_email') %}
+                                                <tr>
+                                                    <th>Email:</th>
+                                                    <td>{{ tx.metadata.get('customer_email') }}</td>
+                                                </tr>
+                                                {% endif %}
+                                                {% if tx.metadata and tx.metadata.get('card_last4') %}
+                                                <tr>
+                                                    <th>Card:</th>
+                                                    <td>xxxx-xxxx-xxxx-{{ tx.metadata.get('card_last4') }}</td>
+                                                </tr>
+                                                {% endif %}
+                                            </table>
+                                            
+                                            {% if tx.description %}
+                                            <h5 class="mt-3">Description</h5>
+                                            <p>{{ tx.description }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -135,48 +234,70 @@
                     </tbody>
                 </table>
             </div>
-            {% else %}
-            <div class="alert alert-info m-3">
-                <i class="fas fa-info-circle me-2"></i> No transactions found. Start processing payments to see your transaction history.
+            
+            <!-- Pagination -->
+            {% if pagination.pages > 1 %}
+            <div class="d-flex justify-content-center mt-4">
+                <nav aria-label="Transaction pagination">
+                    <ul class="pagination">
+                        {% if pagination.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('pos.transactions', page=pagination.prev_num, **request.args) }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page in pagination.iter_pages() %}
+                            {% if page %}
+                                {% if page == pagination.page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page }}</span>
+                                </li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('pos.transactions', page=page, **request.args) }}">{{ page }}</a>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if pagination.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('pos.transactions', page=pagination.next_num, **request.args) }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
             </div>
             {% endif %}
-        </div>
-        <div class="card-footer">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="text-muted">Showing {{ transactions|length }} transactions</span>
+            
+            {% else %}
+            <div class="text-center p-5">
+                <div class="mb-3">
+                    <i class="fas fa-receipt text-muted fa-3x"></i>
                 </div>
-                <div>
-                    <a href="{{ url_for('pos.pos_dashboard') }}" class="btn btn-primary">
-                        <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
-                    </a>
-                </div>
+                <h5>No Transactions Found</h5>
+                <p class="text-muted">No transactions match your search criteria or no transactions have been processed yet.</p>
+                <a href="{{ url_for('pos.pos_dashboard') }}" class="btn btn-primary mt-2">
+                    <i class="fas fa-arrow-left me-2"></i> Return to Dashboard
+                </a>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Transaction Details Modal -->
-<div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="transactionModalLabel">Transaction Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="transaction-details-content">
-                    <div class="d-flex justify-content-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="print-transaction-details">Print</button>
-            </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -185,63 +306,35 @@
 {% block scripts %}
 <script>
     $(document).ready(function() {
-        // Search functionality
-        $('#search-transactions').on('keyup', function() {
-            const searchText = $(this).val().toLowerCase();
+        // Toggle transaction details
+        $('.toggle-details').on('click', function() {
+            const transactionId = $(this).data('transaction-id');
+            const detailsRow = $(`#details-${transactionId}`);
+            const icon = $(this).find('i');
             
-            $('.transaction-row').each(function() {
-                const rowText = $(this).text().toLowerCase();
-                if (rowText.includes(searchText)) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
-        });
-        
-        // Filter functionality
-        $('.filter-btn').on('click', function() {
-            // Update active button
-            $('.filter-btn').removeClass('active');
-            $(this).addClass('active');
+            detailsRow.toggle();
             
-            const filterType = $(this).data('filter');
-            
-            if (filterType === 'all') {
-                $('.transaction-row').show();
+            if (detailsRow.is(':visible')) {
+                icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
             } else {
-                $('.transaction-row').hide();
-                $(`.transaction-row[data-type="${filterType}"]`).show();
+                icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
             }
         });
-    });
-    
-    // View transaction details
-    function viewTransactionDetails(transactionId) {
-        // In a real implementation, this would fetch transaction details from the server
-        $('#transactionModal').modal('show');
         
-        // This is a placeholder. In the real implementation, you would make an AJAX call
-        // to fetch the transaction details from the server
-        $('#transaction-details-content').html(`
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i> Loading transaction details for ${transactionId}...
-            </div>
-        `);
-    }
-    
-    // Print receipt
-    function printReceipt(transactionId) {
-        // In a real implementation, this would open a receipt in a new window for printing
-        window.open(`/pos/receipt/${transactionId}`, '_blank');
-    }
-    
-    // Cancel transaction
-    function cancelTransaction(transactionId) {
-        if (confirm('Are you sure you want to cancel this transaction?')) {
-            // In a real implementation, this would make an AJAX call to cancel the transaction
-            alert(`Transaction ${transactionId} would be cancelled.`);
-        }
-    }
+        // Auto-submit form when filters change
+        $('#transaction_type, #status, #date_range').on('change', function() {
+            $(this).closest('form').submit();
+        });
+        
+        // Print transactions
+        $('#print-transactions').on('click', function() {
+            window.print();
+        });
+        
+        // Export CSV (placeholder functionality)
+        $('#export-csv').on('click', function() {
+            alert('CSV Export functionality will be implemented soon.');
+        });
+    });
 </script>
 {% endblock %}
