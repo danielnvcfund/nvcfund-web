@@ -900,3 +900,67 @@ class PayPalPayoutForm(FlaskForm):
     email_subject = StringField('Email Subject', validators=[Optional(), Length(max=255)])
     email_message = TextAreaField('Email Message', validators=[Optional(), Length(max=1000)])
     submit = SubmitField('Send Payout')
+
+
+class POSPaymentForm(FlaskForm):
+    """Form for accepting a credit card payment via POS system"""
+    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
+    currency = SelectField('Currency', choices=[
+        ('USD', 'US Dollar (USD)'),
+        ('EUR', 'Euro (EUR)'),
+        ('GBP', 'British Pound (GBP)'),
+        ('NVCT', 'NVC Token (NVCT)')
+    ], validators=[DataRequired()])
+    customer_name = StringField('Customer Name', validators=[DataRequired(), Length(max=100)])
+    customer_email = StringField('Customer Email', validators=[Optional(), Email()])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
+    submit = SubmitField('Continue to Payment')
+
+
+class POSPayoutForm(FlaskForm):
+    """Form for sending money to a card via POS system"""
+    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
+    currency = SelectField('Currency', choices=[
+        ('USD', 'US Dollar (USD)'),
+        ('EUR', 'Euro (EUR)'),
+        ('GBP', 'British Pound (GBP)'),
+        ('NVCT', 'NVC Token (NVCT)')
+    ], validators=[DataRequired()])
+    recipient_name = StringField('Recipient Name', validators=[DataRequired(), Length(max=100)])
+    recipient_email = StringField('Recipient Email', validators=[Optional(), Email()])
+    card_last4 = StringField('Last 4 digits of card', validators=[
+        DataRequired(), 
+        Length(min=4, max=4), 
+        Regexp('^[0-9]{4}$', message='Last 4 digits must be exactly 4 numbers')
+    ])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
+    submit = SubmitField('Send Money')
+
+
+class POSTransactionFilterForm(FlaskForm):
+    """Form for filtering POS transactions"""
+    date_from = DateField('From Date', format='%Y-%m-%d', validators=[Optional()])
+    date_to = DateField('To Date', format='%Y-%m-%d', validators=[Optional()])
+    transaction_type = SelectField('Transaction Type', choices=[
+        ('', 'All Types'),
+        ('PAYMENT', 'Payment (Incoming)'),
+        ('PAYOUT', 'Payout (Outgoing)')
+    ], validators=[Optional()])
+    status = SelectField('Status', choices=[
+        ('', 'All Statuses'),
+        ('PENDING', 'Pending'),
+        ('COMPLETED', 'Completed'),
+        ('FAILED', 'Failed'),
+        ('CANCELLED', 'Cancelled')
+    ], validators=[Optional()])
+    min_amount = FloatField('Min Amount', validators=[Optional(), NumberRange(min=0)])
+    max_amount = FloatField('Max Amount', validators=[Optional(), NumberRange(min=0)])
+    currency = SelectField('Currency', choices=[
+        ('', 'All Currencies'),
+        ('USD', 'US Dollar (USD)'),
+        ('EUR', 'Euro (EUR)'),
+        ('GBP', 'British Pound (GBP)'),
+        ('NVCT', 'NVC Token (NVCT)')
+    ], validators=[Optional()])
+    search = StringField('Search', validators=[Optional()])
+    submit = SubmitField('Filter')

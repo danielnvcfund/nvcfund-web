@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 
-{% block title %}Accept Credit Card Payment{% endblock %}
+{% block title %}Accept Payment{% endblock %}
 
 {% block styles %}
 <style>
@@ -22,7 +22,7 @@
     .form-floating label {
         color: #666;
     }
-    .support-info {
+    .info-card {
         background-color: #f8f9fa;
         border-radius: 5px;
         padding: 20px;
@@ -32,6 +32,24 @@
         padding: 0.5rem;
         margin-bottom: 10px;
         display: inline-block;
+    }
+    .process-step {
+        padding: 15px;
+        border-left: 3px solid #0d6efd;
+        margin-bottom: 15px;
+        background-color: #f8f9fa;
+    }
+    .step-number {
+        display: inline-block;
+        width: 28px;
+        height: 28px;
+        background-color: #0d6efd;
+        color: white;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 28px;
+        margin-right: 10px;
+        font-weight: bold;
     }
 </style>
 {% endblock %}
@@ -47,11 +65,11 @@
                 </ol>
             </nav>
             <h1 class="display-5 fw-bold mb-4">
-                <i class="fas fa-cash-register me-2"></i> Accept Credit Card Payment
+                <i class="fas fa-money-bill-wave me-2"></i> Accept Payment
             </h1>
-            <p class="lead">Allow customers to pay with credit card by filling out the form below.</p>
+            <p class="lead">Collect credit card payments from customers by filling out the form below.</p>
             <div class="alert alert-primary">
-                <i class="fas fa-info-circle me-2"></i> Credit card payments are processed securely through Stripe.
+                <i class="fas fa-info-circle me-2"></i> Your customer will be redirected to a secure Stripe checkout page to complete their payment.
             </div>
             <hr>
         </div>
@@ -126,7 +144,7 @@
                                         {% endfor %}
                                     </div>
                                     {% endif %}
-                                    <div class="form-text">If provided, the customer will receive a receipt via email</div>
+                                    <div class="form-text">If provided, the customer will receive a receipt</div>
                                 </div>
                             </div>
                         </div>
@@ -149,7 +167,7 @@
                         
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary btn-lg py-3">
-                                <i class="fas fa-credit-card me-2"></i> Continue to Payment
+                                <i class="fas fa-arrow-right me-2"></i> Continue to Payment
                             </button>
                             <a href="{{ url_for('pos.pos_dashboard') }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
@@ -164,29 +182,34 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-info-circle me-2"></i> Accepted Currencies
+                        <i class="fas fa-info-circle me-2"></i> How It Works
                     </h5>
                 </div>
                 <div class="card-body">
-                    <p>We accept payments in the following currencies:</p>
-                    
-                    <span class="badge bg-primary badge-currency">
-                        <i class="fas fa-dollar-sign me-1"></i> USD
-                    </span>
-                    <span class="badge bg-success badge-currency">
-                        <i class="fas fa-euro-sign me-1"></i> EUR
-                    </span>
-                    <span class="badge bg-info badge-currency">
-                        <i class="fas fa-pound-sign me-1"></i> GBP
-                    </span>
-                    <span class="badge bg-warning badge-currency">
-                        <i class="fas fa-coins me-1"></i> NVCT
-                    </span>
-                    
-                    <div class="alert alert-warning mt-3">
-                        <small>
-                            <i class="fas fa-info-circle me-1"></i> <strong>Note:</strong> When accepting NVCT payments, the amount will be converted to USD for credit card processing.
-                        </small>
+                    <div class="process-step">
+                        <div class="step-number">1</div>
+                        <strong>Fill in the payment details</strong>
+                        <p class="small text-muted">Enter the amount, customer information, and transaction details.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">2</div>
+                        <strong>Redirect to secure checkout</strong>
+                        <p class="small text-muted">Your customer will be redirected to Stripe's secure payment page.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">3</div>
+                        <strong>Customer enters card details</strong>
+                        <p class="small text-muted">Customer provides their payment information securely.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">4</div>
+                        <strong>Payment processing</strong>
+                        <p class="small text-muted">The payment is securely processed through our banking system.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">5</div>
+                        <strong>Confirmation and receipt</strong>
+                        <p class="small text-muted">Both you and the customer receive confirmation when the payment is complete.</p>
                     </div>
                 </div>
             </div>
@@ -194,26 +217,41 @@
             <div class="card shadow-sm">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-question-circle me-2"></i> Help & Support
+                        <i class="fas fa-credit-card me-2"></i> Payment Methods
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="support-info">
-                        <h6>Frequently Asked Questions</h6>
-                        <ul class="small">
-                            <li>Payments are processed securely via Stripe</li>
-                            <li>Transaction fees are automatically calculated</li>
-                            <li>Receipts can be emailed to customers</li>
-                            <li>Payment confirmation is instant</li>
-                        </ul>
+                    <div class="info-card">
+                        <h6>We Accept</h6>
+                        <div class="d-flex justify-content-between my-3">
+                            <div class="text-center">
+                                <i class="fab fa-cc-visa fa-2x text-primary"></i>
+                                <div><small>Visa</small></div>
+                            </div>
+                            <div class="text-center">
+                                <i class="fab fa-cc-mastercard fa-2x text-danger"></i>
+                                <div><small>Mastercard</small></div>
+                            </div>
+                            <div class="text-center">
+                                <i class="fab fa-cc-amex fa-2x text-info"></i>
+                                <div><small>American Express</small></div>
+                            </div>
+                            <div class="text-center">
+                                <i class="fab fa-cc-discover fa-2x text-warning"></i>
+                                <div><small>Discover</small></div>
+                            </div>
+                        </div>
                         
-                        <hr>
+                        <h6 class="mt-4">Available Currencies</h6>
+                        <div class="my-3">
+                            <span class="badge bg-primary badge-currency">USD</span>
+                            <span class="badge bg-primary badge-currency">EUR</span>
+                            <span class="badge bg-primary badge-currency">GBP</span>
+                            <span class="badge bg-primary badge-currency">NVCT</span>
+                        </div>
                         
-                        <h6>Need Help?</h6>
-                        <p class="small mb-0">If you have any questions or need assistance, contact our support team.</p>
-                        <a href="mailto:support@nvcplatform.net" class="btn btn-sm btn-outline-primary mt-2">
-                            <i class="fas fa-envelope me-1"></i> Contact Support
-                        </a>
+                        <h6 class="mt-4">Security</h6>
+                        <p class="small mb-0">All payment information is securely handled by Stripe. We never store your customers' card details.</p>
                     </div>
                 </div>
             </div>
