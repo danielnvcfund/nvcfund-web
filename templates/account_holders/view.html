@@ -175,7 +175,10 @@
                     {% endif %}
                     
                     <div class="mt-3">
-                        <a href="{{ url_for('account_holders.accounts', account_holder_id=account_holder.id) }}" class="btn btn-info btn-block">View All Accounts</a>
+                        <a href="{{ url_for('currency_exchange.account_holder_exchange', account_holder_id=account_holder.id) }}" class="btn btn-primary btn-block">
+                            <i class="fa fa-exchange-alt"></i> Currency Exchange
+                        </a>
+                        <a href="{{ url_for('account_holders.accounts', account_holder_id=account_holder.id) }}" class="btn btn-info btn-block mt-2">View All Accounts</a>
                         <a href="{{ url_for('account_holders.index') }}" class="btn btn-secondary btn-block mt-2">Back to Account Holders</a>
                     </div>
                 </div>
