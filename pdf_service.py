@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from flask import render_template_string, render_template
 from sqlalchemy import desc, asc
 
-from account_holder_models import AccountHolder, BankAccount, Address
+from account_holder_models import AccountHolder, BankAccount, Address, CurrencyExchangeTransaction
 from models import Transaction
 
 logger = logging.getLogger(__name__)
