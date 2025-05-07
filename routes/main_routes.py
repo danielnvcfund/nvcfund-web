@@ -681,6 +681,8 @@ def dashboard():
         'dashboard.html',
         user=user,
         recent_transactions=recent_transactions,
+        recent_account_holders=recent_account_holders,
+        total_account_holders=total_account_holders,
         analytics_json=analytics_json,
         user_eth_address=user.ethereum_address if user.ethereum_address else "",
         jwt_token=jwt_token
