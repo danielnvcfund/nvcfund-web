@@ -156,10 +156,27 @@ def currency_exchange_pdf(exchange_id):
         # Get the account holder (for authorization check)
         account_holder = AccountHolder.query.get(exchange_tx.account_holder_id)
         
-        # Check if current user has access to this exchange transaction
-        if current_user.is_admin or (hasattr(current_user, 'account_holder') and 
-                                     current_user.account_holder and 
-                                     current_user.account_holder.id == account_holder.id):
+        # Simplified permission check that works for all user types
+        # The user can access the PDF if:
+        # 1. They are authenticated
+        # 2. They are the owner of the transaction OR they have admin access
+        
+        has_permission = current_user.is_authenticated
+        is_owner = False
+        is_admin = False
+        
+        # Check if user has an account_holder association and is the owner
+        if hasattr(current_user, 'account_holder') and current_user.account_holder:
+            is_owner = current_user.account_holder.id == account_holder.id
+        
+        # Check for admin-like role or username
+        if hasattr(current_user, 'role'):
+            is_admin = current_user.role == 'admin' or current_user.role == 'ADMIN'
+        elif hasattr(current_user, 'username'):
+            is_admin = current_user.username in ['admin', 'headadmin']
+            
+        # Allow access if user has permission AND (is owner OR is admin)
+        if has_permission and (is_owner or is_admin):
             # Generate PDF
             pdf_data = PDFService.generate_currency_exchange_pdf(exchange_id)
             
