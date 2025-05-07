@@ -51,37 +51,57 @@
                                     <form method="POST" action="{{ url_for('currency_exchange.perform_exchange') }}" id="exchange-form">
                                         <input type="hidden" name="account_holder_id" value="{{ account_holder.id }}">
                                         
-                                        <div class="form-group mb-3">
-                                            <label for="from_account_id">From Account</label>
-                                            <select class="form-control" id="from_account_id" name="from_account_id" required>
-                                                <option value="">Select Account</option>
-                                                {% for account in accounts %}
-                                                <option value="{{ account.id }}" data-currency="{{ account.currency.value }}" data-balance="{{ account.balance }}">
-                                                    {{ account.account_number }} ({{ account.currency.value }}: {{ account.balance }})
-                                                </option>
-                                                {% endfor %}
-                                            </select>
-                                            <small class="form-text text-muted" id="from-account-balance"></small>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group mb-3">
+                                                    <label for="currency_from">Send</label>
+                                                    <div class="input-group">
+                                                        <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" required>
+                                                        <div class="input-group-append">
+                                                            <select class="form-control" id="currency_from" name="currency_from">
+                                                                {% for currency in currencies %}
+                                                                <option value="{{ currency }}">{{ currency }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <small id="from-balance-info" class="form-text text-muted mt-1"></small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group mb-3">
+                                                    <label for="currency_to">Receive</label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control" id="converted_amount" readonly>
+                                                        <div class="input-group-append">
+                                                            <select class="form-control" id="currency_to" name="currency_to">
+                                                                {% for currency in currencies %}
+                                                                <option value="{{ currency }}">{{ currency }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <small class="form-text text-muted mt-1">
+                                                        <span id="exchange-rate-display">Rate: 1.00</span>
+                                                    </small>
+                                                </div>
+                                            </div>
                                         </div>
                                         
-                                        <div class="form-group mb-3">
-                                            <label for="to_account_id">To Account</label>
-                                            <select class="form-control" id="to_account_id" name="to_account_id" required>
-                                                <option value="">Select Account</option>
-                                                {% for account in accounts %}
-                                                <option value="{{ account.id }}" data-currency="{{ account.currency.value }}">
-                                                    {{ account.account_number }} ({{ account.currency.value }})
-                                                </option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        
-                                        <div class="form-group mb-3">
-                                            <label for="amount">Amount</label>
-                                            <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" required>
-                                            <small class="form-text text-muted">
-                                                Amount in the source account's currency.
-                                            </small>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label for="from_account_id">From Account</label>
+                                                <select class="form-control" id="from_account_id" name="from_account_id" required>
+                                                    <option value="">Select Account</option>
+                                                </select>
+                                                <small class="form-text text-muted" id="from-account-balance"></small>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="to_account_id">To Account</label>
+                                                <select class="form-control" id="to_account_id" name="to_account_id" required>
+                                                    <option value="">Select Account</option>
+                                                </select>
+                                            </div>
                                         </div>
                                         
                                         <div id="exchange-preview" class="d-none alert alert-info mb-3">
