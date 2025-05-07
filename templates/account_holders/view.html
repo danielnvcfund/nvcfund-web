@@ -1,0 +1,186 @@
+{% extends 'layout.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Account Holder Details</h4>
+                    <p class="card-category">View account holder information</p>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Name</label>
+                                <p class="form-control-static">{{ account_holder.name }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Username</label>
+                                <p class="form-control-static">{{ account_holder.username }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Email</label>
+                                <p class="form-control-static">{{ account_holder.email }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Created</label>
+                                <p class="form-control-static">{{ account_holder.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Broker</label>
+                                <p class="form-control-static">{{ account_holder.broker or 'N/A' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>KYC Status</label>
+                                <p class="form-control-static">
+                                    {% if account_holder.kyc_verified %}
+                                    <span class="badge badge-success">Verified</span>
+                                    {% else %}
+                                    <span class="badge badge-warning">Pending</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Address Information -->
+                    <h5 class="mt-4">Addresses</h5>
+                    <hr>
+                    {% if account_holder.addresses %}
+                        {% for address in account_holder.addresses %}
+                        <div class="address-card mb-3 p-3 border rounded">
+                            <h6>{{ address.name }}</h6>
+                            <address>
+                                {{ address.line1 }}<br>
+                                {% if address.line2 %}{{ address.line2 }}<br>{% endif %}
+                                {{ address.city }}, {{ address.region }} {{ address.zip }}<br>
+                                {{ address.country }}
+                            </address>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alert alert-info">No addresses found</div>
+                    {% endif %}
+                    
+                    <!-- Phone Information -->
+                    <h5 class="mt-4">Phone Numbers</h5>
+                    <hr>
+                    {% if account_holder.phone_numbers %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Number</th>
+                                        <th>Primary</th>
+                                        <th>Mobile</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for phone in account_holder.phone_numbers %}
+                                    <tr>
+                                        <td>{{ phone.name }}</td>
+                                        <td>{{ phone.number }}</td>
+                                        <td>
+                                            {% if phone.is_primary %}
+                                            <span class="badge badge-success">Yes</span>
+                                            {% else %}
+                                            <span class="badge badge-secondary">No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if phone.is_mobile %}
+                                            <span class="badge badge-info">Yes</span>
+                                            {% else %}
+                                            <span class="badge badge-secondary">No</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">No phone numbers found</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Accounts</h4>
+                    <p class="card-category">Banking accounts summary</p>
+                </div>
+                <div class="card-body">
+                    {% if account_holder.accounts %}
+                        {% for account in account_holder.accounts %}
+                        <div class="account-card mb-3 p-3 border rounded">
+                            <div class="d-flex justify-content-between">
+                                <h6>{{ account.account_name }}</h6>
+                                <span class="badge 
+                                    {% if account.status.value == 'active' %}badge-success
+                                    {% elif account.status.value == 'pending' %}badge-warning
+                                    {% elif account.status.value == 'suspended' %}badge-danger
+                                    {% else %}badge-secondary{% endif %}">
+                                    {{ account.status.value }}
+                                </span>
+                            </div>
+                            <div class="account-number mb-2">
+                                <small class="text-muted">Account #:</small> {{ account.account_number }}
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <div class="account-type">
+                                    <small class="text-muted">Type:</small> {{ account.account_type.value }}
+                                </div>
+                                <div class="account-currency">
+                                    <small class="text-muted">Currency:</small> {{ account.currency.value }}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <div class="balance">
+                                    <strong>Balance:</strong>
+                                </div>
+                                <div class="amount">
+                                    <strong>{{ '{:,.2f}'.format(account.balance) }} {{ account.currency.value }}</strong>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <a href="{{ url_for('account_holders.view_account', account_id=account.id) }}" class="btn btn-sm btn-primary btn-block">View Details</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alert alert-info">No accounts found</div>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <a href="{{ url_for('account_holders.accounts', account_holder_id=account_holder.id) }}" class="btn btn-info btn-block">View All Accounts</a>
+                        <a href="{{ url_for('account_holders.index') }}" class="btn btn-secondary btn-block mt-2">Back to Account Holders</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

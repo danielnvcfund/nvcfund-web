@@ -179,6 +179,14 @@ def create_app():
         # Import models to ensure tables are created
         import models  # noqa: F401
         
+        # Import account holder models
+        try:
+            import account_holder_models  # noqa: F401
+            logger.info("Account holder models imported successfully")
+        except Exception as e:
+            logger.error(f"Error importing account holder models: {str(e)}")
+            logger.warning("Application will run without account holder functionality")
+        
         # Create database tables
         db.create_all()
         
@@ -380,6 +388,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering Saint Crown Integration routes: {str(e)}")
             logger.warning("Application will run without Saint Crown Integration functionality")
+            
+        # Register Account Holder routes
+        try:
+            from routes.account_holder_routes import register_account_holder_routes
+            register_account_holder_routes(app)
+            logger.info("Account Holder routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Account Holder routes: {str(e)}")
+            logger.warning("Application will run without Account Holder functionality")
             
         # Create PHP test integration user
         try:
