@@ -46,6 +46,7 @@ class CurrencyType(enum.Enum):
     TU = "TU"      # Treasury Unit
     ZCASH = "ZCASH"
     NGN = "NGN"    # Nigerian Naira
+    AFD1 = "AFD1"  # American Federation Dollar
 
 class AccountStatus(enum.Enum):
     """Status types for banking accounts"""
