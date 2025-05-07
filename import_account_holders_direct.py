@@ -63,12 +63,15 @@ def parse_currency_value(value_str):
 
 def import_account_holders_direct(csv_filepath, max_records=5):
     """
-    Import a small sample of account holders from CSV file directly using SQL
+    Import account holders from CSV file directly using SQL
     
     Args:
         csv_filepath: Path to the CSV file containing account holder data
-        max_records: Maximum number of records to import
+        max_records: Maximum number of records to import (None or 0 for all records)
     """
+    # Convert None to 0 for handling "import all" behavior
+    if max_records is None:
+        max_records = 0
     try:
         # Connect to the database directly
         conn = psycopg2.connect(db_url)
@@ -84,8 +87,8 @@ def import_account_holders_direct(csv_filepath, max_records=5):
             reader = csv.DictReader(csvfile)
             
             for row in reader:
-                # Only import up to max_records
-                if imported_count >= max_records:
+                # Only import up to max_records if it's specified
+                if max_records and imported_count >= max_records:
                     break
                     
                 try:
@@ -264,8 +267,9 @@ def main():
         sys.exit(1)
     
     try:
-        # Run the import
-        imported, skipped, errors = import_account_holders_direct(csv_file_path, max_records=5)
+        # Run the import for all records (passing 0 or None for max_records will import all)
+        logger.info("Starting import of ALL account holders from CSV file...")
+        imported, skipped, errors = import_account_holders_direct(csv_file_path, max_records=None)
         
         if errors > 0:
             logger.warning(f"Import completed with {errors} errors. Please check the logs.")
