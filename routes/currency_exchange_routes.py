@@ -155,12 +155,35 @@ def account_holder_exchange(account_holder_id):
         # Get exchange history
         exchange_history = CurrencyExchangeService.get_exchange_history(account_holder_id)
         
+        # Get list of all available currencies for dropdown
+        currencies = [c.value for c in CurrencyType]
+        
+        # For emphasis, put NVCT at the top of the list
+        if 'NVCT' in currencies:
+            currencies.remove('NVCT')
+            currencies.insert(0, 'NVCT')
+        
+        # Organize accounts by currency for easier selection
+        accounts_by_currency = {}
+        for account in accounts:
+            currency = account.currency.value
+            if currency not in accounts_by_currency:
+                accounts_by_currency[currency] = []
+            accounts_by_currency[currency].append({
+                'id': account.id,
+                'account_number': account.account_number,
+                'account_name': account.account_name,
+                'balance': account.balance
+            })
+        
         return render_template(
             'currency_exchange/account_holder_exchange.html',
             account_holder=account_holder,
             accounts=accounts,
+            accounts_by_currency=accounts_by_currency,
             exchange_rates=exchange_rates,
             exchange_history=exchange_history,
+            currencies=currencies,
             title=f"Currency Exchange for {account_holder.name}"
         )
     except Exception as e:
@@ -178,6 +201,10 @@ def perform_exchange():
         to_account_id = int(request.form.get('to_account_id'))
         amount = float(request.form.get('amount'))
         
+        # Also get currency information (new in the dropdown-based version)
+        currency_from = request.form.get('currency_from')
+        currency_to = request.form.get('currency_to')
+        
         if not account_holder_id or not from_account_id or not to_account_id or not amount:
             flash('Missing required fields', 'danger')
             return redirect(url_for('currency_exchange.account_holder_exchange', account_holder_id=account_holder_id))
@@ -185,6 +212,18 @@ def perform_exchange():
         # Check if the accounts are the same
         if from_account_id == to_account_id:
             flash('Source and destination accounts cannot be the same', 'danger')
+            return redirect(url_for('currency_exchange.account_holder_exchange', account_holder_id=account_holder_id))
+        
+        # Validate that account currencies match the selected currencies
+        from_account = BankAccount.query.get(from_account_id)
+        to_account = BankAccount.query.get(to_account_id)
+        
+        if from_account.currency.value != currency_from:
+            flash(f'Selected source account does not match the chosen from currency ({currency_from})', 'danger')
+            return redirect(url_for('currency_exchange.account_holder_exchange', account_holder_id=account_holder_id))
+            
+        if to_account.currency.value != currency_to:
+            flash(f'Selected destination account does not match the chosen to currency ({currency_to})', 'danger')
             return redirect(url_for('currency_exchange.account_holder_exchange', account_holder_id=account_holder_id))
             
         # Perform the exchange
@@ -236,6 +275,77 @@ def api_rates():
         return jsonify({'success': True, 'rates': result})
     except Exception as e:
         logger.error(f"Error retrieving exchange rates: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@currency_exchange_bp.route('/api/rates/<string:from_currency>/<string:to_currency>')
+@login_required
+def api_get_specific_rate(from_currency, to_currency):
+    """API endpoint to get a specific exchange rate between two currencies"""
+    try:
+        try:
+            from_currency_enum = CurrencyType[from_currency]
+            to_currency_enum = CurrencyType[to_currency]
+        except KeyError:
+            return jsonify({
+                'success': False, 
+                'error': 'Invalid currency type'
+            }), 400
+            
+        rate = CurrencyExchangeService.get_exchange_rate(from_currency_enum, to_currency_enum)
+        
+        if not rate:
+            return jsonify({
+                'success': False, 
+                'error': 'Exchange rate not available for these currencies'
+            }), 404
+            
+        return jsonify({
+            'success': True,
+            'from_currency': from_currency,
+            'to_currency': to_currency,
+            'rate': rate
+        })
+    except Exception as e:
+        logger.error(f"Error retrieving specific exchange rate: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@currency_exchange_bp.route('/api/accounts/<int:account_holder_id>/<string:currency>')
+@login_required
+def api_get_accounts_by_currency(account_holder_id, currency):
+    """API endpoint to get accounts of a specific currency for an account holder"""
+    try:
+        try:
+            currency_enum = CurrencyType[currency]
+        except KeyError:
+            return jsonify({
+                'success': False, 
+                'error': 'Invalid currency type'
+            }), 400
+        
+        # Get accounts of the specified currency
+        accounts = BankAccount.query.filter_by(
+            account_holder_id=account_holder_id,
+            currency=currency_enum
+        ).all()
+        
+        result = []
+        for account in accounts:
+            result.append({
+                'id': account.id,
+                'account_number': account.account_number,
+                'account_name': account.account_name,
+                'balance': account.balance,
+                'available_balance': account.available_balance,
+                'currency': account.currency.value
+            })
+            
+        return jsonify({
+            'success': True,
+            'currency': currency,
+            'accounts': result
+        })
+    except Exception as e:
+        logger.error(f"Error retrieving accounts by currency: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @currency_exchange_bp.route('/api/calculate', methods=['POST'])

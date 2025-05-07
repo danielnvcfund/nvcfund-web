@@ -243,9 +243,18 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Form elements
+        const accountHolderId = "{{ account_holder.id }}";
+        const fromCurrencySelect = document.getElementById('currency_from');
+        const toCurrencySelect = document.getElementById('currency_to');
+        const amountInput = document.getElementById('amount');
+        const convertedAmountInput = document.getElementById('converted_amount');
         const fromAccountSelect = document.getElementById('from_account_id');
         const toAccountSelect = document.getElementById('to_account_id');
-        const amountInput = document.getElementById('amount');
+        const exchangeRateDisplay = document.getElementById('exchange-rate-display');
+        const fromBalanceInfo = document.getElementById('from-balance-info');
+        
+        // Preview elements
         const previewBtn = document.getElementById('preview-btn');
         const exchangePreview = document.getElementById('exchange-preview');
         const previewFrom = document.getElementById('preview-from');
@@ -253,20 +262,131 @@
         const previewRate = document.getElementById('preview-rate');
         const previewFee = document.getElementById('preview-fee');
         const previewAmount = document.getElementById('preview-amount');
-        const fromAccountBalance = document.getElementById('from-account-balance');
         
-        // Update the from account balance display
+        // Store accounts by currency for easy access
+        const accountsByCurrency = {{ accounts_by_currency|tojson }};
+        
+        // Initialize exchange rate data
+        let currentRate = 1.0;
+        
+        // Helper function to format currency
+        function formatCurrency(amount, currency) {
+            return currency === 'NVCT' ? `NVCT ${amount.toFixed(2)}` : amount.toFixed(2);
+        }
+        
+        // Helper function to calculate exchange
+        function calculateExchange() {
+            const amount = parseFloat(amountInput.value);
+            if (!isNaN(amount) && amount > 0) {
+                const fromCurrency = fromCurrencySelect.value;
+                const toCurrency = toCurrencySelect.value;
+                
+                // Calculate fee (0.5%)
+                const feePercentage = 0.5;
+                const feeAmount = (amount * feePercentage) / 100;
+                const amountAfterFee = amount - feeAmount;
+                
+                // Calculate converted amount
+                const convertedAmount = amountAfterFee * currentRate;
+                
+                // Update converted amount display
+                convertedAmountInput.value = convertedAmount.toFixed(2);
+            }
+        }
+        
+        // Function to update exchange rate between selected currencies
+        function updateExchangeRate() {
+            const fromCurrency = fromCurrencySelect.value;
+            const toCurrency = toCurrencySelect.value;
+            
+            if (fromCurrency === toCurrency) {
+                // Same currency, rate is 1:1
+                currentRate = 1.0;
+                exchangeRateDisplay.textContent = `Rate: 1.00`;
+                calculateExchange();
+                return;
+            }
+            
+            // Fetch the exchange rate from API
+            fetch(`{{ url_for('currency_exchange.api_get_specific_rate', from_currency='placeholder1', to_currency='placeholder2') }}`.replace('placeholder1', fromCurrency).replace('placeholder2', toCurrency))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        currentRate = data.rate;
+                        exchangeRateDisplay.textContent = `Rate: 1 ${fromCurrency} = ${data.rate.toFixed(4)} ${toCurrency}`;
+                        calculateExchange();
+                    } else {
+                        exchangeRateDisplay.textContent = `Rate unavailable`;
+                        convertedAmountInput.value = '';
+                        console.error('Error fetching rate:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    exchangeRateDisplay.textContent = `Rate unavailable`;
+                    convertedAmountInput.value = '';
+                });
+        }
+        
+        // Function to update account options based on selected currency
+        function updateAccountOptions(currencySelect, accountSelect, isSource = false) {
+            const currency = currencySelect.value;
+            
+            // Clear existing options except the placeholder
+            while (accountSelect.options.length > 1) {
+                accountSelect.remove(1);
+            }
+            
+            // If no accounts for this currency, show message
+            if (!accountsByCurrency[currency] || accountsByCurrency[currency].length === 0) {
+                if (isSource) {
+                    fromBalanceInfo.textContent = `No accounts available for ${currency}`;
+                }
+                return;
+            }
+            
+            // Add account options for the selected currency
+            accountsByCurrency[currency].forEach(account => {
+                const option = document.createElement('option');
+                option.value = account.id;
+                option.textContent = `${account.account_number} (${formatCurrency(account.balance, currency)})`;
+                option.setAttribute('data-balance', account.balance);
+                accountSelect.appendChild(option);
+            });
+            
+            // Update balance info if it's a source account
+            if (isSource && accountsByCurrency[currency].length > 0) {
+                const firstAccount = accountsByCurrency[currency][0];
+                fromBalanceInfo.textContent = `Available balance: ${formatCurrency(firstAccount.balance, currency)}`;
+            }
+        }
+        
+        // Event: Currency From select change
+        fromCurrencySelect.addEventListener('change', function() {
+            updateAccountOptions(fromCurrencySelect, fromAccountSelect, true);
+            updateExchangeRate();
+        });
+        
+        // Event: Currency To select change
+        toCurrencySelect.addEventListener('change', function() {
+            updateAccountOptions(toCurrencySelect, toAccountSelect, false);
+            updateExchangeRate();
+        });
+        
+        // Event: From Account select change
         fromAccountSelect.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
-            const balance = selectedOption.getAttribute('data-balance');
-            const currency = selectedOption.getAttribute('data-currency');
-            
-            if (balance && currency) {
-                fromAccountBalance.textContent = `Available balance: ${currency === 'NVCT' ? 'NVCT ' : ''}${balance}`;
+            if (selectedOption.value) {
+                const balance = selectedOption.getAttribute('data-balance');
+                const currency = fromCurrencySelect.value;
+                fromBalanceInfo.textContent = `Available balance: ${formatCurrency(parseFloat(balance), currency)}`;
             } else {
-                fromAccountBalance.textContent = '';
+                fromBalanceInfo.textContent = '';
             }
         });
+        
+        // Event: Amount input change
+        amountInput.addEventListener('input', calculateExchange);
         
         // Preview button click handler
         previewBtn.addEventListener('click', function() {
@@ -279,43 +399,50 @@
                 return;
             }
             
-            // Get the currency information
-            const fromCurrency = fromAccountSelect.options[fromAccountSelect.selectedIndex].getAttribute('data-currency');
-            const toCurrency = toAccountSelect.options[toAccountSelect.selectedIndex].getAttribute('data-currency');
+            // Get currency info
+            const fromCurrency = fromCurrencySelect.value;
+            const toCurrency = toCurrencySelect.value;
             
-            // Call the API to calculate the exchange
-            fetch("{{ url_for('currency_exchange.api_calculate') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    from_currency: fromCurrency,
-                    to_currency: toCurrency,
-                    amount: amount
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Display the result
-                    previewFrom.textContent = `${amount} ${fromCurrency}`;
-                    previewTo.textContent = `${toCurrency}`;
-                    previewRate.textContent = `1 ${fromCurrency} = ${data.rate} ${toCurrency}`;
-                    previewFee.textContent = `${data.fee_amount.toFixed(2)} ${fromCurrency}`;
-                    previewAmount.textContent = `${data.converted_amount.toFixed(2)} ${toCurrency}`;
-                    
-                    // Show the preview container
-                    exchangePreview.classList.remove('d-none');
-                } else {
-                    alert(`Error: ${data.error}`);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while calculating the exchange. Please try again.');
-            });
+            // Calculate fee (0.5%)
+            const feePercentage = 0.5;
+            const feeAmount = (amount * feePercentage) / 100;
+            const amountAfterFee = amount - feeAmount;
+            
+            // Calculate converted amount
+            const convertedAmount = amountAfterFee * currentRate;
+            
+            // Display the result
+            previewFrom.textContent = `${amount} ${fromCurrency}`;
+            previewTo.textContent = `${convertedAmount.toFixed(2)} ${toCurrency}`;
+            previewRate.textContent = `1 ${fromCurrency} = ${currentRate.toFixed(4)} ${toCurrency}`;
+            previewFee.textContent = `${feeAmount.toFixed(2)} ${fromCurrency}`;
+            previewAmount.textContent = `${convertedAmount.toFixed(2)} ${toCurrency}`;
+            
+            // Show the result container
+            exchangePreview.classList.remove('d-none');
         });
+        
+        // Initialize the form
+        function initializeForm() {
+            // Set default values for currency selects
+            if (fromCurrencySelect.options.length > 0) {
+                fromCurrencySelect.selectedIndex = 0; // Default to first currency (NVCT)
+            }
+            
+            if (toCurrencySelect.options.length > 1) {
+                toCurrencySelect.selectedIndex = 1; // Default to second currency (USD)
+            }
+            
+            // Update account options for both selects
+            updateAccountOptions(fromCurrencySelect, fromAccountSelect, true);
+            updateAccountOptions(toCurrencySelect, toAccountSelect, false);
+            
+            // Get initial exchange rate
+            updateExchangeRate();
+        }
+        
+        // Initialize the form when page loads
+        initializeForm();
     });
 </script>
 {% endblock %}
