@@ -27,6 +27,17 @@ stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 # Create blueprint
 pos_bp = Blueprint('pos', __name__, url_prefix='/pos')
 
+# Add custom template filters
+@pos_bp.app_template_filter('from_json')
+def parse_json(value):
+    """Parse JSON string into Python object"""
+    try:
+        if value is None:
+            return {}
+        return json.loads(value)
+    except (ValueError, TypeError):
+        return {}
+
 
 @pos_bp.route('/dashboard')
 @login_required

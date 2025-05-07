@@ -136,6 +136,11 @@
                                 {{ metadata.customer_email }}
                             </div>
                         {% endif %}
+                    {% elif transaction.recipient_name %}
+                        <div class="receipt-detail">
+                            <strong>Customer:</strong>
+                            {{ transaction.recipient_name }}
+                        </div>
                     {% endif %}
                 </div>
             </div>

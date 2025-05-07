@@ -107,7 +107,16 @@
                         <div class="col-sm-6">
                             <div class="mb-3">
                                 <strong>Customer:</strong><br>
-                                {{ transaction.metadata.customer_name }}
+                                {% if transaction.tx_metadata_json %}
+                                    {% set metadata = transaction.tx_metadata_json|from_json %}
+                                    {% if metadata and metadata.customer_name %}
+                                        {{ metadata.customer_name }}
+                                    {% else %}
+                                        {{ transaction.recipient_name or "Customer" }}
+                                    {% endif %}
+                                {% else %}
+                                    {{ transaction.recipient_name or "Customer" }}
+                                {% endif %}
                             </div>
                         </div>
                         <div class="col-sm-6">
