@@ -7,6 +7,16 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.ext.hybrid import hybrid_property
 
+# Import account holder models
+try:
+    from account_holder_models import (
+        AccountHolder, Address, PhoneNumber, BankAccount,
+        AccountType, AccountStatus, CurrencyType
+    )
+except ImportError:
+    # Models will be imported when the module is available
+    pass
+
 class UserRole(enum.Enum):
     ADMIN = "admin"
     USER = "user"
