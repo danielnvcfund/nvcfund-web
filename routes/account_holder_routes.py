@@ -22,12 +22,69 @@ account_holder_bp = Blueprint('account_holders', __name__, url_prefix='/account-
 @account_holder_bp.route('/')
 @login_required
 def index():
-    """List all account holders"""
-    account_holders = AccountHolder.query.all()
+    """List all account holders with optional search"""
+    search_query = request.args.get('q', '')
+    
+    if search_query:
+        # Search by name, username, email
+        account_holders = AccountHolder.query.filter(
+            db.or_(
+                AccountHolder.name.ilike(f'%{search_query}%'),
+                AccountHolder.username.ilike(f'%{search_query}%'),
+                AccountHolder.email.ilike(f'%{search_query}%')
+            )
+        ).all()
+    else:
+        # No search query, return all (limit to 100 for performance)
+        account_holders = AccountHolder.query.limit(100).all()
+    
     return render_template(
         'account_holders/index.html', 
         account_holders=account_holders,
+        search_query=search_query,
         title="Account Holders"
+    )
+
+@account_holder_bp.route('/search')
+@login_required
+def search():
+    """Advanced search for account holders and accounts"""
+    search_query = request.args.get('q', '')
+    search_type = request.args.get('type', 'all')
+    
+    results = {
+        'account_holders': [],
+        'accounts': []
+    }
+    
+    if search_query:
+        # Search account holders
+        if search_type in ['all', 'account_holder']:
+            account_holders = AccountHolder.query.filter(
+                db.or_(
+                    AccountHolder.name.ilike(f'%{search_query}%'),
+                    AccountHolder.username.ilike(f'%{search_query}%'),
+                    AccountHolder.email.ilike(f'%{search_query}%')
+                )
+            ).all()
+            results['account_holders'] = account_holders
+        
+        # Search accounts
+        if search_type in ['all', 'account']:
+            accounts = BankAccount.query.filter(
+                db.or_(
+                    BankAccount.account_number.ilike(f'%{search_query}%'),
+                    BankAccount.account_name.ilike(f'%{search_query}%')
+                )
+            ).all()
+            results['accounts'] = accounts
+    
+    return render_template(
+        'account_holders/search.html',
+        results=results,
+        search_query=search_query,
+        search_type=search_type,
+        title="Search Results"
     )
 
 @account_holder_bp.route('/<int:account_holder_id>')
@@ -64,6 +121,75 @@ def view_account(account_id):
     )
 
 # API endpoints for account holders
+
+@account_holder_bp.route('/api/search')
+@login_required
+def api_search():
+    """API endpoint for searching account holders and accounts"""
+    try:
+        search_query = request.args.get('q', '')
+        search_type = request.args.get('type', 'all')
+        
+        results = {
+            'account_holders': [],
+            'accounts': []
+        }
+        
+        if not search_query:
+            return jsonify({'success': True, 'results': results, 'message': 'No search query provided'})
+            
+        # Search account holders
+        if search_type in ['all', 'account_holder']:
+            account_holders = AccountHolder.query.filter(
+                db.or_(
+                    AccountHolder.name.ilike(f'%{search_query}%'),
+                    AccountHolder.username.ilike(f'%{search_query}%'),
+                    AccountHolder.email.ilike(f'%{search_query}%')
+                )
+            ).limit(50).all()
+            
+            for holder in account_holders:
+                results['account_holders'].append({
+                    'id': holder.id,
+                    'name': holder.name,
+                    'email': holder.email,
+                    'username': holder.username,
+                    'broker': holder.broker,
+                    'created_at': holder.created_at.isoformat() if holder.created_at else None
+                })
+        
+        # Search accounts
+        if search_type in ['all', 'account']:
+            accounts = BankAccount.query.filter(
+                db.or_(
+                    BankAccount.account_number.ilike(f'%{search_query}%'),
+                    BankAccount.account_name.ilike(f'%{search_query}%')
+                )
+            ).limit(50).all()
+            
+            for account in accounts:
+                results['accounts'].append({
+                    'id': account.id,
+                    'account_number': account.account_number,
+                    'account_name': account.account_name,
+                    'account_type': account.account_type.value,
+                    'currency': account.currency.value,
+                    'balance': account.balance,
+                    'account_holder': {
+                        'id': account.account_holder.id,
+                        'name': account.account_holder.name
+                    }
+                })
+        
+        return jsonify({
+            'success': True, 
+            'results': results,
+            'search_query': search_query,
+            'search_type': search_type
+        })
+    except Exception as e:
+        logger.error(f"Error searching: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @account_holder_bp.route('/api/account-holders')
 @login_required

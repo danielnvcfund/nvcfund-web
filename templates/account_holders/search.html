@@ -1,0 +1,141 @@
+{% extends 'layout.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Advanced Search</h4>
+                    <p class="card-category">Find account holders and accounts</p>
+                </div>
+                <div class="card-body">
+                    <form id="advanced-search-form" method="get" action="{{ url_for('account_holders.search') }}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="search-query">Search Query</label>
+                                    <input type="text" class="form-control" id="search-query" name="q" placeholder="Enter search term" value="{{ search_query or '' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="search-type">Search In</label>
+                                    <select class="form-control" id="search-type" name="type">
+                                        <option value="all" {% if search_type == 'all' %}selected{% endif %}>All</option>
+                                        <option value="account_holder" {% if search_type == 'account_holder' %}selected{% endif %}>Account Holders</option>
+                                        <option value="account" {% if search_type == 'account' %}selected{% endif %}>Accounts</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-search mr-1"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if search_query %}
+    <div class="row">
+        <!-- Account Holders Results -->
+        <div class="col-12 {% if results.accounts %}col-lg-6{% endif %} mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-users mr-1"></i> Account Holders ({{ results.account_holders|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if results.account_holders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="text-primary">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for holder in results.account_holders %}
+                                <tr>
+                                    <td>{{ holder.name }}</td>
+                                    <td>{{ holder.username }}</td>
+                                    <td>{{ holder.email }}</td>
+                                    <td>
+                                        <a href="{{ url_for('account_holders.view', account_holder_id=holder.id) }}" class="btn btn-sm btn-primary">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle mr-1"></i> No account holders found matching "{{ search_query }}"
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Accounts Results -->
+        {% if results.accounts %}
+        <div class="col-12 col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-money-check-alt mr-1"></i> Accounts ({{ results.accounts|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="text-primary">
+                                <tr>
+                                    <th>Account Number</th>
+                                    <th>Account Name</th>
+                                    <th>Currency</th>
+                                    <th>Balance</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for account in results.accounts %}
+                                <tr>
+                                    <td>{{ account.account_number }}</td>
+                                    <td>{{ account.account_name }}</td>
+                                    <td>{{ account.currency }}</td>
+                                    <td>{{ '{:,.2f}'.format(account.balance) }}</td>
+                                    <td>
+                                        <a href="{{ url_for('account_holders.view_account', account_id=account.id) }}" class="btn btn-sm btn-primary">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-12">
+            <a href="{{ url_for('account_holders.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left mr-1"></i> Back to Account Holders
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

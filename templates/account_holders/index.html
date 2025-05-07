@@ -8,10 +8,39 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h4 class="card-title">Account Holders</h4>
-                    <p class="card-category">View all registered account holders</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title">Account Holders</h4>
+                            <p class="card-category">View all registered account holders</p>
+                        </div>
+                        <div>
+                            <form id="search-form" class="form-inline" method="get" action="{{ url_for('account_holders.index') }}">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Search..." name="q" value="{{ search_query or '' }}">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" type="submit">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
+                    {% if search_query %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Showing results for: <strong>"{{ search_query }}"</strong>
+                        <a href="{{ url_for('account_holders.index') }}" class="btn btn-sm btn-outline-info ml-3">Clear Search</a>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3 text-right">
+                        <a href="{{ url_for('account_holders.search') }}" class="btn btn-info">
+                            <i class="fas fa-search-plus mr-1"></i> Advanced Search
+                        </a>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead class="text-primary">
