@@ -22,21 +22,34 @@ account_holder_bp = Blueprint('account_holders', __name__, url_prefix='/account-
 @account_holder_bp.route('/')
 @login_required
 def index():
-    """List all account holders with optional search"""
+    """List all account holders with optional search and pagination"""
     search_query = request.args.get('q', '')
     
+    # Get pagination parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 25, type=int)
+    
+    # Ensure per_page is one of the allowed values
+    if per_page not in [25, 50, 100]:
+        per_page = 25
+    
+    # Prepare the query based on search terms
     if search_query:
         # Search by name, username, email
-        account_holders = AccountHolder.query.filter(
+        query = AccountHolder.query.filter(
             db.or_(
                 AccountHolder.name.ilike(f'%{search_query}%'),
                 AccountHolder.username.ilike(f'%{search_query}%'),
                 AccountHolder.email.ilike(f'%{search_query}%')
             )
-        ).all()
+        )
     else:
-        # No search query, return all (limit to 100 for performance)
-        account_holders = AccountHolder.query.limit(100).all()
+        # No search query, use all records
+        query = AccountHolder.query
+    
+    # Get paginated results
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    account_holders = pagination.items
     
     # Get account balance information
     account_holders_with_balances = []
@@ -62,6 +75,8 @@ def index():
         'account_holders/index.html', 
         account_holders=account_holders_with_balances,
         search_query=search_query,
+        pagination=pagination,
+        per_page=per_page,
         title="Account Holders"
     )
 
