@@ -909,7 +909,10 @@ class POSPaymentForm(FlaskForm):
         ('USD', 'US Dollar (USD)'),
         ('EUR', 'Euro (EUR)'),
         ('GBP', 'British Pound (GBP)'),
-        ('NVCT', 'NVC Token (NVCT)')
+        ('NVCT', 'NVC Token (NVCT)'),
+        ('AFD1', 'American Federation Dollar (AFD1)'),
+        ('AKLUMI', 'AK Lumi (AKLUMI)'),
+        ('SFN', 'SFN Coin (SFN)')
     ], validators=[DataRequired()])
     customer_name = StringField('Customer Name', validators=[DataRequired(), Length(max=100)])
     customer_email = StringField('Customer Email', validators=[Optional(), Email()])
@@ -924,7 +927,10 @@ class POSPayoutForm(FlaskForm):
         ('USD', 'US Dollar (USD)'),
         ('EUR', 'Euro (EUR)'),
         ('GBP', 'British Pound (GBP)'),
-        ('NVCT', 'NVC Token (NVCT)')
+        ('NVCT', 'NVC Token (NVCT)'),
+        ('AFD1', 'American Federation Dollar (AFD1)'),
+        ('AKLUMI', 'AK Lumi (AKLUMI)'),
+        ('SFN', 'SFN Coin (SFN)')
     ], validators=[DataRequired()])
     recipient_name = StringField('Recipient Name', validators=[DataRequired(), Length(max=100)])
     recipient_email = StringField('Recipient Email', validators=[Optional(), Email()])
@@ -959,7 +965,10 @@ class POSTransactionFilterForm(FlaskForm):
         ('USD', 'US Dollar (USD)'),
         ('EUR', 'Euro (EUR)'),
         ('GBP', 'British Pound (GBP)'),
-        ('NVCT', 'NVC Token (NVCT)')
+        ('NVCT', 'NVC Token (NVCT)'),
+        ('AFD1', 'American Federation Dollar (AFD1)'),
+        ('AKLUMI', 'AK Lumi (AKLUMI)'),
+        ('SFN', 'SFN Coin (SFN)')
     ], validators=[Optional()])
     search = StringField('Search', validators=[Optional()])
     submit = SubmitField('Filter')
