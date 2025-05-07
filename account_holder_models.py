@@ -9,6 +9,22 @@ from datetime import datetime
 from app import db
 from sqlalchemy.ext.hybrid import hybrid_property
 
+class ExchangeType(enum.Enum):
+    """Types of currency exchanges"""
+    NVCT_TO_FIAT = "nvct_to_fiat"
+    FIAT_TO_NVCT = "fiat_to_nvct"
+    NVCT_TO_CRYPTO = "nvct_to_crypto"
+    CRYPTO_TO_NVCT = "crypto_to_nvct"
+    FIAT_TO_FIAT = "fiat_to_fiat"
+    CRYPTO_TO_CRYPTO = "crypto_to_crypto"
+    
+class ExchangeStatus(enum.Enum):
+    """Status of currency exchange transactions"""
+    PENDING = "pending"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
 class AccountType(enum.Enum):
     """Account types for banking accounts"""
     CHECKING = "checking"
@@ -156,6 +172,55 @@ class AccountHolder(db.Model):
     
     def __repr__(self):
         return f"<AccountHolder {self.name} ({self.email})>"
+
+class CurrencyExchangeRate(db.Model):
+    """Currency exchange rates for the NVCT exchange system"""
+    id = db.Column(db.Integer, primary_key=True)
+    from_currency = db.Column(db.Enum(CurrencyType), nullable=False)
+    to_currency = db.Column(db.Enum(CurrencyType), nullable=False)
+    rate = db.Column(db.Float, nullable=False)  # Rate from_currency -> to_currency
+    inverse_rate = db.Column(db.Float)  # Rate to_currency -> from_currency (calculated)
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    source = db.Column(db.String(100))  # Source of rate (e.g., "internal", "external_api")
+    is_active = db.Column(db.Boolean, default=True)
+    
+    def __repr__(self):
+        return f"<CurrencyExchangeRate {self.from_currency.value} -> {self.to_currency.value}: {self.rate}>"
+
+class CurrencyExchangeTransaction(db.Model):
+    """Record of currency exchange transactions"""
+    id = db.Column(db.Integer, primary_key=True)
+    exchange_type = db.Column(db.Enum(ExchangeType), nullable=False)
+    from_currency = db.Column(db.Enum(CurrencyType), nullable=False)
+    to_currency = db.Column(db.Enum(CurrencyType), nullable=False)
+    from_amount = db.Column(db.Float, nullable=False)
+    to_amount = db.Column(db.Float, nullable=False)
+    rate_applied = db.Column(db.Float, nullable=False)
+    fee_amount = db.Column(db.Float, default=0.0)
+    fee_currency = db.Column(db.Enum(CurrencyType))
+    status = db.Column(db.Enum(ExchangeStatus), default=ExchangeStatus.PENDING)
+    reference_number = db.Column(db.String(50), unique=True)
+    notes = db.Column(db.Text)
+    
+    # Transaction timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)
+    
+    # Foreign keys
+    account_holder_id = db.Column(db.Integer, db.ForeignKey('account_holder.id'), nullable=False)
+    from_account_id = db.Column(db.Integer, db.ForeignKey('bank_account.id'), nullable=False)
+    to_account_id = db.Column(db.Integer, db.ForeignKey('bank_account.id'), nullable=False)
+    rate_id = db.Column(db.Integer, db.ForeignKey('currency_exchange_rate.id'))
+    
+    # Relationships
+    account_holder = db.relationship('AccountHolder', backref='exchange_transactions')
+    from_account = db.relationship('BankAccount', foreign_keys=[from_account_id])
+    to_account = db.relationship('BankAccount', foreign_keys=[to_account_id])
+    exchange_rate = db.relationship('CurrencyExchangeRate')
+    
+    def __repr__(self):
+        return f"<CurrencyExchange {self.from_currency.value} {self.from_amount} -> {self.to_currency.value} {self.to_amount}>"
 
 class BankAccount(db.Model):
     """Bank account model for NVC Private Banking"""

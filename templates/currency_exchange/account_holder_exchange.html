@@ -1,0 +1,301 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="mb-0">Currency Exchange for {{ account_holder.name }}</h6>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-arrow-left me-2"></i> Back to Exchange
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="row p-4">
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <h5><i class="fas fa-info-circle me-2"></i>NVCT Stablecoin Exchanges</h5>
+                                <p>
+                                    The NVC Token (NVCT) maintains a 1:1 peg with USD and is fully backed by cash and cash equivalents 
+                                    at well over $10 trillion. You can easily convert between NVCT and other currencies.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6 class="mb-0">Perform Currency Exchange</h6>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="row p-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-gradient-primary text-white">
+                                    <h6 class="mb-0 text-white">Exchange Currencies</h6>
+                                </div>
+                                <div class="card-body">
+                                    <form method="POST" action="{{ url_for('currency_exchange.perform_exchange') }}" id="exchange-form">
+                                        <input type="hidden" name="account_holder_id" value="{{ account_holder.id }}">
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="from_account_id">From Account</label>
+                                            <select class="form-control" id="from_account_id" name="from_account_id" required>
+                                                <option value="">Select Account</option>
+                                                {% for account in accounts %}
+                                                <option value="{{ account.id }}" data-currency="{{ account.currency.value }}" data-balance="{{ account.balance }}">
+                                                    {{ account.account_number }} ({{ account.currency.value }}: {{ account.balance }})
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                            <small class="form-text text-muted" id="from-account-balance"></small>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="to_account_id">To Account</label>
+                                            <select class="form-control" id="to_account_id" name="to_account_id" required>
+                                                <option value="">Select Account</option>
+                                                {% for account in accounts %}
+                                                <option value="{{ account.id }}" data-currency="{{ account.currency.value }}">
+                                                    {{ account.account_number }} ({{ account.currency.value }})
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="amount">Amount</label>
+                                            <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" required>
+                                            <small class="form-text text-muted">
+                                                Amount in the source account's currency.
+                                            </small>
+                                        </div>
+                                        
+                                        <div id="exchange-preview" class="d-none alert alert-info mb-3">
+                                            <h6 class="mb-2">Exchange Preview</h6>
+                                            <p class="mb-1">From: <span id="preview-from"></span></p>
+                                            <p class="mb-1">To: <span id="preview-to"></span></p>
+                                            <p class="mb-1">Rate: <span id="preview-rate"></span></p>
+                                            <p class="mb-1">Fee (0.5%): <span id="preview-fee"></span></p>
+                                            <p class="mb-1">You'll receive: <span id="preview-amount"></span></p>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <button type="button" id="preview-btn" class="btn btn-info">Preview Exchange</button>
+                                            <button type="submit" class="btn btn-primary">Perform Exchange</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-gradient-success text-white">
+                                    <h6 class="mb-0 text-white">Available Accounts</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table align-items-center mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Account Number</th>
+                                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Currency</th>
+                                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Balance</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for account in accounts %}
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex px-2 py-1">
+                                                            <div class="d-flex flex-column justify-content-center">
+                                                                <h6 class="mb-0 text-sm">{{ account.account_number }}</h6>
+                                                                <p class="text-xs text-secondary mb-0">{{ account.account_name }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <p class="text-sm font-weight-bold mb-0">{{ account.currency.value }}</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="text-sm font-weight-bold mb-0">
+                                                            {% if account.currency.value == 'NVCT' %}NVCT {% endif %}
+                                                            {{ account.balance }}
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6 class="mb-0">Exchange History</h6>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Reference</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">From</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">To</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Rate</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Fee</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tx in exchange_history %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex px-2 py-1">
+                                            <div class="d-flex flex-column justify-content-center">
+                                                <h6 class="mb-0 text-sm">{{ tx.reference_number }}</h6>
+                                                <p class="text-xs text-secondary mb-0">{{ tx.exchange_type.value }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="text-sm font-weight-bold mb-0">{{ tx.from_amount }} {{ tx.from_currency.value }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-sm font-weight-bold mb-0">{{ tx.to_amount }} {{ tx.to_currency.value }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-sm font-weight-bold mb-0">{{ tx.rate_applied }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-sm font-weight-bold mb-0">{{ tx.fee_amount }} {{ tx.fee_currency.value }}</p>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if tx.status.value == 'completed' else 'warning' if tx.status.value == 'pending' else 'danger' }}">
+                                            {{ tx.status.value }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <p class="text-sm font-weight-bold mb-0">{{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% if not exchange_history %}
+                                <tr>
+                                    <td colspan="7" class="text-center">
+                                        <p class="text-sm">No exchange history found.</p>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fromAccountSelect = document.getElementById('from_account_id');
+        const toAccountSelect = document.getElementById('to_account_id');
+        const amountInput = document.getElementById('amount');
+        const previewBtn = document.getElementById('preview-btn');
+        const exchangePreview = document.getElementById('exchange-preview');
+        const previewFrom = document.getElementById('preview-from');
+        const previewTo = document.getElementById('preview-to');
+        const previewRate = document.getElementById('preview-rate');
+        const previewFee = document.getElementById('preview-fee');
+        const previewAmount = document.getElementById('preview-amount');
+        const fromAccountBalance = document.getElementById('from-account-balance');
+        
+        // Update the from account balance display
+        fromAccountSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const balance = selectedOption.getAttribute('data-balance');
+            const currency = selectedOption.getAttribute('data-currency');
+            
+            if (balance && currency) {
+                fromAccountBalance.textContent = `Available balance: ${currency === 'NVCT' ? 'NVCT ' : ''}${balance}`;
+            } else {
+                fromAccountBalance.textContent = '';
+            }
+        });
+        
+        // Preview button click handler
+        previewBtn.addEventListener('click', function() {
+            const fromAccountId = fromAccountSelect.value;
+            const toAccountId = toAccountSelect.value;
+            const amount = parseFloat(amountInput.value);
+            
+            if (!fromAccountId || !toAccountId || isNaN(amount) || amount <= 0) {
+                alert('Please enter valid values for all fields');
+                return;
+            }
+            
+            // Get the currency information
+            const fromCurrency = fromAccountSelect.options[fromAccountSelect.selectedIndex].getAttribute('data-currency');
+            const toCurrency = toAccountSelect.options[toAccountSelect.selectedIndex].getAttribute('data-currency');
+            
+            // Call the API to calculate the exchange
+            fetch("{{ url_for('currency_exchange.api_calculate') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    from_currency: fromCurrency,
+                    to_currency: toCurrency,
+                    amount: amount
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Display the result
+                    previewFrom.textContent = `${amount} ${fromCurrency}`;
+                    previewTo.textContent = `${toCurrency}`;
+                    previewRate.textContent = `1 ${fromCurrency} = ${data.rate} ${toCurrency}`;
+                    previewFee.textContent = `${data.fee_amount.toFixed(2)} ${fromCurrency}`;
+                    previewAmount.textContent = `${data.converted_amount.toFixed(2)} ${toCurrency}`;
+                    
+                    // Show the preview container
+                    exchangePreview.classList.remove('d-none');
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while calculating the exchange. Please try again.');
+            });
+        });
+    });
+</script>
+{% endblock %}

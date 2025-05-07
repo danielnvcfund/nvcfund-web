@@ -1,0 +1,119 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="mb-0">Exchange Rates Management</h6>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-sm btn-primary me-2">
+                                <i class="fas fa-arrow-left me-2"></i> Back to Exchange
+                            </a>
+                            <form method="POST" action="{{ url_for('currency_exchange.initialize_default_rates') }}" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="fas fa-sync-alt me-2"></i> Initialize Default Rates
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle me-2"></i>About NVCT Exchange Rates</h5>
+                        <p>
+                            The NVC Token (NVCT) is pegged 1:1 with USD. You can update exchange rates for other currencies 
+                            here. The system will automatically calculate inverse rates and cross-rates as needed.
+                        </p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-gradient-primary text-white">
+                                    <h6 class="mb-0 text-white">Add/Update Exchange Rate</h6>
+                                </div>
+                                <div class="card-body">
+                                    <form method="POST" action="{{ url_for('currency_exchange.update_rate') }}">
+                                        <div class="form-group mb-3">
+                                            <label for="from_currency">From Currency</label>
+                                            <select class="form-control" id="from_currency" name="from_currency" required>
+                                                {% for currency in rates %}
+                                                <option value="{{ currency.from_currency.value }}">{{ currency.from_currency.value }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label for="to_currency">To Currency</label>
+                                            <select class="form-control" id="to_currency" name="to_currency" required>
+                                                {% for currency in rates %}
+                                                <option value="{{ currency.to_currency.value }}">{{ currency.to_currency.value }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label for="rate">Exchange Rate</label>
+                                            <input type="number" class="form-control" id="rate" name="rate" step="0.000001" min="0.000001" required>
+                                            <small class="form-text text-muted">
+                                                This is how many units of the target currency you get for 1 unit of the source currency.
+                                            </small>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Update Rate</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive mt-4">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">From Currency</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">To Currency</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Rate</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Inverse Rate</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Source</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Last Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rate in rates %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex px-2 py-1">
+                                            <div class="d-flex flex-column justify-content-center">
+                                                <h6 class="mb-0 text-sm">{{ rate.from_currency.value }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="text-sm font-weight-bold mb-0">{{ rate.to_currency.value }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-sm font-weight-bold mb-0">{{ rate.rate }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-sm font-weight-bold mb-0">{{ rate.inverse_rate }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-sm font-weight-bold mb-0">{{ rate.source }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-sm font-weight-bold mb-0">{{ rate.last_updated.strftime('%Y-%m-%d %H:%M') }}</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

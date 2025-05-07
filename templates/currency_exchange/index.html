@@ -1,0 +1,217 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="mb-0">NVCT Stablecoin Exchange</h6>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{{ url_for('currency_exchange.view_rates') }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-exchange-alt me-2"></i> View Exchange Rates
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="row p-4">
+                        <div class="col-md-6">
+                            <div class="alert alert-info">
+                                <h5><i class="fas fa-info-circle me-2"></i>About NVCT Stablecoin</h5>
+                                <p>
+                                    The NVC Token (NVCT) is a stablecoin fully backed by cash and cash equivalents at well over $10 trillion.
+                                    NVCT maintains a 1:1 peg with USD and is designed to be convertible to any digital or fiat currency.
+                                </p>
+                                <p>
+                                    <strong>Key Benefits:</strong>
+                                </p>
+                                <ul>
+                                    <li>Stable 1:1 USD peg</li>
+                                    <li>Fully backed by real assets</li>
+                                    <li>Seamless conversion to other currencies</li>
+                                    <li>Fast settlement times</li>
+                                    <li>Secure blockchain-based transactions</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-gradient-primary text-white">
+                                    <h6 class="mb-0 text-white">Quick Exchange Calculator</h6>
+                                </div>
+                                <div class="card-body">
+                                    <form id="calculator-form">
+                                        <div class="form-group mb-3">
+                                            <label for="from_currency">From Currency</label>
+                                            <select class="form-control" id="from_currency" name="from_currency" required>
+                                                {% for value, label in currency_types %}
+                                                <option value="{{ value }}" {% if value == 'NVCT' %}selected{% endif %}>{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label for="to_currency">To Currency</label>
+                                            <select class="form-control" id="to_currency" name="to_currency" required>
+                                                {% for value, label in currency_types %}
+                                                <option value="{{ value }}" {% if value == 'USD' %}selected{% endif %}>{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label for="amount">Amount</label>
+                                            <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" value="100" required>
+                                        </div>
+                                        <button type="button" id="calculate-btn" class="btn btn-primary">Calculate</button>
+                                    </form>
+                                    
+                                    <div id="calculation-result" class="mt-4 d-none">
+                                        <div class="alert alert-success">
+                                            <h6 class="mb-2">Exchange Result</h6>
+                                            <p class="mb-1">Rate: <span id="result-rate"></span></p>
+                                            <p class="mb-1">Amount: <span id="result-amount"></span></p>
+                                            <p class="mb-1">Fee (0.5%): <span id="result-fee"></span></p>
+                                            <p class="mb-1">You'll receive: <span id="result-final"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6 class="mb-0">Current Exchange Rates</h6>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Base Currency</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Quote Currency</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Rate</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Inverse Rate</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Last Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for base_currency, rates in exchange_rates.items() %}
+                                    {% for rate in rates %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex px-2 py-1">
+                                                <div class="d-flex flex-column justify-content-center">
+                                                    <h6 class="mb-0 text-sm">{{ base_currency }}</h6>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-bold mb-0">{{ rate.to_currency }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-bold mb-0">{{ rate.rate }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-bold mb-0">{{ rate.inverse_rate }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-bold mb-0">{{ rate.last_updated.strftime('%Y-%m-%d %H:%M') }}</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6 class="mb-0">Find Account Holder for Exchange</h6>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('account_holders.search') }}">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="Search by name, email, username..." name="q" required>
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <p class="mt-3">
+                        Find an account holder to perform currency exchanges between their accounts.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const calculateBtn = document.getElementById('calculate-btn');
+        const calculationResult = document.getElementById('calculation-result');
+        
+        calculateBtn.addEventListener('click', function() {
+            const fromCurrency = document.getElementById('from_currency').value;
+            const toCurrency = document.getElementById('to_currency').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            
+            if (!fromCurrency || !toCurrency || isNaN(amount) || amount <= 0) {
+                alert('Please enter valid values for all fields');
+                return;
+            }
+            
+            // Call the API to calculate the exchange
+            fetch("{{ url_for('currency_exchange.api_calculate') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    from_currency: fromCurrency,
+                    to_currency: toCurrency,
+                    amount: amount
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Display the result
+                    document.getElementById('result-rate').textContent = `1 ${fromCurrency} = ${data.rate} ${toCurrency}`;
+                    document.getElementById('result-amount').textContent = `${amount} ${fromCurrency}`;
+                    document.getElementById('result-fee').textContent = `${data.fee_amount.toFixed(2)} ${fromCurrency}`;
+                    document.getElementById('result-final').textContent = `${data.converted_amount.toFixed(2)} ${toCurrency}`;
+                    
+                    // Show the result container
+                    calculationResult.classList.remove('d-none');
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while calculating the exchange. Please try again.');
+            });
+        });
+    });
+</script>
+{% endblock %}
