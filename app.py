@@ -403,6 +403,16 @@ def create_app():
             from routes.currency_exchange_routes import register_currency_exchange_routes
             register_currency_exchange_routes(app)
             logger.info("Currency Exchange routes registered successfully")
+            
+            # Register POS Payment routes
+            try:
+                from routes.pos_routes import register_pos_routes
+                register_pos_routes(app)
+                logger.info("POS Payment routes registered successfully")
+            except ImportError as e:
+                logger.warning(f"Could not register POS routes: {str(e)}")
+            except Exception as e:
+                logger.error(f"Error registering POS routes: {str(e)}")
         except Exception as e:
             logger.error(f"Error registering Currency Exchange routes: {str(e)}")
             logger.warning("Application will run without Currency Exchange functionality")

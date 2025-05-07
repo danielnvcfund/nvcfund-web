@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+
+{% block title %}POS Transactions{% endblock %}
+
+{% block styles %}
+<style>
+    .transaction-table {
+        font-size: 0.95rem;
+    }
+    .transaction-status {
+        width: 100px;
+    }
+    .transaction-type {
+        min-width: 100px;
+    }
+    .search-container {
+        margin-bottom: 20px;
+    }
+    .badge-payment {
+        background-color: #0d6efd;
+    }
+    .badge-payout {
+        background-color: #6f42c1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('pos.pos_dashboard') }}">POS Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Transactions</li>
+                </ol>
+            </nav>
+            <h1 class="display-5 fw-bold mb-4">
+                <i class="fas fa-history me-2"></i> POS Transactions
+            </h1>
+            <p class="lead">View and manage your credit card payment transactions.</p>
+            <hr>
+        </div>
+    </div>
+    
+    <!-- Search and Filters -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="search-container">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="search-transactions" placeholder="Search transactions...">
+                    <button class="btn btn-outline-secondary" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="d-flex justify-content-end">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">All</button>
+                    <button type="button" class="btn btn-outline-primary filter-btn" data-filter="payment">Payments</button>
+                    <button type="button" class="btn btn-outline-primary filter-btn" data-filter="payout">Payouts</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Transactions Table -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-exchange-alt me-2"></i> Transaction History
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if transactions %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover transaction-table mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Transaction ID</th>
+                            <th scope="col">Date</th>
+                            <th scope="col" class="transaction-type">Type</th>
+                            <th scope="col">Amount</th>
+                            <th scope="col">Recipient</th>
+                            <th scope="col" class="transaction-status">Status</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in transactions %}
+                        <tr class="transaction-row" data-type="{{ tx.transaction_type.value|lower }}">
+                            <td>{{ tx.transaction_id }}</td>
+                            <td>{{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <span class="badge {% if tx.transaction_type.value == 'PAYMENT' %}badge-payment{% else %}badge-payout{% endif %}">
+                                    {{ tx.transaction_type.value }}
+                                </span>
+                            </td>
+                            <td>{{ tx.currency }} {{ "%.2f"|format(tx.amount) }}</td>
+                            <td>{{ tx.recipient_name or 'N/A' }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if tx.status.value == 'COMPLETED' %}bg-success
+                                    {% elif tx.status.value == 'PENDING' %}bg-warning
+                                    {% elif tx.status.value == 'FAILED' %}bg-danger
+                                    {% elif tx.status.value == 'CANCELLED' %}bg-secondary
+                                    {% else %}bg-info{% endif %}">
+                                    {{ tx.status.value }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ tx.description }}">
+                                    {{ tx.description }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton{{ loop.index }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ loop.index }}">
+                                        <li><a class="dropdown-item" href="#" onclick="viewTransactionDetails('{{ tx.transaction_id }}')"><i class="fas fa-eye me-2"></i> View Details</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="printReceipt('{{ tx.transaction_id }}')"><i class="fas fa-print me-2"></i> Print Receipt</a></li>
+                                        {% if tx.status.value == 'PENDING' %}
+                                        <li><a class="dropdown-item" href="#" onclick="cancelTransaction('{{ tx.transaction_id }}')"><i class="fas fa-times me-2"></i> Cancel</a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info m-3">
+                <i class="fas fa-info-circle me-2"></i> No transactions found. Start processing payments to see your transaction history.
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted">Showing {{ transactions|length }} transactions</span>
+                </div>
+                <div>
+                    <a href="{{ url_for('pos.pos_dashboard') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transaction Details Modal -->
+<div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transactionModalLabel">Transaction Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="transaction-details-content">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="print-transaction-details">Print</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Search functionality
+        $('#search-transactions').on('keyup', function() {
+            const searchText = $(this).val().toLowerCase();
+            
+            $('.transaction-row').each(function() {
+                const rowText = $(this).text().toLowerCase();
+                if (rowText.includes(searchText)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+        
+        // Filter functionality
+        $('.filter-btn').on('click', function() {
+            // Update active button
+            $('.filter-btn').removeClass('active');
+            $(this).addClass('active');
+            
+            const filterType = $(this).data('filter');
+            
+            if (filterType === 'all') {
+                $('.transaction-row').show();
+            } else {
+                $('.transaction-row').hide();
+                $(`.transaction-row[data-type="${filterType}"]`).show();
+            }
+        });
+    });
+    
+    // View transaction details
+    function viewTransactionDetails(transactionId) {
+        // In a real implementation, this would fetch transaction details from the server
+        $('#transactionModal').modal('show');
+        
+        // This is a placeholder. In the real implementation, you would make an AJAX call
+        // to fetch the transaction details from the server
+        $('#transaction-details-content').html(`
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> Loading transaction details for ${transactionId}...
+            </div>
+        `);
+    }
+    
+    // Print receipt
+    function printReceipt(transactionId) {
+        // In a real implementation, this would open a receipt in a new window for printing
+        window.open(`/pos/receipt/${transactionId}`, '_blank');
+    }
+    
+    // Cancel transaction
+    function cancelTransaction(transactionId) {
+        if (confirm('Are you sure you want to cancel this transaction?')) {
+            // In a real implementation, this would make an AJAX call to cancel the transaction
+            alert(`Transaction ${transactionId} would be cancelled.`);
+        }
+    }
+</script>
+{% endblock %}
