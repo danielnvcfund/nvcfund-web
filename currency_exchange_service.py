@@ -168,6 +168,19 @@ class CurrencyExchangeService:
             nvct_to_afd1_rate = 1.0 / afd1_unit_value  # 1 NVCT = 1 USD, convert to AFD1
             CurrencyExchangeService.update_exchange_rate(CurrencyType.NVCT, CurrencyType.AFD1, nvct_to_afd1_rate, "system")
             
+            # Add SFN Coin rates
+            # SFN to USD rate (1 SFN = 2.50 USD)
+            sfn_to_usd_rate = 2.50  # Current SFN value in USD
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.SFN, CurrencyType.USD, sfn_to_usd_rate, "system_swifin")
+            
+            # NVCT to SFN rate (1 NVCT = 0.4 SFN since 1 NVCT = 1 USD and 1 SFN = 2.50 USD)
+            nvct_to_sfn_rate = 1.0 / sfn_to_usd_rate
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.NVCT, CurrencyType.SFN, nvct_to_sfn_rate, "system_swifin")
+            
+            # SFN to AFD1 rate
+            sfn_to_afd1_rate = sfn_to_usd_rate / afd1_unit_value
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.SFN, CurrencyType.AFD1, sfn_to_afd1_rate, "system_calculated")
+            
             return True
         except Exception as e:
             logger.error(f"Error initializing default exchange rates: {str(e)}")
@@ -236,6 +249,8 @@ class CurrencyExchangeService:
             if from_account.currency == CurrencyType.NVCT:
                 if to_account.currency == CurrencyType.AFD1:
                     exchange_type = ExchangeType.NVCT_TO_AFD1
+                elif to_account.currency == CurrencyType.SFN:
+                    exchange_type = ExchangeType.NVCT_TO_SFN
                 elif to_account.currency in fiat_currencies:
                     exchange_type = ExchangeType.NVCT_TO_FIAT
                 else:
@@ -250,6 +265,16 @@ class CurrencyExchangeService:
                 else:
                     # Default to FIAT_TO_FIAT for other AFD1 exchanges
                     exchange_type = ExchangeType.FIAT_TO_FIAT
+            
+            # SFN exchanges
+            elif from_account.currency == CurrencyType.SFN:
+                if to_account.currency == CurrencyType.NVCT:
+                    exchange_type = ExchangeType.SFN_TO_NVCT
+                elif to_account.currency in fiat_currencies:
+                    exchange_type = ExchangeType.SFN_TO_FIAT
+                else:
+                    # Default to CRYPTO_TO_CRYPTO for other SFN exchanges
+                    exchange_type = ExchangeType.CRYPTO_TO_CRYPTO
                     
             # Other exchanges
             elif to_account.currency == CurrencyType.NVCT:
@@ -263,6 +288,12 @@ class CurrencyExchangeService:
                 else:
                     # Default to FIAT_TO_FIAT for other exchanges to AFD1
                     exchange_type = ExchangeType.FIAT_TO_FIAT
+            elif to_account.currency == CurrencyType.SFN:
+                if from_account.currency in fiat_currencies:
+                    exchange_type = ExchangeType.FIAT_TO_SFN
+                else:
+                    # Default to CRYPTO_TO_CRYPTO for other exchanges to SFN
+                    exchange_type = ExchangeType.CRYPTO_TO_CRYPTO
             elif from_account.currency in crypto_currencies and to_account.currency in crypto_currencies:
                 exchange_type = ExchangeType.CRYPTO_TO_CRYPTO
             else:
