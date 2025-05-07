@@ -38,9 +38,29 @@ def index():
         # No search query, return all (limit to 100 for performance)
         account_holders = AccountHolder.query.limit(100).all()
     
+    # Get account balance information
+    account_holders_with_balances = []
+    for holder in account_holders:
+        total_usd_balance = 0
+        # Get the USD account balance (most common)
+        usd_account = BankAccount.query.filter_by(
+            account_holder_id=holder.id,
+            currency=CurrencyType.USD
+        ).first()
+        
+        if usd_account:
+            total_usd_balance = usd_account.balance
+            
+        # Add to our list with balance info
+        account_holders_with_balances.append({
+            'holder': holder,
+            'usd_balance': total_usd_balance,
+            'has_usd_account': usd_account is not None
+        })
+    
     return render_template(
         'account_holders/index.html', 
-        account_holders=account_holders,
+        account_holders=account_holders_with_balances,
         search_query=search_query,
         title="Account Holders"
     )

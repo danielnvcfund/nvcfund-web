@@ -49,28 +49,36 @@
                                     <th>Name</th>
                                     <th>Username</th>
                                     <th>Email</th>
+                                    <th>USD Balance</th>
                                     <th>Broker</th>
                                     <th>Created</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for holder in account_holders %}
+                                {% for item in account_holders %}
                                 <tr>
-                                    <td>{{ holder.id }}</td>
-                                    <td>{{ holder.name }}</td>
-                                    <td>{{ holder.username }}</td>
-                                    <td>{{ holder.email }}</td>
-                                    <td>{{ holder.broker }}</td>
-                                    <td>{{ holder.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ item.holder.id }}</td>
+                                    <td>{{ item.holder.name }}</td>
+                                    <td>{{ item.holder.username }}</td>
+                                    <td>{{ item.holder.email }}</td>
                                     <td>
-                                        <a href="{{ url_for('account_holders.view', account_holder_id=holder.id) }}" class="btn btn-sm btn-primary">View</a>
-                                        <a href="{{ url_for('account_holders.accounts', account_holder_id=holder.id) }}" class="btn btn-sm btn-info">Accounts</a>
+                                        {% if item.has_usd_account %}
+                                            <span class="badge bg-success p-2">${{ "{:,.2f}".format(item.usd_balance) }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary p-2">No USD Account</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.holder.broker }}</td>
+                                    <td>{{ item.holder.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('account_holders.view', account_holder_id=item.holder.id) }}" class="btn btn-sm btn-primary">View</a>
+                                        <a href="{{ url_for('account_holders.accounts', account_holder_id=item.holder.id) }}" class="btn btn-sm btn-info">Accounts</a>
                                     </td>
                                 </tr>
                                 {% else %}
                                 <tr>
-                                    <td colspan="7" class="text-center">No account holders found</td>
+                                    <td colspan="8" class="text-center">No account holders found</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
