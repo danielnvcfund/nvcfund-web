@@ -52,13 +52,13 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Current Balance</label>
-                                <p class="form-control-static">{{ '{:,.2f}'.format(account.balance) }} {{ account.currency.value }}</p>
+                                <p class="form-control-static">{% if account.currency.value == 'NVCT' %}NVCT {% endif %}{{ '{:,.2f}'.format(account.balance) }}</p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Available Balance</label>
-                                <p class="form-control-static">{{ '{:,.2f}'.format(account.available_balance) }} {{ account.currency.value }}</p>
+                                <p class="form-control-static">{% if account.currency.value == 'NVCT' %}NVCT {% endif %}{{ '{:,.2f}'.format(account.available_balance) }}</p>
                             </div>
                         </div>
                     </div>
@@ -119,8 +119,8 @@
                 </div>
                 <div class="card-body">
                     <div class="summary-box text-center mb-4">
-                        <h3 class="mb-0">{{ '{:,.2f}'.format(account.balance) }}</h3>
-                        <p class="text-muted">{{ account.currency.value }}</p>
+                        <h3 class="mb-0">{% if account.currency.value == 'NVCT' %}NVCT {% endif %}{{ '{:,.2f}'.format(account.balance) }}</h3>
+                        <p class="text-muted">{% if account.currency.value != 'NVCT' %}{{ account.currency.value }}{% endif %}</p>
                     </div>
 
                     <div class="account-stats">

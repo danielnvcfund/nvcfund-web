@@ -162,7 +162,7 @@
                                     <strong>Balance:</strong>
                                 </div>
                                 <div class="amount">
-                                    <strong>{{ '{:,.2f}'.format(account.balance) }} {{ account.currency.value }}</strong>
+                                    <strong>{% if account.currency.value == 'NVCT' %}NVCT {% endif %}{{ '{:,.2f}'.format(account.balance) }}</strong>
                                 </div>
                             </div>
                             <div class="mt-2">
