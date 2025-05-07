@@ -45,9 +45,12 @@ def pos_dashboard():
     """Render the POS dashboard"""
     # Get recent transactions (last 30 days)
     thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    # Create a list of payment types to filter by
+    payment_types = [TransactionType.PAYMENT.value, TransactionType.PAYOUT.value]
+    
     recent_transactions = Transaction.query.filter(
         Transaction.user_id == current_user.id,
-        Transaction.transaction_type.in_([TransactionType.PAYMENT, TransactionType.PAYOUT]),
+        Transaction.transaction_type.in_(payment_types),
         Transaction.created_at >= thirty_days_ago
     ).order_by(Transaction.created_at.desc()).limit(10).all()
     
@@ -55,12 +58,16 @@ def pos_dashboard():
     total_payments = 0.0
     total_payouts = 0.0
     
-    for tx in Transaction.query.filter(
+    # Get transactions for calculating totals
+    completed_transactions = Transaction.query.filter(
         Transaction.user_id == current_user.id,
         Transaction.status == TransactionStatus.COMPLETED,
-        Transaction.created_at >= thirty_days_ago
-    ).all():
-        if tx.transaction_type == TransactionType.PAYMENT:
+        Transaction.created_at >= thirty_days_ago,
+        Transaction.transaction_type.in_(payment_types)
+    ).all()
+    
+    for tx in completed_transactions:
+        if tx.transaction_type == TransactionType.PAYMENT.value:
             # Convert to USD for display consistency (simplified)
             if tx.currency == 'USD':
                 total_payments += tx.amount
@@ -70,7 +77,7 @@ def pos_dashboard():
                 total_payments += tx.amount * 1.25  # Simplified GBP to USD conversion
             elif tx.currency == 'NVCT':
                 total_payments += tx.amount  # 1:1 with USD
-        elif tx.transaction_type == TransactionType.PAYOUT:
+        elif tx.transaction_type == TransactionType.PAYOUT.value:
             # Convert to USD for display consistency (simplified)
             if tx.currency == 'USD':
                 total_payouts += tx.amount
@@ -272,10 +279,13 @@ def transactions():
     """Show transaction history with filters"""
     form = POSTransactionFilterForm(request.args)
     
+    # Create a list of payment types to filter by
+    payment_types = [TransactionType.PAYMENT.value, TransactionType.PAYOUT.value]
+    
     # Base query for user's POS transactions
     query = Transaction.query.filter(
         Transaction.user_id == current_user.id,
-        Transaction.transaction_type.in_([TransactionType.PAYMENT, TransactionType.PAYOUT]),
+        Transaction.transaction_type.in_(payment_types),
         Transaction.tx_metadata_json.cast(db.Text).contains('pos_system')
     )
     
