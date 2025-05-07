@@ -23,11 +23,24 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info">
+                    <div class="alert alert-info mb-3">
                         <h5><i class="fas fa-info-circle me-2"></i>About NVCT Exchange Rates</h5>
                         <p>
                             The NVC Token (NVCT) is pegged 1:1 with USD. You can update exchange rates for other currencies 
                             here. The system will automatically calculate inverse rates and cross-rates as needed.
+                        </p>
+                    </div>
+                    
+                    <div class="alert alert-warning mb-3">
+                        <h5><i class="fas fa-coins me-2"></i>About AFD1 Exchange Rates</h5>
+                        <p>
+                            The American Federation Dollar (AFD1) is valued at 10% of the daily gold price. 
+                            At the current gold price of $3,394.00, one AFD1 is worth approximately $339.40 USD.
+                        </p>
+                        <p>
+                            The exchange rates involving AFD1 are automatically updated based on the gold price.
+                            When initializing default rates, the system will calculate the AFD1/USD rate based on 
+                            the current gold price from Kitco market data.
                         </p>
                     </div>
                     
