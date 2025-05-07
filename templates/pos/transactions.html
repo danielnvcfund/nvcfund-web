@@ -52,8 +52,7 @@
                     <label for="transaction_type" class="form-label">Transaction Type</label>
                     <select id="transaction_type" name="transaction_type" class="form-select">
                         <option value="">All Types</option>
-                        <option value="PAYMENT" {% if request.args.get('transaction_type') == 'PAYMENT' %}selected{% endif %}>Payment</option>
-                        <option value="PAYOUT" {% if request.args.get('transaction_type') == 'PAYOUT' %}selected{% endif %}>Payout</option>
+                        <option value="PAYMENT" {% if request.args.get('transaction_type') == 'PAYMENT' %}selected{% endif %}>All Transactions</option>
                     </select>
                 </div>
                 <div class="col-md-3 mb-2">
@@ -133,9 +132,16 @@
                             <td>{{ tx.transaction_id }}</td>
                             <td>{{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                             <td>
-                                <span class="badge {% if tx.transaction_type.value == 'PAYMENT' %}bg-primary{% else %}bg-success{% endif %}">
-                                    {{ tx.transaction_type.value }}
-                                </span>
+                                {% if tx.tx_metadata_json %}
+                                    {% set metadata = tx.tx_metadata_json|from_json %}
+                                    {% if metadata.payment_type == 'pos_payout' %}
+                                        <span class="badge bg-success">Payout</span>
+                                    {% else %}
+                                        <span class="badge bg-primary">Payment</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-primary">Payment</span>
+                                {% endif %}
                             </td>
                             <td>
                                 <span class="badge bg-secondary badge-currency">{{ tx.currency }}</span>
@@ -178,7 +184,18 @@
                                                 </tr>
                                                 <tr>
                                                     <th>Type:</th>
-                                                    <td>{{ tx.transaction_type.value }}</td>
+                                                    <td>
+                                                        {% if tx.tx_metadata_json %}
+                                                            {% set metadata = tx.tx_metadata_json|from_json %}
+                                                            {% if metadata.payment_type == 'pos_payout' %}
+                                                                Payout
+                                                            {% else %}
+                                                                Payment
+                                                            {% endif %}
+                                                        {% else %}
+                                                            Payment
+                                                        {% endif %}
+                                                    </td>
                                                 </tr>
                                                 <tr>
                                                     <th>Amount:</th>
