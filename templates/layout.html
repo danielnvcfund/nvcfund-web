@@ -200,6 +200,13 @@
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
+                            <li class="dropdown-header">Account Management</li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('account_holders.index') }}">
+                                    <i class="fas fa-users me-1"></i> Account Holders
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
                             <li class="dropdown-header">Financial Institutions & SWIFT</li>
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('admin_tools.financial_institutions_tool') }}">

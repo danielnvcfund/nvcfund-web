@@ -63,6 +63,90 @@ def parse_currency_value(value_str):
     except ValueError:
         return 0.0
 
+def import_test_account_holder():
+    """
+    Create a single test account holder for testing
+    """
+    try:
+        # Check if test account holder already exists
+        existing = AccountHolder.query.filter_by(username='test_account').first()
+        if existing:
+            logger.info(f"Test account holder already exists. Skipping.")
+            return 0, 1, 0
+        
+        # Create account holder
+        account_holder = AccountHolder(
+            name="Test Account",
+            username="test_account",
+            email="test@example.com",
+            created_at=datetime.utcnow(),
+            broker="Test Broker",
+            kyc_verified=True,
+            aml_verified=True
+        )
+        db.session.add(account_holder)
+        
+        # Need to flush to get the ID for relationships
+        db.session.flush()
+        
+        # Create address
+        address = Address(
+            name="Primary Address",
+            line1="123 Test Street",
+            city="Test City",
+            region="Test State",
+            zip="12345",
+            country="US",
+            account_holder_id=account_holder.id
+        )
+        db.session.add(address)
+        
+        # Create mobile phone
+        mobile = PhoneNumber(
+            name="Mobile",
+            number="+15551234567",
+            is_primary=True,
+            is_mobile=True,
+            account_holder_id=account_holder.id
+        )
+        db.session.add(mobile)
+        
+        # Create USD account
+        usd_account = BankAccount(
+            account_number="USD-test_account",
+            account_name="Test USD Account",
+            account_type=AccountType.CHECKING,
+            currency=CurrencyType.USD,
+            balance=1000.00,
+            available_balance=1000.00,
+            status=AccountStatus.ACTIVE,
+            account_holder_id=account_holder.id
+        )
+        db.session.add(usd_account)
+        
+        # Create NVCT account
+        nvct_account = BankAccount(
+            account_number="NVCT-test_account",
+            account_name="Test NVCT Account",
+            account_type=AccountType.CUSTODY,
+            currency=CurrencyType.NVCT,
+            balance=500.00,
+            available_balance=500.00,
+            status=AccountStatus.ACTIVE,
+            account_holder_id=account_holder.id
+        )
+        db.session.add(nvct_account)
+        
+        # Commit the transaction
+        db.session.commit()
+        logger.info(f"Successfully created test account holder")
+        return 1, 0, 0
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error creating test account holder: {str(e)}")
+        return 0, 0, 1
+
 def import_account_holders(csv_filepath):
     """
     Import account holders from CSV file
