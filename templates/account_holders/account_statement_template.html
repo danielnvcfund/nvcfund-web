@@ -263,25 +263,25 @@
         <table class="summary-table">
             <tr>
                 <td class="label">Opening Balance:</td>
-                <td class="amount">{{ "{:,.2f}".format(opening_balance) }} {{ account.currency.value }}</td>
+                <td class="amount">{% if account.currency.value == 'NVCT' %}NVCT {% endif %}{{ "{:,.2f}".format(opening_balance) }}</td>
             </tr>
             <tr>
                 <td class="label">Total Credits:</td>
-                <td class="amount credit">{{ "{:,.2f}".format(total_credits) }} {{ account.currency.value }}</td>
+                <td class="amount credit">{% if account.currency.value == 'NVCT' %}NVCT {% endif %}{{ "{:,.2f}".format(total_credits) }}</td>
             </tr>
             <tr>
                 <td class="label">Total Debits:</td>
-                <td class="amount debit">{{ "{:,.2f}".format(total_debits) }} {{ account.currency.value }}</td>
+                <td class="amount debit">{% if account.currency.value == 'NVCT' %}NVCT {% endif %}{{ "{:,.2f}".format(total_debits) }}</td>
             </tr>
             <tr>
                 <td class="label">Net Change:</td>
                 <td class="amount {% if net_change >= 0 %}credit{% else %}debit{% endif %}">
-                    {{ "{:,.2f}".format(net_change) }} {{ account.currency.value }}
+                    {% if account.currency.value == 'NVCT' %}NVCT {% endif %}{{ "{:,.2f}".format(net_change) }}
                 </td>
             </tr>
             <tr>
                 <td class="label">Closing Balance:</td>
-                <td class="amount">{{ "{:,.2f}".format(account.balance) }} {{ account.currency.value }}</td>
+                <td class="amount">{% if account.currency.value == 'NVCT' %}NVCT {% endif %}{{ "{:,.2f}".format(account.balance) }}</td>
             </tr>
         </table>
     </div>
@@ -307,9 +307,9 @@
                     <td>{{ tx.description }}</td>
                     <td>{{ tx.reference }}</td>
                     <td class="amount {% if tx.amount >= 0 %}credit{% else %}debit{% endif %}">
-                        {{ "{:,.2f}".format(tx.amount) }}
+                        {% if account.currency.value == 'NVCT' %}NVCT {% endif %}{{ "{:,.2f}".format(tx.amount) }}
                     </td>
-                    <td class="balance">{{ "{:,.2f}".format(tx.balance) }}</td>
+                    <td class="balance">{% if account.currency.value == 'NVCT' %}NVCT {% endif %}{{ "{:,.2f}".format(tx.balance) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

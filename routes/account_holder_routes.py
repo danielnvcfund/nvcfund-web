@@ -57,21 +57,28 @@ def index():
     # Get account balance information
     account_holders_with_balances = []
     for holder in account_holders:
-        total_usd_balance = 0
-        # Get the USD account balance (most common)
-        usd_account = BankAccount.query.filter_by(
+        total_nvct_balance = 0
+        # Get the NVCT account balance (native platform currency)
+        nvct_account = BankAccount.query.filter_by(
             account_holder_id=holder.id,
-            currency=CurrencyType.USD
+            currency=CurrencyType.NVCT
         ).first()
         
-        if usd_account:
-            total_usd_balance = usd_account.balance
+        # If no NVCT account, fall back to USD account (for backward compatibility)
+        if not nvct_account:
+            nvct_account = BankAccount.query.filter_by(
+                account_holder_id=holder.id,
+                currency=CurrencyType.USD
+            ).first()
+        
+        if nvct_account:
+            total_nvct_balance = nvct_account.balance
             
         # Add to our list with balance info
         account_holders_with_balances.append({
             'holder': holder,
-            'usd_balance': total_usd_balance,
-            'has_usd_account': usd_account is not None
+            'usd_balance': total_nvct_balance,  # Keep the variable name for template compatibility
+            'has_usd_account': nvct_account is not None
         })
     
     return render_template(

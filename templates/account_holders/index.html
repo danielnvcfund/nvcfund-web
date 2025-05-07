@@ -49,7 +49,7 @@
                                     <th>Name</th>
                                     <th>Username</th>
                                     <th>Email</th>
-                                    <th>USD Balance</th>
+                                    <th>NVCT Balance</th>
                                     <th>Broker</th>
                                     <th>Created</th>
                                     <th>Action</th>
@@ -64,9 +64,9 @@
                                     <td>{{ item.holder.email }}</td>
                                     <td>
                                         {% if item.has_usd_account %}
-                                            <div style="background-color: #004d99; color: white; font-size: 16px; font-weight: bold; padding: 8px 12px; border-radius: 5px; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${{ "{:,.2f}".format(item.usd_balance) }}</div>
+                                            <div style="background-color: #004d99; color: white; font-size: 16px; font-weight: bold; padding: 8px 12px; border-radius: 5px; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">NVCT {{ "{:,.2f}".format(item.usd_balance) }}</div>
                                         {% else %}
-                                            <div style="background-color: #ff9900; color: black; font-size: 16px; font-weight: bold; padding: 8px 12px; border-radius: 5px; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">No USD Account</div>
+                                            <div style="background-color: #ff9900; color: black; font-size: 16px; font-weight: bold; padding: 8px 12px; border-radius: 5px; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">No NVCT Account</div>
                                         {% endif %}
                                     </td>
                                     <td>{{ item.holder.broker }}</td>

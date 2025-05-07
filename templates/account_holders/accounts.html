@@ -86,8 +86,8 @@
                                     <td>{{ account.account_name }}</td>
                                     <td>{{ account.account_type.value }}</td>
                                     <td>{{ account.currency.value }}</td>
-                                    <td>{{ '{:,.2f}'.format(account.balance) }}</td>
-                                    <td>{{ '{:,.2f}'.format(account.available_balance) }}</td>
+                                    <td>{% if account.currency.value == 'NVCT' %}NVCT {% endif %}{{ '{:,.2f}'.format(account.balance) }}</td>
+                                    <td>{% if account.currency.value == 'NVCT' %}NVCT {% endif %}{{ '{:,.2f}'.format(account.available_balance) }}</td>
                                     <td>
                                         <span class="badge 
                                             {% if account.status.value == 'active' %}badge-success
