@@ -94,13 +94,13 @@ def accept_payment():
             currency=form.currency.data,
             description=form.description.data or f"POS Payment from {form.customer_name.data}",
             status=TransactionStatus.PENDING,
-            metadata={
+            tx_metadata_json=json.dumps({
                 'payment_type': 'pos',
                 'customer_name': form.customer_name.data,
                 'customer_email': form.customer_email.data,
                 'payment_method': 'card',
                 'created_via': 'pos_system'
-            }
+            })
         )
         
         db.session.add(transaction)
@@ -208,14 +208,14 @@ def send_payment():
             currency=form.currency.data,
             description=form.description.data or f"Payout to {form.recipient_name.data}",
             status=TransactionStatus.PENDING,
-            metadata={
+            tx_metadata_json=json.dumps({
                 'payment_type': 'pos_payout',
                 'recipient_name': form.recipient_name.data,
                 'recipient_email': form.recipient_email.data,
                 'card_last4': form.card_last4.data,
                 'payment_method': 'card',
                 'created_via': 'pos_system'
-            }
+            })
         )
         
         db.session.add(transaction)
@@ -265,7 +265,7 @@ def transactions():
     query = Transaction.query.filter(
         Transaction.user_id == current_user.id,
         Transaction.transaction_type.in_([TransactionType.PAYMENT, TransactionType.PAYOUT]),
-        Transaction.metadata.contains({'created_via': 'pos_system'})
+        Transaction.tx_metadata_json.cast(db.Text).contains('pos_system')
     )
     
     # Apply filters

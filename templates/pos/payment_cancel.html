@@ -5,21 +5,24 @@
 {% block styles %}
 <style>
     .cancel-container {
-        max-width: 700px;
+        max-width: 800px;
         margin: 0 auto;
     }
     .cancel-icon {
         font-size: 5rem;
-        color: #6c757d;
-        margin-bottom: 1rem;
-    }
-    .card-border-secondary {
-        border-color: #6c757d;
+        color: #dc3545;
+        margin-bottom: 1.5rem;
     }
     .transaction-details {
         background-color: #f8f9fa;
-        border-radius: 0.5rem;
+        border-radius: 5px;
         padding: 20px;
+        margin-bottom: 20px;
+    }
+    .transaction-amount {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #6c757d;
     }
 </style>
 {% endblock %}
@@ -27,89 +30,73 @@
 {% block content %}
 <div class="container py-5">
     <div class="cancel-container">
-        <div class="text-center mb-4">
+        <div class="text-center mb-5">
             <div class="cancel-icon">
                 <i class="fas fa-times-circle"></i>
             </div>
-            <h1 class="display-5 fw-bold mb-3">Payment Cancelled</h1>
-            <p class="lead">Your payment has been cancelled. No charges were made to your account.</p>
+            <h1 class="display-4 fw-bold text-danger mb-3">Payment Cancelled</h1>
+            <p class="lead">Your payment was cancelled. No charges have been applied to your card.</p>
         </div>
         
-        <div class="card card-border-secondary shadow-sm mb-4">
+        <div class="card mb-5 shadow-sm">
             <div class="card-header bg-secondary text-white">
                 <h5 class="mb-0">
                     <i class="fas fa-info-circle me-2"></i> Transaction Information
                 </h5>
             </div>
             <div class="card-body">
-                {% if transaction %}
-                <div class="transaction-details mb-4">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5>Amount</h5>
-                            <h3 class="fw-bold">{{ transaction.currency }} {{ "%.2f"|format(transaction.amount) }}</h3>
+                <div class="transaction-details">
+                    <div class="row mb-4">
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <strong>Transaction ID:</strong><br>
+                                {{ transaction.transaction_id }}
+                            </div>
                         </div>
-                        <div class="col-md-6 text-md-end">
-                            <h5>Transaction ID</h5>
-                            <p class="text-muted">{{ transaction.transaction_id }}</p>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <h5>Status</h5>
-                            <span class="badge bg-secondary">CANCELLED</span>
-                        </div>
-                        <div class="col-md-6 text-md-end">
-                            <h5>Date</h5>
-                            <p class="text-muted">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <strong>Status:</strong><br>
+                                <span class="badge bg-secondary">{{ transaction.status.value }}</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <h5>Recipient</h5>
-                            <p>{{ transaction.recipient_name or "NVC Banking Platform" }}</p>
-                        </div>
-                        <div class="col-md-6 text-md-end">
-                            <h5>Description</h5>
-                            <p>{{ transaction.description or "Payment to NVC Banking Platform" }}</p>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <strong>Description:</strong><br>
+                                {{ transaction.description }}
+                            </div>
                         </div>
                     </div>
-                </div>
-                {% else %}
-                <div class="alert alert-secondary mb-4">
-                    <h5><i class="fas fa-times-circle me-2"></i> Payment Not Completed</h5>
-                    <p class="mb-0">You have cancelled this payment. No charges have been made to your account.</p>
-                </div>
-                {% endif %}
-                
-                <div class="alert alert-info mb-4">
-                    <h5><i class="fas fa-question-circle me-2"></i> What Happened?</h5>
-                    <p class="mb-0">You have cancelled the payment process. Your card was not charged, and no transaction was completed. You can retry the payment or return to the dashboard.</p>
+                    
+                    <hr>
+                    
+                    <div class="row align-items-center">
+                        <div class="col-sm-6">
+                            <h5>Total Amount:</h5>
+                        </div>
+                        <div class="col-sm-6 text-end">
+                            <div class="transaction-amount">
+                                {{ transaction.currency }} {{ "%.2f"|format(transaction.amount) }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="text-center">
-                    <div class="d-grid gap-2 col-lg-8 mx-auto">
-                        <a href="{{ url_for('pos.pos_dashboard') }}" class="btn btn-primary">
-                            <i class="fas fa-arrow-left me-2"></i> Return to POS Dashboard
-                        </a>
-                        <a href="{{ url_for('pos.accept_payment') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-redo me-2"></i> Try Again
-                        </a>
-                    </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> This transaction has been cancelled. No funds have been transferred.
                 </div>
             </div>
         </div>
         
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Need Help?</h5>
-                <p class="card-text">If you're having trouble with payments or have any questions, please contact our support team.</p>
-                <div class="d-flex justify-content-center">
-                    <a href="mailto:support@nvcplatform.net" class="btn btn-outline-secondary">
-                        <i class="fas fa-envelope me-2"></i> Contact Support
-                    </a>
-                </div>
-            </div>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('pos.pos_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-home me-2"></i> Return to Dashboard
+            </a>
+            <a href="{{ url_for('pos.accept_payment') }}" class="btn btn-primary">
+                <i class="fas fa-sync me-2"></i> Try Again
+            </a>
         </div>
     </div>
 </div>
