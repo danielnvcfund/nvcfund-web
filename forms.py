@@ -912,7 +912,8 @@ class POSPaymentForm(FlaskForm):
         ('NVCT', 'NVC Token (NVCT)'),
         ('AFD1', 'American Federation Dollar (AFD1)'),
         ('AKLUMI', 'AK Lumi (AKLUMI)'),
-        ('SFN', 'SFN Coin (SFN)')
+        ('SFN', 'SFN Coin (SFN)'),
+        ('NGN', 'Nigerian Naira (NGN)')
     ], validators=[DataRequired()])
     customer_name = StringField('Customer Name', validators=[DataRequired(), Length(max=100)])
     customer_email = StringField('Customer Email', validators=[Optional(), Email()])
@@ -930,7 +931,8 @@ class POSPayoutForm(FlaskForm):
         ('NVCT', 'NVC Token (NVCT)'),
         ('AFD1', 'American Federation Dollar (AFD1)'),
         ('AKLUMI', 'AK Lumi (AKLUMI)'),
-        ('SFN', 'SFN Coin (SFN)')
+        ('SFN', 'SFN Coin (SFN)'),
+        ('NGN', 'Nigerian Naira (NGN)')
     ], validators=[DataRequired()])
     recipient_name = StringField('Recipient Name', validators=[DataRequired(), Length(max=100)])
     recipient_email = StringField('Recipient Email', validators=[Optional(), Email()])
@@ -968,7 +970,8 @@ class POSTransactionFilterForm(FlaskForm):
         ('NVCT', 'NVC Token (NVCT)'),
         ('AFD1', 'American Federation Dollar (AFD1)'),
         ('AKLUMI', 'AK Lumi (AKLUMI)'),
-        ('SFN', 'SFN Coin (SFN)')
+        ('SFN', 'SFN Coin (SFN)'),
+        ('NGN', 'Nigerian Naira (NGN)')
     ], validators=[Optional()])
     search = StringField('Search', validators=[Optional()])
     submit = SubmitField('Filter')
