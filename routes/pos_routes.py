@@ -407,5 +407,5 @@ def webhook():
 
 def register_routes(app):
     """Register the POS routes blueprint"""
-    app.register_blueprint(pos_bp)
+    # No need to register blueprint here, it's registered in app.py
     logger.info("POS Payment routes registered successfully")
