@@ -825,30 +825,6 @@ class PDFService:
             try:
                 # Prefer WeasyPrint as it handles inline images better
                 from weasyprint import HTML, CSS
-                from weasyprint.urls import URLFetcher
-                
-                # Custom URL fetcher to handle static files
-                url_fetcher = URLFetcher()
-                original_fetch = url_fetcher.fetch
-                
-                def custom_fetch(url, *args, **kwargs):
-                    base_url = "https://localhost:5000" if not request else request.host_url.rstrip("/")
-                    if url.startswith(base_url):
-                        # Extract static path from URL
-                        path = url.replace(base_url, "").lstrip("/")
-                        if path.startswith('static/'):
-                            path = path.replace('static/', '', 1)
-                            file_path = os.path.join(current_app.static_folder, path)
-                            
-                            if os.path.exists(file_path):
-                                with open(file_path, 'rb') as f:
-                                    return {'string': f.read()}
-                    
-                    # If not handled above, use default fetcher
-                    return original_fetch(url, *args, **kwargs)
-                
-                # Replace the fetch method
-                url_fetcher.fetch = custom_fetch
                 
                 # Generate CSS for better PDF display
                 pdf_css = '''
@@ -884,11 +860,10 @@ class PDFService:
                 
                 pdf_buffer = io.BytesIO()
                 
-                # Add direct logo embedding if file was read successfully
+                # Always use data URI for logo to ensure it renders
                 if logo_bytes:
-                    # Modify HTML to use data URI for image instead of URL
+                    # Embed it directly in the HTML content
                     import base64
-                    import re
                     
                     # Create data URI for logo image
                     b64_logo = base64.b64encode(logo_bytes).decode('ascii')
@@ -897,10 +872,10 @@ class PDFService:
                     # Replace the logo URL with data URI
                     html_content = html_content.replace(logo_url, data_uri)
                 
+                # For reliability, we minimize dependencies on URL fetching
                 HTML(
                     string=html_content, 
-                    base_url=current_app.static_url_path,
-                    url_fetcher=url_fetcher
+                    base_url=current_app.static_url_path
                 ).write_pdf(
                     pdf_buffer,
                     stylesheets=[CSS(string=pdf_css)]

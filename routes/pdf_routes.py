@@ -82,6 +82,9 @@ def nvc_fund_holding_report():
     try:
         from saint_crown_integration import get_afd1_liquidity_pool_assets, get_gold_price
         from models import FinancialInstitution
+        from flask import render_template, make_response, current_app
+        import os
+        import base64
         
         # Get the current gold price and calculate AFD1 unit value
         gold_price, gold_metadata = get_gold_price()
@@ -104,33 +107,39 @@ def nvc_fund_holding_report():
         total_value = sum(float(asset.value) for asset in assets) if assets else 2500000000000.0  # Default $2.5 trillion
         total_value_afd1 = total_value / afd1_unit_value if afd1_unit_value > 0 else 0
         
-        # Prepare data for the PDF service
-        report_data = {
-            'assets': assets,
-            'asset_count': asset_count,
-            'total_value': total_value,
-            'total_value_afd1': total_value_afd1,
-            'gold_price': gold_price,
-            'gold_metadata': gold_metadata,
-            'afd1_unit_value': afd1_unit_value,
-            'institution': institution,
-            'report_date': datetime.now()
-        }
+        # Load the NVC Fund Holding Trust logo as a base64 string
+        logo_path = os.path.join(current_app.static_folder, 'img', 'nvc_fund_holding_trust_logo.png')
+        logo_base64 = None
+        if os.path.exists(logo_path):
+            with open(logo_path, 'rb') as f:
+                logo_bytes = f.read()
+                logo_base64 = base64.b64encode(logo_bytes).decode('ascii')
         
-        # Import the PDF service
-        from pdf_service import pdf_service
+        # Render the template with enhanced PDF-specific styling
+        html_content = render_template(
+            'saint_crown/public_holding_report_print.html',
+            assets=assets,
+            asset_count=asset_count,
+            total_value=total_value,
+            total_value_afd1=total_value_afd1,
+            gold_price=gold_price,
+            gold_metadata=gold_metadata,
+            afd1_unit_value=afd1_unit_value,
+            institution=institution,
+            report_date=datetime.now(),
+            logo_url=f"data:image/png;base64,{logo_base64}" if logo_base64 else "/static/img/nvc_fund_holding_trust_logo.png"
+        )
         
-        # Generate the PDF
-        pdf_content = pdf_service.generate_holding_report_pdf(report_data)
+        # Create the HTML response - a workaround when PDF generation is problematic
+        response = make_response(html_content)
+        response.headers['Content-Type'] = 'text/html'
+        response.headers['Content-Disposition'] = 'inline; filename=nvc_fund_holding_report.html'
         
-        # Return the PDF as a downloadable file
-        response = Response(pdf_content, mimetype='application/pdf')
-        response.headers['Content-Disposition'] = 'attachment; filename=nvc_fund_holding_report.pdf'
         return response
         
     except Exception as e:
-        logger.error(f"Error generating holding report PDF: {str(e)}")
-        return f"Error generating PDF: {str(e)}", 500
+        logger.error(f"Error generating holding report: {str(e)}")
+        return f"Error generating report: {str(e)}", 500
 
 # Register the blueprint
 def register_pdf_routes(app):
