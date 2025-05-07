@@ -768,6 +768,8 @@ class PDFService:
         """
         try:
             from flask import render_template
+            import os
+            from flask import current_app
             
             # Set PDF options
             options = {
@@ -782,13 +784,17 @@ class PDFService:
                 'footer-center': '[page] of [topage]',
                 'footer-font-size': '8',
                 'footer-line': '',
-                'header-center': 'NVC Fund Holding Trust Report',
-                'header-font-size': '8',
-                'header-line': '',
                 'enable-javascript': '',
                 'javascript-delay': '1000',  # Wait for charts to render
                 'no-stop-slow-scripts': ''
             }
+            
+            # Ensure asset_count is properly calculated
+            asset_count = data.get('asset_count', len(data.get('assets', [])))
+            
+            # Get the logo path for direct embedding (more reliable than base64)
+            logo_path = os.path.join(current_app.static_folder, 'img', 'nvc_fund_holding_trust_logo.png')
+            logo_url = '/static/img/nvc_fund_holding_trust_logo.png'
             
             # Render the special print template for PDF output
             html_content = render_template(
@@ -799,24 +805,28 @@ class PDFService:
                 gold_price=data.get('gold_price', 0),
                 gold_metadata=data.get('gold_metadata', {}),
                 afd1_unit_value=data.get('afd1_unit_value', 0),
-                asset_count=len(data.get('assets', [])),
+                asset_count=asset_count,
                 institution=data.get('institution'),
-                report_date=data.get('report_date', datetime.utcnow())
+                report_date=data.get('report_date', datetime.utcnow()),
+                logo_url=logo_url
             )
             
             # Generate PDF
             try:
-                # First try with pdfkit (wkhtmltopdf)
-                import pdfkit
-                pdf_content = pdfkit.from_string(html_content, False, options=options)
-            except Exception as e:
-                logger.warning(f"Error generating PDF with pdfkit: {str(e)}")
-                # Fallback to WeasyPrint
-                from weasyprint import HTML
+                # Prefer WeasyPrint as it handles inline images better
+                from weasyprint import HTML, CSS
                 pdf_buffer = io.BytesIO()
-                HTML(string=html_content).write_pdf(pdf_buffer)
+                HTML(string=html_content, base_url=current_app.static_url_path).write_pdf(
+                    pdf_buffer,
+                    stylesheets=[CSS(string='@page { size: letter; margin: 1cm; }')]
+                )
                 pdf_content = pdf_buffer.getvalue()
                 pdf_buffer.close()
+            except Exception as e:
+                logger.warning(f"Error generating PDF with WeasyPrint: {str(e)}")
+                # Fallback to pdfkit
+                import pdfkit
+                pdf_content = pdfkit.from_string(html_content, False, options=options)
             
             return pdf_content
             
