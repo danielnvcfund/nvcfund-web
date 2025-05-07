@@ -64,9 +64,9 @@
                                     <td>{{ item.holder.email }}</td>
                                     <td>
                                         {% if item.has_usd_account %}
-                                            <span class="badge bg-primary p-2" style="color: white; font-size: 14px; font-weight: bold;">${{ "{:,.2f}".format(item.usd_balance) }}</span>
+                                            <div style="background-color: #004d99; color: white; font-size: 16px; font-weight: bold; padding: 8px 12px; border-radius: 5px; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${{ "{:,.2f}".format(item.usd_balance) }}</div>
                                         {% else %}
-                                            <span class="badge bg-warning p-2" style="color: #333; font-size: 14px; font-weight: bold;">No USD Account</span>
+                                            <div style="background-color: #ff9900; color: black; font-size: 16px; font-weight: bold; padding: 8px 12px; border-radius: 5px; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">No USD Account</div>
                                         {% endif %}
                                     </td>
                                     <td>{{ item.holder.broker }}</td>
