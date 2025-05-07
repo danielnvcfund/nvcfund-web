@@ -181,6 +181,23 @@ class CurrencyExchangeService:
             sfn_to_afd1_rate = sfn_to_usd_rate / afd1_unit_value
             CurrencyExchangeService.update_exchange_rate(CurrencyType.SFN, CurrencyType.AFD1, sfn_to_afd1_rate, "system_calculated")
             
+            # Add Ak Lumi rates from Eco-6
+            # Ak Lumi to USD rate (1 AKLUMI = 3.25 USD)
+            aklumi_to_usd_rate = 3.25  # Current Ak Lumi value in USD
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.AKLUMI, CurrencyType.USD, aklumi_to_usd_rate, "system_eco6")
+            
+            # NVCT to Ak Lumi rate (1 NVCT = 0.3077 AKLUMI since 1 NVCT = 1 USD and 1 AKLUMI = 3.25 USD)
+            nvct_to_aklumi_rate = 1.0 / aklumi_to_usd_rate
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.NVCT, CurrencyType.AKLUMI, nvct_to_aklumi_rate, "system_eco6")
+            
+            # Ak Lumi to AFD1 rate
+            aklumi_to_afd1_rate = aklumi_to_usd_rate / afd1_unit_value
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.AKLUMI, CurrencyType.AFD1, aklumi_to_afd1_rate, "system_calculated")
+            
+            # Ak Lumi to SFN rate
+            aklumi_to_sfn_rate = aklumi_to_usd_rate / sfn_to_usd_rate
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.AKLUMI, CurrencyType.SFN, aklumi_to_sfn_rate, "system_calculated")
+            
             return True
         except Exception as e:
             logger.error(f"Error initializing default exchange rates: {str(e)}")
@@ -251,6 +268,8 @@ class CurrencyExchangeService:
                     exchange_type = ExchangeType.NVCT_TO_AFD1
                 elif to_account.currency == CurrencyType.SFN:
                     exchange_type = ExchangeType.NVCT_TO_SFN
+                elif to_account.currency == CurrencyType.AKLUMI:
+                    exchange_type = ExchangeType.NVCT_TO_AKLUMI
                 elif to_account.currency in fiat_currencies:
                     exchange_type = ExchangeType.NVCT_TO_FIAT
                 else:
@@ -275,6 +294,16 @@ class CurrencyExchangeService:
                 else:
                     # Default to CRYPTO_TO_CRYPTO for other SFN exchanges
                     exchange_type = ExchangeType.CRYPTO_TO_CRYPTO
+            
+            # Ak Lumi exchanges
+            elif from_account.currency == CurrencyType.AKLUMI:
+                if to_account.currency == CurrencyType.NVCT:
+                    exchange_type = ExchangeType.AKLUMI_TO_NVCT
+                elif to_account.currency in fiat_currencies:
+                    exchange_type = ExchangeType.AKLUMI_TO_FIAT
+                else:
+                    # Default to CRYPTO_TO_CRYPTO for other Ak Lumi exchanges
+                    exchange_type = ExchangeType.CRYPTO_TO_CRYPTO
                     
             # Other exchanges
             elif to_account.currency == CurrencyType.NVCT:
@@ -293,6 +322,12 @@ class CurrencyExchangeService:
                     exchange_type = ExchangeType.FIAT_TO_SFN
                 else:
                     # Default to CRYPTO_TO_CRYPTO for other exchanges to SFN
+                    exchange_type = ExchangeType.CRYPTO_TO_CRYPTO
+            elif to_account.currency == CurrencyType.AKLUMI:
+                if from_account.currency in fiat_currencies:
+                    exchange_type = ExchangeType.FIAT_TO_AKLUMI
+                else:
+                    # Default to CRYPTO_TO_CRYPTO for other exchanges to Ak Lumi
                     exchange_type = ExchangeType.CRYPTO_TO_CRYPTO
             elif from_account.currency in crypto_currencies and to_account.currency in crypto_currencies:
                 exchange_type = ExchangeType.CRYPTO_TO_CRYPTO

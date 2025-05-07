@@ -25,6 +25,10 @@ class ExchangeType(enum.Enum):
     SFN_TO_NVCT = "sfn_to_nvct"
     SFN_TO_FIAT = "sfn_to_fiat"
     FIAT_TO_SFN = "fiat_to_sfn"
+    NVCT_TO_AKLUMI = "nvct_to_aklumi"
+    AKLUMI_TO_NVCT = "aklumi_to_nvct"
+    AKLUMI_TO_FIAT = "aklumi_to_fiat"
+    FIAT_TO_AKLUMI = "fiat_to_aklumi"
     
 class ExchangeStatus(enum.Enum):
     """Status of currency exchange transactions"""
@@ -56,6 +60,7 @@ class CurrencyType(enum.Enum):
     NGN = "NGN"    # Nigerian Naira
     AFD1 = "AFD1"  # American Federation Dollar
     SFN = "SFN"    # SFN Coin from Swifin
+    AKLUMI = "AKLUMI"  # Ak Lumi currency from Eco-6
 
 class AccountStatus(enum.Enum):
     """Status types for banking accounts"""
