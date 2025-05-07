@@ -769,24 +769,9 @@ class PDFService:
         try:
             from flask import render_template, current_app, request
             import os
-            
-            # Set PDF options
-            options = {
-                'page-size': 'Letter',
-                'margin-top': '0.5in',
-                'margin-right': '0.5in',
-                'margin-bottom': '0.5in',
-                'margin-left': '0.5in',
-                'encoding': "UTF-8",
-                'no-outline': None,
-                'title': 'NVC Fund Holding Trust Report',
-                'footer-center': '[page] of [topage]',
-                'footer-font-size': '8',
-                'footer-line': '',
-                'enable-javascript': '',
-                'javascript-delay': '1000',  # Wait for charts to render
-                'no-stop-slow-scripts': ''
-            }
+            import tempfile
+            import asyncio
+            import io
             
             # Ensure asset_count is properly calculated
             asset_count = data.get('asset_count', len(data.get('assets', [])))
@@ -796,17 +781,22 @@ class PDFService:
                 host_url = request.host_url.rstrip('/')
             else:
                 host_url = "https://localhost:5000"  # Fallback if request is not available
-                
-            logo_url = f"{host_url}/static/img/nvc_fund_holding_trust_logo.png"
             
-            # Also provide logo as bytes for direct embedding if needed
+            # Load logo for embedding as base64
             logo_path = os.path.join(current_app.static_folder, 'img', 'nvc_fund_holding_trust_logo.png')
             logo_bytes = None
+            logo_base64 = None
+            
             if os.path.exists(logo_path):
                 with open(logo_path, 'rb') as f:
                     logo_bytes = f.read()
+                    import base64
+                    logo_base64 = base64.b64encode(logo_bytes).decode('ascii')
             
-            # Render the special print template for PDF output
+            # Construct the data URI for the logo
+            logo_url = f"data:image/png;base64,{logo_base64}" if logo_base64 else f"{host_url}/static/img/nvc_fund_holding_trust_logo.png"
+            
+            # Render the template with embedded logo
             html_content = render_template(
                 'saint_crown/public_holding_report_print.html',
                 assets=data.get('assets', []),
@@ -821,75 +811,150 @@ class PDFService:
                 logo_url=logo_url
             )
             
-            # Generate PDF
-            try:
-                # Prefer WeasyPrint as it handles inline images better
-                from weasyprint import HTML, CSS
-                
-                # Generate CSS for better PDF display
-                pdf_css = '''
-                @page {
-                    size: letter;
-                    margin: 1cm;
-                }
-                
-                * {
-                    box-sizing: border-box;
-                }
-                
-                body {
-                    font-family: Arial, sans-serif;
-                    line-height: 1.4;
-                    font-size: 11pt;
-                }
-                
-                .header {
-                    background-color: #002855 !important;
-                    color: white !important;
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-                
-                .banner {
-                    background-color: #002855 !important;
-                    color: white !important;
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-                '''
-                
-                pdf_buffer = io.BytesIO()
-                
-                # Always use data URI for logo to ensure it renders
-                if logo_bytes:
-                    # Embed it directly in the HTML content
-                    import base64
-                    
-                    # Create data URI for logo image
-                    b64_logo = base64.b64encode(logo_bytes).decode('ascii')
-                    data_uri = f"data:image/png;base64,{b64_logo}"
-                    
-                    # Replace the logo URL with data URI
-                    html_content = html_content.replace(logo_url, data_uri)
-                
-                # For reliability, we minimize dependencies on URL fetching
-                HTML(
-                    string=html_content, 
-                    base_url=current_app.static_url_path
-                ).write_pdf(
-                    pdf_buffer,
-                    stylesheets=[CSS(string=pdf_css)]
-                )
-                
-                pdf_content = pdf_buffer.getvalue()
-                pdf_buffer.close()
-            except Exception as e:
-                logger.warning(f"Error generating PDF with WeasyPrint: {str(e)}")
-                # Fallback to pdfkit
-                import pdfkit
-                pdf_content = pdfkit.from_string(html_content, False, options=options)
+            # Save HTML to a temporary file
+            with tempfile.NamedTemporaryFile(suffix='.html', delete=False, mode='w', encoding='utf-8') as f:
+                f.write(html_content)
+                temp_html_path = f.name
             
-            return pdf_content
+            logger.info(f"Generating PDF using pyppeteer from {temp_html_path}")
+            
+            try:
+                # Use pyppeteer for reliable PDF generation
+                from pyppeteer import launch
+                
+                async def generate_pdf_with_pyppeteer():
+                    browser = await launch(
+                        options={
+                            'headless': True, 
+                            'args': [
+                                '--no-sandbox',
+                                '--disable-setuid-sandbox',
+                                '--disable-dev-shm-usage',
+                                '--disable-gpu'
+                            ]
+                        }
+                    )
+                    
+                    try:
+                        page = await browser.newPage()
+                        
+                        # Set viewport size to ensure content fits well
+                        await page.setViewport({'width': 1200, 'height': 1600})
+                        
+                        # Navigate to the HTML file
+                        await page.goto(f'file://{temp_html_path}', {'waitUntil': 'networkidle0'})
+                        
+                        # Wait a moment for any JS to execute
+                        await asyncio.sleep(1)
+                        
+                        # Generate PDF
+                        pdf_bytes = await page.pdf({
+                            'format': 'Letter',
+                            'margin': {
+                                'top': '0.5in',
+                                'right': '0.5in',
+                                'bottom': '0.5in',
+                                'left': '0.5in'
+                            },
+                            'printBackground': True
+                        })
+                        
+                        return pdf_bytes
+                    finally:
+                        await browser.close()
+                
+                # Run the async function to generate PDF
+                logger.info("Starting pyppeteer PDF generation...")
+                pdf_content = asyncio.get_event_loop().run_until_complete(generate_pdf_with_pyppeteer())
+                logger.info(f"PDF generation successful, generated {len(pdf_content)} bytes")
+                
+                # Clean up the temporary file
+                os.unlink(temp_html_path)
+                
+                return pdf_content
+                
+            except Exception as e:
+                logger.error(f"Error generating PDF with pyppeteer: {str(e)}")
+                
+                # Try WeasyPrint as fallback
+                try:
+                    logger.info("Attempting fallback to WeasyPrint...")
+                    from weasyprint import HTML, CSS
+                    import io
+                    
+                    # Generate CSS for better PDF display
+                    pdf_css = '''
+                    @page {
+                        size: letter;
+                        margin: 1cm;
+                    }
+                    
+                    body {
+                        font-family: Arial, sans-serif;
+                        line-height: 1.4;
+                        font-size: 11pt;
+                    }
+                    
+                    .header, .banner {
+                        background-color: #002855 !important;
+                        color: white !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    '''
+                    
+                    pdf_buffer = io.BytesIO()
+                    
+                    # Use WeasyPrint with embedded logo
+                    HTML(
+                        string=html_content, 
+                        base_url=current_app.static_url_path
+                    ).write_pdf(
+                        pdf_buffer,
+                        stylesheets=[CSS(string=pdf_css)]
+                    )
+                    
+                    pdf_content = pdf_buffer.getvalue()
+                    pdf_buffer.close()
+                    
+                    # Clean up the temporary file
+                    os.unlink(temp_html_path)
+                    
+                    return pdf_content
+                    
+                except Exception as weasy_error:
+                    logger.error(f"WeasyPrint fallback failed: {str(weasy_error)}")
+                    
+                    # Last resort: return HTML that explains the issue and offers a "Print in Browser" option
+                    error_html = f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>PDF Generation Failed</title>
+                        <style>
+                            body {{ font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }}
+                            .container {{ max-width: 800px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }}
+                            h1 {{ color: #c00; }}
+                            .button {{ display: inline-block; padding: 10px 15px; background-color: #002855; color: white;
+                                     text-decoration: none; border-radius: 4px; margin-top: 20px; }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <h1>PDF Generation Failed</h1>
+                            <p>We're sorry, but we couldn't generate the PDF document due to technical issues.</p>
+                            <p>Technical details: {str(e)}</p>
+                            <p>You can view the report online and use your browser's print function instead:</p>
+                            <p><a href="/nvc-fund-holding-trust-report.html" class="button">View Report</a></p>
+                        </div>
+                    </body>
+                    </html>
+                    """.encode('utf-8')
+                    
+                    # Clean up the temporary file
+                    os.unlink(temp_html_path)
+                    
+                    return error_html
             
         except Exception as e:
             logger.error(f"Error generating holding report PDF: {str(e)}")
