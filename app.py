@@ -398,6 +398,15 @@ def create_app():
             logger.error(f"Error registering Account Holder routes: {str(e)}")
             logger.warning("Application will run without Account Holder functionality")
             
+        # Register Currency Exchange routes
+        try:
+            from routes.currency_exchange_routes import register_currency_exchange_routes
+            register_currency_exchange_routes(app)
+            logger.info("Currency Exchange routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Currency Exchange routes: {str(e)}")
+            logger.warning("Application will run without Currency Exchange functionality")
+            
         # Create PHP test integration user
         try:
             from auth import create_php_test_user
