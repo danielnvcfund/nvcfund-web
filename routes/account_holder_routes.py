@@ -153,7 +153,7 @@ def view_account(account_id):
     """View a specific bank account"""
     account = BankAccount.query.get_or_404(account_id)
     return render_template(
-        'account_holders/account_details.html',
+        'account_holders/account_details_new.html',
         account=account,
         title=f"Account: {account.account_number}"
     )
