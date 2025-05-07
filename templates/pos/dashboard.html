@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}POS Payment System{% endblock %}
+
+{% block styles %}
+<style>
+    .feature-card {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.125);
+        border-radius: 0.5rem;
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .feature-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: #1a4f8a;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold mb-4">
+                <i class="fas fa-credit-card me-2"></i> POS Payment System
+            </h1>
+            <p class="lead">Securely process credit card payments and send funds to cards.</p>
+            <hr>
+        </div>
+    </div>
+
+    <!-- Feature Cards -->
+    <div class="row mb-5">
+        <div class="col-md-6 mb-4">
+            <div class="feature-card h-100 p-4 bg-white">
+                <div class="text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                    <h3>Accept Payments</h3>
+                    <p class="text-muted">Process credit card payments securely with our POS system</p>
+                    <a href="{{ url_for('pos.accept_payment') }}" class="btn btn-primary mt-3">
+                        <i class="fas fa-arrow-right me-2"></i> Accept Payments
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="feature-card h-100 p-4 bg-white">
+                <div class="text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <h3>Send Payments</h3>
+                    <p class="text-muted">Send funds directly to credit cards from your accounts</p>
+                    <a href="{{ url_for('pos.send_payment') }}" class="btn btn-primary mt-3">
+                        <i class="fas fa-arrow-right me-2"></i> Send Payments
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i> Recent POS Transactions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if transactions %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for tx in transactions %}
+                                    <tr>
+                                        <td>{{ tx.transaction_id }}</td>
+                                        <td>{{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>{{ tx.transaction_type.value }}</td>
+                                        <td>{{ tx.currency }} {{ "%.2f"|format(tx.amount) }}</td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if tx.status.value == 'COMPLETED' %}bg-success
+                                                {% elif tx.status.value == 'PENDING' %}bg-warning
+                                                {% elif tx.status.value == 'FAILED' %}bg-danger
+                                                {% else %}bg-secondary{% endif %}">
+                                                {{ tx.status.value }}
+                                            </span>
+                                        </td>
+                                        <td>{{ tx.description }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('pos.transactions') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-list me-2"></i> View All Transactions
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i> No transactions found. Start processing payments to see your transaction history.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Any JavaScript needed for the dashboard
+    });
+</script>
+{% endblock %}

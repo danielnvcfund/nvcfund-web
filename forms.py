@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, TextAreaField, DecimalField, PasswordField, BooleanField, FloatField, SubmitField, HiddenField, DateField, RadioField, IntegerField
 from wtforms.validators import DataRequired, Length, Optional, Email, EqualTo, NumberRange, ValidationError, Regexp
-from models import TransactionType
+from models import TransactionType, PaymentGatewayType
 from datetime import datetime, timedelta
 
 def get_currency_choices():
@@ -218,6 +218,47 @@ class PartnerRegistrationForm(FlaskForm):
     invite_code = HiddenField('Invitation Code')
     newsletter = BooleanField('Subscribe to Newsletter', default=True)
     terms_agree = BooleanField('I agree to the Terms of Service and Privacy Policy', validators=[DataRequired()])
+
+class CreditCardPaymentForm(FlaskForm):
+    """Form for accepting credit card payments"""
+    amount = FloatField('Amount', validators=[
+        DataRequired(),
+        NumberRange(min=0.01, message="Amount must be greater than 0.01")
+    ])
+    currency = SelectField('Currency', choices=get_currency_choices(), default='USD', validators=[DataRequired()])
+    description = TextAreaField('Payment Description', validators=[
+        DataRequired(),
+        Length(max=255, message="Description must be 255 characters or less")
+    ], default='Payment to NVC Banking Platform')
+    customer_email = StringField('Customer Email (for receipt)', validators=[
+        Optional(),
+        Email(message="Please enter a valid email address")
+    ])
+    account_holder_id = SelectField('Associated Account Holder', coerce=int, validators=[DataRequired()])
+    save_card = BooleanField('Save card for future payments', default=False)
+    submit = SubmitField('Process Payment')
+
+class CreditCardPayoutForm(FlaskForm):
+    """Form for sending money to credit cards"""
+    account_holder_id = SelectField('Account Holder', coerce=int, validators=[DataRequired()])
+    account_id = SelectField('From Account', coerce=int, validators=[DataRequired()])
+    amount = FloatField('Amount to Send', validators=[
+        DataRequired(),
+        NumberRange(min=0.01, message="Amount must be greater than 0.01")
+    ])
+    currency = SelectField('Currency', choices=get_currency_choices(), default='USD', validators=[DataRequired()])
+    recipient_name = StringField('Recipient Name', validators=[
+        DataRequired(),
+        Length(max=128, message="Name must be 128 characters or less")
+    ])
+    # Card token will be set by Stripe.js
+    card_token = HiddenField('Card Token')
+    description = TextAreaField('Payment Description', validators=[
+        DataRequired(),
+        Length(max=255, message="Description must be 255 characters or less")
+    ], default='Payment from NVC Banking Platform')
+    save_recipient = BooleanField('Save recipient for future payments', default=False)
+    submit = SubmitField('Send Payment')
 
 class BankTransferForm(FlaskForm):
     transaction_id = HiddenField('Transaction ID', validators=[Optional()])

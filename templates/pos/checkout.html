@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+
+{% block title %}Credit Card Checkout{% endblock %}
+
+{% block styles %}
+<style>
+    .checkout-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .payment-card {
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    #card-element {
+        padding: 12px;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        background-color: #fff;
+        margin-bottom: 8px;
+    }
+    #card-element.StripeElement--focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    #card-errors {
+        color: #dc3545;
+        font-size: 14px;
+        margin-top: 4px;
+    }
+    .card-brands {
+        padding: 10px 0;
+    }
+    .card-brands i {
+        font-size: 24px;
+        margin-right: 10px;
+        color: #6c757d;
+    }
+    .payment-summary {
+        background-color: #f8f9fa;
+        border-radius: 0.375rem;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        border-radius: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('pos.pos_dashboard') }}">POS Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('pos.accept_payment') }}">Accept Payment</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Checkout</li>
+                </ol>
+            </nav>
+            <h1 class="display-5 fw-bold mb-4">
+                <i class="fas fa-credit-card me-2"></i> Credit Card Checkout
+            </h1>
+            <p class="lead">Complete your payment securely</p>
+            <hr>
+        </div>
+    </div>
+    
+    <div class="checkout-container">
+        <div class="row">
+            <div class="col-lg-8 mb-4">
+                <div class="payment-card card position-relative">
+                    <div id="payment-processing" class="loading-overlay d-none">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary mb-3" role="status">
+                                <span class="visually-hidden">Processing payment...</span>
+                            </div>
+                            <h5>Processing payment...</h5>
+                            <p class="text-muted">Please do not close this window</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-lock me-2"></i> Secure Payment
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="payment-summary mb-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Amount</h5>
+                                    <h3 class="fw-bold text-primary">{{ currency }} {{ amount }}</h3>
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <h5>Payment ID</h5>
+                                    <p class="text-muted">{{ payment_intent_id }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <form id="payment-form">
+                            <div class="mb-4">
+                                <label for="card-element" class="form-label">
+                                    <i class="fas fa-credit-card me-2"></i> Card Information
+                                </label>
+                                <div class="card-brands mb-2">
+                                    <i class="fab fa-cc-visa"></i>
+                                    <i class="fab fa-cc-mastercard"></i>
+                                    <i class="fab fa-cc-amex"></i>
+                                    <i class="fab fa-cc-discover"></i>
+                                </div>
+                                <div id="card-element">
+                                    <!-- Stripe Card Element will be inserted here -->
+                                </div>
+                                <div id="card-errors" role="alert"></div>
+                                <div class="form-text">
+                                    Your card information is encrypted and securely processed by Stripe.
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button id="submit-button" type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-lock me-2"></i> Pay {{ currency }} {{ amount }}
+                                </button>
+                                <a href="{{ url_for('pos.payment_cancel') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i> Cancel Payment
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-shield-alt me-2"></i> Secure Transaction
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h5>Payment Protection</h5>
+                            <p><i class="fas fa-lock text-success me-2"></i> SSL encrypted payment</p>
+                            <p><i class="fas fa-shield-alt text-success me-2"></i> Protected by Stripe</p>
+                            <p><i class="fas fa-user-shield text-success me-2"></i> Your data is never stored</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h5>Questions?</h5>
+                            <p>If you have any questions about this payment, please contact our support team.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Stripe.js -->
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    // Initialize Stripe
+    const stripe = Stripe('{{ stripe_publishable_key }}');
+    const clientSecret = '{{ client_secret }}';
+    
+    // Create card element
+    const elements = stripe.elements();
+    const cardElement = elements.create('card', {
+        style: {
+            base: {
+                color: '#32325d',
+                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                fontSmoothing: 'antialiased',
+                fontSize: '16px',
+                '::placeholder': {
+                    color: '#aab7c4'
+                }
+            },
+            invalid: {
+                color: '#dc3545',
+                iconColor: '#dc3545'
+            }
+        }
+    });
+    
+    // Mount card element
+    cardElement.mount('#card-element');
+    
+    // Handle real-time validation errors
+    cardElement.on('change', function(event) {
+        const displayError = document.getElementById('card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+        } else {
+            displayError.textContent = '';
+        }
+    });
+    
+    // Handle form submission
+    const form = document.getElementById('payment-form');
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        // Show processing overlay
+        document.getElementById('payment-processing').classList.remove('d-none');
+        
+        // Disable submit button
+        document.getElementById('submit-button').disabled = true;
+        
+        // Confirm card payment
+        stripe.confirmCardPayment(clientSecret, {
+            payment_method: {
+                card: cardElement,
+                billing_details: {
+                    // You can collect billing details here if needed
+                }
+            }
+        }).then(function(result) {
+            if (result.error) {
+                // Show error message
+                const errorElement = document.getElementById('card-errors');
+                errorElement.textContent = result.error.message;
+                
+                // Hide processing overlay
+                document.getElementById('payment-processing').classList.add('d-none');
+                
+                // Re-enable submit button
+                document.getElementById('submit-button').disabled = false;
+            } else {
+                // Payment successful, redirect to success page
+                window.location.href = "{{ url_for('pos.payment_success') }}?payment_intent=" + result.paymentIntent.id;
+            }
+        });
+    });
+</script>
+{% endblock %}
