@@ -77,7 +77,7 @@ def index():
         # Add to our list with balance info
         account_holders_with_balances.append({
             'holder': holder,
-            'usd_balance': total_nvct_balance,  # Keep the variable name for template compatibility
+            'usd_balance': total_nvct_balance,  # Variable name kept for template compatibility
             'has_usd_account': nvct_account is not None
         })
     
@@ -293,6 +293,9 @@ def api_account_holder(account_holder_id):
         # Get accounts
         accounts = []
         for account in holder.accounts:
+            # Add currency prefix flag for NVCT accounts
+            is_nvct = account.currency.value == 'NVCT'
+            
             accounts.append({
                 'id': account.id,
                 'account_number': account.account_number,
@@ -301,7 +304,9 @@ def api_account_holder(account_holder_id):
                 'currency': account.currency.value,
                 'balance': account.balance,
                 'available_balance': account.available_balance,
-                'status': account.status.value
+                'status': account.status.value,
+                'display_currency_prefix': is_nvct,
+                'currency_prefix': 'NVCT' if is_nvct else None
             })
         
         # Compile result
@@ -418,6 +423,9 @@ def api_account(account_id):
     try:
         account = BankAccount.query.get_or_404(account_id)
         
+        # Add currency prefix flag for NVCT accounts
+        is_nvct = account.currency.value == 'NVCT'
+        
         result = {
             'id': account.id,
             'account_number': account.account_number,
@@ -428,6 +436,8 @@ def api_account(account_id):
             'available_balance': account.available_balance,
             'status': account.status.value,
             'created_at': account.created_at.isoformat() if account.created_at else None,
+            'display_currency_prefix': is_nvct,
+            'currency_prefix': 'NVCT' if is_nvct else None,
             'account_holder': {
                 'id': account.account_holder.id,
                 'name': account.account_holder.name
