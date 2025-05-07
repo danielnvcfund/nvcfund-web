@@ -4,6 +4,12 @@ from wtforms.validators import DataRequired, Length, Optional, Email, EqualTo, N
 from models import TransactionType, PaymentGatewayType
 from datetime import datetime, timedelta
 
+
+class BaseForm(FlaskForm):
+    """Base form class for all forms in the application"""
+    class Meta:
+        csrf = True  # Enable CSRF protection for all forms
+
 def get_currency_choices():
     """Get list of supported currencies"""
     return [

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'layout.html' %}
 
 {% block title %}Payment Successful{% endblock %}
 
@@ -9,7 +9,7 @@
         margin: 0 auto;
     }
     .success-icon {
-        font-size: 4rem;
+        font-size: 5rem;
         color: #198754;
         margin-bottom: 1rem;
     }
@@ -42,44 +42,58 @@
                 </h5>
             </div>
             <div class="card-body">
-                {% if payment_details %}
+                {% if transaction %}
                 <div class="payment-details mb-4">
                     <div class="row">
                         <div class="col-md-6">
                             <h5>Amount Paid</h5>
-                            <h3 class="fw-bold text-success">{{ payment_details.currency }} {{ "%.2f"|format(payment_details.amount) }}</h3>
+                            <h3 class="fw-bold text-success">{{ transaction.currency }} {{ "%.2f"|format(transaction.amount) }}</h3>
                         </div>
                         <div class="col-md-6 text-md-end">
-                            <h5>Payment ID</h5>
-                            <p class="text-muted">{{ payment_details.id }}</p>
+                            <h5>Transaction ID</h5>
+                            <p class="text-muted">{{ transaction.transaction_id }}</p>
                         </div>
                     </div>
                     <div class="row mt-3">
                         <div class="col-md-6">
                             <h5>Status</h5>
-                            <span class="badge bg-success">{{ payment_details.status|upper }}</span>
+                            <span class="badge bg-success">COMPLETED</span>
                         </div>
                         <div class="col-md-6 text-md-end">
                             <h5>Date</h5>
-                            <p class="text-muted">{{ now.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                            <p class="text-muted">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h5>Recipient</h5>
+                            <p>{{ transaction.recipient_name or "NVC Banking Platform" }}</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <h5>Description</h5>
+                            <p>{{ transaction.description or "Payment to NVC Banking Platform" }}</p>
                         </div>
                     </div>
                 </div>
                 {% else %}
                 <div class="alert alert-success mb-4">
                     <h5><i class="fas fa-check-circle me-2"></i> Payment Completed</h5>
-                    <p class="mb-0">Your payment has been successfully processed. You will receive a confirmation email shortly.</p>
+                    <p class="mb-0">Your payment has been processed successfully. A confirmation email will be sent to you shortly.</p>
                 </div>
                 {% endif %}
                 
+                <div class="alert alert-info mb-4">
+                    <h5><i class="fas fa-info-circle me-2"></i> What's Next?</h5>
+                    <p class="mb-0">If you provided an email address, you'll receive a receipt confirmation shortly. The funds will be available immediately in the recipient's account.</p>
+                </div>
+                
                 <div class="text-center">
-                    <p>A receipt has been sent to your email address.</p>
                     <div class="d-grid gap-2 col-lg-8 mx-auto">
                         <a href="{{ url_for('pos.pos_dashboard') }}" class="btn btn-primary">
                             <i class="fas fa-arrow-left me-2"></i> Return to POS Dashboard
                         </a>
                         <a href="{{ url_for('pos.accept_payment') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-plus me-2"></i> Process Another Payment
+                            <i class="fas fa-credit-card me-2"></i> Process Another Payment
                         </a>
                     </div>
                 </div>
@@ -91,7 +105,7 @@
                 <h5 class="card-title">Need Help?</h5>
                 <p class="card-text">If you have any questions about this payment, please contact our support team.</p>
                 <div class="d-flex justify-content-center gap-3">
-                    <a href="#" class="btn btn-outline-secondary">
+                    <a href="#" class="btn btn-outline-secondary" id="print-receipt">
                         <i class="fas fa-print me-2"></i> Print Receipt
                     </a>
                     <a href="mailto:support@nvcplatform.net" class="btn btn-outline-secondary">
@@ -108,7 +122,7 @@
 <script>
     // Add print functionality
     $(document).ready(function() {
-        $('[data-action="print"]').on('click', function(e) {
+        $('#print-receipt').on('click', function(e) {
             e.preventDefault();
             window.print();
         });

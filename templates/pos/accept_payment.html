@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'layout.html' %}
 
 {% block title %}Accept Credit Card Payment{% endblock %}
 
@@ -8,14 +8,30 @@
         max-width: 800px;
         margin: 0 auto;
     }
-    .payment-info {
-        padding: 20px;
-        border-radius: 0.5rem;
-        background-color: #f8f9fa;
-        margin-bottom: 20px;
+    .card-header-primary {
+        background-color: #0d6efd;
+        color: white;
+        font-weight: bold;
     }
-    .payment-method-selector {
-        margin-bottom: 20px;
+    .currency-flag {
+        width: 24px;
+        height: 24px;
+        margin-right: 10px;
+        vertical-align: middle;
+    }
+    .form-floating label {
+        color: #666;
+    }
+    .support-info {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 20px;
+    }
+    .badge-currency {
+        font-size: 1rem;
+        padding: 0.5rem;
+        margin-bottom: 10px;
+        display: inline-block;
     }
 </style>
 {% endblock %}
@@ -31,65 +47,50 @@
                 </ol>
             </nav>
             <h1 class="display-5 fw-bold mb-4">
-                <i class="fas fa-credit-card me-2"></i> Accept Credit Card Payment
+                <i class="fas fa-cash-register me-2"></i> Accept Credit Card Payment
             </h1>
-            <p class="lead">Process payments securely via Stripe payment gateway.</p>
+            <p class="lead">Allow customers to pay with credit card by filling out the form below.</p>
+            <div class="alert alert-primary">
+                <i class="fas fa-info-circle me-2"></i> Credit card payments are processed securely through Stripe.
+            </div>
             <hr>
         </div>
     </div>
     
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-lg-8 mb-4">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header card-header-primary">
                     <h5 class="mb-0">
-                        <i class="fas fa-file-invoice-dollar me-2"></i> Payment Details
+                        <i class="fas fa-credit-card me-2"></i> Payment Details
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('pos.accept_payment') }}" id="payment-form">
-                        {{ form.hidden_tag() }}
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.csrf_token }}
                         
-                        <div class="mb-3">
-                            {{ form.account_holder_id.label(class="form-label") }}
-                            {{ form.account_holder_id(class="form-select") }}
-                            <div class="form-text">Select the account holder for this payment</div>
-                            {% if form.account_holder_id.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.account_holder_id.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="row">
+                        <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    {{ form.amount.label(class="form-label") }}
-                                    <div class="input-group">
-                                        <span class="input-group-text">$</span>
-                                        {{ form.amount(class="form-control", placeholder="0.00") }}
-                                    </div>
-                                    <div class="form-text">Enter the payment amount</div>
+                                <div class="form-floating mb-3">
+                                    {{ form.amount(class="form-control", placeholder="Amount", id="amount") }}
+                                    <label for="amount">Amount</label>
                                     {% if form.amount.errors %}
                                     <div class="invalid-feedback d-block">
                                         {% for error in form.amount.errors %}
-                                            {{ error }}
+                                        <span>{{ error }}</span>
                                         {% endfor %}
                                     </div>
                                     {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    {{ form.currency.label(class="form-label") }}
-                                    {{ form.currency(class="form-select") }}
-                                    <div class="form-text">Select the payment currency</div>
+                                <div class="form-floating mb-3">
+                                    {{ form.currency(class="form-select", id="currency") }}
+                                    <label for="currency">Currency</label>
                                     {% if form.currency.errors %}
                                     <div class="invalid-feedback d-block">
                                         {% for error in form.currency.errors %}
-                                            {{ error }}
+                                        <span>{{ error }}</span>
                                         {% endfor %}
                                     </div>
                                     {% endif %}
@@ -97,72 +98,123 @@
                             </div>
                         </div>
                         
-                        <div class="mb-3">
-                            {{ form.customer_email.label(class="form-label") }}
-                            {{ form.customer_email(class="form-control", placeholder="customer@example.com") }}
-                            <div class="form-text">Email address where receipt will be sent (optional)</div>
-                            {% if form.customer_email.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.customer_email.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.description.label(class="form-label") }}
-                            {{ form.description(class="form-control", rows="2") }}
-                            <div class="form-text">Description of what this payment is for</div>
-                            {% if form.description.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.description.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            <div class="form-check">
-                                {{ form.save_card(class="form-check-input") }}
-                                {{ form.save_card.label(class="form-check-label") }}
-                                <div class="form-text">Store card for future payments (customer consent required)</div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <div class="form-floating mb-3">
+                                    {{ form.customer_name(class="form-control", placeholder="Customer Name", id="customer_name") }}
+                                    <label for="customer_name">Customer Name</label>
+                                    {% if form.customer_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.customer_name.errors %}
+                                        <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="d-grid gap-2">
-                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <div class="form-floating mb-3">
+                                    {{ form.customer_email(class="form-control", placeholder="Customer Email (Optional)", id="customer_email") }}
+                                    <label for="customer_email">Customer Email (Optional)</label>
+                                    {% if form.customer_email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.customer_email.errors %}
+                                        <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    <div class="form-text">If provided, the customer will receive a receipt via email</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <div class="form-floating mb-3">
+                                    {{ form.description(class="form-control", placeholder="Description", id="description", style="height: 120px") }}
+                                    <label for="description">Description (Optional)</label>
+                                    {% if form.description.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.description.errors %}
+                                        <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg py-3">
+                                <i class="fas fa-credit-card me-2"></i> Continue to Payment
+                            </button>
+                            <a href="{{ url_for('pos.pos_dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                            </a>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-4">
+        <div class="col-lg-4">
             <div class="card shadow-sm mb-4">
-                <div class="card-header bg-dark text-white">
+                <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-info-circle me-2"></i> Information
+                        <i class="fas fa-info-circle me-2"></i> Accepted Currencies
                     </h5>
                 </div>
                 <div class="card-body">
-                    <h5>Secure Payments</h5>
-                    <p>All credit card information is securely handled by Stripe and is never stored on our servers.</p>
+                    <p>We accept payments in the following currencies:</p>
                     
-                    <h5>Supported Cards</h5>
-                    <div class="d-flex gap-2 mb-3">
-                        <i class="fab fa-cc-visa fa-2x"></i>
-                        <i class="fab fa-cc-mastercard fa-2x"></i>
-                        <i class="fab fa-cc-amex fa-2x"></i>
-                        <i class="fab fa-cc-discover fa-2x"></i>
+                    <span class="badge bg-primary badge-currency">
+                        <i class="fas fa-dollar-sign me-1"></i> USD
+                    </span>
+                    <span class="badge bg-success badge-currency">
+                        <i class="fas fa-euro-sign me-1"></i> EUR
+                    </span>
+                    <span class="badge bg-info badge-currency">
+                        <i class="fas fa-pound-sign me-1"></i> GBP
+                    </span>
+                    <span class="badge bg-warning badge-currency">
+                        <i class="fas fa-coins me-1"></i> NVCT
+                    </span>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <small>
+                            <i class="fas fa-info-circle me-1"></i> <strong>Note:</strong> When accepting NVCT payments, the amount will be converted to USD for credit card processing.
+                        </small>
                     </div>
-                    
-                    <h5>Processing Times</h5>
-                    <p>Payments are typically processed instantly, but may take up to 24 hours to settle.</p>
-                    
-                    <h5>Need Help?</h5>
-                    <p>Contact our support team at <a href="mailto:support@nvcplatform.net">support@nvcplatform.net</a></p>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-question-circle me-2"></i> Help & Support
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="support-info">
+                        <h6>Frequently Asked Questions</h6>
+                        <ul class="small">
+                            <li>Payments are processed securely via Stripe</li>
+                            <li>Transaction fees are automatically calculated</li>
+                            <li>Receipts can be emailed to customers</li>
+                            <li>Payment confirmation is instant</li>
+                        </ul>
+                        
+                        <hr>
+                        
+                        <h6>Need Help?</h6>
+                        <p class="small mb-0">If you have any questions or need assistance, contact our support team.</p>
+                        <a href="mailto:support@nvcplatform.net" class="btn btn-sm btn-outline-primary mt-2">
+                            <i class="fas fa-envelope me-1"></i> Contact Support
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -172,51 +224,28 @@
 
 {% block scripts %}
 <script>
-    $(document).ready(function() {
-        // Form validation and submission handling
-        $("#payment-form").on("submit", function(e) {
-            // Validate form fields
-            if (!validateForm()) {
-                e.preventDefault();
-                return false;
-            }
-            
-            // Show loading state
-            $(this).find('button[type="submit"]').html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...').prop('disabled', true);
-        });
-        
-        function validateForm() {
-            let isValid = true;
-            
-            // Validate amount
-            const amount = $("#amount").val();
-            if (!amount || parseFloat(amount) <= 0) {
-                showError("amount", "Please enter a valid amount greater than 0");
-                isValid = false;
-            } else {
-                clearError("amount");
-            }
-            
-            return isValid;
-        }
-        
-        function showError(fieldId, message) {
-            const field = $("#" + fieldId);
-            field.addClass("is-invalid");
-            
-            // Check if error element already exists
-            let errorElement = field.next(".invalid-feedback");
-            if (errorElement.length === 0) {
-                field.after('<div class="invalid-feedback">' + message + '</div>');
-            } else {
-                errorElement.text(message);
-            }
-        }
-        
-        function clearError(fieldId) {
-            const field = $("#" + fieldId);
-            field.removeClass("is-invalid");
-            field.next(".invalid-feedback").remove();
+    // Form validation 
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+    
+    // Format amount as currency
+    document.getElementById('amount').addEventListener('blur', function(e) {
+        const amount = parseFloat(e.target.value);
+        if (!isNaN(amount)) {
+            e.target.value = amount.toFixed(2);
         }
     });
 </script>

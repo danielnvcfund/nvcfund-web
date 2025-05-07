@@ -1,61 +1,53 @@
-{% extends 'base.html' %}
+{% extends 'layout.html' %}
 
-{% block title %}Credit Card Checkout{% endblock %}
+{% block title %}Payment Checkout{% endblock %}
 
 {% block styles %}
 <style>
-    .checkout-container {
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    .payment-card {
-        border-radius: 0.5rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    #card-element {
-        padding: 12px;
-        border: 1px solid #ced4da;
-        border-radius: 0.375rem;
-        background-color: #fff;
-        margin-bottom: 8px;
-    }
-    #card-element.StripeElement--focus {
-        border-color: #86b7fe;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-    }
-    #card-errors {
-        color: #dc3545;
-        font-size: 14px;
-        margin-top: 4px;
-    }
-    .card-brands {
-        padding: 10px 0;
-    }
-    .card-brands i {
-        font-size: 24px;
-        margin-right: 10px;
-        color: #6c757d;
-    }
     .payment-summary {
         background-color: #f8f9fa;
-        border-radius: 0.375rem;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-    .loading-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(255, 255, 255, 0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
         border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .payment-amount {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #0d6efd;
+    }
+    .payment-details-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .payment-details-item:last-child {
+        border-bottom: none;
+    }
+    .timer-container {
+        text-align: center;
+        margin: 1.5rem 0;
+    }
+    #session-timer {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #6c757d;
+    }
+    .secure-badge {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .secure-badge i {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+        color: #198754;
     }
 </style>
+{% endblock %}
+
+{% block head_scripts %}
+<script src="https://js.stripe.com/v3/"></script>
 {% endblock %}
 
 {% block content %}
@@ -70,98 +62,132 @@
                 </ol>
             </nav>
             <h1 class="display-5 fw-bold mb-4">
-                <i class="fas fa-credit-card me-2"></i> Credit Card Checkout
+                <i class="fas fa-credit-card me-2"></i> Payment Checkout
             </h1>
-            <p class="lead">Complete your payment securely</p>
+            <p class="lead">Complete your payment securely through our Stripe integration.</p>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> You will be redirected to Stripe's secure payment page to enter your credit card details.
+            </div>
             <hr>
         </div>
     </div>
     
-    <div class="checkout-container">
-        <div class="row">
-            <div class="col-lg-8 mb-4">
-                <div class="payment-card card position-relative">
-                    <div id="payment-processing" class="loading-overlay d-none">
-                        <div class="text-center">
-                            <div class="spinner-border text-primary mb-3" role="status">
-                                <span class="visually-hidden">Processing payment...</span>
-                            </div>
-                            <h5>Processing payment...</h5>
-                            <p class="text-muted">Please do not close this window</p>
+    <div class="row">
+        <div class="col-lg-7 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lock me-2"></i> Secure Payment
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="payment-summary text-center">
+                        <h4>Payment Summary</h4>
+                        <div class="payment-amount mb-3">
+                            {{ display_currency }} {{ "%.2f"|format(transaction.amount) }}
+                        </div>
+                        <p class="text-muted">{{ transaction.description or "Payment to NVC Banking Platform" }}</p>
+                    </div>
+                    
+                    <div class="secure-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <div>
+                            <strong>Secure Transaction</strong><br>
+                            <small class="text-muted">Your payment information is securely processed by Stripe.</small>
                         </div>
                     </div>
                     
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">
-                            <i class="fas fa-lock me-2"></i> Secure Payment
-                        </h5>
+                    <div class="timer-container">
+                        <p><small>This payment session will expire in:</small></p>
+                        <div id="session-timer">15:00</div>
                     </div>
-                    <div class="card-body">
-                        <div class="payment-summary mb-4">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h5>Amount</h5>
-                                    <h3 class="fw-bold text-primary">{{ currency }} {{ amount }}</h3>
-                                </div>
-                                <div class="col-md-6 text-md-end">
-                                    <h5>Payment ID</h5>
-                                    <p class="text-muted">{{ payment_intent_id }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <form id="payment-form">
-                            <div class="mb-4">
-                                <label for="card-element" class="form-label">
-                                    <i class="fas fa-credit-card me-2"></i> Card Information
-                                </label>
-                                <div class="card-brands mb-2">
-                                    <i class="fab fa-cc-visa"></i>
-                                    <i class="fab fa-cc-mastercard"></i>
-                                    <i class="fab fa-cc-amex"></i>
-                                    <i class="fab fa-cc-discover"></i>
-                                </div>
-                                <div id="card-element">
-                                    <!-- Stripe Card Element will be inserted here -->
-                                </div>
-                                <div id="card-errors" role="alert"></div>
-                                <div class="form-text">
-                                    Your card information is encrypted and securely processed by Stripe.
-                                </div>
-                            </div>
-                            
-                            <div class="d-grid gap-2">
-                                <button id="submit-button" type="submit" class="btn btn-primary btn-lg">
-                                    <i class="fas fa-lock me-2"></i> Pay {{ currency }} {{ amount }}
-                                </button>
-                                <a href="{{ url_for('pos.payment_cancel') }}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-times me-2"></i> Cancel Payment
-                                </a>
-                            </div>
-                        </form>
+                    
+                    <div class="d-grid gap-2">
+                        <button id="checkout-button" class="btn btn-primary btn-lg py-3">
+                            <i class="fas fa-credit-card me-2"></i> Proceed to Payment
+                        </button>
+                        <a href="{{ url_for('pos.payment_cancel', transaction_id=transaction.transaction_id) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i> Cancel Payment
+                        </a>
                     </div>
                 </div>
             </div>
-            
-            <div class="col-lg-4">
-                <div class="card mb-4">
-                    <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0">
-                            <i class="fas fa-shield-alt me-2"></i> Secure Transaction
-                        </h5>
+        </div>
+        
+        <div class="col-lg-5">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-invoice-dollar me-2"></i> Transaction Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="payment-details-item">
+                        <span>Transaction ID:</span>
+                        <strong>{{ transaction.transaction_id }}</strong>
                     </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <h5>Payment Protection</h5>
-                            <p><i class="fas fa-lock text-success me-2"></i> SSL encrypted payment</p>
-                            <p><i class="fas fa-shield-alt text-success me-2"></i> Protected by Stripe</p>
-                            <p><i class="fas fa-user-shield text-success me-2"></i> Your data is never stored</p>
+                    
+                    <div class="payment-details-item">
+                        <span>Amount:</span>
+                        <strong>{{ display_currency }} {{ "%.2f"|format(transaction.amount) }}</strong>
+                    </div>
+                    
+                    <div class="payment-details-item">
+                        <span>Recipient:</span>
+                        <strong>{{ transaction.recipient_name or "NVC Banking Platform" }}</strong>
+                    </div>
+                    
+                    <div class="payment-details-item">
+                        <span>Date:</span>
+                        <strong>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</strong>
+                    </div>
+                    
+                    <div class="payment-details-item">
+                        <span>Status:</span>
+                        <span class="badge bg-warning">PENDING</span>
+                    </div>
+                    
+                    {% if transaction.description %}
+                    <div class="payment-details-item">
+                        <span>Description:</span>
+                        <div>{{ transaction.description }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-credit-card me-2"></i> Payment Methods
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p>We accept the following payment methods:</p>
+                    
+                    <div class="d-flex justify-content-between flex-wrap">
+                        <div class="mb-3 text-center">
+                            <i class="fab fa-cc-visa fa-2x text-primary"></i>
+                            <div><small>Visa</small></div>
                         </div>
-                        
-                        <div class="mb-3">
-                            <h5>Questions?</h5>
-                            <p>If you have any questions about this payment, please contact our support team.</p>
+                        <div class="mb-3 text-center">
+                            <i class="fab fa-cc-mastercard fa-2x text-danger"></i>
+                            <div><small>Mastercard</small></div>
                         </div>
+                        <div class="mb-3 text-center">
+                            <i class="fab fa-cc-amex fa-2x text-info"></i>
+                            <div><small>American Express</small></div>
+                        </div>
+                        <div class="mb-3 text-center">
+                            <i class="fab fa-cc-discover fa-2x text-warning"></i>
+                            <div><small>Discover</small></div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <small>
+                            <i class="fas fa-info-circle me-1"></i> <strong>Note:</strong> All card information is securely handled by Stripe. We never store your card details.
+                        </small>
                     </div>
                 </div>
             </div>
@@ -171,81 +197,62 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- Stripe.js -->
-<script src="https://js.stripe.com/v3/"></script>
 <script>
-    // Initialize Stripe
+    // Create a Stripe client
     const stripe = Stripe('{{ stripe_publishable_key }}');
-    const clientSecret = '{{ client_secret }}';
     
-    // Create card element
-    const elements = stripe.elements();
-    const cardElement = elements.create('card', {
-        style: {
-            base: {
-                color: '#32325d',
-                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-                fontSmoothing: 'antialiased',
-                fontSize: '16px',
-                '::placeholder': {
-                    color: '#aab7c4'
-                }
-            },
-            invalid: {
-                color: '#dc3545',
-                iconColor: '#dc3545'
+    // Session timer countdown
+    function startTimer(duration, display) {
+        let timer = duration, minutes, seconds;
+        const countdown = setInterval(function () {
+            minutes = parseInt(timer / 60, 10);
+            seconds = parseInt(timer % 60, 10);
+            
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+            
+            display.textContent = minutes + ":" + seconds;
+            
+            if (--timer < 0) {
+                clearInterval(countdown);
+                display.textContent = "Expired";
+                display.style.color = "#dc3545";
+                window.location.href = "{{ url_for('pos.payment_cancel', transaction_id=transaction.transaction_id) }}";
             }
-        }
-    });
+        }, 1000);
+    }
     
-    // Mount card element
-    cardElement.mount('#card-element');
-    
-    // Handle real-time validation errors
-    cardElement.on('change', function(event) {
-        const displayError = document.getElementById('card-errors');
-        if (event.error) {
-            displayError.textContent = event.error.message;
-        } else {
-            displayError.textContent = '';
-        }
-    });
-    
-    // Handle form submission
-    const form = document.getElementById('payment-form');
-    form.addEventListener('submit', function(event) {
-        event.preventDefault();
+    // Initialize the checkout button
+    let checkoutButton = document.getElementById('checkout-button');
+    checkoutButton.addEventListener('click', function() {
+        // Disable the button to prevent double clicks
+        checkoutButton.disabled = true;
+        checkoutButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Redirecting to Secure Payment...';
         
-        // Show processing overlay
-        document.getElementById('payment-processing').classList.remove('d-none');
-        
-        // Disable submit button
-        document.getElementById('submit-button').disabled = true;
-        
-        // Confirm card payment
-        stripe.confirmCardPayment(clientSecret, {
-            payment_method: {
-                card: cardElement,
-                billing_details: {
-                    // You can collect billing details here if needed
-                }
-            }
-        }).then(function(result) {
+        // Redirect to Stripe Checkout
+        stripe.redirectToCheckout({
+            sessionId: '{{ checkout_session.id }}'
+        }).then(function (result) {
+            // If `redirectToCheckout` fails due to a browser or network
+            // error, display the localized error message to your customer
             if (result.error) {
-                // Show error message
-                const errorElement = document.getElementById('card-errors');
-                errorElement.textContent = result.error.message;
-                
-                // Hide processing overlay
-                document.getElementById('payment-processing').classList.add('d-none');
-                
-                // Re-enable submit button
-                document.getElementById('submit-button').disabled = false;
-            } else {
-                // Payment successful, redirect to success page
-                window.location.href = "{{ url_for('pos.payment_success') }}?payment_intent=" + result.paymentIntent.id;
+                alert(result.error.message);
+                checkoutButton.disabled = false;
+                checkoutButton.innerHTML = '<i class="fas fa-credit-card me-2"></i> Proceed to Payment';
             }
+        }).catch(function(error) {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again later.');
+            checkoutButton.disabled = false;
+            checkoutButton.innerHTML = '<i class="fas fa-credit-card me-2"></i> Proceed to Payment';
         });
     });
+    
+    // Start the countdown timer (15 minutes)
+    window.onload = function () {
+        const fifteenMinutes = 60 * 15;
+        const display = document.querySelector('#session-timer');
+        startTimer(fifteenMinutes, display);
+    };
 </script>
 {% endblock %}
