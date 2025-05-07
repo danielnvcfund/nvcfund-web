@@ -188,6 +188,7 @@
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Fee</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -221,11 +222,16 @@
                                     <td>
                                         <p class="text-sm font-weight-bold mb-0">{{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
                                     </td>
+                                    <td>
+                                        <a href="{{ url_for('pdf.currency_exchange_pdf', exchange_id=tx.id) }}" class="btn btn-sm btn-info" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> Receipt
+                                        </a>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                                 {% if not exchange_history %}
                                 <tr>
-                                    <td colspan="7" class="text-center">
+                                    <td colspan="8" class="text-center">
                                         <p class="text-sm">No exchange history found.</p>
                                     </td>
                                 </tr>

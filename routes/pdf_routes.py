@@ -141,6 +141,41 @@ def nvc_fund_holding_report():
         logger.error(f"Error generating holding report: {str(e)}")
         return f"Error generating report: {str(e)}", 500
 
+@pdf_bp.route('/currency-exchange/<int:exchange_id>')
+@login_required
+def currency_exchange_pdf(exchange_id):
+    """Generate and serve a PDF receipt for a currency exchange transaction"""
+    try:
+        from pdf_service import PDFService
+        from account_holder_models import CurrencyExchangeTransaction, AccountHolder
+        from flask import Response
+        
+        # Get the exchange transaction
+        exchange_tx = CurrencyExchangeTransaction.query.get_or_404(exchange_id)
+        
+        # Get the account holder (for authorization check)
+        account_holder = AccountHolder.query.get(exchange_tx.account_holder_id)
+        
+        # Check if current user has access to this exchange transaction
+        if current_user.is_admin or (hasattr(current_user, 'account_holder') and 
+                                     current_user.account_holder and 
+                                     current_user.account_holder.id == account_holder.id):
+            # Generate PDF
+            pdf_data = PDFService.generate_currency_exchange_pdf(exchange_id)
+            
+            # Return PDF as response
+            response = Response(pdf_data, mimetype='application/pdf')
+            filename = f"exchange_receipt_{exchange_tx.reference_number}.pdf"
+            response.headers['Content-Disposition'] = f'inline; filename={filename}'
+            return response
+        else:
+            logger.warning(f"Unauthorized access to exchange PDF {exchange_id} by user {current_user.id}")
+            return "Unauthorized access", 403
+            
+    except Exception as e:
+        logger.error(f"Error generating currency exchange PDF: {str(e)}")
+        return f"Error generating PDF: {str(e)}", 500
+
 # Register the blueprint
 def register_pdf_routes(app):
     """Register PDF routes with the app"""
