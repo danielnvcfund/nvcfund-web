@@ -767,9 +767,8 @@ class PDFService:
             bytes: PDF document as bytes
         """
         try:
-            from flask import render_template
+            from flask import render_template, current_app, request
             import os
-            from flask import current_app
             
             # Set PDF options
             options = {
@@ -792,9 +791,20 @@ class PDFService:
             # Ensure asset_count is properly calculated
             asset_count = data.get('asset_count', len(data.get('assets', [])))
             
-            # Get the logo path for direct embedding (more reliable than base64)
+            # Create an absolute URL for the logo that works in PDF context
+            if request and request.host_url:
+                host_url = request.host_url.rstrip('/')
+            else:
+                host_url = "https://localhost:5000"  # Fallback if request is not available
+                
+            logo_url = f"{host_url}/static/img/nvc_fund_holding_trust_logo.png"
+            
+            # Also provide logo as bytes for direct embedding if needed
             logo_path = os.path.join(current_app.static_folder, 'img', 'nvc_fund_holding_trust_logo.png')
-            logo_url = '/static/img/nvc_fund_holding_trust_logo.png'
+            logo_bytes = None
+            if os.path.exists(logo_path):
+                with open(logo_path, 'rb') as f:
+                    logo_bytes = f.read()
             
             # Render the special print template for PDF output
             html_content = render_template(
@@ -815,11 +825,87 @@ class PDFService:
             try:
                 # Prefer WeasyPrint as it handles inline images better
                 from weasyprint import HTML, CSS
+                from weasyprint.urls import URLFetcher
+                
+                # Custom URL fetcher to handle static files
+                url_fetcher = URLFetcher()
+                original_fetch = url_fetcher.fetch
+                
+                def custom_fetch(url, *args, **kwargs):
+                    base_url = "https://localhost:5000" if not request else request.host_url.rstrip("/")
+                    if url.startswith(base_url):
+                        # Extract static path from URL
+                        path = url.replace(base_url, "").lstrip("/")
+                        if path.startswith('static/'):
+                            path = path.replace('static/', '', 1)
+                            file_path = os.path.join(current_app.static_folder, path)
+                            
+                            if os.path.exists(file_path):
+                                with open(file_path, 'rb') as f:
+                                    return {'string': f.read()}
+                    
+                    # If not handled above, use default fetcher
+                    return original_fetch(url, *args, **kwargs)
+                
+                # Replace the fetch method
+                url_fetcher.fetch = custom_fetch
+                
+                # Generate CSS for better PDF display
+                pdf_css = '''
+                @page {
+                    size: letter;
+                    margin: 1cm;
+                }
+                
+                * {
+                    box-sizing: border-box;
+                }
+                
+                body {
+                    font-family: Arial, sans-serif;
+                    line-height: 1.4;
+                    font-size: 11pt;
+                }
+                
+                .header {
+                    background-color: #002855 !important;
+                    color: white !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                
+                .banner {
+                    background-color: #002855 !important;
+                    color: white !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                '''
+                
                 pdf_buffer = io.BytesIO()
-                HTML(string=html_content, base_url=current_app.static_url_path).write_pdf(
+                
+                # Add direct logo embedding if file was read successfully
+                if logo_bytes:
+                    # Modify HTML to use data URI for image instead of URL
+                    import base64
+                    import re
+                    
+                    # Create data URI for logo image
+                    b64_logo = base64.b64encode(logo_bytes).decode('ascii')
+                    data_uri = f"data:image/png;base64,{b64_logo}"
+                    
+                    # Replace the logo URL with data URI
+                    html_content = html_content.replace(logo_url, data_uri)
+                
+                HTML(
+                    string=html_content, 
+                    base_url=current_app.static_url_path,
+                    url_fetcher=url_fetcher
+                ).write_pdf(
                     pdf_buffer,
-                    stylesheets=[CSS(string='@page { size: letter; margin: 1cm; }')]
+                    stylesheets=[CSS(string=pdf_css)]
                 )
+                
                 pdf_content = pdf_buffer.getvalue()
                 pdf_buffer.close()
             except Exception as e:
