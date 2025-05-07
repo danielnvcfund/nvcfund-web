@@ -4,14 +4,17 @@ Routes for managing account holders, their addresses, phone numbers, and bank ac
 """
 
 import logging
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from datetime import datetime
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file, Response, make_response
 from flask_login import login_required, current_user
 from sqlalchemy.exc import SQLAlchemyError
+from io import BytesIO
 from app import db
 from account_holder_models import (
     AccountHolder, Address, PhoneNumber, BankAccount,
     AccountType, AccountStatus, CurrencyType
 )
+from pdf_service import PDFService
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -310,6 +313,95 @@ def api_account_holder(account_holder_id):
         return jsonify({'success': True, 'account_holder': result})
     except Exception as e:
         logger.error(f"Error retrieving account holder {account_holder_id}: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@account_holder_bp.route('/account/<int:account_id>/statement')
+@login_required
+def account_statement(account_id):
+    """Generate a PDF statement for a bank account"""
+    try:
+        # Get the bank account
+        account = BankAccount.query.get_or_404(account_id)
+        account_holder = AccountHolder.query.get(account.account_holder_id)
+        
+        # Parse date range parameters (if provided)
+        try:
+            start_date_str = request.args.get('start_date')
+            end_date_str = request.args.get('end_date')
+            
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d') if start_date_str else None
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d') if end_date_str else None
+        except (ValueError, TypeError):
+            # Invalid date format, use defaults (last 30 days)
+            start_date = None
+            end_date = None
+        
+        # Generate the PDF
+        pdf_data = PDFService.generate_account_statement_pdf(account_id, start_date, end_date)
+        
+        if not pdf_data:
+            flash('Error generating account statement. Please try again.', 'danger')
+            return redirect(url_for('account_holders.view_account', account_id=account_id))
+        
+        # Create a response with the PDF data
+        filename = f"account_statement_{account.account_number}_{datetime.now().strftime('%Y%m%d')}.pdf"
+        
+        # Convert PDF data to a BytesIO object
+        pdf_io = BytesIO(pdf_data)
+        pdf_io.seek(0)
+        
+        # Create a response with the PDF
+        response = make_response(send_file(
+            pdf_io,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=filename
+        ))
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error generating account statement: {str(e)}")
+        flash(f"Error generating account statement: {str(e)}", 'danger')
+        return redirect(url_for('account_holders.view_account', account_id=account_id))
+
+@account_holder_bp.route('/api/account/<int:account_id>/statement')
+@login_required
+def api_account_statement(account_id):
+    """API endpoint to generate a PDF statement for a bank account"""
+    try:
+        # Parse date range parameters (if provided)
+        try:
+            start_date_str = request.args.get('start_date')
+            end_date_str = request.args.get('end_date')
+            
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d') if start_date_str else None
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d') if end_date_str else None
+        except (ValueError, TypeError):
+            # Invalid date format, use defaults (last 30 days)
+            start_date = None
+            end_date = None
+        
+        # Generate the PDF
+        pdf_data = PDFService.generate_account_statement_pdf(account_id, start_date, end_date)
+        
+        if not pdf_data:
+            return jsonify({'success': False, 'error': 'Error generating account statement'}), 500
+        
+        # Convert PDF to base64 for API response
+        import base64
+        pdf_base64 = base64.b64encode(pdf_data).decode('utf-8')
+        
+        return jsonify({
+            'success': True,
+            'account_id': account_id,
+            'pdf_data': pdf_base64,
+            'start_date': start_date.strftime('%Y-%m-%d') if start_date else None,
+            'end_date': end_date.strftime('%Y-%m-%d') if end_date else None
+        })
+        
+    except Exception as e:
+        logger.error(f"Error generating account statement via API: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @account_holder_bp.route('/api/accounts/<int:account_id>')

@@ -158,12 +158,45 @@
                     {% endif %}
                     
                     <div class="mt-4">
-                        <a href="{{ url_for('account_holders.accounts', account_holder_id=account.account_holder.id) }}" class="btn btn-primary btn-block">
+                        <a href="{{ url_for('account_holders.account_statement', account_id=account.id) }}" class="btn btn-success btn-block">
+                            <i class="fa fa-file-pdf"></i> Generate Account Statement
+                        </a>
+                        <a href="{{ url_for('account_holders.accounts', account_holder_id=account.account_holder.id) }}" class="btn btn-primary btn-block mt-2">
                             View All Accounts
                         </a>
                         <a href="{{ url_for('account_holders.index') }}" class="btn btn-secondary btn-block mt-2">
                             Back to Account Holders
                         </a>
+                    </div>
+                    
+                    <!-- Account Statement Date Picker Modal -->
+                    <div class="modal fade" id="statementDateModal" tabindex="-1" role="dialog" aria-labelledby="statementDateModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="statementDateModalLabel">Select Statement Period</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="statementDateForm" action="{{ url_for('account_holders.account_statement', account_id=account.id) }}" method="get">
+                                        <div class="form-group">
+                                            <label for="start_date">Start Date</label>
+                                            <input type="date" class="form-control" id="start_date" name="start_date">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="end_date">End Date</label>
+                                            <input type="date" class="form-control" id="end_date" name="end_date">
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-primary" onclick="document.getElementById('statementDateForm').submit();">Generate Statement</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

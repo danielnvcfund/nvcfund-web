@@ -8,9 +8,13 @@ import io
 import os
 import logging
 import tempfile
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from flask import render_template_string
+from flask import render_template_string, render_template
+from sqlalchemy import desc, asc
+
+from account_holder_models import AccountHolder, BankAccount, Address
+from models import Transaction
 
 logger = logging.getLogger(__name__)
 
@@ -383,6 +387,202 @@ TRANSACTION_RECEIPT_TEMPLATE = """
 
 class PDFService:
     """Service for generating PDF documents"""
+    
+    @staticmethod
+    def generate_account_statement_pdf(account_id, start_date=None, end_date=None):
+        """
+        Generate a PDF account statement for the specified account and date range
+        
+        Args:
+            account_id (int): The ID of the bank account
+            start_date (datetime, optional): Start date for the statement. If None, defaults to 1 month ago.
+            end_date (datetime, optional): End date for the statement. If None, defaults to current date.
+            
+        Returns:
+            bytes: PDF document as bytes
+        """
+        try:
+            # Get the bank account and associated account holder
+            account = BankAccount.query.get(account_id)
+            if not account:
+                logger.error(f"Account not found with ID: {account_id}")
+                return None
+                
+            account_holder = AccountHolder.query.get(account.account_holder_id)
+            if not account_holder:
+                logger.error(f"Account holder not found for account ID: {account_id}")
+                return None
+                
+            # Set default date range if not provided (last month)
+            if not end_date:
+                end_date = datetime.now()
+            if not start_date:
+                start_date = end_date - timedelta(days=30)
+                
+            # Format dates for display
+            start_date_display = start_date.strftime('%B %d, %Y')
+            end_date_display = end_date.strftime('%B %d, %Y')
+            
+            # Get transactions for this account in the date range (placeholder for actual transactions)
+            # This should be replaced with actual transaction data from your database
+            transactions = Transaction.query.filter(
+                Transaction.recipient_account == account.account_number,
+                Transaction.created_at.between(start_date, end_date)
+            ).order_by(asc(Transaction.created_at)).all()
+            
+            # Prepare transaction data for template
+            transaction_data = []
+            running_balance = account.balance  # Start with current balance
+            
+            # Calculate backward to get the opening balance
+            total_transaction_amount = sum(t.amount for t in transactions if t.amount)
+            opening_balance = account.balance - total_transaction_amount
+            
+            # Prepare transactions for display in reverse order (most recent last)
+            for transaction in reversed(transactions):
+                # Adjust running balance for each transaction
+                if hasattr(transaction, 'amount') and transaction.amount:
+                    running_balance -= transaction.amount
+                
+                # Format date
+                if hasattr(transaction, 'created_at') and transaction.created_at:
+                    date_display = transaction.created_at.strftime('%Y-%m-%d %H:%M')
+                else:
+                    date_display = "N/A"
+                
+                # Add transaction info
+                transaction_data.append({
+                    'date': date_display,
+                    'description': transaction.description if hasattr(transaction, 'description') else "Transaction",
+                    'reference': transaction.transaction_id if hasattr(transaction, 'transaction_id') else "",
+                    'amount': transaction.amount if hasattr(transaction, 'amount') else 0.0,
+                    'balance': running_balance
+                })
+            
+            # Reverse back to chronological order
+            transaction_data.reverse()
+            
+            # Calculate summary totals
+            total_credits = sum(t.amount for t in transactions if hasattr(t, 'amount') and t.amount > 0)
+            total_debits = sum(abs(t.amount) for t in transactions if hasattr(t, 'amount') and t.amount < 0)
+            net_change = total_credits - total_debits
+            
+            # Get primary address if available
+            primary_address = account_holder.primary_address
+            address_display = primary_address.formatted if primary_address else ""
+            has_address = bool(primary_address)
+            
+            # Prepare template variables
+            template_vars = {
+                'title': f"Account Statement",
+                'subtitle': f"For the period {start_date_display} to {end_date_display}",
+                'header': "NVC Fund Bank - Account Statement",
+                'account_holder': account_holder,
+                'account': account,
+                'transactions': transaction_data,
+                'start_date': start_date_display,
+                'end_date': end_date_display,
+                'opening_balance': opening_balance,
+                'primary_address': address_display,
+                'has_address': has_address,
+                'total_credits': total_credits,
+                'total_debits': total_debits,
+                'net_change': net_change,
+                'generation_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }
+            
+            # Render the template
+            html_content = render_template('account_holders/account_statement_template.html', **template_vars)
+            
+            # Generate PDF using WeasyPrint
+            try:
+                import weasyprint
+                from io import BytesIO
+                
+                # Create a BytesIO buffer for the PDF
+                pdf_buffer = BytesIO()
+                
+                # Generate PDF
+                html_obj = weasyprint.HTML(string=html_content)
+                html_obj.write_pdf(pdf_buffer)
+                
+                # Get the PDF content
+                pdf_buffer.seek(0)
+                pdf_data = pdf_buffer.getvalue()
+                
+                return pdf_data
+                
+            except Exception as e:
+                logger.error(f"Error generating PDF with WeasyPrint: {str(e)}")
+                
+                # Try with pyppeteer as fallback
+                try:
+                    import asyncio
+                    from pyppeteer import launch
+                    
+                    # Write HTML to a temporary file
+                    with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as temp_html:
+                        temp_html_path = temp_html.name
+                        temp_html.write(html_content.encode())
+                    
+                    # Generate PDF with pyppeteer
+                    async def generate_pdf_with_pyppeteer():
+                        browser = await launch(
+                            options={
+                                'headless': True, 
+                                'args': [
+                                    '--no-sandbox',
+                                    '--disable-setuid-sandbox',
+                                    '--disable-dev-shm-usage',
+                                    '--disable-gpu'
+                                ]
+                            }
+                        )
+                        
+                        try:
+                            page = await browser.newPage()
+                            
+                            # Set viewport size to ensure content fits well
+                            await page.setViewport({'width': 1200, 'height': 1600})
+                            
+                            # Navigate to the HTML file
+                            await page.goto(f'file://{temp_html_path}', {'waitUntil': 'networkidle0'})
+                            
+                            # Wait a moment for any JS to execute
+                            await asyncio.sleep(1)
+                            
+                            # Generate PDF
+                            pdf_bytes = await page.pdf({
+                                'format': 'Letter',
+                                'margin': {
+                                    'top': '0.5in',
+                                    'right': '0.5in',
+                                    'bottom': '0.5in',
+                                    'left': '0.5in'
+                                },
+                                'printBackground': True
+                            })
+                            
+                            return pdf_bytes
+                        finally:
+                            await browser.close()
+                            # Clean up the temporary HTML file
+                            try:
+                                os.unlink(temp_html_path)
+                            except:
+                                pass
+                    
+                    # Run the async function
+                    pdf_content = asyncio.get_event_loop().run_until_complete(generate_pdf_with_pyppeteer())
+                    return pdf_content
+                    
+                except Exception as e2:
+                    logger.error(f"Error generating PDF with pyppeteer: {str(e2)}")
+                    return None
+            
+        except Exception as e:
+            logger.error(f"Error generating account statement PDF: {str(e)}")
+            return None
     
     @staticmethod
     def render_transaction_html(transaction, transaction_type="Transaction", metadata=None):
