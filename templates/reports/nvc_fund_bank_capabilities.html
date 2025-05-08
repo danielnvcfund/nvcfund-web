@@ -87,8 +87,8 @@
         }
 
         ul, ol {
-            margin-bottom: 0.5em;
-            margin-top: 0.2em;
+            margin-bottom: 0.3em;
+            margin-top: 0.1em;
             margin-left: 1.5em;
             padding-left: 0;
             page-break-inside: avoid;
@@ -96,30 +96,37 @@
 
         li {
             font-size: 11pt;
-            margin-bottom: 0.2em;
+            margin-bottom: 0.1em;
             margin-top: 0;
-            line-height: 1.2;
+            line-height: 1.1;
         }
 
         li ul, li ol {
-            margin-top: 0.2em;
-            margin-bottom: 0.3em;
+            margin-top: 0;
+            margin-bottom: 0.1em;
             padding-left: 0;
+        }
+        
+        /* Aggressive spacing reduction for nested lists */
+        li ul li, li ol li {
+            margin-top: 0;
+            margin-bottom: 0;
+            line-height: 1.1;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 2em;
-            margin-top: 1em;
+            margin-bottom: 0.8em;
+            margin-top: 0.3em;
             page-break-inside: avoid;
         }
 
         th, td {
             border: 1px solid #ddd;
-            padding: 0.7em;
+            padding: 0.3em;
             text-align: left;
-            font-size: 10pt;
+            font-size: 9pt;
         }
 
         th {

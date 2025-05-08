@@ -1,84 +1,101 @@
 /* PDF Reports Stylesheet */
 body {
     font-family: 'Helvetica', 'Arial', sans-serif;
-    line-height: 1.6;
+    line-height: 1.2;
     color: #333;
-    margin: 2cm 2cm 2cm 2cm;
+    margin: 1.5cm 1.5cm 1.5cm 1.5cm;
     background-color: #fff;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
 }
 
 .header {
     text-align: center;
-    margin-bottom: 2em;
+    margin-bottom: 0.8em;
+    page-break-after: avoid;
 }
 
 .header img {
-    max-width: 300px;
+    max-width: 250px;
     height: auto;
-    margin-bottom: 1em;
+    margin-bottom: 0.5em;
 }
 
 h1 {
-    font-size: 24pt;
+    font-size: 22pt;
     color: #003366;
-    margin-top: 1em;
-    margin-bottom: 0.5em;
+    margin-top: 0.5em;
+    margin-bottom: 0.3em;
     text-align: center;
     border-bottom: 1px solid #003366;
-    padding-bottom: 0.5em;
+    padding-bottom: 0.2em;
+    page-break-after: avoid;
 }
 
 h2 {
-    font-size: 20pt;
+    font-size: 18pt;
     color: #003366;
-    margin-top: 1em;
-    margin-bottom: 0.5em;
+    margin-top: 0.6em;
+    margin-bottom: 0.3em;
     text-align: center;
+    page-break-after: avoid;
 }
 
 h3 {
-    font-size: 16pt;
+    font-size: 15pt;
     color: #003366;
-    margin-top: 1.5em;
-    margin-bottom: 0.5em;
+    margin-top: 0.8em;
+    margin-bottom: 0.3em;
     border-bottom: 1px solid #ccc;
-    padding-bottom: 0.2em;
+    padding-bottom: 0.1em;
+    page-break-after: avoid;
 }
 
 h4 {
-    font-size: 14pt;
+    font-size: 13pt;
     color: #003366;
-    margin-top: 1em;
-    margin-bottom: 0.5em;
+    margin-top: 0.5em;
+    margin-bottom: 0.2em;
+    page-break-after: avoid;
 }
 
 p {
     font-size: 11pt;
-    margin-bottom: 0.8em;
+    margin-top: 0;
+    margin-bottom: 0.2em;
     text-align: justify;
+    line-height: 1.2;
 }
 
 ul, ol {
-    margin-bottom: 1em;
+    margin-top: 0.1em;
+    margin-bottom: 0.3em;
     margin-left: 1em;
+    padding-left: 0;
+    page-break-inside: avoid;
 }
 
 li {
     font-size: 11pt;
-    margin-bottom: 0.4em;
+    margin-top: 0;
+    margin-bottom: 0.15em;
+    line-height: 1.1;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 1.5em;
+    margin-top: 0.3em;
+    margin-bottom: 0.6em;
+    page-break-inside: avoid;
 }
 
 th, td {
     border: 1px solid #ddd;
-    padding: 0.5em;
+    padding: 0.3em;
     text-align: left;
-    font-size: 10pt;
+    font-size: 9pt;
 }
 
 th {
@@ -93,64 +110,97 @@ tr:nth-child(even) {
 
 .table-container {
     overflow-x: auto;
-    margin-bottom: 1.5em;
+    margin-bottom: 0.6em;
+    page-break-inside: avoid;
 }
 
 .signature {
-    margin-top: 3em;
-    padding-top: 1em;
+    margin-top: 1.5em;
+    padding-top: 0.5em;
     border-top: 1px solid #ccc;
-    text-align: right;
+    text-align: center;
     font-style: italic;
+    page-break-inside: avoid;
 }
 
 .signature p {
-    margin-bottom: 0.3em;
+    margin-bottom: 0.2em;
 }
 
 .footer {
-    margin-top: 2em;
-    padding-top: 1em;
+    margin-top: 1em;
+    padding-top: 0.5em;
     border-top: 1px solid #ccc;
     text-align: center;
-    font-size: 9pt;
+    font-size: 8pt;
     color: #666;
 }
 
 @media print {
     body {
         margin: 0;
-        padding: 2cm;
+        padding: 1.5cm;
         font-size: 10pt;
+        line-height: 1.1;
     }
     
     h1 {
-        font-size: 20pt;
+        font-size: 18pt;
+        margin-top: 0.4em;
+        margin-bottom: 0.2em;
     }
     
     h2 {
-        font-size: 16pt;
+        font-size: 15pt;
+        margin-top: 0.4em;
+        margin-bottom: 0.2em;
     }
     
     h3 {
-        font-size: 14pt;
+        font-size: 13pt;
+        margin-top: 0.6em;
+        margin-bottom: 0.2em;
     }
     
     h4 {
-        font-size: 12pt;
+        font-size: 11pt;
+        margin-top: 0.4em;
+        margin-bottom: 0.1em;
     }
     
     p, li {
-        font-size: 10pt;
+        font-size: 9pt;
+        margin-bottom: 0.1em;
+        line-height: 1.1;
+    }
+    
+    ul, ol {
+        margin-top: 0.1em;
+        margin-bottom: 0.2em;
+    }
+    
+    li {
+        margin-bottom: 0.1em;
     }
     
     th, td {
-        font-size: 9pt;
+        font-size: 8pt;
+        padding: 0.2em;
+    }
+    
+    .table-container {
+        margin-bottom: 0.4em;
+    }
+    
+    .signature {
+        margin-top: 1em;
     }
     
     .footer {
         position: fixed;
         bottom: 0;
         width: 100%;
+        margin-top: 0.5em;
+        padding-top: 0.3em;
     }
 }
