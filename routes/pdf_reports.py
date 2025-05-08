@@ -51,6 +51,23 @@ def nvc_fund_bank_capabilities_report():
         logger.error(f"Error generating capabilities report: {str(e)}")
         return f"Error generating PDF: {str(e)}", 500
 
+@pdf_reports.route('/capabilities-html')
+def nvc_fund_bank_capabilities_html():
+    """Display HTML version of the NVC Fund Bank capabilities report"""
+    try:
+        # Render the HTML template with context data
+        current_date = datetime.now().strftime("%B %d, %Y")
+        
+        logger.info("NVC Fund Bank HTML capabilities report displayed")
+        return render_template(
+            'reports/nvc_fund_bank_capabilities_web.html',
+            current_date=current_date
+        )
+    
+    except Exception as e:
+        logger.error(f"Error displaying HTML capabilities report: {str(e)}")
+        return f"Error displaying report: {str(e)}", 500
+
 # Register the routes
 def register_pdf_reports_routes(app):
     app.register_blueprint(pdf_reports, url_prefix='/reports')
