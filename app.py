@@ -370,6 +370,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering PDF routes: {str(e)}")
             logger.warning("Application will run without PDF generation functionality")
+            
+        # Register PDF Reports routes
+        try:
+            from routes.pdf_reports import register_pdf_reports_routes
+            register_pdf_reports_routes(app)
+            logger.info("PDF Reports routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering PDF Reports routes: {str(e)}")
+            logger.warning("Application will run without PDF Reports functionality")
 
         # Register Stablecoin routes for peer-to-peer closed-loop system
         try:
