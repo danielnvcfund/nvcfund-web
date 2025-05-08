@@ -6,6 +6,20 @@
     <title>NVC Fund Bank Capabilities Report</title>
     <style>
         /* PDF Reports Stylesheet */
+        @page {
+            margin: 2cm;
+            @top-center {
+                content: "NVC FUND BANK CAPABILITIES REPORT";
+                font-size: 9pt;
+                color: #003366;
+            }
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 9pt;
+                color: #666;
+            }
+        }
+        
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
             line-height: 1.6;
@@ -16,40 +30,41 @@
 
         .header {
             text-align: center;
-            margin-bottom: 3em;
+            margin-bottom: 4em;
             page-break-after: avoid;
         }
 
         .header img {
             max-width: 300px;
             height: auto;
-            margin-bottom: 1.5em;
+            margin-bottom: 2em;
         }
 
         h1 {
-            font-size: 24pt;
+            font-size: 26pt;
             color: #003366;
             margin-top: 1.5em;
             margin-bottom: 0.8em;
             text-align: center;
-            border-bottom: 1px solid #003366;
-            padding-bottom: 0.5em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             page-break-after: avoid;
         }
 
         h2 {
-            font-size: 20pt;
+            font-size: 24pt;
             color: #003366;
             margin-top: 1.5em;
-            margin-bottom: 0.8em;
+            margin-bottom: 1em;
             text-align: center;
+            text-transform: uppercase;
             page-break-after: avoid;
         }
 
         h3 {
             font-size: 16pt;
             color: #003366;
-            margin-top: 2em;
+            margin-top: 2.5em;
             margin-bottom: 1em;
             border-bottom: 1px solid #ccc;
             padding-bottom: 0.3em;
@@ -60,7 +75,7 @@
         h4 {
             font-size: 14pt;
             color: #003366;
-            margin-top: 1.5em;
+            margin-top: 1.8em;
             margin-bottom: 0.8em;
             page-break-after: avoid;
         }
@@ -123,7 +138,7 @@
             margin-top: 4em;
             padding-top: 1.5em;
             border-top: 1px solid #ccc;
-            text-align: right;
+            text-align: center;
             font-style: italic;
             page-break-inside: avoid;
         }
@@ -132,17 +147,11 @@
             margin-bottom: 0.5em;
         }
 
-        .footer {
-            margin-top: 3em;
-            padding-top: 1.5em;
-            border-top: 1px solid #ccc;
-            text-align: center;
-            font-size: 9pt;
-            color: #666;
-        }
-
-        @page {
-            margin: 2cm;
+        /* Special formatting classes */
+        .title-line {
+            width: 75%;
+            margin: 1.5em auto;
+            border-bottom: 1px solid #003366;
         }
 
         @media print {
@@ -152,95 +161,36 @@
             }
             
             h1 {
-                font-size: 20pt;
-                margin-top: 2em;
-                margin-bottom: 1em;
+                font-size: 24pt;
             }
             
             h2 {
-                font-size: 16pt;
-                margin-top: 1.5em;
-                margin-bottom: 1em;
+                font-size: 20pt;
             }
             
             h3 {
-                font-size: 14pt;
-                margin-top: 2em;
-                margin-bottom: 1em;
+                font-size: 16pt;
             }
             
             h4 {
-                font-size: 12pt;
-                margin-top: 1.5em;
-                margin-bottom: 0.8em;
-            }
-            
-            p {
-                font-size: 11pt;
-                margin-bottom: 1em;
-                line-height: 1.5;
-            }
-            
-            li {
-                font-size: 11pt;
-                margin-bottom: 0.7em;
-            }
-            
-            th, td {
-                font-size: 10pt;
-                padding: 0.7em;
-            }
-            
-            .footer {
-                position: fixed;
-                bottom: 0;
-                width: 100%;
+                font-size: 14pt;
             }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <!-- SVG Logo embedded directly again -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300" style="max-width: 300px; height: auto; margin-bottom: 1em;">
-          <defs>
-            <linearGradient id="gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#BF953F" />
-              <stop offset="50%" style="stop-color:#FCF6BA" />
-              <stop offset="70%" style="stop-color:#B38728" />
-              <stop offset="100%" style="stop-color:#FBF5B7" />
-            </linearGradient>
-          </defs>
-          
-          <!-- Outer Circle -->
-          <circle cx="150" cy="150" r="145" fill="none" stroke="url(#gold-gradient)" stroke-width="5" />
-          
-          <!-- Inner Circle -->
-          <circle cx="150" cy="150" r="135" fill="#003366" stroke="url(#gold-gradient)" stroke-width="2" />
-          
-          <!-- Globe Grid Lines -->
-          <path d="M150,15 Q150,150 150,285" stroke="#CCCCCC" stroke-width="1" fill="none" />
-          <path d="M150,15 Q200,150 150,285" stroke="#CCCCCC" stroke-width="1" fill="none" />
-          <path d="M150,15 Q100,150 150,285" stroke="#CCCCCC" stroke-width="1" fill="none" />
-          <path d="M15,150 Q150,150 285,150" stroke="#CCCCCC" stroke-width="1" fill="none" />
-          <path d="M30,100 Q150,130 270,100" stroke="#CCCCCC" stroke-width="1" fill="none" />
-          <path d="M30,200 Q150,170 270,200" stroke="#CCCCCC" stroke-width="1" fill="none" />
-          
-          <!-- NVC Text -->
-          <text x="150" y="130" font-family="Arial, sans-serif" font-weight="bold" font-size="48" text-anchor="middle" fill="url(#gold-gradient)">NVC</text>
-          
-          <!-- FUND BANK Text -->
-          <text x="150" y="180" font-family="Arial, sans-serif" font-weight="bold" font-size="32" text-anchor="middle" fill="url(#gold-gradient)">FUND BANK</text>
-          
-          <!-- Supranational Text -->
-          <text x="150" y="220" font-family="Arial, sans-serif" font-style="italic" font-size="16" text-anchor="middle" fill="#FFFFFF">Supranational Financial Institution</text>
-          
-          <!-- Established Text -->
-          <text x="150" y="240" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#CCCCCC">Est. 2000</text>
-        </svg>
-        <h1>CAPABILITIES REPORT</h1>
-        <h2>NVC FUND BANK</h2>
-        <p><strong>Supranational Sovereign Financial Institution</strong></p>
+        <!-- NVC Fund Logo -->
+        <div style="text-align: center; margin-bottom: 4em;">
+            <img src="/static/images/nvc_fund_logo_new.png" alt="NVC Fund Logo" style="width: 300px; height: auto;">
+        </div>
+        
+        <h1 style="color: #003366; font-size: 26pt; text-transform: uppercase; margin-bottom: 0.5em;">CAPABILITIES REPORT</h1>
+        
+        <div style="width: 75%; margin: 1.5em auto; border-bottom: 1px solid #003366;"></div>
+        
+        <h2 style="color: #003366; font-size: 24pt; text-transform: uppercase; margin-top: 1em;">NVC FUND BANK</h2>
+        <p style="text-align: center;"><strong>Supranational Sovereign Financial Institution</strong></p>
     </div>
     
     <h3>I. INSTITUTIONAL FOUNDATION</h3>
