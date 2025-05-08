@@ -113,6 +113,18 @@
                         <!-- Step 1: Account Details -->
                         <div class="form-step active" id="step1">
                             <div class="mb-3">
+                                <label for="account_type" class="form-label">Account Type</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
+                                    <select class="form-select" id="account_type" name="account_type" required>
+                                        <option value="personal" selected>Personal Account</option>
+                                        <option value="business">Business Account</option>
+                                    </select>
+                                </div>
+                                <div class="form-text">Select the type of account you want to create</div>
+                            </div>
+                            
+                            <div class="mb-3">
                                 <label for="username" class="form-label">Username</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-user"></i></span>
@@ -159,27 +171,22 @@
                             </div>
                         </div>
                         
-                        <!-- Step 2: Personal Information (Optional) -->
+                        <!-- Step 2: Personal/Business Information -->
                         <div class="form-step" id="step2">
+                            <!-- Common Fields for Both Account Types -->
                             <div class="mb-3">
-                                <label for="first_name" class="form-label">First Name (Optional)</label>
-                                <input type="text" class="form-control" id="first_name" name="first_name" spellcheck="true" autocorrect="on">
+                                <label for="first_name" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" spellcheck="true" autocorrect="on" required>
                             </div>
                             
                             <div class="mb-3">
-                                <label for="last_name" class="form-label">Last Name (Optional)</label>
-                                <input type="text" class="form-control" id="last_name" name="last_name" spellcheck="true" autocorrect="on">
+                                <label for="last_name" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" spellcheck="true" autocorrect="on" required>
                             </div>
                             
                             <div class="mb-3">
-                                <label for="organization" class="form-label">Organization/Company (Optional)</label>
-                                <input type="text" class="form-control" id="organization" name="organization" spellcheck="true" autocorrect="on">
-                                <div class="form-text">If you're representing a business or institution</div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="country" class="form-label">Country (Optional)</label>
-                                <select class="form-select" id="country" name="country">
+                                <label for="country" class="form-label">Country</label>
+                                <select class="form-select" id="country" name="country" required>
                                     <option value="" selected>Select your country</option>
                                     <option value="US">United States</option>
                                     <option value="GB">United Kingdom</option>
@@ -191,14 +198,60 @@
                                     <option value="CH">Switzerland</option>
                                     <option value="SG">Singapore</option>
                                     <option value="AE">United Arab Emirates</option>
+                                    <option value="NG">Nigeria</option>
+                                    <option value="ZA">South Africa</option>
+                                    <option value="BR">Brazil</option>
+                                    <option value="IN">India</option>
+                                    <option value="CN">China</option>
                                     <!-- More countries would be added here -->
                                 </select>
                             </div>
                             
                             <div class="mb-4">
-                                <label for="phone" class="form-label">Phone Number (Optional)</label>
-                                <input type="tel" class="form-control" id="phone" name="phone" spellcheck="true" autocorrect="on">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" spellcheck="true" autocorrect="on" required>
                                 <div class="form-text">For account recovery and security verification</div>
+                            </div>
+                            
+                            <!-- Business-specific fields - shown/hidden based on account type -->
+                            <div id="business-fields" style="display: none;">
+                                <hr class="my-4">
+                                <h5 class="mb-3">Business Information</h5>
+                                
+                                <div class="mb-3">
+                                    <label for="organization" class="form-label">Company/Organization Name</label>
+                                    <input type="text" class="form-control" id="organization" name="organization" spellcheck="true" autocorrect="on">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="business_type" class="form-label">Business Type</label>
+                                    <select class="form-select" id="business_type" name="business_type">
+                                        <option value="" selected>Select business type</option>
+                                        <option value="sole_proprietorship">Sole Proprietorship</option>
+                                        <option value="partnership">Partnership</option>
+                                        <option value="llc">Limited Liability Company (LLC)</option>
+                                        <option value="corporation">Corporation</option>
+                                        <option value="non_profit">Non-Profit Organization</option>
+                                        <option value="financial_institution">Financial Institution</option>
+                                        <option value="government">Government Agency</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="tax_id" class="form-label">Tax ID / Business Registration Number</label>
+                                    <input type="text" class="form-control" id="tax_id" name="tax_id" spellcheck="true" autocorrect="on">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="business_address" class="form-label">Business Address</label>
+                                    <input type="text" class="form-control" id="business_address" name="business_address" spellcheck="true" autocorrect="on">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="business_website" class="form-label">Business Website</label>
+                                    <input type="url" class="form-control" id="business_website" name="business_website" spellcheck="true" autocorrect="on">
+                                </div>
                             </div>
                             
                             <div class="d-flex justify-content-between">
