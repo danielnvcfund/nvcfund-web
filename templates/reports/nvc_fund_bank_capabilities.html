@@ -16,74 +16,90 @@
 
         .header {
             text-align: center;
-            margin-bottom: 2em;
+            margin-bottom: 3em;
+            page-break-after: avoid;
         }
 
         .header img {
             max-width: 300px;
             height: auto;
-            margin-bottom: 1em;
+            margin-bottom: 1.5em;
         }
 
         h1 {
             font-size: 24pt;
             color: #003366;
-            margin-top: 1em;
-            margin-bottom: 0.5em;
+            margin-top: 1.5em;
+            margin-bottom: 0.8em;
             text-align: center;
             border-bottom: 1px solid #003366;
             padding-bottom: 0.5em;
+            page-break-after: avoid;
         }
 
         h2 {
             font-size: 20pt;
             color: #003366;
-            margin-top: 1em;
-            margin-bottom: 0.5em;
+            margin-top: 1.5em;
+            margin-bottom: 0.8em;
             text-align: center;
+            page-break-after: avoid;
         }
 
         h3 {
             font-size: 16pt;
             color: #003366;
-            margin-top: 1.5em;
-            margin-bottom: 0.5em;
+            margin-top: 2em;
+            margin-bottom: 1em;
             border-bottom: 1px solid #ccc;
-            padding-bottom: 0.2em;
+            padding-bottom: 0.3em;
+            page-break-after: avoid;
+            clear: both;
         }
 
         h4 {
             font-size: 14pt;
             color: #003366;
-            margin-top: 1em;
-            margin-bottom: 0.5em;
+            margin-top: 1.5em;
+            margin-bottom: 0.8em;
+            page-break-after: avoid;
         }
 
         p {
             font-size: 11pt;
-            margin-bottom: 0.8em;
+            margin-bottom: 1em;
             text-align: justify;
+            line-height: 1.6;
         }
 
         ul, ol {
-            margin-bottom: 1em;
-            margin-left: 1em;
+            margin-bottom: 1.5em;
+            margin-left: 1.5em;
+            page-break-inside: avoid;
         }
 
         li {
             font-size: 11pt;
-            margin-bottom: 0.4em;
+            margin-bottom: 0.7em;
+            line-height: 1.5;
+        }
+
+        li ul, li ol {
+            margin-top: 0.5em;
+            margin-bottom: 0.8em;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 1.5em;
+            margin-bottom: 2em;
+            margin-top: 1em;
+            page-break-inside: avoid;
         }
 
         th, td {
             border: 1px solid #ddd;
-            padding: 0.5em;
+            padding: 0.7em;
             text-align: left;
             font-size: 10pt;
         }
@@ -99,60 +115,80 @@
         }
 
         .table-container {
-            overflow-x: auto;
-            margin-bottom: 1.5em;
+            margin-bottom: 2em;
+            page-break-inside: avoid;
         }
 
         .signature {
-            margin-top: 3em;
-            padding-top: 1em;
+            margin-top: 4em;
+            padding-top: 1.5em;
             border-top: 1px solid #ccc;
             text-align: right;
             font-style: italic;
+            page-break-inside: avoid;
         }
 
         .signature p {
-            margin-bottom: 0.3em;
+            margin-bottom: 0.5em;
         }
 
         .footer {
-            margin-top: 2em;
-            padding-top: 1em;
+            margin-top: 3em;
+            padding-top: 1.5em;
             border-top: 1px solid #ccc;
             text-align: center;
             font-size: 9pt;
             color: #666;
         }
 
+        @page {
+            margin: 2cm;
+        }
+
         @media print {
             body {
-                margin: 0;
-                padding: 2cm;
-                font-size: 10pt;
+                font-size: 11pt;
+                line-height: 1.6;
             }
             
             h1 {
                 font-size: 20pt;
+                margin-top: 2em;
+                margin-bottom: 1em;
             }
             
             h2 {
                 font-size: 16pt;
+                margin-top: 1.5em;
+                margin-bottom: 1em;
             }
             
             h3 {
                 font-size: 14pt;
+                margin-top: 2em;
+                margin-bottom: 1em;
             }
             
             h4 {
                 font-size: 12pt;
+                margin-top: 1.5em;
+                margin-bottom: 0.8em;
             }
             
-            p, li {
-                font-size: 10pt;
+            p {
+                font-size: 11pt;
+                margin-bottom: 1em;
+                line-height: 1.5;
+            }
+            
+            li {
+                font-size: 11pt;
+                margin-bottom: 0.7em;
             }
             
             th, td {
-                font-size: 9pt;
+                font-size: 10pt;
+                padding: 0.7em;
             }
             
             .footer {
@@ -165,43 +201,8 @@
 </head>
 <body>
     <div class="header">
-        <!-- SVG Logo embedded directly -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300" style="max-width: 300px; height: auto; margin-bottom: 1em;">
-          <defs>
-            <linearGradient id="gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#BF953F" />
-              <stop offset="50%" style="stop-color:#FCF6BA" />
-              <stop offset="70%" style="stop-color:#B38728" />
-              <stop offset="100%" style="stop-color:#FBF5B7" />
-            </linearGradient>
-          </defs>
-          
-          <!-- Outer Circle -->
-          <circle cx="150" cy="150" r="145" fill="none" stroke="url(#gold-gradient)" stroke-width="5" />
-          
-          <!-- Inner Circle -->
-          <circle cx="150" cy="150" r="135" fill="#003366" stroke="url(#gold-gradient)" stroke-width="2" />
-          
-          <!-- Globe Grid Lines -->
-          <path d="M150,15 Q150,150 150,285" stroke="#CCCCCC" stroke-width="1" fill="none" />
-          <path d="M150,15 Q200,150 150,285" stroke="#CCCCCC" stroke-width="1" fill="none" />
-          <path d="M150,15 Q100,150 150,285" stroke="#CCCCCC" stroke-width="1" fill="none" />
-          <path d="M15,150 Q150,150 285,150" stroke="#CCCCCC" stroke-width="1" fill="none" />
-          <path d="M30,100 Q150,130 270,100" stroke="#CCCCCC" stroke-width="1" fill="none" />
-          <path d="M30,200 Q150,170 270,200" stroke="#CCCCCC" stroke-width="1" fill="none" />
-          
-          <!-- NVC Text -->
-          <text x="150" y="130" font-family="Arial, sans-serif" font-weight="bold" font-size="48" text-anchor="middle" fill="url(#gold-gradient)">NVC</text>
-          
-          <!-- FUND BANK Text -->
-          <text x="150" y="180" font-family="Arial, sans-serif" font-weight="bold" font-size="32" text-anchor="middle" fill="url(#gold-gradient)">FUND BANK</text>
-          
-          <!-- Supranational Text -->
-          <text x="150" y="220" font-family="Arial, sans-serif" font-style="italic" font-size="16" text-anchor="middle" fill="#FFFFFF">Supranational Financial Institution</text>
-          
-          <!-- Established Text -->
-          <text x="150" y="240" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#CCCCCC">Est. 2000</text>
-        </svg>
+        <!-- NVC Fund Holding Trust Logo -->
+        <img src="/static/images/NVC_FUND_HOLDING_TRUST_LOGO.png" alt="NVC Fund Holding Trust Logo" style="max-width: 300px; height: auto; margin-bottom: 1.5em;">
         <h1>CAPABILITIES REPORT</h1>
         <h2>NVC FUND BANK</h2>
         <p><strong>Supranational Sovereign Financial Institution</strong></p>
@@ -244,15 +245,14 @@
     
     <ul>
         <li><strong>Total Assets Under Management:</strong> In excess of $5 trillion</li>
-        <li><strong>Primary Asset Categories:</strong>
-            <ul>
-                <li>Mineral resource rights (gold, silver, platinum, rhodium)</li>
-                <li>Strategic equity investments across 40+ companies</li>
-                <li>Financial instruments including bonds, notes, and certificates</li>
-                <li>Treasury instruments and government securities</li>
-                <li>Precious metals holdings (gold bullion and allocated reserves)</li>
-            </ul>
-        </li>
+        <li><strong>Primary Asset Categories:</strong></li>
+        <ul style="margin-left: 3em; margin-top: -0.5em;">
+            <li>Mineral resource rights (gold, silver, platinum, rhodium)</li>
+            <li>Strategic equity investments across 40+ companies</li>
+            <li>Financial instruments including bonds, notes, and certificates</li>
+            <li>Treasury instruments and government securities</li>
+            <li>Precious metals holdings (gold bullion and allocated reserves)</li>
+        </ul>
         <li><strong>Wyoming Mineral Claims:</strong> 22 Wyoming mineral resources claims (Snow Range FC series, BLM serial numbers WMC261447-WMC270558) registered to NVC FUND HOLDING TRUST as verified by the U.S. Department of Interior Bureau of Land Management's 2019 report. These include claims with an established assay and appraisal of $128.3 billion in gold, silver, platinum, and rhodium mineral resources (appraised November 2005 by Joseph Dunlop)</li>
         <li><strong>Gold-Backed Safekeeping Receipt (SKR):</strong> Medium Term Note (MTN) safekeeping receipt for gold-backed assets maintained in secured facilities, providing additional physical asset backing for the institution's operations and stablecoin reserves</li>
         <li><strong>Institutional Custody Agreements:</strong> Formal custody arrangements with major financial institutions for secure holding and management of bank assets, providing additional security, verification, and management of the institution's substantial reserves</li>
@@ -292,27 +292,24 @@
     <p>NVC Fund Bank's payment infrastructure supports comprehensive multi-currency operations across:</p>
     
     <ul>
-        <li><strong>Major Global Currencies:</strong>
-            <ul>
-                <li>US Dollar (USD)</li>
-                <li>Euro (EUR)</li>
-                <li>British Pound (GBP)</li>
-            </ul>
-        </li>
-        <li><strong>Digital/Tokenized Currencies:</strong>
-            <ul>
-                <li>NVC Token Stablecoin (NVCT) - pegged 1:1 with USD</li>
-                <li>American Federation Dollar (AFD1) - valued at 10% of daily gold price</li>
-                <li>SFN Coin (SFN)</li>
-                <li>Ak Lumi Currency (AKLUMI)</li>
-            </ul>
-        </li>
-        <li><strong>Regional Currencies:</strong>
-            <ul>
-                <li>Nigerian Naira (NGN)</li>
-                <li>Additional currencies as needed for specific transactions</li>
-            </ul>
-        </li>
+        <li><strong>Major Global Currencies:</strong></li>
+        <ul style="margin-left: 3em; margin-top: -0.5em;">
+            <li>US Dollar (USD)</li>
+            <li>Euro (EUR)</li>
+            <li>British Pound (GBP)</li>
+        </ul>
+        <li><strong>Digital/Tokenized Currencies:</strong></li>
+        <ul style="margin-left: 3em; margin-top: -0.5em;">
+            <li>NVC Token Stablecoin (NVCT) - pegged 1:1 with USD</li>
+            <li>American Federation Dollar (AFD1) - valued at 10% of daily gold price</li>
+            <li>SFN Coin (SFN)</li>
+            <li>Ak Lumi Currency (AKLUMI)</li>
+        </ul>
+        <li><strong>Regional Currencies:</strong></li>
+        <ul style="margin-left: 3em; margin-top: -0.5em;">
+            <li>Nigerian Naira (NGN)</li>
+            <li>Additional currencies as needed for specific transactions</li>
+        </ul>
     </ul>
     
     <h4>B. Payment Channels</h4>
