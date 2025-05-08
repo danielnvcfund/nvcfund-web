@@ -93,6 +93,14 @@ def create_app():
     login_manager.init_app(app)
     # login_view is already set in the global login_manager configuration
     
+    # Direct root-level routes for registration
+    @app.route('/signup')
+    @app.route('/join')
+    @app.route('/register')
+    def direct_register():
+        """Direct shortcut to the registration form"""
+        return redirect('/main/register')
+    
     # Add custom filters
     from utils import format_currency, format_transaction_type
     app.jinja_env.filters['format_currency'] = lambda amount, currency='USD': format_currency(amount, currency)
