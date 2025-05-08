@@ -623,47 +623,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listener for account type changes
     accountTypeSelect.addEventListener('change', toggleBusinessFields);
     
-    // Update validation for step 2 to account for business fields
+    // Redefine validateStep to include all validation logic
     const originalValidateStep = validateStep;
     validateStep = function(stepNumber) {
+        // First execute the original validation logic
         let isValid = originalValidateStep(stepNumber);
         
-        if (stepNumber === 2 && accountTypeSelect.value === 'business') {
-            // Additional validation for business fields
-            const organization = document.getElementById('organization');
-            if (!organization.value) {
-                organization.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                organization.classList.remove('is-invalid');
-            }
-            
-            const businessType = document.getElementById('business_type');
-            if (!businessType.value) {
-                businessType.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                businessType.classList.remove('is-invalid');
-            }
-            
-            const taxId = document.getElementById('tax_id');
-            if (!taxId.value) {
-                taxId.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                taxId.classList.remove('is-invalid');
-            }
-        }
-        
-        return isValid;
-    };
-    
-    // Update step 2 validation to require personal info fields
-    const originalValidateStep2 = validateStep.bind(null, 2);
-    validateStep = function(stepNumber) {
+        // For step 2, validate personal info fields
         if (stepNumber === 2) {
-            let isValid = true;
-            
             // Validate first name
             const firstName = document.getElementById('first_name');
             if (!firstName.value) {
@@ -700,11 +667,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 phone.classList.remove('is-invalid');
             }
             
-            // Call the business field validation
-            return isValid && originalValidateStep(stepNumber);
-        } else {
-            return originalValidateStep(stepNumber);
+            // For business accounts, validate additional fields
+            if (accountTypeSelect.value === 'business') {
+                // Validate business fields
+                const organization = document.getElementById('organization');
+                if (!organization.value) {
+                    organization.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    organization.classList.remove('is-invalid');
+                }
+                
+                const businessType = document.getElementById('business_type');
+                if (!businessType.value) {
+                    businessType.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    businessType.classList.remove('is-invalid');
+                }
+                
+                const taxId = document.getElementById('tax_id');
+                if (!taxId.value) {
+                    taxId.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    taxId.classList.remove('is-invalid');
+                }
+            }
         }
+        
+        return isValid;
     };
     
     // Form submission
