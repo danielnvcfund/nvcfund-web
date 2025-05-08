@@ -97,6 +97,7 @@ def create_app():
     @app.route('/signup')
     @app.route('/join')
     @app.route('/register')
+    @app.route('/create-account')
     def direct_register():
         """Direct shortcut to the registration form"""
         return redirect('/main/register')

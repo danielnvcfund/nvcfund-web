@@ -367,12 +367,17 @@ def signup_redirect():
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
-    """User registration route with comprehensive signup process"""
+    """Combined registration route for both personal and business accounts"""
     # Comment out redirect to allow testing while logged in
     # if current_user.is_authenticated:
     #     return redirect(url_for('web.main.dashboard'))
         
     form = RegistrationForm()
+    
+    # Check for invite code in URL parameters
+    invite_code = request.args.get('invite_code')
+    if invite_code:
+        form.invite_code.data = invite_code
     
     if form.validate_on_submit():
         try:
@@ -383,22 +388,77 @@ def register():
                 flash(error, 'danger')
                 return render_template('register.html', form=form)
             
-            # Update additional profile information
+            # Update common profile information
             if user:
                 user.first_name = form.first_name.data
                 user.last_name = form.last_name.data
-                user.organization = form.organization.data
                 user.country = form.country.data
                 user.phone = form.phone.data
                 user.newsletter = form.newsletter.data
                 
+                # For business accounts, add additional business information
+                if form.account_type.data == 'business':
+                    user.organization = form.organization.data
+                    
+                    # Create an account holder record with business details if needed
+                    try:
+                        # Check if the user already has an account holder record
+                        account_holder = AccountHolder.query.filter_by(user_id=user.id).first()
+                        if not account_holder:
+                            # Create new account holder for business
+                            account_holder = AccountHolder(
+                                name=f"{form.first_name.data} {form.last_name.data}",
+                                username=form.username.data,
+                                email=form.email.data,
+                                is_business=True,
+                                business_name=form.organization.data,
+                                business_type=form.business_type.data,
+                                tax_id=form.tax_id.data,
+                                user_id=user.id
+                            )
+                            db.session.add(account_holder)
+                    except Exception as biz_error:
+                        logger.error(f"Error creating business account holder: {str(biz_error)}")
+                else:
+                    # For personal accounts, still create an account holder but mark as not business
+                    try:
+                        # Check if the user already has an account holder record
+                        account_holder = AccountHolder.query.filter_by(user_id=user.id).first()
+                        if not account_holder:
+                            # Create new account holder for personal account
+                            account_holder = AccountHolder(
+                                name=f"{form.first_name.data} {form.last_name.data}",
+                                username=form.username.data,
+                                email=form.email.data,
+                                is_business=False,
+                                user_id=user.id
+                            )
+                            db.session.add(account_holder)
+                    except Exception as personal_error:
+                        logger.error(f"Error creating personal account holder: {str(personal_error)}")
+                
                 # User has agreed to terms
                 if form.terms_agree.data:
+                    # Process invitation if an invite code was provided
+                    if form.invite_code.data:
+                        try:
+                            success, invite_error = accept_invitation(form.invite_code.data, user)
+                            if invite_error:
+                                logger.warning(f"Invitation acceptance issue: {invite_error}")
+                        except Exception as invite_error:
+                            logger.error(f"Error processing invitation: {str(invite_error)}")
+                    
                     db.session.commit()
                     
-                    # Here you would normally send a verification email
-                    # For now, just show a success message
-                    flash('Registration successful! You can now log in to your account.', 'success')
+                    # Send welcome email
+                    try:
+                        from email_service import send_welcome_email
+                        send_welcome_email(user)
+                    except Exception as email_error:
+                        logger.error(f"Error sending welcome email: {str(email_error)}")
+                    
+                    account_type_display = "Business" if form.account_type.data == 'business' else "Personal"
+                    flash(f'{account_type_display} account registration successful! You can now log in to your account.', 'success')
                     return redirect(url_for('web.main.login'))
                 else:
                     # This shouldn't happen due to form validation, but just in case
@@ -418,7 +478,7 @@ def register():
             for error in errors:
                 flash(f"{field}: {error}", 'danger')
     
-    # Render the dedicated registration page
+    # Render the registration page
     return render_template('register.html', form=form)
 
 @main.route('/client-registration', methods=['GET', 'POST'])

@@ -40,16 +40,35 @@ class LoginForm(FlaskForm):
     remember_me = BooleanField('Remember Me')
 
 class RegistrationForm(FlaskForm):
+    """Combined user registration form for both personal and business accounts"""
+    # Account type selection
+    account_type = SelectField('Account Type', 
+                              choices=[('personal', 'Personal Account'), ('business', 'Business Account')],
+                              default='personal',
+                              validators=[DataRequired()])
+    
+    # Basic credentials - required for all accounts
     username = StringField('Username', validators=[DataRequired(), Length(min=4, max=64)])
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
-    first_name = StringField('First Name', validators=[Optional()])
-    last_name = StringField('Last Name', validators=[Optional()])
-    organization = StringField('Company/Organization', validators=[Optional()])
-    country = StringField('Country', validators=[Optional()])
-    phone = StringField('Phone Number', validators=[Optional()])
+    
+    # Personal information
+    first_name = StringField('First Name', validators=[DataRequired()])
+    last_name = StringField('Last Name', validators=[DataRequired()])
+    phone = StringField('Phone Number', validators=[DataRequired()])
+    country = StringField('Country', validators=[DataRequired()])
+    
+    # Business specific fields
+    organization = StringField('Company/Organization Name', validators=[Optional()]) 
+    business_type = StringField('Business Type', validators=[Optional()])
+    tax_id = StringField('Tax ID / Business Registration Number', validators=[Optional()])
+    business_address = StringField('Business Address', validators=[Optional()])
+    business_website = StringField('Business Website', validators=[Optional()])
+    
+    # Settings and agreements
     newsletter = BooleanField('Subscribe to Newsletter', default=True)
+    invite_code = HiddenField('Invitation Code')
     terms_agree = BooleanField('I agree to the Terms of Service and Privacy Policy', validators=[DataRequired()])
 
 class RequestResetForm(FlaskForm):
