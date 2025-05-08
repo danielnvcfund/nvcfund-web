@@ -22,14 +22,13 @@
         
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
-            line-height: 1.2;
+            font-size: 12pt;
+            line-height: 1.6;
             color: #333;
             margin: 2cm 2cm 2cm 2cm;
             background-color: #fff;
-            /* Force compact layout */
             overflow-wrap: break-word;
             word-wrap: break-word;
-            hyphens: auto;
         }
 
         .header {
@@ -39,7 +38,7 @@
         }
 
         h1 {
-            font-size: 26pt;
+            font-size: 24pt;
             color: #003366;
             margin-top: 1.5em;
             margin-bottom: 0.8em;
@@ -50,7 +49,7 @@
         }
 
         h2 {
-            font-size: 24pt;
+            font-size: 20pt;
             color: #003366;
             margin-top: 1.5em;
             margin-bottom: 1em;
@@ -62,42 +61,43 @@
         h3 {
             font-size: 16pt;
             color: #003366;
-            margin-top: 1em;
-            margin-bottom: 0.4em;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 0.2em;
+            margin-top: 1.5em;
+            margin-bottom: 0.8em;
+            border-bottom: 1px solid #003366;
+            padding-bottom: 0.3em;
             page-break-after: avoid;
             clear: both;
+            text-transform: uppercase;
         }
 
         h4 {
             font-size: 14pt;
             color: #003366;
-            margin-top: 0.8em;
-            margin-bottom: 0.3em;
+            margin-top: 1.2em;
+            margin-bottom: 0.8em;
             page-break-after: avoid;
+            font-weight: bold;
         }
 
         p {
-            font-size: 11pt;
-            margin-bottom: 0.3em;
-            margin-top: 0;
-            text-align: justify;
-            line-height: 1.2;
+            font-size: 12pt;
+            margin-bottom: 0.8em;
+            margin-top: 0.8em;
+            line-height: 1.6;
         }
 
         ul, ol {
-            margin-bottom: 0.3em;
-            margin-top: 0.1em;
+            margin-bottom: 1.5em;
+            margin-top: 0.8em;
             margin-left: 1.5em;
             padding-left: 0;
-            page-break-inside: avoid;
+            page-break-inside: auto;
         }
 
         li {
-            font-size: 11pt;
-            margin-bottom: 0.1em;
-            margin-top: 0;
+            font-size: 12pt;
+            margin-bottom: 0.8em;
+            line-height: 1.6;
             line-height: 1.1;
         }
 
@@ -117,16 +117,16 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 0.8em;
-            margin-top: 0.3em;
+            margin-bottom: 1.5em;
+            margin-top: 1em;
             page-break-inside: avoid;
         }
 
         th, td {
             border: 1px solid #ddd;
-            padding: 0.3em;
+            padding: 0.8em;
             text-align: left;
-            font-size: 9pt;
+            font-size: 11pt;
         }
 
         th {
@@ -140,7 +140,7 @@
         }
 
         .table-container {
-            margin-bottom: 0.6em;
+            margin-bottom: 1.5em;
             page-break-inside: avoid;
         }
 
@@ -166,69 +166,70 @@
 
         @media print {
             body {
-                font-size: 9pt;
-                line-height: 1.1;
-                margin: 1cm;
+                font-size: 11pt;
+                line-height: 1.4;
+                margin: 1.5cm;
             }
             
             h1 {
-                font-size: 18pt;
-                margin-top: 0.3em;
-                margin-bottom: 0.2em;
-            }
-            
-            h2 {
-                font-size: 16pt;
-                margin-top: 0.3em;
-                margin-bottom: 0.2em;
-            }
-            
-            h3 {
-                font-size: 14pt;
-                margin-top: 0.5em;
-                margin-bottom: 0.2em;
-                padding-bottom: 0.1em;
-            }
-            
-            h4 {
-                font-size: 11pt;
-                margin-top: 0.3em;
-                margin-bottom: 0.1em;
-            }
-            
-            p {
-                margin-bottom: 0.1em;
-                line-height: 1.1;
-            }
-            
-            ul, ol {
-                margin-top: 0.1em;
-                margin-bottom: 0.2em;
-            }
-            
-            li {
-                margin-bottom: 0;
-                padding-bottom: 0;
-                line-height: 1.1;
-            }
-            
-            li ul, li ol {
-                margin-top: 0;
-                margin-bottom: 0;
-            }
-            
-            th, td {
-                padding: 0.2em;
-                font-size: 8pt;
-            }
-            
-            .table-container {
+                font-size: 20pt;
+                margin-top: 0.6em;
                 margin-bottom: 0.4em;
             }
             
-            .signature {
+            h2 {
+                font-size: 18pt;
+                margin-top: 0.6em;
+                margin-bottom: 0.4em;
+            }
+            
+            h3 {
+                font-size: 16pt;
                 margin-top: 0.8em;
-                padding-top: 0.3em;
+                margin-bottom: 0.4em;
+                padding-bottom: 0.2em;
+            }
+            
+            h4 {
+                font-size: 14pt;
+                margin-top: 0.6em;
+                margin-bottom: 0.3em;
+                font-weight: bold;
+            }
+            
+            p {
+                margin-bottom: 0.5em;
+                margin-top: 0.5em;
+                line-height: 1.4;
+            }
+            
+            ul, ol {
+                margin-top: 0.5em;
+                margin-bottom: 0.8em;
+            }
+            
+            li {
+                margin-bottom: 0.4em;
+                line-height: 1.4;
+            }
+            
+            li ul, li ol {
+                margin-top: 0.3em;
+                margin-bottom: 0.3em;
+            }
+            
+            th, td {
+                padding: 0.4em;
+                font-size: 10pt;
+            }
+            
+            .table-container {
+                margin-bottom: 0.8em;
+            }
+            
+            .signature {
+                margin-top: 1.2em;
+                padding-top: 0.5em;
             }
         }
     </style>
