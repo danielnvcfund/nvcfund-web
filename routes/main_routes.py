@@ -368,9 +368,9 @@ def signup_redirect():
 @main.route('/register', methods=['GET', 'POST'])
 def register():
     """User registration route with comprehensive signup process"""
-    # If user is already logged in, redirect to dashboard
-    if current_user.is_authenticated:
-        return redirect(url_for('web.main.dashboard'))
+    # Comment out redirect to allow testing while logged in
+    # if current_user.is_authenticated:
+    #     return redirect(url_for('web.main.dashboard'))
         
     form = RegistrationForm()
     
@@ -424,9 +424,9 @@ def register():
 @main.route('/client-registration', methods=['GET', 'POST'])
 def client_registration():
     """Client registration route with detailed business and banking information"""
-    # If user is already logged in, redirect to dashboard
-    if current_user.is_authenticated:
-        return redirect(url_for('web.main.dashboard'))
+    # Comment out redirect to allow testing while logged in
+    # if current_user.is_authenticated:
+    #     return redirect(url_for('web.main.dashboard'))
         
     form = ClientRegistrationForm()
     
