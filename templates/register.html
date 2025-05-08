@@ -78,6 +78,34 @@
         background-color: rgba(0,0,0,0.05);
         border-radius: 5px;
     }
+    .is-invalid {
+        border-color: #dc3545;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    .is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    }
+    .invalid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+    .form-label.required:after {
+        content: "*";
+        color: #dc3545;
+        margin-left: 4px;
+    }
+    .business-fields-container {
+        transition: all 0.3s ease-in-out;
+        overflow: hidden;
+    }
 </style>
 {% endblock %}
 
@@ -113,7 +141,7 @@
                         <!-- Step 1: Account Details -->
                         <div class="form-step active" id="step1">
                             <div class="mb-3">
-                                <label for="account_type" class="form-label">Account Type</label>
+                                <label for="account_type" class="form-label required">Account Type</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
                                     <select class="form-select" id="account_type" name="account_type" required>
@@ -125,25 +153,27 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label for="username" class="form-label">Username</label>
+                                <label for="username" class="form-label required">Username</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-user"></i></span>
                                     <input type="text" class="form-control" id="username" name="username" required minlength="4" maxlength="64" spellcheck="true" autocorrect="on">
                                 </div>
                                 <div class="form-text">Choose a unique username (4-64 characters)</div>
+                                <div class="invalid-feedback">Username must be at least 4 characters</div>
                             </div>
                             
                             <div class="mb-3">
-                                <label for="email" class="form-label">Email Address</label>
+                                <label for="email" class="form-label required">Email Address</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-envelope"></i></span>
                                     <input type="email" class="form-control" id="email" name="email" required spellcheck="true" autocorrect="on">
                                 </div>
                                 <div class="form-text">We'll send a verification link to this email</div>
+                                <div class="invalid-feedback">Please enter a valid email address</div>
                             </div>
                             
                             <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
+                                <label for="password" class="form-label required">Password</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-lock"></i></span>
                                     <input type="password" class="form-control" id="password" name="password" required minlength="8">
@@ -155,15 +185,17 @@
                                     <div id="password-strength-bar"></div>
                                 </div>
                                 <div class="password-feedback text-muted" id="password-feedback">Password must be at least 8 characters</div>
+                                <div class="invalid-feedback">Password must be at least 8 characters</div>
                             </div>
                             
                             <div class="mb-4">
-                                <label for="confirm_password" class="form-label">Confirm Password</label>
+                                <label for="confirm_password" class="form-label required">Confirm Password</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-lock"></i></span>
                                     <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
                                 </div>
                                 <div id="password-match-feedback" class="form-text"></div>
+                                <div class="invalid-feedback">Passwords must match</div>
                             </div>
                             
                             <div class="d-flex justify-content-end">
@@ -175,17 +207,19 @@
                         <div class="form-step" id="step2">
                             <!-- Common Fields for Both Account Types -->
                             <div class="mb-3">
-                                <label for="first_name" class="form-label">First Name</label>
+                                <label for="first_name" class="form-label required">First Name</label>
                                 <input type="text" class="form-control" id="first_name" name="first_name" spellcheck="true" autocorrect="on" required>
+                                <div class="invalid-feedback">First name is required</div>
                             </div>
                             
                             <div class="mb-3">
-                                <label for="last_name" class="form-label">Last Name</label>
+                                <label for="last_name" class="form-label required">Last Name</label>
                                 <input type="text" class="form-control" id="last_name" name="last_name" spellcheck="true" autocorrect="on" required>
+                                <div class="invalid-feedback">Last name is required</div>
                             </div>
                             
                             <div class="mb-3">
-                                <label for="country" class="form-label">Country</label>
+                                <label for="country" class="form-label required">Country</label>
                                 <select class="form-select" id="country" name="country" required>
                                     <option value="" selected>Select your country</option>
                                     <option value="US">United States</option>
@@ -205,26 +239,29 @@
                                     <option value="CN">China</option>
                                     <!-- More countries would be added here -->
                                 </select>
+                                <div class="invalid-feedback">Please select your country</div>
                             </div>
                             
                             <div class="mb-4">
-                                <label for="phone" class="form-label">Phone Number</label>
+                                <label for="phone" class="form-label required">Phone Number</label>
                                 <input type="tel" class="form-control" id="phone" name="phone" spellcheck="true" autocorrect="on" required>
                                 <div class="form-text">For account recovery and security verification</div>
+                                <div class="invalid-feedback">Phone number is required</div>
                             </div>
                             
                             <!-- Business-specific fields - shown/hidden based on account type -->
-                            <div id="business-fields" style="display: none;">
+                            <div id="business-fields" style="display: none;" class="business-fields-container">
                                 <hr class="my-4">
                                 <h5 class="mb-3">Business Information</h5>
                                 
                                 <div class="mb-3">
-                                    <label for="organization" class="form-label">Company/Organization Name</label>
+                                    <label for="organization" class="form-label required">Company/Organization Name</label>
                                     <input type="text" class="form-control" id="organization" name="organization" spellcheck="true" autocorrect="on">
+                                    <div class="invalid-feedback">Company/Organization name is required</div>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="business_type" class="form-label">Business Type</label>
+                                    <label for="business_type" class="form-label required">Business Type</label>
                                     <select class="form-select" id="business_type" name="business_type">
                                         <option value="" selected>Select business type</option>
                                         <option value="sole_proprietorship">Sole Proprietorship</option>
@@ -236,11 +273,13 @@
                                         <option value="government">Government Agency</option>
                                         <option value="other">Other</option>
                                     </select>
+                                    <div class="invalid-feedback">Please select a business type</div>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="tax_id" class="form-label">Tax ID / Business Registration Number</label>
+                                    <label for="tax_id" class="form-label required">Tax ID / Business Registration Number</label>
                                     <input type="text" class="form-control" id="tax_id" name="tax_id" spellcheck="true" autocorrect="on">
+                                    <div class="invalid-feedback">Tax ID / Registration number is required</div>
                                 </div>
                                 
                                 <div class="mb-3">
@@ -251,6 +290,7 @@
                                 <div class="mb-3">
                                     <label for="business_website" class="form-label">Business Website</label>
                                     <input type="url" class="form-control" id="business_website" name="business_website" spellcheck="true" autocorrect="on">
+                                    <div class="form-text">Please include http:// or https://</div>
                                 </div>
                             </div>
                             
@@ -551,6 +591,121 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return isValid;
     }
+    
+    // Toggle business fields based on account type
+    const accountTypeSelect = document.getElementById('account_type');
+    const businessFields = document.getElementById('business-fields');
+    
+    // Function to toggle display of business fields
+    function toggleBusinessFields() {
+        if (accountTypeSelect.value === 'business') {
+            businessFields.style.display = 'block';
+            
+            // Update the step title
+            const stepTitle = document.querySelector('#step2-indicator .step-title');
+            if (stepTitle) {
+                stepTitle.textContent = 'Business Information';
+            }
+        } else {
+            businessFields.style.display = 'none';
+            
+            // Update the step title
+            const stepTitle = document.querySelector('#step2-indicator .step-title');
+            if (stepTitle) {
+                stepTitle.textContent = 'Personal Information';
+            }
+        }
+    }
+    
+    // Toggle fields on initial load
+    toggleBusinessFields();
+    
+    // Add event listener for account type changes
+    accountTypeSelect.addEventListener('change', toggleBusinessFields);
+    
+    // Update validation for step 2 to account for business fields
+    const originalValidateStep = validateStep;
+    validateStep = function(stepNumber) {
+        let isValid = originalValidateStep(stepNumber);
+        
+        if (stepNumber === 2 && accountTypeSelect.value === 'business') {
+            // Additional validation for business fields
+            const organization = document.getElementById('organization');
+            if (!organization.value) {
+                organization.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                organization.classList.remove('is-invalid');
+            }
+            
+            const businessType = document.getElementById('business_type');
+            if (!businessType.value) {
+                businessType.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                businessType.classList.remove('is-invalid');
+            }
+            
+            const taxId = document.getElementById('tax_id');
+            if (!taxId.value) {
+                taxId.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                taxId.classList.remove('is-invalid');
+            }
+        }
+        
+        return isValid;
+    };
+    
+    // Update step 2 validation to require personal info fields
+    const originalValidateStep2 = validateStep.bind(null, 2);
+    validateStep = function(stepNumber) {
+        if (stepNumber === 2) {
+            let isValid = true;
+            
+            // Validate first name
+            const firstName = document.getElementById('first_name');
+            if (!firstName.value) {
+                firstName.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                firstName.classList.remove('is-invalid');
+            }
+            
+            // Validate last name
+            const lastName = document.getElementById('last_name');
+            if (!lastName.value) {
+                lastName.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                lastName.classList.remove('is-invalid');
+            }
+            
+            // Validate country
+            const country = document.getElementById('country');
+            if (!country.value) {
+                country.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                country.classList.remove('is-invalid');
+            }
+            
+            // Validate phone
+            const phone = document.getElementById('phone');
+            if (!phone.value) {
+                phone.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                phone.classList.remove('is-invalid');
+            }
+            
+            // Call the business field validation
+            return isValid && originalValidateStep(stepNumber);
+        } else {
+            return originalValidateStep(stepNumber);
+        }
+    };
     
     // Form submission
     const form = document.getElementById('registration-form');
