@@ -140,13 +140,13 @@
         }
 
         .table-container {
-            margin-bottom: 2em;
+            margin-bottom: 0.6em;
             page-break-inside: avoid;
         }
 
         .signature {
-            margin-top: 4em;
-            padding-top: 1.5em;
+            margin-top: 1.2em;
+            padding-top: 0.5em;
             border-top: 1px solid #ccc;
             text-align: center;
             font-style: italic;
@@ -154,7 +154,7 @@
         }
 
         .signature p {
-            margin-bottom: 0.5em;
+            margin-bottom: 0.2em;
         }
 
         /* Special formatting classes */
@@ -166,24 +166,69 @@
 
         @media print {
             body {
-                font-size: 11pt;
-                line-height: 1.6;
+                font-size: 9pt;
+                line-height: 1.1;
+                margin: 1cm;
             }
             
             h1 {
-                font-size: 24pt;
+                font-size: 18pt;
+                margin-top: 0.3em;
+                margin-bottom: 0.2em;
             }
             
             h2 {
-                font-size: 20pt;
+                font-size: 16pt;
+                margin-top: 0.3em;
+                margin-bottom: 0.2em;
             }
             
             h3 {
-                font-size: 16pt;
+                font-size: 14pt;
+                margin-top: 0.5em;
+                margin-bottom: 0.2em;
+                padding-bottom: 0.1em;
             }
             
             h4 {
-                font-size: 14pt;
+                font-size: 11pt;
+                margin-top: 0.3em;
+                margin-bottom: 0.1em;
+            }
+            
+            p {
+                margin-bottom: 0.1em;
+                line-height: 1.1;
+            }
+            
+            ul, ol {
+                margin-top: 0.1em;
+                margin-bottom: 0.2em;
+            }
+            
+            li {
+                margin-bottom: 0;
+                padding-bottom: 0;
+                line-height: 1.1;
+            }
+            
+            li ul, li ol {
+                margin-top: 0;
+                margin-bottom: 0;
+            }
+            
+            th, td {
+                padding: 0.2em;
+                font-size: 8pt;
+            }
+            
+            .table-container {
+                margin-bottom: 0.4em;
+            }
+            
+            .signature {
+                margin-top: 0.8em;
+                padding-top: 0.3em;
             }
         }
     </style>
@@ -211,7 +256,7 @@
     <ul>
         <li><strong>U.S. Treasury Direct:</strong> Official TreasuryDirect account holder (#K874050XXX) with established relationship for treasury instruments</li>
         <li><strong>Securities Registration:</strong> 
-            <ul style="list-style-type: circle; margin-left: 2em; margin-top: 0.2em;">
+            <ul style="list-style-type: circle; margin-left: 1.5em; margin-top: 0; margin-bottom: 0; padding: 0; line-height: 1;">
                 <li>ISIN: International Securities Identification Number US62944AAA43</li>
                 <li>CUSIP: Committee on Uniform Securities Identification Procedures #62944AAA4</li>
                 <li>Unit Investment Trust CUSIP #67074B105 / ISIN #US67074B1052</li>
@@ -219,13 +264,13 @@
             </ul>
         </li>
         <li><strong>Bloomberg Market Integration:</strong> 
-            <ul style="list-style-type: circle; margin-left: 2em; margin-top: 0.2em;">
+            <ul style="list-style-type: circle; margin-left: 1.5em; margin-top: 0; margin-bottom: 0; padding: 0; line-height: 1;">
                 <li>Ticker: 3387420Z US</li>
                 <li>Bloomberg Global ID (BBGID): BBG000P6FW5</li>
             </ul>
         </li>
         <li><strong>Secured Financial Registration:</strong>
-            <ul style="list-style-type: circle; margin-left: 2em; margin-top: 0.2em;">
+            <ul style="list-style-type: circle; margin-left: 1.5em; margin-top: 0; margin-bottom: 0; padding: 0; line-height: 1;">
                 <li>Texas UCC-1 Financial Statement (Account #120007754127)</li>
                 <li>Washington DC Financial Statement (Trust Account #2012025365)</li>
             </ul>
@@ -240,7 +285,7 @@
         <li><strong>Trust Structure:</strong> The NVC Fund Holding Trust (Trust #283157-524235-060024), with The Frank Ekejija Estate Trust as Original Holder in Due Course (UCC 3-302), established on September 6, 1958</li>
         <li><strong>Corporate Structure:</strong> NVC Fund entities organized under NVC Fund Holding Trust, including NVC Fund Trust, NVC Fund LLC, and NVC Fund Bank</li>
         <li><strong>Operational Management:</strong>
-            <ul style="list-style-type: circle; margin-left: 2em; margin-top: 0.2em;">
+            <ul style="list-style-type: circle; margin-left: 1.5em; margin-top: 0; margin-bottom: 0; padding: 0; line-height: 1;">
                 <li>Board of Trustees with global representation</li>
                 <li>Executive Management Committee</li>
                 <li>Risk Management and Compliance Division</li>
@@ -307,7 +352,7 @@
     
     <ul style="list-style-type: disc;">
         <li><strong>Major Global Currencies:</strong></li>
-        <ul style="list-style-type: circle; margin-left: 3em; margin-top: 0.2em;">
+        <ul style="list-style-type: circle; margin-left: 1.5em; margin-top: 0; margin-bottom: 0; padding: 0; line-height: 1;">
             <li>US Dollar (USD)</li>
             <li>Euro (EUR)</li>
             <li>British Pound (GBP)</li>
@@ -315,14 +360,14 @@
         </ul>
         
         <li><strong>Digital/Tokenized Currencies:</strong></li>
-        <ul style="list-style-type: circle; margin-left: 3em; margin-top: 0.2em;">
+        <ul style="list-style-type: circle; margin-left: 1.5em; margin-top: 0; margin-bottom: 0; padding: 0; line-height: 1;">
             <li>NVC Token Stablecoin (NVCT) - pegged 1:1 with USD</li>
             <li>Support for all major established cryptocurrencies, stablecoins, and digital assets</li>
             <li>Strategic partner-based digital currencies including AFD1, SFN, and AKLUMI</li>
         </ul>
         
         <li><strong>Flexible Currency Framework:</strong></li>
-        <ul style="list-style-type: circle; margin-left: 3em; margin-top: 0.2em;">
+        <ul style="list-style-type: circle; margin-left: 1.5em; margin-top: 0; margin-bottom: 0; padding: 0; line-height: 1;">
             <li>Adaptable integration with emerging currencies as needed</li>
             <li>Dynamic exchange rate management for optimal value preservation</li>
             <li>Cross-currency transaction capabilities with minimal conversion costs</li>
