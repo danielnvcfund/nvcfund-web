@@ -1,215 +1,239 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>NVC Fund Bank: Global Financial Capabilities</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVC Fund Bank Capabilities Report</title>
     <style>
-        @page {
-            size: letter;
-            margin: 2.5cm 1.5cm;
-            @top-center {
-                content: "NVC FUND BANK GLOBAL CAPABILITIES";
-                font-family: Arial, sans-serif;
-                font-size: 10pt;
-                color: #333;
-            }
-            @bottom-center {
-                content: "Page " counter(page) " of " counter(pages);
-                font-family: Arial, sans-serif;
-                font-size: 10pt;
-                color: #333;
-            }
-        }
-        
+        /* PDF Reports Stylesheet */
         body {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 12pt;
-            line-height: 1.5;
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            line-height: 1.6;
             color: #333;
+            margin: 2cm 2cm 2cm 2cm;
+            background-color: #fff;
         }
-        
+
         .header {
             text-align: center;
-            margin-bottom: 2cm;
+            margin-bottom: 2em;
         }
-        
-        .header h1 {
+
+        .header img {
+            max-width: 300px;
+            height: auto;
+            margin-bottom: 1em;
+        }
+
+        h1 {
             font-size: 24pt;
-            margin-bottom: 0.5cm;
             color: #003366;
-        }
-        
-        .header h2 {
-            font-size: 18pt;
-            font-weight: normal;
-            font-style: italic;
-            margin-top: 0;
-            color: #666;
-        }
-        
-        .seal {
-            width: 100%;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
             text-align: center;
-            margin: 1cm 0;
+            border-bottom: 1px solid #003366;
+            padding-bottom: 0.5em;
         }
-        
-        .seal img {
-            max-width: 6cm;
+
+        h2 {
+            font-size: 20pt;
+            color: #003366;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+            text-align: center;
         }
-        
+
         h3 {
             font-size: 16pt;
             color: #003366;
-            border-bottom: 1pt solid #003366;
-            padding-bottom: 0.2cm;
-            margin-top: 1.5cm;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 0.2em;
         }
-        
+
         h4 {
             font-size: 14pt;
             color: #003366;
-            margin-bottom: 0.3cm;
-            margin-top: 1cm;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
         }
-        
+
         p {
+            font-size: 11pt;
+            margin-bottom: 0.8em;
             text-align: justify;
-            margin-bottom: 0.5cm;
         }
-        
+
         ul, ol {
-            margin-bottom: 0.5cm;
+            margin-bottom: 1em;
+            margin-left: 1em;
         }
-        
+
         li {
-            margin-bottom: 0.2cm;
+            font-size: 11pt;
+            margin-bottom: 0.4em;
         }
-        
-        .table-container {
-            margin: 1cm 0;
-        }
-        
+
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 1.5em;
         }
-        
+
         th, td {
-            border: 1pt solid #ccc;
-            padding: 0.3cm;
+            border: 1px solid #ddd;
+            padding: 0.5em;
             text-align: left;
-        }
-        
-        th {
-            background-color: #e6f2ff;
-            font-weight: bold;
-        }
-        
-        .footer {
-            margin-top: 2cm;
-            text-align: center;
             font-size: 10pt;
         }
-        
-        .watermark {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            opacity: 0.1;
-            font-size: 100pt;
+
+        th {
+            background-color: #003366;
+            color: white;
             font-weight: bold;
-            color: #003366;
-            z-index: -1;
         }
-        
-        .highlight-box {
-            background-color: #f0f7ff;
-            border-left: 5pt solid #003366;
-            padding: 0.5cm;
-            margin: 0.5cm 0;
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
         }
-        
-        .quote {
-            font-style: italic;
-            margin: 1cm 2cm;
-            padding-left: 1cm;
-            border-left: 3pt solid #ccc;
+
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 1.5em;
         }
-        
+
         .signature {
-            margin-top: 2cm;
-            page-break-inside: avoid;
+            margin-top: 3em;
+            padding-top: 1em;
+            border-top: 1px solid #ccc;
+            text-align: right;
+            font-style: italic;
         }
-        
+
         .signature p {
+            margin-bottom: 0.3em;
+        }
+
+        .footer {
+            margin-top: 2em;
+            padding-top: 1em;
+            border-top: 1px solid #ccc;
             text-align: center;
+            font-size: 9pt;
+            color: #666;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 2cm;
+                font-size: 10pt;
+            }
+            
+            h1 {
+                font-size: 20pt;
+            }
+            
+            h2 {
+                font-size: 16pt;
+            }
+            
+            h3 {
+                font-size: 14pt;
+            }
+            
+            h4 {
+                font-size: 12pt;
+            }
+            
+            p, li {
+                font-size: 10pt;
+            }
+            
+            th, td {
+                font-size: 9pt;
+            }
+            
+            .footer {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+            }
         }
     </style>
 </head>
-
 <body>
-    <div class="watermark">OFFICIAL</div>
-    
     <div class="header">
-        <h1>NVC FUND BANK</h1>
-        <h2>Global Financial Capabilities Assessment</h2>
-    </div>
-    
-    <div class="seal">
-        <!-- Placeholder for bank seal/logo -->
-        <img src="/static/images/logo.png" alt="NVC Fund Bank Official Seal">
-    </div>
-    
-    <p><strong>DOCUMENT PURPOSE:</strong> This official assessment outlines the comprehensive capabilities and capacity of NVC Fund Bank as a supranational global financial institution, detailing its legal foundation, regulatory frameworks, financial infrastructure, technological capabilities, and global payment systems.</p>
-    
-    <h3>EXECUTIVE SUMMARY</h3>
-    
-    <p>NVC Fund Bank stands as a distinguished supranational financial institution with substantial asset backing, comprehensive payment capabilities, and integration with global financial systems. Founded in 2000 and continuously evolving its financial infrastructure, the bank operates under a unique charter through the African Finance Regulatory Authority (AFRA) framework while maintaining significant integration with U.S. Treasury systems, global securities markets, and multiple currency frameworks.</p>
-    
-    <p>With assets under management exceeding $5 trillion and a sophisticated multi-currency payment platform, NVC Fund Bank offers comprehensive global transaction capabilities spanning traditional banking channels, blockchain settlement, and innovative digital currency solutions. The bank's capabilities are underpinned by formal recognition across multiple financial systems and jurisdictions, creating a powerful framework for global financial operations.</p>
-    
-    <div class="highlight-box">
-        <p><strong>KEY HIGHLIGHTS:</strong></p>
-        <ul>
-            <li>Supranational banking authority established through African Union Treaty framework</li>
-            <li>Direct U.S. Treasury relationship with established TreasuryDirect account</li>
-            <li>Global securities recognition through formal CUSIP/ISIN registration</li>
-            <li>Bloomberg financial market integration with assigned ticker</li>
-            <li>Multi-trillion dollar asset base with substantial mineral resource backing</li>
-            <li>Advanced multi-currency payment infrastructure supporting global transactions</li>
-            <li>Blockchain and traditional settlement capabilities across major global currencies</li>
-        </ul>
+        <!-- SVG Logo embedded directly -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300" style="max-width: 300px; height: auto; margin-bottom: 1em;">
+          <defs>
+            <linearGradient id="gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#BF953F" />
+              <stop offset="50%" style="stop-color:#FCF6BA" />
+              <stop offset="70%" style="stop-color:#B38728" />
+              <stop offset="100%" style="stop-color:#FBF5B7" />
+            </linearGradient>
+          </defs>
+          
+          <!-- Outer Circle -->
+          <circle cx="150" cy="150" r="145" fill="none" stroke="url(#gold-gradient)" stroke-width="5" />
+          
+          <!-- Inner Circle -->
+          <circle cx="150" cy="150" r="135" fill="#003366" stroke="url(#gold-gradient)" stroke-width="2" />
+          
+          <!-- Globe Grid Lines -->
+          <path d="M150,15 Q150,150 150,285" stroke="#CCCCCC" stroke-width="1" fill="none" />
+          <path d="M150,15 Q200,150 150,285" stroke="#CCCCCC" stroke-width="1" fill="none" />
+          <path d="M150,15 Q100,150 150,285" stroke="#CCCCCC" stroke-width="1" fill="none" />
+          <path d="M15,150 Q150,150 285,150" stroke="#CCCCCC" stroke-width="1" fill="none" />
+          <path d="M30,100 Q150,130 270,100" stroke="#CCCCCC" stroke-width="1" fill="none" />
+          <path d="M30,200 Q150,170 270,200" stroke="#CCCCCC" stroke-width="1" fill="none" />
+          
+          <!-- NVC Text -->
+          <text x="150" y="130" font-family="Arial, sans-serif" font-weight="bold" font-size="48" text-anchor="middle" fill="url(#gold-gradient)">NVC</text>
+          
+          <!-- FUND BANK Text -->
+          <text x="150" y="180" font-family="Arial, sans-serif" font-weight="bold" font-size="32" text-anchor="middle" fill="url(#gold-gradient)">FUND BANK</text>
+          
+          <!-- Supranational Text -->
+          <text x="150" y="220" font-family="Arial, sans-serif" font-style="italic" font-size="16" text-anchor="middle" fill="#FFFFFF">Supranational Financial Institution</text>
+          
+          <!-- Established Text -->
+          <text x="150" y="240" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#CCCCCC">Est. 2000</text>
+        </svg>
+        <h1>CAPABILITIES REPORT</h1>
+        <h2>NVC FUND BANK</h2>
+        <p><strong>Supranational Sovereign Financial Institution</strong></p>
     </div>
     
     <h3>I. INSTITUTIONAL FOUNDATION</h3>
     
-    <h4>A. Legal Framework</h4>
+    <h4>A. Legal Status</h4>
     
-    <p>NVC Fund Bank operates under a comprehensive legal framework established through multiple jurisdictional recognitions:</p>
+    <p>NVC Fund Bank operates as a Supranational Sovereign Financial Institution chartered under the African Union Treaty framework. The bank maintains its status as an "Expressed Trust Bank" with unique legal positioning that enables cross-border financial operations across multiple jurisdictions.</p>
+    
+    <h4>B. Institutional Recognition</h4>
+    
+    <p>NVC Fund Bank's institutional status is recognized across multiple financial and regulatory frameworks:</p>
     
     <ul>
-        <li><strong>Banking Charter:</strong> Established as an "Expressed Trust Bank" under the African Union Treaty and the African Finance Regulatory Authority (AFRA)</li>
-        <li><strong>Supranational Status:</strong> Operates under the sovereign decree establishing the African Central Bank (ACB) and Article XIV 1(e) of the ECO-6 Treaty</li>
-        <li><strong>Corporate Structure:</strong> Formally organized with a board of directors and defined governance structure</li>
-        <li><strong>Historical Lineage:</strong> Successor to financial services entities dating back to 1982, formally consolidated in 2000</li>
+        <li><strong>U.S. Treasury Direct:</strong> Official TreasuryDirect account holder with established relationship for treasury instruments</li>
+        <li><strong>ISIN Registration:</strong> International Securities Identification Number US62944AAA43 registered through CUSIP Global Services</li>
+        <li><strong>CUSIP Integration:</strong> Committee on Uniform Securities Identification Procedures recognition for securities market integration</li>
+        <li><strong>Bloomberg Listing:</strong> Presence on Bloomberg terminal (Ticker: 3387420Z US) since 2009, demonstrating integration with global financial markets</li>
     </ul>
     
-    <h4>B. Organizational History</h4>
+    <h4>C. Governance Structure</h4>
     
-    <p>Founded on October 25, 2000, NVC Fund Holding Trust emerged as the successor to several financial entities operated by Frank Ekejija since 1982, including International Business Services, The Unique Group, Strategic Financial Group, Samson, Gaskin, and Pettit, and Network Venture Capital Fund.</p>
-    
-    <p>The pivotal development in the bank's history came between 2005-2007 through the acquisition of 22 Wyoming mineral resources claims, one of which was appraised at $1.3 trillion in gold, silver, platinum, and rhodium reserves. This asset base formed the foundation for the bank's substantial financial capacity.</p>
-    
-    <h4>C. Institutional Recognition</h4>
-    
-    <p>NVC Fund Bank has established formal recognition across multiple premier financial systems:</p>
+    <p>The bank operates under a comprehensive governance framework including:</p>
     
     <ul>
-        <li><strong>U.S. Treasury Recognition:</strong> Established TreasuryDirect account with the U.S. Department of the Treasury, Bureau of Public Debt (documented 2009-2011)</li>
-        <li><strong>Global Securities Registration:</strong> Formal ISIN/CUSIP registration (US62944AAA43) with CUSIP Global Services</li>
-        <li><strong>Financial Market Integration:</strong> Bloomberg listing with assigned ticker 3387420Z US (established September 2009)</li>
-        <li><strong>Securities Exchange Commission:</strong> SEC Form 6 registration of NVC trust shares as Unit Investment Trust with CUSIP #67074B105 (March 27, 2009)</li>
+        <li>Board of Trustees with global representation</li>
+        <li>Executive Management Committee</li>
+        <li>Risk Management and Compliance Division</li>
+        <li>Internal Audit Department</li>
+        <li>Operations and Technology Division</li>
     </ul>
     
     <h3>II. FINANCIAL CAPACITY</h3>

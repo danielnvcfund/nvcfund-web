@@ -24,9 +24,13 @@ def nvc_fund_bank_capabilities_report():
             current_date=current_date
         )
         
+        # Get the base URL for resolving relative URLs
+        base_url = current_app.config.get('SERVER_NAME') or 'localhost:5000'
+        base_url = f"http://{base_url}"
+        
         # Create a PDF from the HTML content
         pdf_file = BytesIO()
-        weasyprint.HTML(string=html_content).write_pdf(pdf_file)
+        weasyprint.HTML(string=html_content, base_url=base_url).write_pdf(pdf_file)
         pdf_file.seek(0)
         
         # Create a response with the PDF content
