@@ -352,6 +352,46 @@ def logout():
     # Render a template that clears the JWT token from storage before redirecting
     return response
 
+@main.route('/signup', methods=['GET', 'POST'])
+@main.route('/simple-register', methods=['GET', 'POST'])
+def simple_register():
+    """Simple user registration route"""
+    # If user is already logged in, redirect to dashboard
+    if current_user.is_authenticated:
+        return redirect(url_for('web.main.dashboard'))
+        
+    form = RegistrationForm()
+    
+    if form.validate_on_submit():
+        try:
+            # Create user with basic info
+            user, error = register_user(form.username.data, form.email.data, form.password.data)
+            
+            if error:
+                flash(error, 'danger')
+                return render_template('simple_register.html', form=form)
+                
+            # Update additional profile information if provided
+            if user:
+                if form.terms_agree.data:
+                    # Mark user as having agreed to terms
+                    user.terms_agreed = True
+                    
+                # Commit changes
+                db.session.commit()
+                
+                # Log the user in
+                login_user(user)
+                flash('Your account has been created!', 'success')
+                return redirect(url_for('web.main.dashboard'))
+                
+        except Exception as e:
+            app.logger.error(f"Error during registration: {str(e)}")
+            flash('An error occurred during registration. Please try again.', 'danger')
+    
+    # GET request or form validation failed
+    return render_template('simple_register.html', form=form)
+
 @main.route('/register', methods=['GET', 'POST'])
 def register():
     """User registration route with comprehensive signup process"""
