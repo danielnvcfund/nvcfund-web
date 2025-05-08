@@ -13,6 +13,12 @@ from io import BytesIO
 pdf_reports = Blueprint('pdf_reports', __name__)
 logger = logging.getLogger(__name__)
 
+@pdf_reports.route('/')
+def reports_index():
+    """Display the reports index page"""
+    current_date = datetime.now().strftime("%B %d, %Y")
+    return render_template('reports/index.html', current_date=current_date)
+
 @pdf_reports.route('/capabilities-report')
 def nvc_fund_bank_capabilities_report():
     """Generate a PDF report on NVC Fund Bank capabilities"""
