@@ -461,6 +461,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering API Documentation routes: {str(e)}")
             logger.warning("Application will run without API Documentation functionality")
+            
+        # Register Correspondent Banking routes
+        try:
+            from routes.correspondent_banking_routes import correspondent_bp
+            app.register_blueprint(correspondent_bp)
+            logger.info("Correspondent Banking routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Correspondent Banking routes: {str(e)}")
+            logger.warning("Application will run without Correspondent Banking functionality")
         
         # Create PHP test integration user
         try:
