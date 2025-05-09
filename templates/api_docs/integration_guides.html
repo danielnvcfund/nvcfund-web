@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">NVC Banking Platform Integration Guides</h1>
+            
+            <div class="alert alert-warning">
+                <h4 class="alert-heading">Coming Soon</h4>
+                <p>
+                    Detailed integration guides for connecting various systems to the NVC Banking Platform are currently
+                    in development and will be available soon. These guides will include step-by-step instructions, code samples, 
+                    and best practices for integration.
+                </p>
+                <hr>
+                <p class="mb-0">
+                    In the meantime, please refer to the <a href="{{ url_for('api_docs.nvc_api_infrastructure') }}">API Infrastructure Overview</a>
+                    for information about the capabilities and architecture of our API platform.
+                </p>
+            </div>
+            
+            <div class="text-center mt-5 mb-4">
+                <a href="{{ url_for('api_docs.index') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Back to API Documentation
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
