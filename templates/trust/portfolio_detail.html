@@ -135,9 +135,23 @@
                             <h4 class="mb-0">Portfolio Assets</h4>
                             
                             {% if current_user.is_authenticated and current_user.role == 'ADMIN' %}
-                            <a href="{{ url_for('trust.add_asset', portfolio_id=portfolio.id) }}" class="btn btn-sm btn-primary">
-                                <i class="fas fa-plus"></i> Add Asset
-                            </a>
+                            <div class="btn-group">
+                                <a href="{{ url_for('trust.add_asset', portfolio_id=portfolio.id) }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus"></i> Add Asset
+                                </a>
+                                <button type="button" class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a class="dropdown-item" href="{{ url_for('trust.add_safekeeping_receipt', portfolio_id=portfolio.id) }}">
+                                        <i class="fas fa-certificate"></i> Add Custom SKR Document
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="{{ url_for('trust.add_nvc_skr_072809', portfolio_id=portfolio.id) }}">
+                                        <i class="fas fa-star"></i> Add NVC-SKR-CD ST200602017-082809
+                                    </a>
+                                </div>
+                            </div>
                             {% endif %}
                         </div>
                         <div class="card-body">

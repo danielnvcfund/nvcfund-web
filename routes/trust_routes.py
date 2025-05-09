@@ -212,6 +212,78 @@ def add_asset(portfolio_id):
         asset_statuses=[status.value for status in AssetStatus]
     )
 
+@trust_bp.route('/portfolio/<int:portfolio_id>/add-nvc-skr-072809', methods=['GET'])
+@admin_required
+def add_nvc_skr_072809(portfolio_id):
+    """Add the NVC-SKR-CD ST200602017-082809 asset to the portfolio"""
+    try:
+        # Create the SKR asset
+        asset = create_nvc_skr_072809_001_asset()
+        
+        if asset:
+            flash(f'NVC-SKR-CD ST200602017-082809 asset has been added to the portfolio.', 'success')
+            return redirect(url_for('trust.asset_detail', asset_id=asset.id))
+        else:
+            flash('Failed to create NVC-SKR-CD asset.', 'danger')
+            return redirect(url_for('trust.portfolio_detail', portfolio_id=portfolio_id))
+            
+    except Exception as e:
+        logger.error(f"Error adding NVC-SKR-CD asset: {str(e)}")
+        flash(f'Error adding NVC-SKR-CD asset: {str(e)}', 'danger')
+        return redirect(url_for('trust.portfolio_detail', portfolio_id=portfolio_id))
+
+@trust_bp.route('/portfolio/<int:portfolio_id>/add-safekeeping-receipt', methods=['GET', 'POST'])
+@admin_required
+def add_safekeeping_receipt(portfolio_id):
+    """Add a safekeeping receipt (SKR) asset to the portfolio"""
+    portfolio = get_portfolio(portfolio_id)
+    if not portfolio:
+        flash('Portfolio not found.', 'danger')
+        return redirect(url_for('trust.index'))
+    
+    if request.method == 'POST':
+        skr_number = request.form.get('skr_number')
+        amount = request.form.get('amount')
+        issuer = request.form.get('issuer')
+        issue_date_str = request.form.get('issue_date')
+        maturity_date_str = request.form.get('maturity_date')
+        beneficiary = request.form.get('beneficiary')
+        description = request.form.get('description')
+        
+        if not skr_number or not amount or not issuer or not issue_date_str or not maturity_date_str or not beneficiary:
+            flash('All fields are required.', 'danger')
+            return redirect(url_for('trust.add_safekeeping_receipt', portfolio_id=portfolio.id))
+        
+        try:
+            # Convert date strings to date objects
+            issue_date = datetime.strptime(issue_date_str, '%Y-%m-%d').date()
+            maturity_date = datetime.strptime(maturity_date_str, '%Y-%m-%d').date()
+            
+            # Create the SKR asset
+            asset = create_safekeeping_receipt_asset(
+                portfolio_id=portfolio.id,
+                skr_number=skr_number,
+                amount=float(amount),
+                issuer=issuer,
+                issue_date=issue_date,
+                maturity_date=maturity_date,
+                beneficiary=beneficiary,
+                description=description
+            )
+            
+            flash(f'Safekeeping Receipt {skr_number} has been added to the portfolio.', 'success')
+            return redirect(url_for('trust.asset_detail', asset_id=asset.id))
+        except Exception as e:
+            flash(f'Error adding Safekeeping Receipt: {str(e)}', 'danger')
+            return redirect(url_for('trust.add_safekeeping_receipt', portfolio_id=portfolio.id))
+    
+    # For GET requests, display the form
+    return render_template(
+        'trust/add_safekeeping_receipt.html',
+        title='Add Safekeeping Receipt',
+        portfolio=portfolio
+    )
+
 @trust_bp.route('/portfolio/<int:portfolio_id>/update-valuation', methods=['POST'])
 @admin_required
 def update_portfolio_valuation_route(portfolio_id):
