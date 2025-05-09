@@ -1,0 +1,139 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>NVC Fund Bank Correspondent Banking</h1>
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Connect your financial institution to NVC Fund Bank's global settlement network and access our comprehensive banking services.
+            </div>
+            
+            <div class="row mb-5">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="mb-0"><i class="fas fa-handshake"></i> Establish a Partnership</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>NVC Fund Bank offers correspondent banking relationships to qualified financial institutions worldwide. As a Supranational Sovereign Financial Institution with over $10 trillion in balance sheet assets, we provide:</p>
+                            <ul>
+                                <li>Access to our global settlement infrastructure</li>
+                                <li>Multi-currency accounts including USD, EUR, GBP, NVCT, AFD1, and more</li>
+                                <li>Real-time gross settlement (RTGS) capabilities</li>
+                                <li>Integration with our NVCT stablecoin ecosystem (1:1 USD peg)</li>
+                                <li>Competitive foreign exchange rates</li>
+                            </ul>
+                            <div class="mt-3">
+                                <a href="{{ url_for('correspondent.onboarding') }}" class="btn btn-primary">Begin Onboarding Process</a>
+                                <a href="{{ url_for('correspondent.agreement') }}" class="btn btn-outline-primary ml-2">View Partnership Agreement</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-success text-white">
+                            <h3 class="mb-0"><i class="fas fa-globe"></i> Global Network Benefits</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>By partnering with NVC Fund Bank as a correspondent bank, your institution gains access to:</p>
+                            <ul>
+                                <li>SWIFT messaging capabilities (MT103, MT202, MT760, etc.)</li>
+                                <li>Direct integration with central banks and major financial institutions</li>
+                                <li>Advanced API infrastructure for automated transaction processing</li>
+                                <li>Trade finance facilities including letters of credit and guarantees</li>
+                                <li>Secure, compliant cross-border payment channels</li>
+                                <li>Enhanced liquidity management options</li>
+                                <li>Competitive fee structure and transaction pricing</li>
+                            </ul>
+                            <div class="mt-3">
+                                <a href="{{ url_for('correspondent.partners') }}" class="btn btn-success">View Current Partners</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h3 class="mb-0"><i class="fas fa-shield-alt"></i> Compliance and Security</h3>
+                </div>
+                <div class="card-body">
+                    <p>NVC Fund Bank maintains rigorous compliance standards for all correspondent banking relationships:</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Eligibility Requirements</h5>
+                            <ul>
+                                <li>Licensed and regulated financial institution</li>
+                                <li>Robust AML/CFT compliance program</li>
+                                <li>Sound financial standing and capital adequacy</li>
+                                <li>Transparency in ownership and operations</li>
+                                <li>Satisfactory regulatory track record</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Ongoing Monitoring</h5>
+                            <ul>
+                                <li>Regular AML/KYC reviews and assessments</li>
+                                <li>Transaction monitoring and suspicious activity reporting</li>
+                                <li>Sanctions screening and compliance checks</li>
+                                <li>Annual relationship review process</li>
+                                <li>Secure communication and data protection protocols</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="alert alert-secondary mt-3">
+                        <strong>Note:</strong> All correspondent banking relationships with NVC Fund Bank are subject to our standard due diligence process and approval by our compliance department.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0"><i class="fas fa-question-circle"></i> How to Get Started</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="bg-light rounded-circle d-inline-flex justify-content-center align-items-center mb-2" style="width: 60px; height: 60px;">
+                                <h2 class="mb-0">1</h2>
+                            </div>
+                            <h5>Initial Inquiry</h5>
+                            <p class="small">Submit your expression of interest</p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="bg-light rounded-circle d-inline-flex justify-content-center align-items-center mb-2" style="width: 60px; height: 60px;">
+                                <h2 class="mb-0">2</h2>
+                            </div>
+                            <h5>Due Diligence</h5>
+                            <p class="small">Complete our onboarding questionnaire</p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="bg-light rounded-circle d-inline-flex justify-content-center align-items-center mb-2" style="width: 60px; height: 60px;">
+                                <h2 class="mb-0">3</h2>
+                            </div>
+                            <h5>Agreement</h5>
+                            <p class="small">Review and sign the correspondent banking agreement</p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="bg-light rounded-circle d-inline-flex justify-content-center align-items-center mb-2" style="width: 60px; height: 60px;">
+                                <h2 class="mb-0">4</h2>
+                            </div>
+                            <h5>Activation</h5>
+                            <p class="small">Account setup and service implementation</p>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('correspondent.onboarding') }}" class="btn btn-info btn-lg">Start the Process Today</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
