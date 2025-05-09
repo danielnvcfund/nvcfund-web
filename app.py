@@ -195,6 +195,14 @@ def create_app():
         except Exception as e:
             logger.error(f"Error importing account holder models: {str(e)}")
             logger.warning("Application will run without account holder functionality")
+            
+        # Import trust portfolio models
+        try:
+            import trust_portfolio  # noqa: F401
+            logger.info("Trust portfolio models imported successfully")
+        except Exception as e:
+            logger.error(f"Error importing trust portfolio models: {str(e)}")
+            logger.warning("Application will run without trust portfolio functionality")
         
         # Create database tables
         db.create_all()
