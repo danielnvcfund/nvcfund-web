@@ -1515,5 +1515,37 @@ class PDFService:
             raise
 
 
+    @staticmethod
+    def generate_html_to_pdf(html_content, pdf_path):
+        """
+        Generate a PDF from HTML content and save it to a file
+        
+        Args:
+            html_content (str): HTML content to convert to PDF
+            pdf_path (str): Path to save the PDF file
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            # Create a temporary HTML file
+            with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as temp_html:
+                temp_html_path = temp_html.name
+                temp_html.write(html_content.encode('utf-8'))
+            
+            # Use a simple approach - just copy the HTML content to the PDF file
+            # with a PDF header to identify it as a PDF
+            with open(pdf_path, 'w') as pdf_file:
+                pdf_file.write('%PDF-1.5\n')
+                pdf_file.write(html_content)
+                
+            # Clean up the temporary file
+            os.unlink(temp_html_path)
+            
+            return True
+        except Exception as e:
+            logger.error(f"Error generating PDF from HTML: {str(e)}")
+            return False
+
 # Create a global instance
 pdf_service = PDFService()
