@@ -452,6 +452,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering Trust Portfolio routes: {str(e)}")
             logger.warning("Application will run without Trust Portfolio functionality")
+            
+        # Register API Documentation routes
+        try:
+            from routes.api_documentation_routes import api_docs_bp
+            app.register_blueprint(api_docs_bp)
+            logger.info("API Documentation routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering API Documentation routes: {str(e)}")
+            logger.warning("Application will run without API Documentation functionality")
         
         # Create PHP test integration user
         try:
