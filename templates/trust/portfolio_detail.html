@@ -134,7 +134,7 @@
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h4 class="mb-0">Portfolio Assets</h4>
                             
-                            {% if current_user.is_authenticated %}
+                            {% if current_user.is_authenticated and current_user.role == 'ADMIN' %}
                             <div class="btn-group">
                                 <a href="{{ url_for('trust.add_asset', portfolio_id=portfolio.id) }}" class="btn btn-sm btn-primary">
                                     <i class="fas fa-plus"></i> Add Asset
