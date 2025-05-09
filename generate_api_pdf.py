@@ -180,35 +180,34 @@ def generate_api_infrastructure_pdf():
     pdf.multi_cell(0, 8, "The API capabilities of the NVC Banking Platform create a powerful network effect:")
     pdf.ln(2)
     
-    # Define consistent column widths for better alignment
-    col1_width = 75  # Width for the first column (labels)
-    col2_width = 115  # Width for the second column (descriptions)
+    # Use a table approach with clear separation between columns
+    col1_width = 60  # Width for the first column (labels)
     
     # Table headings with proper alignment
     pdf.set_font("Arial", "B", 12)
     pdf.cell(col1_width, 8, "Banking-as-a-Service:", 0, 0)
     pdf.set_font("Arial", "", 12)
-    pdf.cell(col2_width, 8, "Enables smaller financial institutions to leverage NVC's global infrastructure", 0, 1)
+    pdf.multi_cell(0, 8, "Enables smaller financial institutions to leverage NVC's global infrastructure")
     
     pdf.set_font("Arial", "B", 12)
     pdf.cell(col1_width, 8, "Open Banking Compliance:", 0, 0)
     pdf.set_font("Arial", "", 12)
-    pdf.cell(col2_width, 8, "Supports regulatory frameworks for financial data sharing", 0, 1)
+    pdf.multi_cell(0, 8, "Supports regulatory frameworks for financial data sharing")
     
     pdf.set_font("Arial", "B", 12)
     pdf.cell(col1_width, 8, "Financial Inclusion:", 0, 0)
     pdf.set_font("Arial", "", 12)
-    pdf.cell(col2_width, 8, "Allows fintech innovators to build on top of NVC's platform", 0, 1)
+    pdf.multi_cell(0, 8, "Allows fintech innovators to build on top of NVC's platform")
     
     pdf.set_font("Arial", "B", 12)
     pdf.cell(col1_width, 8, "Cross-Border Efficiency:", 0, 0)
     pdf.set_font("Arial", "", 12)
-    pdf.cell(col2_width, 8, "Reduces friction in international transactions through standardized interfaces", 0, 1)
+    pdf.multi_cell(0, 8, "Reduces friction in international transactions through standardized interfaces")
     
     pdf.set_font("Arial", "B", 12)
     pdf.cell(col1_width, 8, "Blockchain Integration:", 0, 0)
     pdf.set_font("Arial", "", 12)
-    pdf.cell(col2_width, 8, "Bridges traditional and decentralized finance through unified API access", 0, 1)
+    pdf.multi_cell(0, 8, "Bridges traditional and decentralized finance through unified API access")
     pdf.ln(5)
     
     # Conclusion
