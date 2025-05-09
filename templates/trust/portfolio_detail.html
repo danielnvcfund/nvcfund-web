@@ -1,0 +1,285 @@
+{% extends 'layout.html' %}
+
+{% block styles %}
+<style>
+    .portfolio-header {
+        background: linear-gradient(135deg, #003366 0%, #1a4d80 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px 10px 0 0;
+        margin-bottom: 20px;
+    }
+    .asset-card {
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+    .asset-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+    .asset-category {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        margin-bottom: 10px;
+    }
+    .mineral-rights { background-color: #ffedd5; color: #9a3412; }
+    .precious-metals { background-color: #fef3c7; color: #854d0e; }
+    .equity { background-color: #d1fae5; color: #065f46; }
+    .financial-instrument { background-color: #dbeafe; color: #1e40af; }
+    .treasury-instrument { background-color: #e0e7ff; color: #3730a3; }
+    .real-estate { background-color: #ede9fe; color: #5b21b6; }
+    .cashiers-check { background-color: #fae8ff; color: #86198f; }
+    .currency { background-color: #fce7f3; color: #9d174d; }
+    .other { background-color: #f3f4f6; color: #374151; }
+    
+    .asset-status {
+        display: inline-block;
+        padding: 3px 6px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        margin-left: 5px;
+    }
+    .status-active { background-color: #dcfce7; color: #166534; }
+    .status-inactive { background-color: #f3f4f6; color: #4b5563; }
+    .status-pending { background-color: #fef3c7; color: #92400e; }
+    .status-secured { background-color: #dbeafe; color: #1e40af; }
+    .status-allocated { background-color: #e0e7ff; color: #4338ca; }
+    .status-reserved { background-color: #fce7f3; color: #9d174d; }
+    
+    .valuation-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #003366;
+    }
+    .valuation-card {
+        border-left: 5px solid #4A6FFF;
+    }
+    .valuation-history {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('trust.index') }}">Trust Portfolios</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('trust.fund_detail', fund_id=portfolio.trust_fund_id) }}">{{ portfolio.trust_fund.name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ portfolio.name }}</li>
+                </ol>
+            </nav>
+            
+            <div class="portfolio-header">
+                <h1>{{ portfolio.name }}</h1>
+                <p>{{ portfolio.description }}</p>
+                <div class="text-light">
+                    <i class="far fa-calendar-alt"></i> Created: {{ portfolio.created_at.strftime('%B %d, %Y') }}
+                </div>
+            </div>
+            
+            <!-- Current Valuation -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card valuation-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h3>Current Portfolio Value</h3>
+                                
+                                {% if current_user.is_authenticated and current_user.role == 'ADMIN' %}
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#updateValuationModal">
+                                    <i class="fas fa-edit"></i> Update Valuation
+                                </button>
+                                {% endif %}
+                            </div>
+                            
+                            {% set current_valuation = portfolio.current_valuation() %}
+                            {% if current_valuation %}
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="valuation-number">
+                                        ${{ '{:,.2f}'.format(current_valuation.total_value|float) }}
+                                    </div>
+                                    <div class="text-muted">
+                                        <i class="far fa-calendar-alt"></i> As of {{ current_valuation.valuation_date.strftime('%Y-%m-%d') }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-right">
+                                    <div class="text-muted">
+                                        <strong>Method:</strong> {{ current_valuation.valuation_method }}<br>
+                                        <strong>Assessor:</strong> {{ current_valuation.assessor }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                No valuation records found for this portfolio.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Assets and Valuation History -->
+            <div class="row">
+                <!-- Assets -->
+                <div class="col-md-8">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">Portfolio Assets</h4>
+                            
+                            {% if current_user.is_authenticated and current_user.role == 'ADMIN' %}
+                            <a href="{{ url_for('trust.add_asset', portfolio_id=portfolio.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus"></i> Add Asset
+                            </a>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            {% if assets %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Asset</th>
+                                            <th>Category</th>
+                                            <th>Current Value</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for asset in assets %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ asset.name }}</strong>
+                                                {% if asset.location %}
+                                                <br><small class="text-muted">{{ asset.location }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="asset-category {{ asset.asset_category.value }}">
+                                                    {{ asset.asset_category.value|replace('_', ' ')|title }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% set current_value = asset.current_value() %}
+                                                {% if current_value %}
+                                                ${{ '{:,.2f}'.format(current_value|float) }}
+                                                {% else %}
+                                                N/A
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="asset-status status-{{ asset.status.value }}">
+                                                    {{ asset.status.value|title }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('trust.asset_detail', asset_id=asset.id) }}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-search"></i> Details
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> No assets are currently registered in this portfolio.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Valuation History -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="mb-0">Valuation History</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if valuation_history %}
+                            <div class="valuation-history">
+                                <ul class="list-group">
+                                    {% for valuation in valuation_history %}
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>${{ '{:,.2f}'.format(valuation.total_value|float) }}</strong>
+                                                <div class="small text-muted">{{ valuation.valuation_method }}</div>
+                                            </div>
+                                            <div class="text-right">
+                                                <div>{{ valuation.valuation_date.strftime('%Y-%m-%d') }}</div>
+                                                <div class="small text-muted">{{ valuation.assessor }}</div>
+                                            </div>
+                                        </div>
+                                        {% if valuation.notes %}
+                                        <div class="mt-2 small text-muted">
+                                            <em>{{ valuation.notes }}</em>
+                                        </div>
+                                        {% endif %}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> No valuation history available.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Valuation Modal -->
+{% if current_user.is_authenticated and current_user.role == 'ADMIN' %}
+<div class="modal fade" id="updateValuationModal" tabindex="-1" role="dialog" aria-labelledby="updateValuationModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateValuationModalLabel">Update Portfolio Valuation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ url_for('trust.update_portfolio_valuation_route', portfolio_id=portfolio.id) }}" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="total_value">Total Value (USD)</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="total_value" name="total_value" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="valuation_method">Valuation Method</label>
+                        <input type="text" class="form-control" id="valuation_method" name="valuation_method" value="Manual Update">
+                    </div>
+                    <div class="form-group">
+                        <label for="assessor">Assessor</label>
+                        <input type="text" class="form-control" id="assessor" name="assessor" value="{{ current_user.username }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Valuation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

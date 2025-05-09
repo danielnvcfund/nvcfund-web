@@ -436,6 +436,15 @@ def create_app():
             logger.error(f"Error registering Currency Exchange routes: {str(e)}")
             logger.warning("Application will run without Currency Exchange functionality")
             
+        # Register Trust Portfolio routes
+        try:
+            from routes.trust_routes import trust_bp
+            app.register_blueprint(trust_bp)
+            logger.info("Trust Portfolio routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Trust Portfolio routes: {str(e)}")
+            logger.warning("Application will run without Trust Portfolio functionality")
+        
         # Create PHP test integration user
         try:
             from auth import create_php_test_user
