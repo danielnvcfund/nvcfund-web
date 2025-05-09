@@ -5,9 +5,19 @@ Script to generate a PDF for the NVC API Infrastructure document.
 import os
 from fpdf import FPDF
 
+class PDFWithPageNumbers(FPDF):
+    """Custom PDF class with page numbers"""
+    def footer(self):
+        # Position at 1.5 cm from bottom
+        self.set_y(-15)
+        # Arial italic 8
+        self.set_font('Arial', 'I', 8)
+        # Page number
+        self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
+
 def generate_api_infrastructure_pdf():
     """Generate a PDF for the NVC API Infrastructure document."""
-    pdf = FPDF()
+    pdf = PDFWithPageNumbers()
     pdf.add_page()
     
     # Set document information
