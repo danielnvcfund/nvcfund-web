@@ -386,7 +386,8 @@ def register():
             
             if error:
                 flash(error, 'danger')
-                return render_template('register.html', form=form)
+                # Pass the form back so all the user's inputs are preserved
+                return render_template('register.html', form=form, preserve_inputs=True)
             
             # Update common profile information
             if user:
@@ -508,7 +509,7 @@ def client_registration():
             
             if error:
                 flash(error, 'danger')
-                return render_template('client_registration.html', form=form)
+                return render_template('client_registration.html', form=form, preserve_inputs=True)
             
             # Update additional profile information
             if user:
