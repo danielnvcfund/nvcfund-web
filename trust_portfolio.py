@@ -108,9 +108,13 @@ class TrustAsset(db.Model):
         return f"<TrustAsset {self.name} ({self.asset_category})>"
     
     def current_value(self):
-        """Get the most recent valuation for this asset"""
+        """Get the most recent valuation value for this asset"""
         valuation = AssetValuation.query.filter_by(asset_id=self.id).order_by(AssetValuation.valuation_date.desc()).first()
         return valuation.value if valuation else self.acquisition_value
+    
+    def current_valuation(self):
+        """Get the most recent valuation object for this asset"""
+        return AssetValuation.query.filter_by(asset_id=self.id).order_by(AssetValuation.valuation_date.desc()).first()
     
     def get_metadata(self):
         """Parse the metadata JSON string"""
