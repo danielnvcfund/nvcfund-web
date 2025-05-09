@@ -26,38 +26,15 @@ def nvc_api_infrastructure():
 
 @api_docs_bp.route('/nvc-api-infrastructure.pdf')
 def nvc_api_infrastructure_pdf():
-    """Serve static PDF version of the NVC API Infrastructure document"""
+    """Serve printable version of the NVC API Infrastructure document"""
     try:
-        # Return a static PDF file instead of generating it dynamically
-        static_file_path = os.path.join(os.getcwd(), 'static', 'documents', 'NVC_API_Infrastructure.pdf')
-        
-        if not os.path.exists(static_file_path):
-            # If the static PDF doesn't exist, create it
-            logger.info(f"Creating static PDF file at {static_file_path}")
-            with open(static_file_path, 'w') as f:
-                f.write("""NVC Banking Platform API Infrastructure
-
-Strategic Integration with the Financial Ecosystem
-
-What is an API?
-
-API (Application Programming Interface) serves as a structured communication bridge that allows different software systems to interact with each other. In the context of the NVC Banking Platform, APIs enable secure, standardized methods for exchanging financial data, processing transactions, integrating with external services, and automating financial operations.
-
-Strategic Importance of APIs in the NVC Banking Platform
-
-The NVC Banking Platform's API infrastructure is central to its functioning as a global financial hub.
-
-Please see the HTML version for the complete document.
-""")
-        
-        # Serve the static PDF file
-        response = make_response(send_file(static_file_path, mimetype='application/pdf'))
-        response.headers['Content-Disposition'] = 'attachment; filename=NVC_API_Infrastructure.pdf'
-        return response
-    
+        # Instead of trying to generate a PDF, let's serve a printable HTML version
+        # that looks like a PDF but is actually HTML (avoids PDF generation issues)
+        return render_template('api_docs/nvc_api_infrastructure_printable.html', 
+                              title='NVC API Infrastructure (Printable Version)')
     except Exception as e:
-        logger.error(f"Error serving API Infrastructure PDF: {str(e)}")
-        # If we can't serve the PDF for some reason, redirect to the HTML version
+        logger.error(f"Error serving API Infrastructure printable version: {str(e)}")
+        # If there's an error, redirect to the regular HTML version
         return redirect(url_for('api_docs.nvc_api_infrastructure'))
 
 @api_docs_bp.route('/api-reference')
