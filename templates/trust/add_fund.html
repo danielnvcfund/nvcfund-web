@@ -1,0 +1,134 @@
+{% extends 'layout.html' %}
+
+{% block styles %}
+<style>
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .card-header {
+        background: linear-gradient(135deg, #003366 0%, #1a4d80 100%);
+        color: white;
+        border-radius: 10px 10px 0 0 !important;
+        padding: 15px 20px;
+    }
+    .btn-primary {
+        background-color: #003366;
+        border-color: #003366;
+    }
+    .btn-primary:hover {
+        background-color: #002347;
+        border-color: #002347;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-control:focus {
+        border-color: #003366;
+        box-shadow: 0 0 0 0.2rem rgba(0, 51, 102, 0.25);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('trust.index') }}">Trust Portfolios</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Add Trust Fund</li>
+                </ol>
+            </nav>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Create New Trust Fund</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="name">Fund Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" required placeholder="E.g., NVC GHL Fund">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="code">Fund Code</label>
+                            <input type="text" class="form-control" id="code" name="code" placeholder="E.g., NVCGHL-01">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Briefly describe this trust fund"></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="established_date">Date Established</label>
+                                    <input type="date" class="form-control" id="established_date" name="established_date">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="account_number">Account Number</label>
+                                    <input type="text" class="form-control" id="account_number" name="account_number" placeholder="E.g., NVCF-20060217">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="grantor">Grantor</label>
+                                    <input type="text" class="form-control" id="grantor" name="grantor" placeholder="Entity that established the trust">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="beneficiary">Beneficiary</label>
+                                    <input type="text" class="form-control" id="beneficiary" name="beneficiary" placeholder="Entity that benefits from the trust">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="trustee">Trustee</label>
+                                    <input type="text" class="form-control" id="trustee" name="trustee" placeholder="Primary trustee for the fund">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="co_trustees">Co-Trustees</label>
+                                    <input type="text" class="form-control" id="co_trustees" name="co_trustees" placeholder="Additional trustees (if any)">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-right mt-4">
+                            <a href="{{ url_for('trust.index') }}" class="btn btn-outline-secondary mr-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create Trust Fund</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Set default date to today's date if not provided
+        if (!$('#established_date').val()) {
+            const today = new Date();
+            const formattedDate = today.toISOString().substr(0, 10);
+            $('#established_date').val(formattedDate);
+        }
+    });
+</script>
+{% endblock %}

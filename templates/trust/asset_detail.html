@@ -5,7 +5,7 @@
     .asset-header {
         background: linear-gradient(135deg, #003366 0%, #1a4d80 100%);
         color: white;
-        padding: 20px;
+        padding: 25px;
         border-radius: 10px 10px 0 0;
         margin-bottom: 20px;
     }
@@ -16,55 +16,71 @@
         opacity: 0.85;
         font-size: 0.95rem;
     }
-    .asset-category {
-        display: inline-block;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        margin-bottom: 10px;
+    .valuation-card {
+        border-left: 5px solid #4A6FFF;
     }
-    .mineral-rights { background-color: #ffedd5; color: #9a3412; }
-    .precious-metals { background-color: #fef3c7; color: #854d0e; }
-    .equity { background-color: #d1fae5; color: #065f46; }
-    .financial-instrument { background-color: #dbeafe; color: #1e40af; }
-    .treasury-instrument { background-color: #e0e7ff; color: #3730a3; }
-    .real-estate { background-color: #ede9fe; color: #5b21b6; }
-    .cashiers-check { background-color: #fae8ff; color: #86198f; }
-    .currency { background-color: #fce7f3; color: #9d174d; }
-    .other { background-color: #f3f4f6; color: #374151; }
-    
-    .asset-status {
-        display: inline-block;
-        padding: 3px 6px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        margin-left: 5px;
+    .valuation-history-card {
+        border-left: 5px solid #00A86B;
     }
-    .status-active { background-color: #dcfce7; color: #166534; }
-    .status-inactive { background-color: #f3f4f6; color: #4b5563; }
-    .status-pending { background-color: #fef3c7; color: #92400e; }
-    .status-secured { background-color: #dbeafe; color: #1e40af; }
-    .status-allocated { background-color: #e0e7ff; color: #4338ca; }
-    .status-reserved { background-color: #fce7f3; color: #9d174d; }
-    
-    .value-number {
-        font-size: 2rem;
+    .document-card {
+        border-left: 5px solid #FF5733;
+    }
+    .current-value {
+        font-size: 2.2rem;
         font-weight: 700;
         color: #003366;
     }
-    .value-card {
-        border-left: 5px solid #4A6FFF;
+    .value-change-positive {
+        color: #00A86B;
     }
-    .valuation-history {
-        max-height: 400px;
-        overflow-y: auto;
+    .value-change-negative {
+        color: #FF5733;
     }
-    .metadata-table {
-        font-size: 0.9rem;
+    .detail-label {
+        font-weight: 600;
+        color: #555;
     }
-    .asset-description {
-        margin-top: 15px;
-        line-height: 1.6;
+    .timeline {
+        position: relative;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .timeline::after {
+        content: '';
+        position: absolute;
+        width: 3px;
+        background-color: #003366;
+        top: 0;
+        bottom: 0;
+        left: 20px;
+        margin-left: -1.5px;
+    }
+    .timeline-item {
+        padding: 10px 40px;
+        position: relative;
+        margin-bottom: 15px;
+    }
+    .timeline-item::after {
+        content: '';
+        position: absolute;
+        width: 15px;
+        height: 15px;
+        left: 12px;
+        background-color: white;
+        border: 3px solid #003366;
+        top: 15px;
+        border-radius: 50%;
+        z-index: 1;
+    }
+    .timeline-date {
+        font-weight: 600;
+        color: #003366;
+    }
+    .timeline-content {
+        padding: 15px;
+        background-color: #f8f9fa;
+        position: relative;
+        border-radius: 6px;
     }
 </style>
 {% endblock %}
@@ -76,102 +92,121 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url_for('trust.index') }}">Trust Portfolios</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('trust.fund_detail', fund_id=asset.portfolio.trust_fund_id) }}">{{ asset.portfolio.trust_fund.name }}</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('trust.portfolio_detail', portfolio_id=asset.portfolio_id) }}">{{ asset.portfolio.name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('trust.fund_detail', fund_id=asset.portfolio.trust_fund.id) }}">{{ asset.portfolio.trust_fund.name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('trust.portfolio_detail', portfolio_id=asset.portfolio.id) }}">{{ asset.portfolio.name }}</a></li>
                     <li class="breadcrumb-item active" aria-current="page">{{ asset.name }}</li>
                 </ol>
             </nav>
             
             <div class="asset-header">
-                <span class="asset-category {{ asset.asset_category.value }}">
-                    {{ asset.asset_category.value|replace('_', ' ')|title }}
-                </span>
-                <span class="asset-status status-{{ asset.status.value }}">
-                    {{ asset.status.value|title }}
-                </span>
-                
-                <h1>{{ asset.name }}</h1>
-                
-                <div class="asset-meta">
-                    {% if asset.acquisition_date %}
-                    <div><strong>Acquired:</strong> {{ asset.acquisition_date.strftime('%B %d, %Y') }}</div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1>{{ asset.name }}</h1>
+                    
+                    {% if current_user.is_authenticated and current_user.role == 'ADMIN' %}
+                    <div>
+                        <button type="button" class="btn btn-light" data-toggle="modal" data-target="#updateValueModal">
+                            <i class="fas fa-chart-line"></i> Update Value
+                        </button>
+                        <a href="{{ url_for('trust.edit_asset', asset_id=asset.id) }}" class="btn btn-light ml-2">
+                            <i class="fas fa-edit"></i> Edit Asset
+                        </a>
+                    </div>
                     {% endif %}
-                    {% if asset.location %}
-                    <div><strong>Location:</strong> {{ asset.location }}</div>
+                </div>
+                
+                <div class="asset-meta mt-3">
+                    <div><strong>Asset Type:</strong> {{ asset.asset_type }}</div>
+                    {% if asset.asset_identifier %}
+                    <div><strong>Identifier:</strong> {{ asset.asset_identifier }}</div>
                     {% endif %}
+                    <div><strong>Portfolio:</strong> {{ asset.portfolio.name }}</div>
+                    <div><strong>Trust Fund:</strong> {{ asset.portfolio.trust_fund.name }}</div>
                 </div>
             </div>
             
             <!-- Current Valuation -->
             <div class="row mb-4">
                 <div class="col-md-12">
-                    <div class="card value-card">
+                    <div class="card valuation-card">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h3>Current Asset Value</h3>
-                                
-                                {% if current_user.is_authenticated and current_user.role == 'ADMIN' %}
-                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#updateValuationModal">
-                                    <i class="fas fa-edit"></i> Update Value
-                                </button>
-                                {% endif %}
-                            </div>
-                            
-                            {% set current_value = asset.current_value() %}
-                            {% if current_value %}
+                            <h3>Current Valuation</h3>
                             <div class="row align-items-center">
                                 <div class="col-md-6">
-                                    <div class="value-number">
-                                        ${{ '{:,.2f}'.format(current_value|float) }}
+                                    <div class="current-value">
+                                        {{ asset.currency }} {{ '{:,.2f}'.format(asset.current_value()|float) }}
+                                    </div>
+                                    
+                                    {% if asset.valuations|length > 1 %}
+                                    {% set previous_value = asset.valuations|reject('==', asset.current_valuation())|list|first %}
+                                    {% set value_change = asset.current_value()|float - previous_value.value|float %}
+                                    {% set change_percentage = (value_change / previous_value.value|float * 100) if previous_value.value|float > 0 else 0 %}
+                                    
+                                    <div class="mt-2 {% if value_change > 0 %}value-change-positive{% elif value_change < 0 %}value-change-negative{% endif %}">
+                                        <i class="fas {% if value_change > 0 %}fa-arrow-up{% elif value_change < 0 %}fa-arrow-down{% else %}fa-equals{% endif %}"></i>
+                                        {{ '{:,.2f}'.format(value_change|abs) }} ({{ '{:.2f}'.format(change_percentage|abs) }}%)
+                                        {% if value_change > 0 %}increase{% elif value_change < 0 %}decrease{% else %}no change{% endif %}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="text-muted mt-2">
+                                        <i class="far fa-calendar-alt"></i> As of {{ asset.current_valuation().valuation_date.strftime('%Y-%m-%d') }}
                                     </div>
                                 </div>
-                                <div class="col-md-6 text-right">
-                                    <div class="text-muted">
-                                        <strong>Original Value:</strong> ${{ '{:,.2f}'.format(asset.acquisition_value|float) }}<br>
-                                        {% if valuation_history and valuation_history[0] %}
-                                        <strong>Last Assessed:</strong> {{ valuation_history[0].valuation_date.strftime('%Y-%m-%d') }}
+                                <div class="col-md-6">
+                                    <div class="d-flex flex-column">
+                                        <div class="mb-2">
+                                            <span class="detail-label">Valuation Method:</span>
+                                            {{ asset.current_valuation().valuation_method }}
+                                        </div>
+                                        {% if asset.custodian %}
+                                        <div class="mb-2">
+                                            <span class="detail-label">Custodian/Issuer:</span>
+                                            {{ asset.custodian }}
+                                        </div>
+                                        {% endif %}
+                                        {% if asset.acquisition_date %}
+                                        <div class="mb-2">
+                                            <span class="detail-label">Acquired:</span>
+                                            {{ asset.acquisition_date.strftime('%Y-%m-%d') }}
+                                        </div>
+                                        {% endif %}
+                                        {% if asset.maturity_date %}
+                                        <div>
+                                            <span class="detail-label">Maturity:</span>
+                                            {{ asset.maturity_date.strftime('%Y-%m-%d') }}
+                                        </div>
                                         {% endif %}
                                     </div>
                                 </div>
                             </div>
-                            {% else %}
-                            <div class="alert alert-info">
-                                No valuation records found for this asset.
-                            </div>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Description and Metadata -->
+            <!-- Description -->
             <div class="row mb-4">
                 <div class="col-md-12">
                     <div class="card">
-                        <div class="card-header">
-                            <h4 class="mb-0">Asset Details</h4>
-                        </div>
                         <div class="card-body">
+                            <h4>Asset Description</h4>
                             {% if asset.description %}
-                            <div class="asset-description">
-                                <h5>Description</h5>
-                                <p>{{ asset.description }}</p>
+                            <p>{{ asset.description }}</p>
+                            {% else %}
+                            <p class="text-muted">No description provided.</p>
+                            {% endif %}
+                            
+                            {% if asset.notes %}
+                            <div class="mt-3">
+                                <h5>Notes</h5>
+                                <p>{{ asset.notes }}</p>
                             </div>
                             {% endif %}
                             
-                            {% if metadata %}
-                            <div class="mt-4">
-                                <h5>Additional Information</h5>
-                                <table class="table table-striped metadata-table">
-                                    <tbody>
-                                        {% for key, value in metadata.items() %}
-                                        <tr>
-                                            <th style="width: 30%">{{ key|replace('_', ' ')|title }}</th>
-                                            <td>{{ value }}</td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                            {% if asset.document_references %}
+                            <div class="mt-3">
+                                <h5>Document References</h5>
+                                <p>{{ asset.document_references }}</p>
                             </div>
                             {% endif %}
                         </div>
@@ -180,36 +215,35 @@
             </div>
             
             <!-- Valuation History -->
-            <div class="row">
+            <div class="row mb-4">
                 <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="mb-0">Valuation History</h4>
-                        </div>
+                    <div class="card valuation-history-card">
                         <div class="card-body">
-                            {% if valuation_history %}
-                            <div class="valuation-history">
-                                <ul class="list-group">
-                                    {% for valuation in valuation_history %}
-                                    <li class="list-group-item">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <strong>${{ '{:,.2f}'.format(valuation.value|float) }}</strong>
-                                                <div class="small text-muted">{{ valuation.valuation_method }}</div>
+                            <h4>Valuation History</h4>
+                            
+                            {% if asset.valuations|length > 1 %}
+                            <div class="timeline mt-4">
+                                {% for valuation in asset.valuations|sort(attribute='valuation_date', reverse=true) %}
+                                <div class="timeline-item">
+                                    <div class="timeline-date">{{ valuation.valuation_date.strftime('%B %d, %Y') }}</div>
+                                    <div class="timeline-content">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h5>{{ valuation.currency }} {{ '{:,.2f}'.format(valuation.value|float) }}</h5>
+                                                <div class="text-muted">Method: {{ valuation.valuation_method }}</div>
                                             </div>
-                                            <div class="text-right">
-                                                <div>{{ valuation.valuation_date.strftime('%Y-%m-%d') }}</div>
-                                                <div class="small text-muted">{{ valuation.appraiser }}</div>
+                                            <div class="col-md-6">
+                                                {% if valuation.appraiser %}
+                                                <div><small>Appraiser: {{ valuation.appraiser }}</small></div>
+                                                {% endif %}
+                                                {% if valuation.notes %}
+                                                <div class="mt-2"><small>{{ valuation.notes }}</small></div>
+                                                {% endif %}
                                             </div>
                                         </div>
-                                        {% if valuation.notes %}
-                                        <div class="mt-2 small text-muted">
-                                            <em>{{ valuation.notes }}</em>
-                                        </div>
-                                        {% endif %}
-                                    </li>
-                                    {% endfor %}
-                                </ul>
+                                    </div>
+                                </div>
+                                {% endfor %}
                             </div>
                             {% else %}
                             <div class="alert alert-info">
@@ -220,42 +254,98 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Related Documents -->
+            {% if documents %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card document-card">
+                        <div class="card-body">
+                            <h4>Related Documents</h4>
+                            
+                            <div class="table-responsive mt-3">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Document Name</th>
+                                            <th>Type</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for doc in documents %}
+                                        <tr>
+                                            <td>{{ doc.name }}</td>
+                                            <td>{{ doc.document_type }}</td>
+                                            <td>{{ doc.date.strftime('%Y-%m-%d') }}</td>
+                                            <td>
+                                                <a href="{{ url_for('trust.view_document', document_id=doc.id) }}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
-<!-- Update Valuation Modal -->
+<!-- Update Value Modal -->
 {% if current_user.is_authenticated and current_user.role == 'ADMIN' %}
-<div class="modal fade" id="updateValuationModal" tabindex="-1" role="dialog" aria-labelledby="updateValuationModalLabel" aria-hidden="true">
+<div class="modal fade" id="updateValueModal" tabindex="-1" role="dialog" aria-labelledby="updateValueModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="updateValuationModalLabel">Update Asset Value</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form action="{{ url_for('trust.update_asset_value', asset_id=asset.id) }}" method="post">
+            <form action="{{ url_for('trust.update_asset_value', asset_id=asset.id) }}" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateValueModalLabel">Update Asset Value</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="value">Value (USD)</label>
-                        <input type="number" step="0.01" min="0" class="form-control" id="value" name="value" required>
+                        <label for="value">New Value <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control" id="value" name="value" required placeholder="0.00" value="{{ asset.current_value()|float }}">
                     </div>
+                    
+                    <div class="form-group">
+                        <label for="currency">Currency</label>
+                        <select class="form-control" id="currency" name="currency">
+                            <option value="USD" {% if asset.currency == 'USD' %}selected{% endif %}>USD</option>
+                            <option value="EUR" {% if asset.currency == 'EUR' %}selected{% endif %}>EUR</option>
+                            <option value="GBP" {% if asset.currency == 'GBP' %}selected{% endif %}>GBP</option>
+                            <option value="NVCT" {% if asset.currency == 'NVCT' %}selected{% endif %}>NVCT</option>
+                        </select>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="valuation_method">Valuation Method</label>
-                        <input type="text" class="form-control" id="valuation_method" name="valuation_method" value="Manual Update">
+                        <select class="form-control" id="valuation_method" name="valuation_method">
+                            <option value="Market Value">Market Value</option>
+                            <option value="Face Value">Face Value</option>
+                            <option value="Book Value">Book Value</option>
+                            <option value="Appraisal">Professional Appraisal</option>
+                            <option value="Historical Cost">Historical Cost</option>
+                            <option value="Manual Update">Manual Update</option>
+                            <option value="Other">Other</option>
+                        </select>
                     </div>
-                    <div class="form-group">
-                        <label for="appraiser">Appraiser</label>
-                        <input type="text" class="form-control" id="appraiser" name="appraiser" value="{{ current_user.username }}">
-                    </div>
+                    
                     <div class="form-group">
                         <label for="notes">Notes</label>
-                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Explanation for this valuation update"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Update Value</button>
                 </div>
             </form>

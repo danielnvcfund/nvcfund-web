@@ -20,7 +20,7 @@ from trust_service import (
     get_portfolio_valuation_history, get_asset_valuation_history,
     update_portfolio_valuation, add_trust_asset,
     get_all_trust_funds, get_trust_fund_portfolios, get_portfolio_assets,
-    get_asset, get_portfolio, get_trust_fund
+    get_asset, get_portfolio, get_trust_fund, create_nvc_skr_072809_001_asset
 )
 
 logger = logging.getLogger(__name__)

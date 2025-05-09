@@ -297,3 +297,106 @@ def get_portfolio(portfolio_id):
 def get_trust_fund(trust_fund_id):
     """Get a specific trust fund"""
     return TrustFund.query.get(trust_fund_id)
+
+def create_safekeeping_receipt_asset(portfolio_id, skr_number, amount, issuer, issue_date, maturity_date, beneficiary, description=None):
+    """Create an asset record for a Safekeeping Receipt (SKR)"""
+    try:
+        # Find the portfolio
+        portfolio = get_portfolio(portfolio_id)
+        if not portfolio:
+            raise ValueError(f"Portfolio with ID {portfolio_id} not found")
+        
+        # Create the asset
+        asset = TrustAsset(
+            name=f"Safekeeping Receipt {skr_number}",
+            description=description or f"Custodial Safekeeping Receipt issued by {issuer} to {beneficiary}",
+            asset_category=AssetCategory.SECURITY,
+            status=AssetStatus.SECURED,
+            portfolio_id=portfolio_id,
+            acquisition_date=issue_date,
+            acquisition_value=Decimal(str(amount)),
+            currency="USD",
+            location=f"Held at {issuer}",
+            metadata=json.dumps({
+                "skr_number": skr_number,
+                "issuer": issuer,
+                "issue_date": issue_date.strftime('%Y-%m-%d'),
+                "maturity_date": maturity_date.strftime('%Y-%m-%d'),
+                "beneficiary": beneficiary
+            })
+        )
+        db.session.add(asset)
+        db.session.flush()
+        
+        # Add initial valuation
+        valuation = AssetValuation(
+            asset_id=asset.id,
+            value=Decimal(str(amount)),
+            currency="USD",
+            valuation_date=datetime.utcnow(),
+            valuation_method="Face Value",
+            appraiser="System",
+            notes=f"Initial valuation based on face value of SKR {skr_number}"
+        )
+        db.session.add(valuation)
+        
+        # Update portfolio valuation
+        total_value = sum(float(a.current_value() or 0) for a in portfolio.assets) + float(amount)
+        
+        portfolio_valuation = PortfolioValuation(
+            portfolio_id=portfolio.id,
+            total_value=Decimal(str(total_value)),
+            currency="USD",
+            valuation_date=datetime.utcnow(),
+            valuation_method="Asset Addition",
+            assessor="System",
+            notes=f"Updated after adding SKR {skr_number}"
+        )
+        db.session.add(portfolio_valuation)
+        db.session.commit()
+        
+        logger.info(f"Created SKR asset {skr_number} with value {amount} USD")
+        return asset
+    
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error creating SKR asset: {str(e)}")
+        raise
+
+def create_nvc_skr_072809_001_asset():
+    """Create asset record for the NVC-SKR-CD ST200602017-082809 document"""
+    try:
+        # Get the NVC GHL Fund
+        fund = get_nvc_ghl_fund()
+        if not fund:
+            fund = initialize_nvc_ghl_fund()
+        
+        # Get the primary portfolio
+        portfolio = TrustPortfolio.query.filter_by(trust_fund_id=fund.id).first()
+        if not portfolio:
+            raise ValueError("Primary portfolio for NVC GHL Fund not found")
+        
+        # Check if this asset already exists
+        existing_asset = TrustAsset.query.filter(
+            TrustAsset.portfolio_id == portfolio.id,
+            TrustAsset.metadata.like('%"skr_number": "072809-001"%')
+        ).first()
+        
+        if existing_asset:
+            logger.info(f"SKR 072809-001 asset already exists with ID {existing_asset.id}")
+            return existing_asset
+        
+        # Create the asset using the SKR document information
+        return create_safekeeping_receipt_asset(
+            portfolio_id=portfolio.id,
+            skr_number="072809-001",
+            amount=84075000000.00,  # $84,075,000,000.00 as per the document
+            issuer="Sovereign Trust",
+            issue_date=date(2009, 7, 28),
+            maturity_date=date(2010, 9, 30),
+            beneficiary="NVCFUND HOLDING TRUST",
+            description="Custodial Safekeeping Receipt (SKR) No. SKR072809-001 for Trust Certificate Units valued at $84,075,000,000.00 held by Sovereign Trust for NVCFUND HOLDING TRUST."
+        )
+    except Exception as e:
+        logger.error(f"Error creating NVC SKR 072809-001 asset: {str(e)}")
+        raise
