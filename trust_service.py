@@ -366,6 +366,93 @@ def create_safekeeping_receipt_asset(portfolio_id, skr_number, amount, issuer, i
         logger.error(f"Error creating SKR asset: {str(e)}")
         raise
 
+def create_paa_foundation_bond_asset():
+    """Create asset record for the Pacific Asian Atlantic Foundation Bond backing assets"""
+    try:
+        # Get the NVC GHL Fund
+        fund = get_nvc_ghl_fund()
+        if not fund:
+            fund = initialize_nvc_ghl_fund()
+        
+        # Get the primary portfolio
+        portfolio = TrustPortfolio.query.filter_by(trust_fund_id=fund.id).first()
+        if not portfolio:
+            raise ValueError("Primary portfolio for NVC GHL Fund not found")
+        
+        # Check if this asset already exists
+        existing_asset = TrustAsset.query.filter(
+            TrustAsset.name.like("PAA Foundation Bond Assets%")
+        ).first()
+        
+        if existing_asset:
+            logger.info(f"PAA Foundation Bond asset already exists with ID {existing_asset.id}")
+            return existing_asset
+            
+        # Create the asset
+        asset = TrustAsset(
+            name="PAA Foundation Bond Assets",
+            description="Pacific Asian Atlantic Foundation Bond backed by Oil & Gas Reserves and Trust Certificate Units, ISIN: US693876AA27, CUSIP: 693876AA2",
+            asset_category=AssetCategory.FINANCIAL_INSTRUMENT,
+            status=AssetStatus.SECURED,
+            portfolio_id=portfolio.id,
+            acquisition_date=date(2008, 6, 30),  # Based on document date
+            acquisition_value=Decimal('190023535000.00'),  # $190,023,535,000 from the document
+            currency="USD",
+            location="NVCFUND HOLDING TRUST",
+            asset_metadata=json.dumps({
+                "issuer": "Pacific Asian Atlantic Foundation",
+                "cusip": "693876AA2",
+                "isin": "US693876AA27",
+                "oil_reserves_barrels": "666,841,000",
+                "oil_reserves_value": "90,023,535,000",
+                "trust_certificates_value": "100,000,000,000",
+                "mineral_resources": {
+                    "gold_oz": "109,091,331",
+                    "silver_oz": "178,513,087",
+                    "platinum_oz": "223,141,359",
+                    "rhodium_oz": "527,605,348"
+                },
+                "document_date": "June 2008"
+            })
+        )
+        db.session.add(asset)
+        db.session.flush()
+        
+        # Add initial valuation
+        valuation = AssetValuation(
+            asset_id=asset.id,
+            value=Decimal('190023535000.00'),
+            currency="USD",
+            valuation_date=datetime(2008, 6, 30),
+            valuation_method="Bond Backing Assets Valuation",
+            appraiser="Pacific Asian Atlantic Foundation",
+            notes="Valuation based on Shale Oil Reserve ($90B) and Trust Certificate Units ($100B) as documented"
+        )
+        db.session.add(valuation)
+        
+        # Update portfolio valuation
+        total_value = sum(float(a.current_value() or 0) for a in portfolio.assets) + 190023535000.00
+        
+        portfolio_valuation = PortfolioValuation(
+            portfolio_id=portfolio.id,
+            total_value=Decimal(str(total_value)),
+            currency="USD",
+            valuation_date=datetime.utcnow(),
+            valuation_method="Asset Addition",
+            assessor="System",
+            notes="Updated after adding PAA Foundation Bond Assets"
+        )
+        db.session.add(portfolio_valuation)
+        db.session.commit()
+        
+        logger.info(f"Created PAA Foundation Bond asset with ID {asset.id}")
+        return asset
+    
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error creating PAA Foundation Bond asset: {str(e)}")
+        raise
+
 def create_nvc_skr_072809_001_asset():
     """Create asset record for the NVC-SKR-CD ST200602017-082809 document"""
     try:

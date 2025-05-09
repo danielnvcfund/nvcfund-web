@@ -20,7 +20,8 @@ from trust_service import (
     get_portfolio_valuation_history, get_asset_valuation_history,
     update_portfolio_valuation, add_trust_asset,
     get_all_trust_funds, get_trust_fund_portfolios, get_portfolio_assets,
-    get_asset, get_portfolio, get_trust_fund, create_nvc_skr_072809_001_asset
+    get_asset, get_portfolio, get_trust_fund, create_nvc_skr_072809_001_asset,
+    create_paa_foundation_bond_asset
 )
 
 logger = logging.getLogger(__name__)
@@ -230,6 +231,26 @@ def add_nvc_skr_072809(portfolio_id):
     except Exception as e:
         logger.error(f"Error adding NVC-SKR-CD asset: {str(e)}")
         flash(f'Error adding NVC-SKR-CD asset: {str(e)}', 'danger')
+        return redirect(url_for('trust.portfolio_detail', portfolio_id=portfolio_id))
+
+@trust_bp.route('/portfolio/<int:portfolio_id>/add-paa-foundation-bond', methods=['GET'])
+@admin_required
+def add_paa_foundation_bond(portfolio_id):
+    """Add the Pacific Asian Atlantic Foundation Bond asset to the portfolio"""
+    try:
+        # Create the PAA Foundation Bond asset
+        asset = create_paa_foundation_bond_asset()
+        
+        if asset:
+            flash(f'Pacific Asian Atlantic Foundation Bond asset has been added to the portfolio.', 'success')
+            return redirect(url_for('trust.asset_detail', asset_id=asset.id))
+        else:
+            flash('Failed to create Pacific Asian Atlantic Foundation Bond asset.', 'danger')
+            return redirect(url_for('trust.portfolio_detail', portfolio_id=portfolio_id))
+            
+    except Exception as e:
+        logger.error(f"Error adding Pacific Asian Atlantic Foundation Bond asset: {str(e)}")
+        flash(f'Error adding PAA Foundation Bond asset: {str(e)}', 'danger')
         return redirect(url_for('trust.portfolio_detail', portfolio_id=portfolio_id))
 
 @trust_bp.route('/portfolio/<int:portfolio_id>/add-safekeeping-receipt', methods=['GET', 'POST'])
