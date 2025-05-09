@@ -161,7 +161,7 @@ def asset_detail(asset_id):
     )
 
 @trust_bp.route('/portfolio/<int:portfolio_id>/add-asset', methods=['GET', 'POST'])
-@admin_required
+@login_required
 def add_asset(portfolio_id):
     """Add a new asset to a portfolio"""
     portfolio = get_portfolio(portfolio_id)
@@ -214,7 +214,7 @@ def add_asset(portfolio_id):
     )
 
 @trust_bp.route('/portfolio/<int:portfolio_id>/add-nvc-skr-072809', methods=['GET'])
-@admin_required
+@login_required
 def add_nvc_skr_072809(portfolio_id):
     """Add the NVC-SKR-CD ST200602017-082809 asset to the portfolio"""
     try:
@@ -234,7 +234,7 @@ def add_nvc_skr_072809(portfolio_id):
         return redirect(url_for('trust.portfolio_detail', portfolio_id=portfolio_id))
 
 @trust_bp.route('/portfolio/<int:portfolio_id>/add-paa-foundation-bond', methods=['GET'])
-@admin_required
+@login_required
 def add_paa_foundation_bond(portfolio_id):
     """Add the Pacific Asian Atlantic Foundation Bond asset to the portfolio"""
     try:
@@ -254,7 +254,7 @@ def add_paa_foundation_bond(portfolio_id):
         return redirect(url_for('trust.portfolio_detail', portfolio_id=portfolio_id))
 
 @trust_bp.route('/portfolio/<int:portfolio_id>/add-safekeeping-receipt', methods=['GET', 'POST'])
-@admin_required
+@login_required
 def add_safekeeping_receipt(portfolio_id):
     """Add a safekeeping receipt (SKR) asset to the portfolio"""
     portfolio = get_portfolio(portfolio_id)
