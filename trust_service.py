@@ -58,6 +58,7 @@ def initialize_nvc_ghl_fund():
                 account_number="NVC100B/GHL-HSBC"
             )
             db.session.add(nvc_ghl_fund)
+            db.session.flush()  # Flush to get the ID without committing
             
             # Create a default portfolio
             primary_portfolio = TrustPortfolio(
@@ -66,6 +67,7 @@ def initialize_nvc_ghl_fund():
                 trust_fund_id=nvc_ghl_fund.id
             )
             db.session.add(primary_portfolio)
+            db.session.flush()  # Flush to get the primary portfolio ID
             
             # Add initial assets as per the documents
             # Start with the cashier's checks mentioned in the appointment document
@@ -81,6 +83,7 @@ def initialize_nvc_ghl_fund():
                 location="NVC Fund Ledger Settlement Account"
             )
             db.session.add(cashiers_check_asset)
+            db.session.flush()  # Flush to get the cashiers check asset ID
             
             # Add initial valuation
             initial_valuation = AssetValuation(
