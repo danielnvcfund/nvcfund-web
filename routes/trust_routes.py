@@ -115,6 +115,17 @@ def portfolio_detail(portfolio_id):
         flash('Portfolio not found.', 'danger')
         return redirect(url_for('trust.index'))
     
+    # Check if this is a portfolio of the NVC GHL Fund and try to add the SKR asset if it doesn't exist
+    fund = get_nvc_ghl_fund()
+    if fund and portfolio.trust_fund_id == fund.id:
+        try:
+            # Create the SKR asset if it doesn't exist already
+            skr_asset = create_nvc_skr_072809_001_asset()
+            if skr_asset and hasattr(skr_asset, 'id'):
+                logger.info(f"SKR 072809-001 asset verified, ID: {skr_asset.id}")
+        except Exception as e:
+            logger.error(f"Error verifying SKR asset: {str(e)}")
+    
     assets = get_portfolio_assets(portfolio.id)
     valuation_history = get_portfolio_valuation_history(portfolio.id)
     

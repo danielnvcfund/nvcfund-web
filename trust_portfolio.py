@@ -96,7 +96,7 @@ class TrustAsset(db.Model):
     acquisition_value = db.Column(db.Numeric(20, 2))  # Using high precision for large values
     currency = db.Column(db.String(3), default="USD")
     location = db.Column(db.String(255))
-    metadata = db.Column(db.Text)  # JSON data for additional asset metadata
+    asset_metadata = db.Column(db.Text)  # JSON data for additional asset metadata
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -114,9 +114,9 @@ class TrustAsset(db.Model):
     
     def get_metadata(self):
         """Parse the metadata JSON string"""
-        if self.metadata:
+        if self.asset_metadata:
             try:
-                return json.loads(self.metadata)
+                return json.loads(self.asset_metadata)
             except:
                 return {}
         return {}

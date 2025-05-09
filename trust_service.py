@@ -235,7 +235,7 @@ def add_trust_asset(portfolio_id, name, description, category, value,
             acquisition_value=Decimal(str(value)),
             currency=currency,
             location=location,
-            metadata=json.dumps(metadata) if metadata else None
+            asset_metadata=json.dumps(metadata) if metadata else None
         )
         db.session.add(asset)
         db.session.flush()  # Flush to get the asset ID
@@ -310,14 +310,14 @@ def create_safekeeping_receipt_asset(portfolio_id, skr_number, amount, issuer, i
         asset = TrustAsset(
             name=f"Safekeeping Receipt {skr_number}",
             description=description or f"Custodial Safekeeping Receipt issued by {issuer} to {beneficiary}",
-            asset_category=AssetCategory.SECURITY,
+            asset_category=AssetCategory.FINANCIAL_INSTRUMENT,
             status=AssetStatus.SECURED,
             portfolio_id=portfolio_id,
             acquisition_date=issue_date,
             acquisition_value=Decimal(str(amount)),
             currency="USD",
             location=f"Held at {issuer}",
-            metadata=json.dumps({
+            asset_metadata=json.dumps({
                 "skr_number": skr_number,
                 "issuer": issuer,
                 "issue_date": issue_date.strftime('%Y-%m-%d'),
@@ -379,7 +379,7 @@ def create_nvc_skr_072809_001_asset():
         # Check if this asset already exists
         existing_asset = TrustAsset.query.filter(
             TrustAsset.portfolio_id == portfolio.id,
-            TrustAsset.metadata.like('%"skr_number": "072809-001"%')
+            TrustAsset.asset_metadata.like('%"skr_number": "072809-001"%')
         ).first()
         
         if existing_asset:
