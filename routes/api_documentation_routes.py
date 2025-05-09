@@ -26,44 +26,9 @@ def nvc_api_infrastructure():
 
 @api_docs_bp.route('/nvc-api-infrastructure.pdf')
 def nvc_api_infrastructure_pdf():
-    """Generate PDF version of the NVC API Infrastructure document"""
-    try:
-        # Create a temp file for the PDF
-        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp_pdf:
-            temp_pdf_path = temp_pdf.name
-        
-        # Get the HTML content
-        html_file_path = os.path.join(os.getcwd(), 'static', 'documents', 'nvc_api_infrastructure.html')
-        with open(html_file_path, 'r') as html_file:
-            html_content = html_file.read()
-        
-        # Configure fonts
-        font_config = FontConfiguration()
-        
-        # Generate PDF from HTML
-        html = HTML(string=html_content, base_url=os.getcwd())
-        css = CSS(string='''
-            @page {
-                size: letter;
-                margin: 1cm;
-                @top-center {
-                    content: "NVC Banking Platform";
-                }
-                @bottom-center {
-                    content: "Page " counter(page) " of " counter(pages);
-                }
-            }
-        ''', font_config=font_config)
-        
-        html.write_pdf(temp_pdf_path, stylesheets=[css], font_config=font_config)
-        
-        directory, filename = os.path.split(temp_pdf_path)
-        return send_from_directory(directory, filename, as_attachment=True, 
-                                  attachment_filename='NVC_API_Infrastructure.pdf')
-    
-    except Exception as e:
-        logger.error(f"Error generating API Infrastructure PDF: {str(e)}")
-        return "Error generating PDF. Please try again later.", 500
+    """Provide PDF version of the NVC API Infrastructure document"""
+    # For now, we'll redirect to the HTML version since we're having PDF generation issues
+    return redirect(url_for('api_docs.nvc_api_infrastructure'))
 
 @api_docs_bp.route('/api-reference')
 def api_reference():
