@@ -29,7 +29,7 @@ def generate_correspondent_banking_agreement():
     pdf.cell(0, 10, "CORRESPONDENT BANKING AGREEMENT", 0, 1, "C")
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 10, "NVC FUND BANK", 0, 1, "C")
-    pdf.ln(5)
+    pdf.ln(3)
     
     # Introduction
     pdf.set_font("Arial", "B", 12)
@@ -409,24 +409,24 @@ def generate_correspondent_banking_agreement():
     # Signature Block
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 10, "IN WITNESS WHEREOF, the Parties have executed this Agreement as of the Effective Date.", 0, 1)
-    pdf.ln(10)
+    pdf.ln(5)
     
     pdf.set_font("Arial", "B", 11)
     pdf.cell(90, 6, "NVC FUND BANK", 0, 0)
     pdf.cell(90, 6, "RESPONDENT BANK", 0, 1)
-    pdf.ln(15)
+    pdf.ln(7)
     
     pdf.cell(90, 6, "By: ________________________", 0, 0)
     pdf.cell(90, 6, "By: ________________________", 0, 1)
-    pdf.ln(10)
+    pdf.ln(5)
     
     pdf.cell(90, 6, "Name: _____________________", 0, 0)
     pdf.cell(90, 6, "Name: _____________________", 0, 1)
-    pdf.ln(10)
+    pdf.ln(5)
     
     pdf.cell(90, 6, "Title: ______________________", 0, 0)
     pdf.cell(90, 6, "Title: ______________________", 0, 1)
-    pdf.ln(10)
+    pdf.ln(5)
     
     pdf.cell(90, 6, "Date: ______________________", 0, 0)
     pdf.cell(90, 6, "Date: ______________________", 0, 1)
