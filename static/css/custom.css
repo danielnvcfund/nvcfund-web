@@ -19,6 +19,34 @@
     transition: all 0.3s ease;
 }
 
+/* Currency Flags */
+.currency-flag {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 6px;
+    border-radius: 2px;
+    box-shadow: 0 0 1px rgba(0,0,0,0.4);
+}
+
+/* Currency Dropdown Styling */
+select option:checked,
+select option:hover {
+    box-shadow: 0 0 10px 100px #2c3e50 inset;
+}
+
+.currency-display {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 4px;
+    margin-right: 5px;
+}
+
+.currency-display img {
+    margin-right: 5px;
+}
+
 .analytics-panel:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;

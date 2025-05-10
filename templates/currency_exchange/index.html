@@ -168,12 +168,18 @@
                                         <td>
                                             <div class="d-flex px-2 py-1">
                                                 <div class="d-flex flex-column justify-content-center">
-                                                    <h6 class="mb-0 text-sm">{{ base_currency }}</h6>
+                                                    <h6 class="mb-0 text-sm currency-display">
+                                                        <img src="{{ url_for('static', filename='images/flags/globe.svg') }}" alt="" class="currency-flag" width="16" height="16" id="flag-from-{{ base_currency }}">
+                                                        {{ base_currency }}
+                                                    </h6>
                                                 </div>
                                             </div>
                                         </td>
                                         <td>
-                                            <p class="text-sm font-weight-bold mb-0">{{ rate.to_currency }}</p>
+                                            <p class="text-sm font-weight-bold mb-0 currency-display">
+                                                <img src="{{ url_for('static', filename='images/flags/globe.svg') }}" alt="" class="currency-flag" width="16" height="16" id="flag-to-{{ rate.to_currency }}">
+                                                {{ rate.to_currency }}
+                                            </p>
                                         </td>
                                         <td>
                                             <p class="text-sm font-weight-bold mb-0">{{ '{:,.6f}'.format(rate.rate) }}</p>
@@ -222,10 +228,16 @@
 {% endblock %}
 
 {% block scripts %}
+<!-- Include currency metadata and flags JS -->
+<script src="{{ url_for('static', filename='js/currency-metadata.js') }}"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const calculateBtn = document.getElementById('calculate-btn');
         const calculationResult = document.getElementById('calculation-result');
+        
+        // Initialize currency dropdowns with flags
+        initCurrencyDropdowns('from_currency', 'to_currency');
         
         calculateBtn.addEventListener('click', function() {
             const fromCurrency = document.getElementById('from_currency').value;
@@ -258,10 +270,43 @@
                         return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                     }
                     
-                    document.getElementById('result-rate').textContent = `1 ${fromCurrency} = ${formatNumber(data.rate)} ${toCurrency}`;
-                    document.getElementById('result-amount').textContent = `${formatNumber(amount)} ${fromCurrency}`;
-                    document.getElementById('result-fee').textContent = `${formatNumber(data.fee_amount.toFixed(2))} ${fromCurrency}`;
-                    document.getElementById('result-final').textContent = `${formatNumber(data.converted_amount.toFixed(2))} ${toCurrency}`;
+                    // Get metadata for currencies
+                    const fromMeta = getCurrencyMetadata(fromCurrency);
+                    const toMeta = getCurrencyMetadata(toCurrency);
+                    
+                    // Build HTML with flags
+                    const rateHTML = `
+                      <span class="currency-display">
+                        <img src="${fromMeta.flag}" alt="${fromMeta.country}" class="currency-flag" width="16" height="16">
+                        1 ${fromCurrency}
+                      </span> = 
+                      <span class="currency-display">
+                        <img src="${toMeta.flag}" alt="${toMeta.country}" class="currency-flag" width="16" height="16">
+                        ${formatNumber(data.rate)} ${toCurrency}
+                      </span>`;
+                      
+                    const amountHTML = `
+                      <span class="currency-display">
+                        <img src="${fromMeta.flag}" alt="${fromMeta.country}" class="currency-flag" width="16" height="16">
+                        ${formatNumber(amount)} ${fromCurrency}
+                      </span>`;
+                      
+                    const feeHTML = `
+                      <span class="currency-display">
+                        <img src="${fromMeta.flag}" alt="${fromMeta.country}" class="currency-flag" width="16" height="16">
+                        ${formatNumber(data.fee_amount.toFixed(2))} ${fromCurrency}
+                      </span>`;
+                      
+                    const finalHTML = `
+                      <span class="currency-display">
+                        <img src="${toMeta.flag}" alt="${toMeta.country}" class="currency-flag" width="16" height="16">
+                        ${formatNumber(data.converted_amount.toFixed(2))} ${toCurrency}
+                      </span>`;
+                    
+                    document.getElementById('result-rate').innerHTML = rateHTML;
+                    document.getElementById('result-amount').innerHTML = amountHTML;
+                    document.getElementById('result-fee').innerHTML = feeHTML;
+                    document.getElementById('result-final').innerHTML = finalHTML;
                     
                     // Show the result container
                     calculationResult.classList.remove('d-none');

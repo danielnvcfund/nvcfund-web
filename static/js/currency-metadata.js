@@ -1,226 +1,156 @@
 /**
  * Currency Metadata for NVC Banking Platform
- * Provides mapping of currency codes to country information and symbols
+ * Provides flag paths and country names for currencies
  */
 
-// Currency metadata including country codes (for flag display) and symbols
-const CURRENCY_METADATA = {
-    // Native Platform Currencies
-    "NVCT": { countryCode: "globe", symbol: "₦", name: "NVC Token" },
-    "SPU": { countryCode: "globe", symbol: "SPU", name: "Special Purpose Unit" },
-    "TU": { countryCode: "globe", symbol: "TU", name: "Treasury Unit" },
-    "AFD1": { countryCode: "globe", symbol: "AFD", name: "American Federation Dollar" },
-    "SFN": { countryCode: "globe", symbol: "SFN", name: "SFN Coin (Swifin)" },
-    "AKLUMI": { countryCode: "globe", symbol: "AKL", name: "Ak Lumi (Eco-6)" },
+const currencyMetadata = {
+    // Native NVC currencies
+    'NVCT': { flag: '/static/images/flags/globe.svg', name: 'NVC Token', country: 'NVC' },
+    'SPU': { flag: '/static/images/flags/globe.svg', name: 'Special Purpose Unit', country: 'NVC' },
+    'TU': { flag: '/static/images/flags/globe.svg', name: 'Treasury Unit', country: 'NVC' },
+    'AFD1': { flag: '/static/images/flags/globe.svg', name: 'American Federation Dollar', country: 'AFD' },
+    'SFN': { flag: '/static/images/flags/globe.svg', name: 'Swifin Coin', country: 'SFN' },
+    'AKLUMI': { flag: '/static/images/flags/globe.svg', name: 'Ak Lumi', country: 'ECO-6' },
     
-    // Major World Currencies
-    "USD": { countryCode: "us", symbol: "$", name: "US Dollar" },
-    "EUR": { countryCode: "eu", symbol: "€", name: "Euro" },
-    "GBP": { countryCode: "gb", symbol: "£", name: "British Pound" },
-    "JPY": { countryCode: "jp", symbol: "¥", name: "Japanese Yen" },
-    "CHF": { countryCode: "ch", symbol: "CHF", name: "Swiss Franc" },
-    "CAD": { countryCode: "ca", symbol: "C$", name: "Canadian Dollar" },
-    "AUD": { countryCode: "au", symbol: "A$", name: "Australian Dollar" },
-    "NZD": { countryCode: "nz", symbol: "NZ$", name: "New Zealand Dollar" },
-    "CNY": { countryCode: "cn", symbol: "¥", name: "Chinese Yuan" },
-    "HKD": { countryCode: "hk", symbol: "HK$", name: "Hong Kong Dollar" },
-    "SGD": { countryCode: "sg", symbol: "S$", name: "Singapore Dollar" },
-    "INR": { countryCode: "in", symbol: "₹", name: "Indian Rupee" },
-    "RUB": { countryCode: "ru", symbol: "₽", name: "Russian Ruble" },
-    "BRL": { countryCode: "br", symbol: "R$", name: "Brazilian Real" },
-    "MXN": { countryCode: "mx", symbol: "$", name: "Mexican Peso" },
-    "SEK": { countryCode: "se", symbol: "kr", name: "Swedish Krona" },
-    "NOK": { countryCode: "no", symbol: "kr", name: "Norwegian Krone" },
-    "DKK": { countryCode: "dk", symbol: "kr", name: "Danish Krone" },
-    "PLN": { countryCode: "pl", symbol: "zł", name: "Polish Zloty" },
-    "TRY": { countryCode: "tr", symbol: "₺", name: "Turkish Lira" },
+    // Major world currencies
+    'USD': { flag: '/static/images/flags/us.svg', name: 'US Dollar', country: 'United States' },
+    'EUR': { flag: '/static/images/flags/eu.svg', name: 'Euro', country: 'European Union' },
+    'GBP': { flag: '/static/images/flags/gb.svg', name: 'British Pound', country: 'United Kingdom' },
+    'JPY': { flag: '/static/images/flags/jp.svg', name: 'Japanese Yen', country: 'Japan' },
+    'CHF': { flag: '/static/images/flags/ch.svg', name: 'Swiss Franc', country: 'Switzerland' },
+    'CAD': { flag: '/static/images/flags/ca.svg', name: 'Canadian Dollar', country: 'Canada' },
+    'AUD': { flag: '/static/images/flags/au.svg', name: 'Australian Dollar', country: 'Australia' },
+    'NZD': { flag: '/static/images/flags/nz.svg', name: 'New Zealand Dollar', country: 'New Zealand' },
+    'CNY': { flag: '/static/images/flags/cn.svg', name: 'Chinese Yuan Renminbi', country: 'China' },
+    'HKD': { flag: '/static/images/flags/hk.svg', name: 'Hong Kong Dollar', country: 'Hong Kong' },
+    'SGD': { flag: '/static/images/flags/sg.svg', name: 'Singapore Dollar', country: 'Singapore' },
+    'INR': { flag: '/static/images/flags/in.svg', name: 'Indian Rupee', country: 'India' },
+    'RUB': { flag: '/static/images/flags/ru.svg', name: 'Russian Ruble', country: 'Russia' },
+    'BRL': { flag: '/static/images/flags/br.svg', name: 'Brazilian Real', country: 'Brazil' },
+    'MXN': { flag: '/static/images/flags/mx.svg', name: 'Mexican Peso', country: 'Mexico' },
+    'SEK': { flag: '/static/images/flags/se.svg', name: 'Swedish Krona', country: 'Sweden' },
+    'NOK': { flag: '/static/images/flags/no.svg', name: 'Norwegian Krone', country: 'Norway' },
+    'DKK': { flag: '/static/images/flags/dk.svg', name: 'Danish Krone', country: 'Denmark' },
+    'PLN': { flag: '/static/images/flags/pl.svg', name: 'Polish Zloty', country: 'Poland' },
+    'TRY': { flag: '/static/images/flags/tr.svg', name: 'Turkish Lira', country: 'Turkey' },
     
-    // North African Currencies
-    "DZD": { countryCode: "dz", symbol: "د.ج", name: "Algerian Dinar" },
-    "EGP": { countryCode: "eg", symbol: "£", name: "Egyptian Pound" },
-    "LYD": { countryCode: "ly", symbol: "ل.د", name: "Libyan Dinar" },
-    "MAD": { countryCode: "ma", symbol: "د.م.", name: "Moroccan Dirham" },
-    "SDG": { countryCode: "sd", symbol: "ج.س.", name: "Sudanese Pound" },
-    "TND": { countryCode: "tn", symbol: "د.ت", name: "Tunisian Dinar" },
+    // North African currencies
+    'DZD': { flag: '/static/images/flags/dz.svg', name: 'Algerian Dinar', country: 'Algeria' },
+    'EGP': { flag: '/static/images/flags/eg.svg', name: 'Egyptian Pound', country: 'Egypt' },
+    'LYD': { flag: '/static/images/flags/ly.svg', name: 'Libyan Dinar', country: 'Libya' },
+    'MAD': { flag: '/static/images/flags/ma.svg', name: 'Moroccan Dirham', country: 'Morocco' },
+    'SDG': { flag: '/static/images/flags/sd.svg', name: 'Sudanese Pound', country: 'Sudan' },
+    'TND': { flag: '/static/images/flags/tn.svg', name: 'Tunisian Dinar', country: 'Tunisia' },
     
-    // West African Currencies
-    "NGN": { countryCode: "ng", symbol: "₦", name: "Nigerian Naira" },
-    "GHS": { countryCode: "gh", symbol: "₵", name: "Ghanaian Cedi" },
-    "XOF": { countryCode: "senegal", symbol: "CFA", name: "CFA Franc BCEAO" },
-    "GMD": { countryCode: "gm", symbol: "D", name: "Gambian Dalasi" },
-    "GNF": { countryCode: "gn", symbol: "FG", name: "Guinean Franc" },
-    "LRD": { countryCode: "lr", symbol: "L$", name: "Liberian Dollar" },
-    "SLL": { countryCode: "sl", symbol: "Le", name: "Sierra Leonean Leone (old)" },
-    "SLE": { countryCode: "sl", symbol: "Le", name: "Sierra Leonean Leone" },
-    "CVE": { countryCode: "cv", symbol: "$", name: "Cape Verdean Escudo" },
+    // West African currencies
+    'NGN': { flag: '/static/images/flags/ng.svg', name: 'Nigerian Naira', country: 'Nigeria' },
+    'GHS': { flag: '/static/images/flags/gh.svg', name: 'Ghanaian Cedi', country: 'Ghana' },
+    'XOF': { flag: '/static/images/flags/sn.svg', name: 'CFA Franc BCEAO', country: 'BCEAO' },
+    'GMD': { flag: '/static/images/flags/gm.svg', name: 'Gambian Dalasi', country: 'Gambia' },
+    'GNF': { flag: '/static/images/flags/gn.svg', name: 'Guinean Franc', country: 'Guinea' },
+    'LRD': { flag: '/static/images/flags/lr.svg', name: 'Liberian Dollar', country: 'Liberia' },
+    'SLL': { flag: '/static/images/flags/sl.svg', name: 'Sierra Leonean Leone', country: 'Sierra Leone' },
+    'SLE': { flag: '/static/images/flags/sl.svg', name: 'Sierra Leonean Leone (new)', country: 'Sierra Leone' },
+    'CVE': { flag: '/static/images/flags/cv.svg', name: 'Cape Verdean Escudo', country: 'Cape Verde' },
     
-    // Central African Currencies
-    "XAF": { countryCode: "cm", symbol: "FCFA", name: "CFA Franc BEAC" },
-    "CDF": { countryCode: "cd", symbol: "FC", name: "Congolese Franc" },
-    "STN": { countryCode: "st", symbol: "Db", name: "São Tomé and Príncipe Dobra" },
+    // Central African currencies
+    'XAF': { flag: '/static/images/flags/cm.svg', name: 'CFA Franc BEAC', country: 'BEAC' },
+    'CDF': { flag: '/static/images/flags/cd.svg', name: 'Congolese Franc', country: 'DR Congo' },
+    'STN': { flag: '/static/images/flags/st.svg', name: 'São Tomé and Príncipe Dobra', country: 'São Tomé and Príncipe' },
     
-    // East African Currencies
-    "KES": { countryCode: "ke", symbol: "KSh", name: "Kenyan Shilling" },
-    "ETB": { countryCode: "et", symbol: "Br", name: "Ethiopian Birr" },
-    "UGX": { countryCode: "ug", symbol: "USh", name: "Ugandan Shilling" },
-    "TZS": { countryCode: "tz", symbol: "TSh", name: "Tanzanian Shilling" },
-    "RWF": { countryCode: "rw", symbol: "R₣", name: "Rwandan Franc" },
-    "BIF": { countryCode: "bi", symbol: "FBu", name: "Burundian Franc" },
-    "DJF": { countryCode: "dj", symbol: "Fdj", name: "Djiboutian Franc" },
-    "ERN": { countryCode: "er", symbol: "Nfk", name: "Eritrean Nakfa" },
-    "SSP": { countryCode: "ss", symbol: "£", name: "South Sudanese Pound" },
-    "SOS": { countryCode: "so", symbol: "Sh", name: "Somali Shilling" },
+    // East African currencies
+    'KES': { flag: '/static/images/flags/ke.svg', name: 'Kenyan Shilling', country: 'Kenya' },
+    'ETB': { flag: '/static/images/flags/et.svg', name: 'Ethiopian Birr', country: 'Ethiopia' },
+    'UGX': { flag: '/static/images/flags/ug.svg', name: 'Ugandan Shilling', country: 'Uganda' },
+    'TZS': { flag: '/static/images/flags/tz.svg', name: 'Tanzanian Shilling', country: 'Tanzania' },
+    'RWF': { flag: '/static/images/flags/rw.svg', name: 'Rwandan Franc', country: 'Rwanda' },
+    'BIF': { flag: '/static/images/flags/bi.svg', name: 'Burundian Franc', country: 'Burundi' },
+    'DJF': { flag: '/static/images/flags/dj.svg', name: 'Djiboutian Franc', country: 'Djibouti' },
+    'ERN': { flag: '/static/images/flags/er.svg', name: 'Eritrean Nakfa', country: 'Eritrea' },
+    'SSP': { flag: '/static/images/flags/ss.svg', name: 'South Sudanese Pound', country: 'South Sudan' },
+    'SOS': { flag: '/static/images/flags/so.svg', name: 'Somali Shilling', country: 'Somalia' },
     
-    // Southern African Currencies
-    "ZAR": { countryCode: "za", symbol: "R", name: "South African Rand" },
-    "LSL": { countryCode: "ls", symbol: "L", name: "Lesotho Loti" },
-    "NAD": { countryCode: "na", symbol: "N$", name: "Namibian Dollar" },
-    "SZL": { countryCode: "sz", symbol: "E", name: "Swazi Lilangeni" },
-    "BWP": { countryCode: "bw", symbol: "P", name: "Botswana Pula" },
-    "ZMW": { countryCode: "zm", symbol: "ZK", name: "Zambian Kwacha" },
-    "MWK": { countryCode: "mw", symbol: "MK", name: "Malawian Kwacha" },
-    "ZWL": { countryCode: "zw", symbol: "$", name: "Zimbabwean Dollar" },
-    "MZN": { countryCode: "mz", symbol: "MT", name: "Mozambican Metical" },
-    "MGA": { countryCode: "mg", symbol: "Ar", name: "Malagasy Ariary" },
-    "SCR": { countryCode: "sc", symbol: "SR", name: "Seychellois Rupee" },
-    "MUR": { countryCode: "mu", symbol: "₨", name: "Mauritian Rupee" },
-    "AOA": { countryCode: "ao", symbol: "Kz", name: "Angolan Kwanza" },
+    // Southern African currencies
+    'ZAR': { flag: '/static/images/flags/za.svg', name: 'South African Rand', country: 'South Africa' },
+    'LSL': { flag: '/static/images/flags/ls.svg', name: 'Lesotho Loti', country: 'Lesotho' },
+    'NAD': { flag: '/static/images/flags/na.svg', name: 'Namibian Dollar', country: 'Namibia' },
+    'SZL': { flag: '/static/images/flags/sz.svg', name: 'Swazi Lilangeni', country: 'Eswatini' },
+    'BWP': { flag: '/static/images/flags/bw.svg', name: 'Botswana Pula', country: 'Botswana' },
+    'ZMW': { flag: '/static/images/flags/zm.svg', name: 'Zambian Kwacha', country: 'Zambia' },
+    'MWK': { flag: '/static/images/flags/mw.svg', name: 'Malawian Kwacha', country: 'Malawi' },
+    'ZWL': { flag: '/static/images/flags/zw.svg', name: 'Zimbabwean Dollar', country: 'Zimbabwe' },
+    'MZN': { flag: '/static/images/flags/mz.svg', name: 'Mozambican Metical', country: 'Mozambique' },
+    'MGA': { flag: '/static/images/flags/mg.svg', name: 'Malagasy Ariary', country: 'Madagascar' },
+    'SCR': { flag: '/static/images/flags/sc.svg', name: 'Seychellois Rupee', country: 'Seychelles' },
+    'MUR': { flag: '/static/images/flags/mu.svg', name: 'Mauritian Rupee', country: 'Mauritius' },
+    'AOA': { flag: '/static/images/flags/ao.svg', name: 'Angolan Kwanza', country: 'Angola' },
     
-    // Asian Currencies
-    "IDR": { countryCode: "id", symbol: "Rp", name: "Indonesian Rupiah" },
-    "MYR": { countryCode: "my", symbol: "RM", name: "Malaysian Ringgit" },
-    "PHP": { countryCode: "ph", symbol: "₱", name: "Philippine Peso" },
-    "THB": { countryCode: "th", symbol: "฿", name: "Thai Baht" },
-    "VND": { countryCode: "vn", symbol: "₫", name: "Vietnamese Dong" },
-    "KRW": { countryCode: "kr", symbol: "₩", name: "South Korean Won" },
-    "TWD": { countryCode: "tw", symbol: "NT$", name: "Taiwan New Dollar" },
-    "PKR": { countryCode: "pk", symbol: "₨", name: "Pakistani Rupee" },
-    "BDT": { countryCode: "bd", symbol: "৳", name: "Bangladeshi Taka" },
-    "NPR": { countryCode: "np", symbol: "₨", name: "Nepalese Rupee" },
-    "LKR": { countryCode: "lk", symbol: "₨", name: "Sri Lankan Rupee" },
-    
-    // Middle Eastern Currencies
-    "AED": { countryCode: "ae", symbol: "د.إ", name: "UAE Dirham" },
-    "SAR": { countryCode: "sa", symbol: "ر.س", name: "Saudi Riyal" },
-    "QAR": { countryCode: "qa", symbol: "ر.ق", name: "Qatari Riyal" },
-    "OMR": { countryCode: "om", symbol: "ر.ع.", name: "Omani Rial" },
-    "BHD": { countryCode: "bh", symbol: "د.ب", name: "Bahraini Dinar" },
-    "KWD": { countryCode: "kw", symbol: "د.ك", name: "Kuwaiti Dinar" },
-    "ILS": { countryCode: "il", symbol: "₪", name: "Israeli New Shekel" },
-    "JOD": { countryCode: "jo", symbol: "د.ا", name: "Jordanian Dinar" },
-    "LBP": { countryCode: "lb", symbol: "ل.ل", name: "Lebanese Pound" },
-    "IRR": { countryCode: "ir", symbol: "﷼", name: "Iranian Rial" },
-    "IQD": { countryCode: "iq", symbol: "ع.د", name: "Iraqi Dinar" },
-    
-    // Latin American Currencies
-    "ARS": { countryCode: "ar", symbol: "$", name: "Argentine Peso" },
-    "CLP": { countryCode: "cl", symbol: "$", name: "Chilean Peso" },
-    "COP": { countryCode: "co", symbol: "$", name: "Colombian Peso" },
-    "PEN": { countryCode: "pe", symbol: "S/", name: "Peruvian Sol" },
-    "UYU": { countryCode: "uy", symbol: "$U", name: "Uruguayan Peso" },
-    "VES": { countryCode: "ve", symbol: "Bs.S", name: "Venezuelan Bolivar" },
-    "BOB": { countryCode: "bo", symbol: "Bs", name: "Bolivian Boliviano" },
-    "PYG": { countryCode: "py", symbol: "₲", name: "Paraguayan Guarani" },
-    "DOP": { countryCode: "do", symbol: "RD$", name: "Dominican Peso" },
-    "CRC": { countryCode: "cr", symbol: "₡", name: "Costa Rican Colon" },
-    "JMD": { countryCode: "jm", symbol: "J$", name: "Jamaican Dollar" },
-    "TTD": { countryCode: "tt", symbol: "TT$", name: "Trinidad and Tobago Dollar" },
-    
-    // European Currencies (non-Euro)
-    "CZK": { countryCode: "cz", symbol: "Kč", name: "Czech Koruna" },
-    "HUF": { countryCode: "hu", symbol: "Ft", name: "Hungarian Forint" },
-    "RON": { countryCode: "ro", symbol: "lei", name: "Romanian Leu" },
-    "BGN": { countryCode: "bg", symbol: "лв", name: "Bulgarian Lev" },
-    "HRK": { countryCode: "hr", symbol: "kn", name: "Croatian Kuna" },
-    "RSD": { countryCode: "rs", symbol: "дин.", name: "Serbian Dinar" },
-    "UAH": { countryCode: "ua", symbol: "₴", name: "Ukrainian Hryvnia" },
-    "BYN": { countryCode: "by", symbol: "Br", name: "Belarusian Ruble" },
-    
-    // Cryptocurrencies 
-    "BTC": { countryCode: "crypto", symbol: "₿", name: "Bitcoin" },
-    "ETH": { countryCode: "crypto", symbol: "Ξ", name: "Ethereum" },
-    "USDT": { countryCode: "crypto", symbol: "₮", name: "Tether" },
-    "BNB": { countryCode: "crypto", symbol: "BNB", name: "Binance Coin" },
-    "SOL": { countryCode: "crypto", symbol: "◎", name: "Solana" },
-    "XRP": { countryCode: "crypto", symbol: "XRP", name: "XRP (Ripple)" },
-    "USDC": { countryCode: "crypto", symbol: "USDC", name: "USD Coin" },
-    "ADA": { countryCode: "crypto", symbol: "₳", name: "Cardano" },
-    "AVAX": { countryCode: "crypto", symbol: "AVAX", name: "Avalanche" },
-    "DOGE": { countryCode: "crypto", symbol: "Ð", name: "Dogecoin" },
-    "DOT": { countryCode: "crypto", symbol: "DOT", name: "Polkadot" },
-    "MATIC": { countryCode: "crypto", symbol: "MATIC", name: "Polygon" },
-    "LTC": { countryCode: "crypto", symbol: "Ł", name: "Litecoin" },
-    "SHIB": { countryCode: "crypto", symbol: "SHIB", name: "Shiba Inu" },
-    "DAI": { countryCode: "crypto", symbol: "DAI", name: "Dai" },
-    "TRX": { countryCode: "crypto", symbol: "TRX", name: "TRON" },
-    "UNI": { countryCode: "crypto", symbol: "UNI", name: "Uniswap" },
-    "LINK": { countryCode: "crypto", symbol: "LINK", name: "Chainlink" },
-    "ATOM": { countryCode: "crypto", symbol: "ATOM", name: "Cosmos" },
-    "XMR": { countryCode: "crypto", symbol: "ɱ", name: "Monero" },
-    "ETC": { countryCode: "crypto", symbol: "ETC", name: "Ethereum Classic" },
-    "FIL": { countryCode: "crypto", symbol: "FIL", name: "Filecoin" },
-    "XLM": { countryCode: "crypto", symbol: "XLM", name: "Stellar" },
-    "NEAR": { countryCode: "crypto", symbol: "NEAR", name: "NEAR Protocol" },
-    "ALGO": { countryCode: "crypto", symbol: "ALGO", name: "Algorand" },
-    "ZCASH": { countryCode: "crypto", symbol: "ⓩ", name: "Zcash" },
-    "APE": { countryCode: "crypto", symbol: "APE", name: "ApeCoin" },
-    "ICP": { countryCode: "crypto", symbol: "ICP", name: "Internet Computer" },
-    "FLOW": { countryCode: "crypto", symbol: "FLOW", name: "Flow" },
-    "VET": { countryCode: "crypto", symbol: "VET", name: "VeChain" }
+    // Cryptocurrencies
+    'BTC': { flag: '/static/images/flags/crypto.svg', name: 'Bitcoin', country: 'Global' },
+    'ETH': { flag: '/static/images/flags/crypto.svg', name: 'Ethereum', country: 'Global' },
+    'USDT': { flag: '/static/images/flags/crypto.svg', name: 'Tether', country: 'Global' },
+    'BNB': { flag: '/static/images/flags/crypto.svg', name: 'Binance Coin', country: 'Global' },
+    'SOL': { flag: '/static/images/flags/crypto.svg', name: 'Solana', country: 'Global' },
+    'XRP': { flag: '/static/images/flags/crypto.svg', name: 'XRP (Ripple)', country: 'Global' },
+    'USDC': { flag: '/static/images/flags/crypto.svg', name: 'USD Coin', country: 'Global' },
+    'ADA': { flag: '/static/images/flags/crypto.svg', name: 'Cardano', country: 'Global' },
+    'AVAX': { flag: '/static/images/flags/crypto.svg', name: 'Avalanche', country: 'Global' },
+    'DOGE': { flag: '/static/images/flags/crypto.svg', name: 'Dogecoin', country: 'Global' },
+    'DOT': { flag: '/static/images/flags/crypto.svg', name: 'Polkadot', country: 'Global' },
+    'MATIC': { flag: '/static/images/flags/crypto.svg', name: 'Polygon', country: 'Global' },
+    'LTC': { flag: '/static/images/flags/crypto.svg', name: 'Litecoin', country: 'Global' },
+    'SHIB': { flag: '/static/images/flags/crypto.svg', name: 'Shiba Inu', country: 'Global' },
+    'DAI': { flag: '/static/images/flags/crypto.svg', name: 'Dai', country: 'Global' },
+    'TRX': { flag: '/static/images/flags/crypto.svg', name: 'TRON', country: 'Global' },
+    'UNI': { flag: '/static/images/flags/crypto.svg', name: 'Uniswap', country: 'Global' },
+    'LINK': { flag: '/static/images/flags/crypto.svg', name: 'Chainlink', country: 'Global' },
+    'ATOM': { flag: '/static/images/flags/crypto.svg', name: 'Cosmos', country: 'Global' },
+    'XMR': { flag: '/static/images/flags/crypto.svg', name: 'Monero', country: 'Global' }
 };
 
 /**
- * Get currency metadata for a given currency code
- * @param {string} currencyCode - The currency code (e.g., "USD", "NVCT")
- * @returns {object|null} Currency metadata or null if not found
+ * Get metadata for a currency
+ * @param {string} currencyCode - The currency code (e.g., 'USD', 'NVCT')
+ * @returns {Object} Currency metadata or default object if not found
  */
 function getCurrencyMetadata(currencyCode) {
-    return CURRENCY_METADATA[currencyCode] || null;
+    // Return the metadata if it exists, or a default object
+    return currencyMetadata[currencyCode] || { 
+        flag: '/static/images/flags/globe.svg', 
+        name: currencyCode, 
+        country: 'Global' 
+    };
 }
 
 /**
- * Get flag URL for a given currency code
- * @param {string} currencyCode - The currency code (e.g., "USD", "NVCT") 
- * @returns {string} URL to the flag image
+ * Format a currency option with a flag
+ * @param {string} currencyCode - The currency code (e.g., 'USD', 'NVCT')
+ * @returns {string} HTML string with flag and currency code
  */
-function getCurrencyFlagUrl(currencyCode) {
+function formatCurrencyOption(currencyCode) {
     const metadata = getCurrencyMetadata(currencyCode);
-    if (!metadata) {
-        return '/static/images/flags/globe.svg'; // Default flag for unknown currencies
-    }
-    
-    // Special handling for certain country codes
-    switch (metadata.countryCode) {
-        case 'globe':
-            return '/static/images/flags/globe.svg';
-        case 'crypto':
-            return '/static/images/flags/crypto.svg';
-        case 'eu':
-            return '/static/images/flags/eu.svg';
-        case 'senegal': // Representative country for XOF
-            return '/static/images/flags/sn.svg';
-        case 'cm': // Representative country for XAF
-            return '/static/images/flags/cm.svg';
-        default:
-            return `/static/images/flags/${metadata.countryCode}.svg`;
-    }
+    return `<img src="${metadata.flag}" alt="${metadata.country}" class="currency-flag" width="16" height="16"> ${currencyCode} - ${metadata.name}`;
 }
 
 /**
- * Get formatted currency with flag and symbol
- * @param {string} currencyCode - The currency code (e.g., "USD", "NVCT")
- * @returns {object} Object with flag URL, symbol, and name
+ * Initialize currency dropdowns with flags
+ * @param {string} fromSelectId - ID of the "from currency" select element
+ * @param {string} toSelectId - ID of the "to currency" select element
  */
-function getFormattedCurrency(currencyCode) {
-    const metadata = getCurrencyMetadata(currencyCode) || { 
-        countryCode: 'globe', 
-        symbol: currencyCode, 
-        name: currencyCode 
-    };
+function initCurrencyDropdowns(fromSelectId = 'from_currency', toSelectId = 'to_currency') {
+    // Helper function to update select options
+    function updateSelectOptions(selectId) {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        
+        // For each option in the select
+        Array.from(select.options).forEach(option => {
+            const currencyCode = option.value;
+            option.innerHTML = formatCurrencyOption(currencyCode);
+        });
+    }
     
-    return {
-        flagUrl: getCurrencyFlagUrl(currencyCode),
-        symbol: metadata.symbol,
-        name: metadata.name
-    };
+    // Update both selects
+    updateSelectOptions(fromSelectId);
+    updateSelectOptions(toSelectId);
 }
