@@ -510,6 +510,14 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering Healthcheck routes: {str(e)}")
             
+        # Register Static routes for special files (favicon, robots.txt)
+        try:
+            from routes.static_routes import register_static_routes
+            register_static_routes(app)
+            logger.info("Static routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Static routes: {str(e)}")
+            
         # Add a simple root healthcheck
         @app.route('/ping', methods=['GET'])
         def ping():

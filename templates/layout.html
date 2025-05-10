@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}NVC Banking Platform{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/nvc_logo_white.png') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/nvc_logo_white.svg') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/nvc_logo_white.png') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/nvc_logo_white.png') }}">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
