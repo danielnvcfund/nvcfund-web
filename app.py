@@ -556,6 +556,75 @@ def create_app():
                     logger.warning(f"Slow request detected: {request.method} {request.path} ({elapsed:.4f}s)")
             return response
             
+        # Initialize currency exchange rates including AFD1 and SFN
+        try:
+            from currency_exchange_service import CurrencyExchangeService
+            CurrencyExchangeService.initialize_default_rates()
+            logger.info("Currency exchange rates initialized successfully")
+            
+            # Update AFD1 rates (gold-backed)
+            try:
+                from saint_crown_integration import SaintCrownIntegration
+                
+                # Get gold price and calculate AFD1 value
+                sc_integration = SaintCrownIntegration()
+                gold_price, _ = sc_integration.get_gold_price()
+                afd1_unit_value = gold_price * 0.1  # AFD1 = 10% of gold price
+                
+                # Update AFD1/USD rate
+                from account_holder_models import CurrencyType
+                CurrencyExchangeService.update_exchange_rate(
+                    CurrencyType.AFD1, 
+                    CurrencyType.USD, 
+                    afd1_unit_value, 
+                    "system_gold_price"
+                )
+                
+                # Update NVCT/AFD1 rate
+                nvct_to_afd1_rate = 1.0 / afd1_unit_value
+                CurrencyExchangeService.update_exchange_rate(
+                    CurrencyType.NVCT, 
+                    CurrencyType.AFD1, 
+                    nvct_to_afd1_rate, 
+                    "system_gold_price"
+                )
+                logger.info(f"AFD1 exchange rates updated (1 AFD1 = ${afd1_unit_value:.2f} USD)")
+            except Exception as e:
+                logger.error(f"Error updating AFD1 exchange rates: {str(e)}")
+                
+            # Update SFN rates (1:1 with NVCT)
+            try:
+                # Set SFN/NVCT rate to 1:1 as requested
+                CurrencyExchangeService.update_exchange_rate(
+                    CurrencyType.SFN, 
+                    CurrencyType.NVCT, 
+                    1.0,  # 1 SFN = 1 NVCT (as requested)
+                    "system_fixed_rate"
+                )
+                
+                # Set NVCT/SFN rate to 1:1 for consistency
+                CurrencyExchangeService.update_exchange_rate(
+                    CurrencyType.NVCT, 
+                    CurrencyType.SFN, 
+                    1.0,  # 1 NVCT = 1 SFN
+                    "system_fixed_rate"
+                )
+                
+                # Set SFN/USD rate to 1:1 (derived from SFN = NVCT = USD)
+                CurrencyExchangeService.update_exchange_rate(
+                    CurrencyType.SFN, 
+                    CurrencyType.USD, 
+                    1.0,
+                    "system_fixed_rate"
+                )
+                logger.info("SFN exchange rates updated (1:1 with NVCT)")
+            except Exception as e:
+                logger.error(f"Error updating SFN exchange rates: {str(e)}")
+                
+        except Exception as e:
+            logger.error(f"Error initializing currency exchange rates: {str(e)}")
+            logger.warning("Application will run with default currency exchange rates")
+
         logger.info("Application initialized successfully")
 
     return app
