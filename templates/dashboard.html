@@ -561,6 +561,18 @@
                             </a>
                         </div>
                         <div class="col-6">
+                            <a href="{{ url_for('document_download.download_center') }}" class="d-block p-3 rounded bg-light text-center text-decoration-none">
+                                <i class="fas fa-file-download mb-2 fa-2x text-warning"></i>
+                                <div class="fw-medium">Document Center</div>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('correspondent.index') }}" class="d-block p-3 rounded bg-light text-center text-decoration-none">
+                                <i class="fas fa-handshake mb-2 fa-2x text-danger"></i>
+                                <div class="fw-medium">Banking Partners</div>
+                            </a>
+                        </div>
+                        <div class="col-6">
                             <a href="{{ url_for('web.main.transactions') }}" class="d-block p-3 rounded bg-light text-center text-decoration-none">
                                 <i class="fas fa-list-alt mb-2 fa-2x text-secondary"></i>
                                 <div class="fw-medium">View Transactions</div>

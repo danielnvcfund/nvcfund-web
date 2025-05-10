@@ -6,13 +6,18 @@
         <div class="col-md-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1>Correspondent Banking Agreement</h1>
-                <a href="{{ url_for('correspondent.download_agreement') }}" class="btn btn-primary">
-                    <i class="fas fa-download"></i> Download Agreement PDF
-                </a>
+                <div>
+                    <a href="{{ url_for('correspondent.download_agreement') }}" class="btn btn-primary">
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </a>
+                    <a href="{{ url_for('document_download.download_center') }}" class="btn btn-success ms-2">
+                        <i class="fas fa-download"></i> Document Center
+                    </a>
+                </div>
             </div>
             
             <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i> This is an overview of our standard Correspondent Banking Agreement. The complete terms and conditions are available in the downloadable PDF document.
+                <i class="fas fa-info-circle"></i> This is an overview of our standard Correspondent Banking Agreement. The complete terms and conditions are available in both PDF and editable Microsoft Word formats through our Document Center.
             </div>
             
             <div class="card mb-4">
@@ -184,9 +189,12 @@
             
             <div class="text-center mt-4 mb-4">
                 <a href="{{ url_for('correspondent.download_agreement') }}" class="btn btn-primary btn-lg">
-                    <i class="fas fa-download"></i> Download Complete Agreement
+                    <i class="fas fa-file-pdf"></i> Download PDF
                 </a>
-                <a href="{{ url_for('correspondent.onboarding') }}" class="btn btn-success btn-lg ml-3">
+                <a href="{{ url_for('document_download.download_center') }}" class="btn btn-info btn-lg mx-2">
+                    <i class="fas fa-file-word"></i> Get Word Document
+                </a>
+                <a href="{{ url_for('correspondent.onboarding') }}" class="btn btn-success btn-lg">
                     <i class="fas fa-user-plus"></i> Begin Onboarding Process
                 </a>
             </div>
