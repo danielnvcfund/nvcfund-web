@@ -2,6 +2,7 @@
 Currency Exchange Service for NVC Banking Platform
 This module provides functionality for currency conversions and exchange operations,
 particularly focusing on NVCT as the base currency.
+Support for all global currencies and cryptocurrencies added via workaround.
 """
 
 import logging
@@ -12,6 +13,8 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
 from saint_crown_integration import SaintCrownIntegration
+# Import workaround for currency exchange
+import currency_exchange_workaround
 from account_holder_models import (
     CurrencyType, 
     ExchangeType, 
@@ -71,11 +74,36 @@ class CurrencyExchangeService:
                     # Calculate the cross rate
                     return from_to_nvct * nvct_to_to
             
+            # If database lookup fails, try our workaround for all global currencies
+            # Convert enum values to strings
+            from_currency_str = from_currency.value if hasattr(from_currency, 'value') else str(from_currency)
+            to_currency_str = to_currency.value if hasattr(to_currency, 'value') else str(to_currency)
+            
+            # Use the workaround to get exchange rate
+            workaround_rate = currency_exchange_workaround.get_exchange_rate(from_currency_str, to_currency_str)
+            if workaround_rate:
+                logger.info(f"Using workaround exchange rate for {from_currency_str} to {to_currency_str}: {workaround_rate}")
+                return workaround_rate
+            
             # If we're here, no rate was found
+            logger.warning(f"No exchange rate found for {from_currency_str} to {to_currency_str}")
             return None
             
         except SQLAlchemyError as e:
             logger.error(f"Database error retrieving exchange rate: {str(e)}")
+            
+            # If database error, try workaround as fallback
+            try:
+                from_currency_str = from_currency.value if hasattr(from_currency, 'value') else str(from_currency)
+                to_currency_str = to_currency.value if hasattr(to_currency, 'value') else str(to_currency)
+                
+                workaround_rate = currency_exchange_workaround.get_exchange_rate(from_currency_str, to_currency_str)
+                if workaround_rate:
+                    logger.info(f"Using fallback workaround rate for {from_currency_str} to {to_currency_str}: {workaround_rate}")
+                    return workaround_rate
+            except Exception as workaround_error:
+                logger.error(f"Workaround also failed: {str(workaround_error)}")
+            
             return None
     
     @staticmethod
