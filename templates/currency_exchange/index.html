@@ -232,7 +232,28 @@
 <script src="{{ url_for('static', filename='js/currency-metadata.js') }}"></script>
 
 <script>
+    // Function to update all flag icons in the exchange rates table
+    function updateTableFlags() {
+        // Update "from" currency flags
+        document.querySelectorAll('[id^="flag-from-"]').forEach(flagImg => {
+            const currencyCode = flagImg.id.replace('flag-from-', '');
+            const metadata = getCurrencyMetadata(currencyCode);
+            flagImg.src = metadata.flag;
+            flagImg.alt = metadata.country;
+        });
+        
+        // Update "to" currency flags
+        document.querySelectorAll('[id^="flag-to-"]').forEach(flagImg => {
+            const currencyCode = flagImg.id.replace('flag-to-', '');
+            const metadata = getCurrencyMetadata(currencyCode);
+            flagImg.src = metadata.flag;
+            flagImg.alt = metadata.country;
+        });
+    }
+    
     document.addEventListener('DOMContentLoaded', function() {
+        // Update flags in table
+        updateTableFlags();
         const calculateBtn = document.getElementById('calculate-btn');
         const calculationResult = document.getElementById('calculation-result');
         

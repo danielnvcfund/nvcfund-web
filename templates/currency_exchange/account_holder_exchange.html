@@ -58,7 +58,7 @@
                                                     <div class="input-group">
                                                         <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" required>
                                                         <div class="input-group-append">
-                                                            <select class="form-control" id="currency_from" name="currency_from">
+                                                            <select class="form-control currency-select" id="currency_from" name="currency_from">
                                                                 {% for currency in currencies %}
                                                                 <option value="{{ currency }}">{{ currency }}</option>
                                                                 {% endfor %}
@@ -74,7 +74,7 @@
                                                     <div class="input-group">
                                                         <input type="text" class="form-control" id="converted_amount" readonly>
                                                         <div class="input-group-append">
-                                                            <select class="form-control" id="currency_to" name="currency_to">
+                                                            <select class="form-control currency-select" id="currency_to" name="currency_to">
                                                                 {% for currency in currencies %}
                                                                 <option value="{{ currency }}">{{ currency }}</option>
                                                                 {% endfor %}
@@ -247,8 +247,13 @@
 {% endblock %}
 
 {% block scripts %}
+<!-- Include currency metadata and flags JS -->
+<script src="{{ url_for('static', filename='js/currency-metadata.js') }}"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize currency dropdowns with flags
+        initCurrencyDropdowns('currency_from', 'currency_to');
         // Form elements
         const accountHolderId = "{{ account_holder.id }}";
         const fromCurrencySelect = document.getElementById('currency_from');
@@ -326,7 +331,18 @@
                         currentRate = data.rate;
                         // Format rate with comma separators
                         const formattedRate = data.rate.toFixed(4).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                        exchangeRateDisplay.textContent = `Rate: 1 ${fromCurrency} = ${formattedRate} ${toCurrency}`;
+                        const fromMeta = getCurrencyMetadata(fromCurrency);
+                        const toMeta = getCurrencyMetadata(toCurrency);
+                        
+                        exchangeRateDisplay.innerHTML = `Rate: 
+                            <span class="currency-display">
+                                <img src="${fromMeta.flag}" alt="${fromMeta.country}" class="currency-flag" width="16" height="16">
+                                1 ${fromCurrency}
+                            </span> = 
+                            <span class="currency-display">
+                                <img src="${toMeta.flag}" alt="${toMeta.country}" class="currency-flag" width="16" height="16">
+                                ${formattedRate} ${toCurrency}
+                            </span>`;
                         calculateExchange();
                     } else {
                         exchangeRateDisplay.textContent = `Rate unavailable`;
