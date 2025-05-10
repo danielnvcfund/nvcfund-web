@@ -153,7 +153,7 @@
                                                     <td>
                                                         <p class="text-sm font-weight-bold mb-0">
                                                             {% if account.currency.value == 'NVCT' %}NVCT {% endif %}
-                                                            {{ account.balance }}
+                                                            {{ '{:,.2f}'.format(account.balance) }}
                                                         </p>
                                                     </td>
                                                 </tr>
@@ -203,16 +203,16 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <p class="text-sm font-weight-bold mb-0">{{ tx.from_amount }} {{ tx.from_currency.value }}</p>
+                                        <p class="text-sm font-weight-bold mb-0">{{ '{:,.2f}'.format(tx.from_amount) }} {{ tx.from_currency.value }}</p>
                                     </td>
                                     <td>
-                                        <p class="text-sm font-weight-bold mb-0">{{ tx.to_amount }} {{ tx.to_currency.value }}</p>
+                                        <p class="text-sm font-weight-bold mb-0">{{ '{:,.2f}'.format(tx.to_amount) }} {{ tx.to_currency.value }}</p>
                                     </td>
                                     <td>
-                                        <p class="text-sm font-weight-bold mb-0">{{ tx.rate_applied }}</p>
+                                        <p class="text-sm font-weight-bold mb-0">{{ '{:,.6f}'.format(tx.rate_applied) }}</p>
                                     </td>
                                     <td>
-                                        <p class="text-sm font-weight-bold mb-0">{{ tx.fee_amount }} {{ tx.fee_currency.value }}</p>
+                                        <p class="text-sm font-weight-bold mb-0">{{ '{:,.2f}'.format(tx.fee_amount) }} {{ tx.fee_currency.value }}</p>
                                     </td>
                                     <td>
                                         <span class="badge bg-{{ 'success' if tx.status.value == 'completed' else 'warning' if tx.status.value == 'pending' else 'danger' }}">
@@ -297,8 +297,11 @@
                 // Calculate converted amount
                 const convertedAmount = amountAfterFee * currentRate;
                 
+                // Format with comma separators
+                const formattedAmount = convertedAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                
                 // Update converted amount display
-                convertedAmountInput.value = convertedAmount.toFixed(2);
+                convertedAmountInput.value = formattedAmount;
             }
         }
         
