@@ -56,7 +56,8 @@
                                                 <div class="form-group mb-3">
                                                     <label for="currency_from">Send</label>
                                                     <div class="input-group">
-                                                        <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" required>
+                                                        <input type="text" class="form-control" id="amount" name="amount" required 
+                                                               pattern="^[0-9,.]*$" title="Please enter a valid amount (commas allowed for thousands)" placeholder="1,000">
                                                         <div class="input-group-append">
                                                             <select class="form-control currency-select" id="currency_from" name="currency_from">
                                                                 {% for currency in currencies %}
@@ -254,6 +255,35 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize currency dropdowns with flags
         initCurrencyDropdowns('currency_from', 'currency_to');
+        
+        // Get the amount input element
+        const amountInput = document.getElementById('amount');
+        
+        // Format amount with commas as user types
+        amountInput.addEventListener('input', function(e) {
+            // Store cursor position
+            const cursorPos = this.selectionStart;
+            const prevLength = this.value.length;
+            
+            // Remove all non-digits (except decimal point)
+            let value = this.value.replace(/[^\d.]/g, '');
+            
+            // Format with commas
+            if (value) {
+                // Handle decimal part separately
+                const parts = value.split('.');
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                value = parts.join('.');
+            }
+            
+            // Update the value
+            this.value = value;
+            
+            // Restore cursor position accounting for added/removed chars
+            const newLength = this.value.length;
+            const newCursorPos = cursorPos + (newLength - prevLength);
+            this.setSelectionRange(newCursorPos, newCursorPos);
+        });
         // Form elements
         const accountHolderId = "{{ account_holder.id }}";
         const fromCurrencySelect = document.getElementById('currency_from');
@@ -289,7 +319,9 @@
         
         // Helper function to calculate exchange
         function calculateExchange() {
-            const amount = parseFloat(amountInput.value);
+            // Parse amount with comma separators - remove commas before parsing
+            const rawAmount = amountInput.value;
+            const amount = parseFloat(rawAmount.replace(/,/g, ''));
             if (!isNaN(amount) && amount > 0) {
                 const fromCurrency = fromCurrencySelect.value;
                 const toCurrency = toCurrencySelect.value;

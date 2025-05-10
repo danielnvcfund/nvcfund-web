@@ -120,7 +120,9 @@
                                         </div>
                                         <div class="form-group mb-3">
                                             <label for="amount">Amount</label>
-                                            <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" value="100" required>
+                                            <input type="text" class="form-control" id="amount" name="amount" value="100" required 
+                                                   pattern="^[0-9,.]*$" title="Please enter a valid amount (commas allowed for thousands)">
+                                            <small class="form-text text-muted">You can use commas as separators (e.g., 1,000,000)</small>
                                         </div>
                                         <button type="button" id="calculate-btn" class="btn btn-primary">Calculate</button>
                                     </form>
@@ -256,14 +258,43 @@
         updateTableFlags();
         const calculateBtn = document.getElementById('calculate-btn');
         const calculationResult = document.getElementById('calculation-result');
+        const amountInput = document.getElementById('amount');
         
         // Initialize currency dropdowns with flags
         initCurrencyDropdowns('from_currency', 'to_currency');
         
+        // Format amount with commas as user types
+        amountInput.addEventListener('input', function(e) {
+            // Store cursor position
+            const cursorPos = this.selectionStart;
+            const prevLength = this.value.length;
+            
+            // Remove all non-digits (except decimal point)
+            let value = this.value.replace(/[^\d.]/g, '');
+            
+            // Format with commas
+            if (value) {
+                // Handle decimal part separately
+                const parts = value.split('.');
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                value = parts.join('.');
+            }
+            
+            // Update the value
+            this.value = value;
+            
+            // Restore cursor position accounting for added/removed chars
+            const newLength = this.value.length;
+            const newCursorPos = cursorPos + (newLength - prevLength);
+            this.setSelectionRange(newCursorPos, newCursorPos);
+        });
+        
         calculateBtn.addEventListener('click', function() {
             const fromCurrency = document.getElementById('from_currency').value;
             const toCurrency = document.getElementById('to_currency').value;
-            const amount = parseFloat(document.getElementById('amount').value);
+            // Parse amount with comma separators - remove commas before parsing
+            const rawAmount = document.getElementById('amount').value;
+            const amount = parseFloat(rawAmount.replace(/,/g, ''));
             
             if (!fromCurrency || !toCurrency || isNaN(amount) || amount <= 0) {
                 alert('Please enter valid values for all fields');
