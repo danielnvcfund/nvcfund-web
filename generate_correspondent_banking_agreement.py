@@ -3,6 +3,7 @@ Script to generate a Correspondent Banking Agreement PDF for NVC Fund Bank.
 """
 
 import os
+from datetime import datetime
 from fpdf import FPDF
 
 class PDFWithPageNumbers(FPDF):
@@ -125,6 +126,11 @@ def generate_correspondent_banking_agreement():
     
     # Add a new page
     pdf.add_page()
+    
+    # Add current date to page 2
+    pdf.set_font("Arial", "", 10)
+    pdf.cell(0, 6, f"Correspondent Banking Agreement - {datetime.now().strftime('%B %d, %Y')}", 0, 1, 'R')
+    pdf.ln(6)
     
     # Scope of Services
     pdf.set_font("Arial", "B", 12)
@@ -294,6 +300,13 @@ def generate_correspondent_banking_agreement():
     # Add a new page
     pdf.add_page()
     
+    # Add page header 
+    pdf.set_font("Arial", "", 10)
+    pdf.cell(0, 6, f"Correspondent Banking Agreement - {datetime.now().strftime('%B %d, %Y')}", 0, 1, 'R')
+    pdf.ln(6)
+    
+    # Continue list from previous page
+    pdf.set_font("Arial", "", 11)
     pdf.cell(10, 6, "a)", 0, 0)
     pdf.multi_cell(0, 6, "The other Party commits a material breach of this Agreement and, in the case of a breach capable of remedy, fails to remedy such breach within thirty (30) days after receiving written notice to do so;")
     
