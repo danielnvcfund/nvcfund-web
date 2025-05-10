@@ -502,6 +502,52 @@ def create_app():
         except Exception as e:
             logger.error(f"Error creating PHP test user: {str(e)}")
         
+        # Register Healthcheck routes
+        try:
+            from routes.healthcheck_routes import register_healthcheck_routes
+            register_healthcheck_routes(app)
+            logger.info("Healthcheck routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Healthcheck routes: {str(e)}")
+            
+        # Add a simple root healthcheck
+        @app.route('/ping', methods=['GET'])
+        def ping():
+            """Simple ping endpoint that always returns a 200 response"""
+            return jsonify({
+                'status': 'ok',
+                'timestamp': datetime.utcnow().isoformat()
+            }), 200
+            
+        # Add an error timeout handler
+        @app.errorhandler(504)
+        def gateway_timeout(error):
+            """Handler for gateway timeout errors"""
+            logger.error(f"Gateway timeout error: {str(error)}")
+            return render_template('errors/504.html'), 504
+            
+        # Add performance monitoring
+        @app.before_request
+        def start_timer():
+            """Record request start time for performance monitoring"""
+            from flask import g, request
+            g.start_time = time.time()
+            logger.debug(f"Request started: {request.method} {request.path}")
+            
+        @app.after_request
+        def log_request_time(response):
+            """Log request processing time for performance monitoring"""
+            from flask import g, request
+            if hasattr(g, 'start_time'):
+                elapsed = time.time() - g.start_time
+                logger.debug(f"Request completed: {request.method} {request.path} ({elapsed:.4f}s)")
+                # Add timing header for debugging
+                response.headers['X-Response-Time'] = f"{elapsed:.4f}s"
+                # Add a warning header if the request took too long
+                if elapsed > 5.0:
+                    logger.warning(f"Slow request detected: {request.method} {request.path} ({elapsed:.4f}s)")
+            return response
+            
         logger.info("Application initialized successfully")
 
     return app
