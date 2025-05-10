@@ -48,19 +48,75 @@ class AccountType(enum.Enum):
     
 class CurrencyType(enum.Enum):
     """Currency types for banking accounts"""
-    USD = "USD"
-    EUR = "EUR"
-    GBP = "GBP"
-    BTC = "BTC"
-    ETH = "ETH"
+    # Major currencies
+    USD = "USD"    # US Dollar
+    EUR = "EUR"    # Euro
+    GBP = "GBP"    # British Pound
+    
+    # Cryptocurrencies
+    BTC = "BTC"    # Bitcoin
+    ETH = "ETH"    # Ethereum
+    ZCASH = "ZCASH"
+    
+    # NVC Tokens and partner currencies
     NVCT = "NVCT"  # NVC Token
     SPU = "SPU"    # Special Purpose Unit
     TU = "TU"      # Treasury Unit
-    ZCASH = "ZCASH"
-    NGN = "NGN"    # Nigerian Naira
     AFD1 = "AFD1"  # American Federation Dollar
     SFN = "SFN"    # SFN Coin from Swifin
     AKLUMI = "AKLUMI"  # Ak Lumi currency from Eco-6
+    
+    # African Currencies
+    # North Africa
+    DZD = "DZD"    # Algerian Dinar
+    EGP = "EGP"    # Egyptian Pound
+    LYD = "LYD"    # Libyan Dinar
+    MAD = "MAD"    # Moroccan Dirham
+    SDG = "SDG"    # Sudanese Pound
+    TND = "TND"    # Tunisian Dinar
+    
+    # West Africa
+    NGN = "NGN"    # Nigerian Naira
+    GHS = "GHS"    # Ghanaian Cedi
+    XOF = "XOF"    # CFA Franc BCEAO (Benin, Burkina Faso, Côte d'Ivoire, Guinea-Bissau, Mali, Niger, Senegal, Togo)
+    GMD = "GMD"    # Gambian Dalasi
+    GNF = "GNF"    # Guinean Franc
+    LRD = "LRD"    # Liberian Dollar
+    SLL = "SLL"    # Sierra Leonean Leone
+    SLE = "SLE"    # Sierra Leonean Leone (new)
+    CVE = "CVE"    # Cape Verdean Escudo
+    
+    # Central Africa
+    XAF = "XAF"    # CFA Franc BEAC (Cameroon, Central African Republic, Chad, Republic of the Congo, Equatorial Guinea, Gabon)
+    CDF = "CDF"    # Congolese Franc
+    STN = "STN"    # São Tomé and Príncipe Dobra
+    
+    # East Africa
+    KES = "KES"    # Kenyan Shilling
+    ETB = "ETB"    # Ethiopian Birr
+    UGX = "UGX"    # Ugandan Shilling
+    TZS = "TZS"    # Tanzanian Shilling
+    RWF = "RWF"    # Rwandan Franc
+    BIF = "BIF"    # Burundian Franc
+    DJF = "DJF"    # Djiboutian Franc
+    ERN = "ERN"    # Eritrean Nakfa
+    SSP = "SSP"    # South Sudanese Pound
+    SOS = "SOS"    # Somali Shilling
+    
+    # Southern Africa
+    ZAR = "ZAR"    # South African Rand
+    LSL = "LSL"    # Lesotho Loti
+    NAD = "NAD"    # Namibian Dollar
+    SZL = "SZL"    # Swazi Lilangeni
+    BWP = "BWP"    # Botswana Pula
+    ZMW = "ZMW"    # Zambian Kwacha
+    MWK = "MWK"    # Malawian Kwacha
+    ZWL = "ZWL"    # Zimbabwean Dollar
+    MZN = "MZN"    # Mozambican Metical
+    MGA = "MGA"    # Malagasy Ariary
+    SCR = "SCR"    # Seychellois Rupee
+    MUR = "MUR"    # Mauritian Rupee
+    AOA = "AOA"    # Angolan Kwanza
 
 class AccountStatus(enum.Enum):
     """Status types for banking accounts"""

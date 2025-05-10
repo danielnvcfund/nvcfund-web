@@ -621,6 +621,55 @@ def create_app():
             except Exception as e:
                 logger.error(f"Error updating SFN exchange rates: {str(e)}")
                 
+            # Update African currency exchange rates
+            try:
+                # Exchange rates for major African currencies to USD
+                african_currency_rates = {
+                    # Key currencies from each region
+                    "NGN": 1500.00,     # Nigerian Naira
+                    "KES": 132.05,      # Kenyan Shilling
+                    "ZAR": 18.50,       # South African Rand
+                    "EGP": 47.25,       # Egyptian Pound
+                    "GHS": 15.34,       # Ghanaian Cedi
+                    "XOF": 601.04,      # CFA Franc BCEAO
+                    "XAF": 601.04,      # CFA Franc BEAC
+                }
+                
+                african_currencies_updated = 0
+                
+                # Process key African currencies
+                for currency_code, usd_rate in african_currency_rates.items():
+                    try:
+                        # Get the enum value for this currency
+                        currency_enum = getattr(CurrencyType, currency_code)
+                        
+                        # Update USD to African currency rate
+                        CurrencyExchangeService.update_exchange_rate(
+                            CurrencyType.USD,
+                            currency_enum,
+                            usd_rate,
+                            "system_african_rates"
+                        )
+                        
+                        # Update NVCT to African currency rate (1:1 with USD)
+                        CurrencyExchangeService.update_exchange_rate(
+                            CurrencyType.NVCT,
+                            currency_enum,
+                            usd_rate,
+                            "system_african_rates"
+                        )
+                        
+                        african_currencies_updated += 1
+                    except Exception as e:
+                        logger.error(f"Error updating rates for {currency_code}: {str(e)}")
+                
+                logger.info(f"African currency exchange rates initialized with {african_currencies_updated} currencies")
+                
+                # For the complete set of African currencies, the update_african_currency_rates.py script can be run separately
+                
+            except Exception as e:
+                logger.error(f"Error initializing African currency exchange rates: {str(e)}")
+                
         except Exception as e:
             logger.error(f"Error initializing currency exchange rates: {str(e)}")
             logger.warning("Application will run with default currency exchange rates")
