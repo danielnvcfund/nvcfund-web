@@ -480,6 +480,15 @@ def create_app():
             logger.error(f"Error registering Document Download Center routes: {str(e)}")
             logger.warning("Application will run without Document Download Center functionality")
         
+        # Register Institutional Agreements routes
+        try:
+            from routes.agreements_routes import agreements_bp
+            app.register_blueprint(agreements_bp)
+            logger.info("Institutional Agreements routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Institutional Agreements routes: {str(e)}")
+            logger.warning("Application will run without Institutional Agreements functionality")
+        
         # Create PHP test integration user
         try:
             from auth import create_php_test_user

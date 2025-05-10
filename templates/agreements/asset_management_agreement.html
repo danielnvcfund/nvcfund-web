@@ -1,0 +1,174 @@
+{% extends "layout.html" %}
+
+{% block title %}Asset Management Agreement - NVC Fund Bank{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Asset Management Agreement</h1>
+                <div>
+                    <a href="{{ url_for('document_download.download_center') }}" class="btn btn-success ms-2">
+                        <i class="fas fa-download"></i> Download Documents
+                    </a>
+                    <a href="{{ url_for('agreements.index') }}" class="btn btn-outline-primary ms-2">
+                        <i class="fas fa-arrow-left"></i> Back to Agreements
+                    </a>
+                </div>
+            </div>
+            
+            <div class="alert alert-success">
+                <i class="fas fa-info-circle"></i> This page provides an overview of the NVC Fund Bank Asset Management Agreement. Download the complete agreement document for detailed terms and conditions.
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">Agreement Overview</h3>
+                </div>
+                <div class="card-body">
+                    <p>The NVC Fund Bank Asset Management Agreement establishes the formal relationship between NVC Fund Bank (as the asset manager) and your institution (as the client). This agreement outlines the rights, responsibilities, and obligations of both parties in the asset management relationship.</p>
+                    
+                    <p>As a Supranational Sovereign Financial Institution with a balance sheet of over $10 trillion in assets, NVC Fund Bank provides comprehensive asset management services to qualified institutional clients worldwide. Our agreement is designed to establish clear guidelines for the management of your assets while ensuring compliance with international standards and regulations.</p>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">Key Agreement Components</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h4 class="mb-0">1. Scope of Services</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>Discretionary investment management authority</li>
+                                        <li>Portfolio construction and management</li>
+                                        <li>Asset allocation strategies</li>
+                                        <li>Risk management procedures</li>
+                                        <li>Performance measurement and reporting</li>
+                                        <li>Regular portfolio reviews</li>
+                                        <li>Investment policy statement implementation</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h4 class="mb-0">2. Investment Guidelines</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>Investment objectives and strategies</li>
+                                        <li>Asset allocation parameters</li>
+                                        <li>Permissible investments</li>
+                                        <li>Investment restrictions and prohibitions</li>
+                                        <li>Risk tolerance parameters</li>
+                                        <li>Benchmark selection and tracking</li>
+                                        <li>ESG investment considerations</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h4 class="mb-0">3. Fees and Expenses</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>Management fee structure</li>
+                                        <li>Performance-based fees (if applicable)</li>
+                                        <li>Fee calculation methodology</li>
+                                        <li>Expense allocation provisions</li>
+                                        <li>Billing frequency and procedures</li>
+                                        <li>Third-party fee disclosure</li>
+                                        <li>Fee adjustment mechanisms</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h4 class="mb-0">4. Reporting and Communication</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>Regular reporting requirements</li>
+                                        <li>Performance measurement standards</li>
+                                        <li>Client meetings and review schedule</li>
+                                        <li>Special reporting requests</li>
+                                        <li>Communication protocols</li>
+                                        <li>Online portal access</li>
+                                        <li>Confidentiality provisions</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h4 class="mb-0">5. Legal Framework</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>Fiduciary responsibilities</li>
+                                        <li>Standard of care</li>
+                                        <li>Liability provisions</li>
+                                        <li>Indemnification clauses</li>
+                                        <li>Proxy voting authority</li>
+                                        <li>Regulatory compliance requirements</li>
+                                        <li>Dispute resolution mechanisms</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h4 class="mb-0">6. Term and Termination</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>Agreement duration provisions</li>
+                                        <li>Termination conditions and notice periods</li>
+                                        <li>Termination without cause provisions</li>
+                                        <li>Material breach definitions</li>
+                                        <li>Asset transition procedures</li>
+                                        <li>Final accounting requirements</li>
+                                        <li>Post-termination obligations</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4 mb-4">
+                <a href="{{ url_for('agreements.asset_management_onboarding') }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-user-plus"></i> Begin Onboarding Process
+                </a>
+                <a href="{{ url_for('document_download.download_center') }}" class="btn btn-outline-primary btn-lg ms-3">
+                    <i class="fas fa-download"></i> Download Agreement Template
+                </a>
+            </div>
+            
+            <div class="alert alert-secondary">
+                <strong>Note:</strong> For any questions about the Asset Management Agreement or the onboarding process, please contact <strong>investments@nvcfundbank.com</strong>.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

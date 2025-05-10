@@ -1,0 +1,311 @@
+{% extends "layout.html" %}
+
+{% block title %}Memorandum of Understanding Onboarding - NVC Fund Bank{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Memorandum of Understanding Onboarding</h1>
+                <a href="{{ url_for('agreements.index') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Agreements
+                </a>
+            </div>
+            
+            <div class="alert alert-warning">
+                <i class="fas fa-info-circle"></i> This page outlines the process for establishing a Memorandum of Understanding (MOU) with NVC Fund Bank.
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">Memorandum of Understanding Overview</h3>
+                </div>
+                <div class="card-body">
+                    <p>A Memorandum of Understanding (MOU) establishes a framework for cooperation between NVC Fund Bank and your organization. While not legally binding to the same extent as other agreements, an MOU formalizes a mutual understanding and sets the stage for future collaborative endeavors.</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="progress mb-4" style="height: 30px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">Step 1</div>
+                                <div class="progress-bar bg-info" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">Step 2</div>
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">Step 3</div>
+                                <div class="progress-bar bg-danger" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">Step 4</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">Step 1: Initial Discussion</h4>
+                        </div>
+                        <div class="card-body">
+                            <h5><i class="fas fa-comments"></i> Required Information</h5>
+                            <ul>
+                                <li>Organization information</li>
+                                <li>Areas of mutual interest</li>
+                                <li>Proposed collaboration scope</li>
+                                <li>Key stakeholders</li>
+                                <li>Strategic objectives</li>
+                                <li>Preliminary timeline</li>
+                                <li>Expected outcomes</li>
+                            </ul>
+                            <div class="alert alert-success mt-3">
+                                <strong>Timeline:</strong> 1-3 business days for initial discussion
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-info text-white">
+                            <h4 class="mb-0">Step 2: MOU Framework Development</h4>
+                        </div>
+                        <div class="card-body">
+                            <h5><i class="fas fa-file-alt"></i> Process Overview</h5>
+                            <ul>
+                                <li>Partnership scope definition</li>
+                                <li>Roles and responsibilities outline</li>
+                                <li>Confidentiality parameters</li>
+                                <li>Information sharing guidelines</li>
+                                <li>Timeline development</li>
+                                <li>Resource commitment outline</li>
+                                <li>Success metrics definition</li>
+                            </ul>
+                            <div class="alert alert-info mt-3">
+                                <strong>Timeline:</strong> 1 week for framework development
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-warning text-dark">
+                            <h4 class="mb-0">Step 3: MOU Review & Finalization</h4>
+                        </div>
+                        <div class="card-body">
+                            <h5><i class="fas fa-check-double"></i> Review Process</h5>
+                            <ul>
+                                <li>Legal review by both parties</li>
+                                <li>Stakeholder feedback incorporation</li>
+                                <li>Final terms negotiation</li>
+                                <li>Timeline confirmation</li>
+                                <li>Resource commitments finalization</li>
+                                <li>Expected outcomes confirmation</li>
+                                <li>MOU document preparation</li>
+                            </ul>
+                            <div class="alert alert-warning mt-3 text-dark">
+                                <strong>Timeline:</strong> 3-5 business days for review and finalization
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-danger text-white">
+                            <h4 class="mb-0">Step 4: Execution & Implementation</h4>
+                        </div>
+                        <div class="card-body">
+                            <h5><i class="fas fa-handshake"></i> Execution Process</h5>
+                            <ul>
+                                <li>MOU signing ceremony</li>
+                                <li>Joint press release (if applicable)</li>
+                                <li>Internal communications</li>
+                                <li>Implementation planning</li>
+                                <li>Project team assembly</li>
+                                <li>Initial kickoff meeting</li>
+                                <li>Ongoing collaboration management</li>
+                            </ul>
+                            <div class="alert alert-danger mt-3">
+                                <strong>Timeline:</strong> 1-2 weeks for execution and initial implementation
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Memorandum of Understanding Request Form</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead">To initiate the MOU process with NVC Fund Bank, please complete the form below. Our Partnership team will review your submission and contact you within 3 business days to discuss next steps.</p>
+                    
+                    <form>
+                        <h4 class="mt-4 mb-3">Organization Information</h4>
+                        
+                        <div class="form-group mb-3">
+                            <label for="organizationName"><strong>Organization Name*</strong></label>
+                            <input type="text" class="form-control" id="organizationName" required>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="country"><strong>Country of Headquarters*</strong></label>
+                                    <input type="text" class="form-control" id="country" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="organizationType"><strong>Organization Type*</strong></label>
+                                    <select class="form-control" id="organizationType" required>
+                                        <option value="">-- Select --</option>
+                                        <option value="financial_institution">Financial Institution</option>
+                                        <option value="government">Government Entity</option>
+                                        <option value="ngo">Non-Governmental Organization</option>
+                                        <option value="corporation">Corporation</option>
+                                        <option value="fintech">Fintech Company</option>
+                                        <option value="academic">Academic Institution</option>
+                                        <option value="research">Research Organization</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="website"><strong>Organization Website*</strong></label>
+                            <input type="url" class="form-control" id="website" required>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="contactName"><strong>Primary Contact Name*</strong></label>
+                                    <input type="text" class="form-control" id="contactName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="contactTitle"><strong>Title/Position*</strong></label>
+                                    <input type="text" class="form-control" id="contactTitle" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="contactEmail"><strong>Email Address*</strong></label>
+                                    <input type="email" class="form-control" id="contactEmail" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="contactPhone"><strong>Phone Number*</strong></label>
+                                    <input type="text" class="form-control" id="contactPhone" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4 class="mt-4 mb-3">Proposed Collaboration</h4>
+                        
+                        <div class="form-group mb-3">
+                            <label for="collaborationAreas"><strong>Areas of Interest for Collaboration (select all that apply)*</strong></label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="financial_inclusion" id="financialInclusion">
+                                <label class="form-check-label" for="financialInclusion">
+                                    Financial Inclusion Initiatives
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="blockchain" id="blockchain">
+                                <label class="form-check-label" for="blockchain">
+                                    Blockchain Technology & Innovation
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="stablecoin" id="stablecoin">
+                                <label class="form-check-label" for="stablecoin">
+                                    NVCT Stablecoin Integration
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="payments" id="payments">
+                                <label class="form-check-label" for="payments">
+                                    Payment Solutions Development
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="research" id="research">
+                                <label class="form-check-label" for="research">
+                                    Research & Development
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="sustainability" id="sustainability">
+                                <label class="form-check-label" for="sustainability">
+                                    Sustainable Finance Projects
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="education" id="education">
+                                <label class="form-check-label" for="education">
+                                    Financial Education Programs
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="infrastructure" id="infrastructure">
+                                <label class="form-check-label" for="infrastructure">
+                                    Financial Infrastructure Development
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="collaborationScope"><strong>Proposed Scope of Collaboration*</strong></label>
+                            <textarea class="form-control" id="collaborationScope" rows="4" required placeholder="Please describe the specific areas or projects you're interested in collaborating on with NVC Fund Bank."></textarea>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="expectedBenefits"><strong>Expected Mutual Benefits*</strong></label>
+                            <textarea class="form-control" id="expectedBenefits" rows="3" required placeholder="Please describe the anticipated benefits for both parties from this collaboration."></textarea>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="timeframe"><strong>Proposed Timeframe*</strong></label>
+                            <select class="form-control" id="timeframe" required>
+                                <option value="">-- Select --</option>
+                                <option value="6_months">6 months</option>
+                                <option value="1_year">1 year</option>
+                                <option value="2_years">2 years</option>
+                                <option value="3_years">3 years</option>
+                                <option value="5_years">5 years</option>
+                                <option value="indefinite">Indefinite with periodic review</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="additionalInfo"><strong>Additional Information or Comments</strong></label>
+                            <textarea class="form-control" id="additionalInfo" rows="4" placeholder="Please provide any additional information that might be relevant to the proposed collaboration."></textarea>
+                        </div>
+                        
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" value="" id="termsCheck" required>
+                            <label class="form-check-label" for="termsCheck">
+                                I confirm that the information provided is accurate and that I am authorized to initiate this request on behalf of my organization. I understand that this submission is the first step in a process and does not represent a commitment from either party.
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-warning btn-lg">Submit MOU Request</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="alert alert-secondary">
+                <strong>Note:</strong> All information provided will be kept confidential and used solely for the purpose of evaluating the potential collaboration. For any questions about the MOU process, please contact <strong>partnerships@nvcfundbank.com</strong>.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

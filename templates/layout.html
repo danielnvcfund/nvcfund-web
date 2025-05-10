@@ -180,6 +180,23 @@
                                 </a>
                             </li>
                             <li class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Institutional Services</h6></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('agreements.index') }}">
+                                    <i class="fas fa-handshake me-1"></i> Institutional Agreements
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('correspondent.index') }}">
+                                    <i class="fas fa-university me-1"></i> Correspondent Banking
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('document_download.download_center') }}">
+                                    <i class="fas fa-file-download me-1"></i> Document Center
+                                </a>
+                            </li>
+                            <li class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Documentation</h6></li>
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('pdf_reports.reports_index') }}">

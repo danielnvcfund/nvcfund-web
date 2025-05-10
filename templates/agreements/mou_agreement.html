@@ -1,0 +1,237 @@
+{% extends "layout.html" %}
+
+{% block title %}Memorandum of Understanding - NVC Fund Bank{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Memorandum of Understanding</h1>
+                <div>
+                    <a href="{{ url_for('document_download.download_center') }}" class="btn btn-warning text-dark ms-2">
+                        <i class="fas fa-download"></i> Download Documents
+                    </a>
+                    <a href="{{ url_for('agreements.index') }}" class="btn btn-outline-primary ms-2">
+                        <i class="fas fa-arrow-left"></i> Back to Agreements
+                    </a>
+                </div>
+            </div>
+            
+            <div class="alert alert-warning">
+                <i class="fas fa-info-circle"></i> This page provides an overview of the NVC Fund Bank Memorandum of Understanding. Download the complete MOU document for detailed terms and collaboration framework.
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">MOU Overview</h3>
+                </div>
+                <div class="card-body">
+                    <p>A Memorandum of Understanding (MOU) between NVC Fund Bank and your organization establishes a framework for cooperation and collaboration. While not as legally binding as other formal agreements, an MOU formalizes the mutual understanding between parties and sets the stage for future collaborative initiatives.</p>
+                    
+                    <p>As a Supranational Sovereign Financial Institution with a balance sheet of over $10 trillion in assets, NVC Fund Bank seeks strategic partnerships with aligned organizations to advance common goals in areas such as financial innovation, inclusion, education, and sustainable development. Our MOU is designed to establish clear parameters for collaboration while allowing flexibility for evolving partnership needs.</p>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">Key MOU Components</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h4 class="mb-0">1. Purpose and Scope</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>Clear statement of purpose</li>
+                                        <li>Areas of collaboration</li>
+                                        <li>Scope of activities</li>
+                                        <li>Strategic objectives</li>
+                                        <li>Alignment with organizational missions</li>
+                                        <li>Collaborative vision</li>
+                                        <li>Intended outcomes and impact</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h4 class="mb-0">2. Roles and Responsibilities</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>Defined roles of each party</li>
+                                        <li>Specific responsibilities</li>
+                                        <li>Resource commitments</li>
+                                        <li>Financial contributions (if applicable)</li>
+                                        <li>Staff assignments</li>
+                                        <li>Technical support provisions</li>
+                                        <li>Organizational points of contact</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h4 class="mb-0">3. Information Sharing</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>Types of information to be shared</li>
+                                        <li>Confidentiality provisions</li>
+                                        <li>Intellectual property rights</li>
+                                        <li>Data protection guidelines</li>
+                                        <li>Disclosure limitations</li>
+                                        <li>Publication permissions</li>
+                                        <li>Knowledge management procedures</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h4 class="mb-0">4. Timeline and Milestones</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>MOU effective date</li>
+                                        <li>Duration of collaboration</li>
+                                        <li>Key milestone dates</li>
+                                        <li>Project phases</li>
+                                        <li>Review and evaluation periods</li>
+                                        <li>Renewal process</li>
+                                        <li>Renegotiation timeline</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h4 class="mb-0">5. Governance Structure</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>Oversight committee composition</li>
+                                        <li>Decision-making processes</li>
+                                        <li>Meeting frequency</li>
+                                        <li>Progress reporting requirements</li>
+                                        <li>Issue resolution procedures</li>
+                                        <li>Change management process</li>
+                                        <li>Communication protocols</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h4 class="mb-0">6. General Provisions</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>Non-binding legal status</li>
+                                        <li>Amendment procedures</li>
+                                        <li>Termination conditions</li>
+                                        <li>Dispute resolution process</li>
+                                        <li>Limitation of liability</li>
+                                        <li>Force majeure provisions</li>
+                                        <li>Signatures and formalities</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Collaboration Areas</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h4 class="mb-0">Financial Innovation</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>Blockchain technology integration</li>
+                                        <li>Digital payment solutions</li>
+                                        <li>NVCT stablecoin ecosystem</li>
+                                        <li>Cross-border settlement systems</li>
+                                        <li>Financial infrastructure modernization</li>
+                                        <li>Regulatory technology advancement</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h4 class="mb-0">Financial Inclusion</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>Access to banking services</li>
+                                        <li>Microfinance initiatives</li>
+                                        <li>Alternative credit scoring</li>
+                                        <li>Small business support</li>
+                                        <li>Rural financial service access</li>
+                                        <li>Financial literacy programs</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h4 class="mb-0">Sustainable Development</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>Sustainable finance frameworks</li>
+                                        <li>ESG investing standards</li>
+                                        <li>Green bond initiatives</li>
+                                        <li>Climate finance projects</li>
+                                        <li>Impact investment strategies</li>
+                                        <li>SDG-aligned financing</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4 mb-4">
+                <a href="{{ url_for('agreements.mou_onboarding') }}" class="btn btn-warning btn-lg text-dark">
+                    <i class="fas fa-user-plus"></i> Begin MOU Process
+                </a>
+                <a href="{{ url_for('document_download.download_center') }}" class="btn btn-outline-primary btn-lg ms-3">
+                    <i class="fas fa-download"></i> Download MOU Template
+                </a>
+            </div>
+            
+            <div class="alert alert-secondary">
+                <strong>Note:</strong> For any questions about the Memorandum of Understanding or the partnership process, please contact <strong>partnerships@nvcfundbank.com</strong>.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
