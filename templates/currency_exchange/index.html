@@ -176,10 +176,10 @@
                                             <p class="text-sm font-weight-bold mb-0">{{ rate.to_currency }}</p>
                                         </td>
                                         <td>
-                                            <p class="text-sm font-weight-bold mb-0">{{ rate.rate }}</p>
+                                            <p class="text-sm font-weight-bold mb-0">{{ '{:,.6f}'.format(rate.rate) }}</p>
                                         </td>
                                         <td>
-                                            <p class="text-sm font-weight-bold mb-0">{{ rate.inverse_rate }}</p>
+                                            <p class="text-sm font-weight-bold mb-0">{{ '{:,.6f}'.format(rate.inverse_rate) }}</p>
                                         </td>
                                         <td>
                                             <p class="text-sm font-weight-bold mb-0">{{ rate.last_updated.strftime('%Y-%m-%d %H:%M') }}</p>
@@ -253,10 +253,15 @@
             .then(data => {
                 if (data.success) {
                     // Display the result
-                    document.getElementById('result-rate').textContent = `1 ${fromCurrency} = ${data.rate} ${toCurrency}`;
-                    document.getElementById('result-amount').textContent = `${amount} ${fromCurrency}`;
-                    document.getElementById('result-fee').textContent = `${data.fee_amount.toFixed(2)} ${fromCurrency}`;
-                    document.getElementById('result-final').textContent = `${data.converted_amount.toFixed(2)} ${toCurrency}`;
+                    // Add function to format numbers with comma separators
+                    function formatNumber(num) {
+                        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                    }
+                    
+                    document.getElementById('result-rate').textContent = `1 ${fromCurrency} = ${formatNumber(data.rate)} ${toCurrency}`;
+                    document.getElementById('result-amount').textContent = `${formatNumber(amount)} ${fromCurrency}`;
+                    document.getElementById('result-fee').textContent = `${formatNumber(data.fee_amount.toFixed(2))} ${fromCurrency}`;
+                    document.getElementById('result-final').textContent = `${formatNumber(data.converted_amount.toFixed(2))} ${toCurrency}`;
                     
                     // Show the result container
                     calculationResult.classList.remove('d-none');
