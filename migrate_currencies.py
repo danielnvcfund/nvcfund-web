@@ -1,175 +1,221 @@
 #!/usr/bin/env python3
 """
-Update the database to include all African currency exchange rates
+Update the database to include all currency exchange rates
 This script runs the migration using SQLAlchemy ORM
 """
 
 import logging
+import enum
+import time
+from sqlalchemy import Column, Integer, Float, Enum, String, DateTime, Boolean, text, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from datetime import datetime
 from app import app, db
-from currency_exchange_service import CurrencyExchangeService
-from account_holder_models import CurrencyExchangeRate, CurrencyType
+from account_holder_models import CurrencyType, CurrencyExchangeRate
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Exchange rates for African currencies to USD (as of May 2025)
-AFRICAN_CURRENCY_RATES = {
-    # North Africa
-    "DZD": 134.82,      # Algerian Dinar
-    "EGP": 47.25,       # Egyptian Pound
-    "LYD": 4.81,        # Libyan Dinar
-    "MAD": 9.98,        # Moroccan Dirham
-    "SDG": 599.53,      # Sudanese Pound
-    "TND": 3.11,        # Tunisian Dinar
-    
-    # West Africa
-    "NGN": 1500.00,     # Nigerian Naira
-    "GHS": 15.34,       # Ghanaian Cedi
-    "XOF": 601.04,      # CFA Franc BCEAO
-    "GMD": 67.50,       # Gambian Dalasi
-    "GNF": 8612.43,     # Guinean Franc
-    "LRD": 187.10,      # Liberian Dollar
-    "SLL": 19842.65,    # Sierra Leonean Leone
-    "SLE": 19.84,       # Sierra Leonean Leone (new)
-    "CVE": 101.32,      # Cape Verdean Escudo
-    
-    # Central Africa
-    "XAF": 601.04,      # CFA Franc BEAC
-    "CDF": 2664.51,     # Congolese Franc
-    "STN": 22.55,       # São Tomé and Príncipe Dobra
-    
-    # East Africa
-    "KES": 132.05,      # Kenyan Shilling
-    "ETB": 56.93,       # Ethiopian Birr
-    "UGX": 3750.52,     # Ugandan Shilling
-    "TZS": 2605.43,     # Tanzanian Shilling
-    "RWF": 1276.83,     # Rwandan Franc
-    "BIF": 2862.42,     # Burundian Franc
-    "DJF": 178.03,      # Djiboutian Franc
-    "ERN": 15.00,       # Eritrean Nakfa
-    "SSP": 982.43,      # South Sudanese Pound
-    "SOS": 571.82,      # Somali Shilling
-    
-    # Southern Africa
-    "ZAR": 18.50,       # South African Rand
-    "LSL": 18.50,       # Lesotho Loti
-    "NAD": 18.50,       # Namibian Dollar
-    "SZL": 18.50,       # Swazi Lilangeni
-    "BWP": 13.68,       # Botswana Pula
-    "ZMW": 26.42,       # Zambian Kwacha
-    "MWK": 1682.31,     # Malawian Kwacha
-    "ZWL": 5621.32,     # Zimbabwean Dollar
-    "MZN": 63.86,       # Mozambican Metical
-    "MGA": 4378.24,     # Malagasy Ariary
-    "SCR": 14.38,       # Seychellois Rupee
-    "MUR": 46.25,       # Mauritian Rupee
-    "AOA": 832.25,      # Angolan Kwanza
-}
-
-def add_exchange_rate(from_currency_str, to_currency_str, rate, source="system_african_rates"):
+def add_exchange_rate(from_currency_str, to_currency_str, rate, source="system_migration"):
     """Add exchange rate directly to the database using SQLAlchemy ORM"""
     try:
-        # Check if record already exists
-        existing = db.session.query(CurrencyExchangeRate).filter_by(
-            from_currency=from_currency_str,
-            to_currency=to_currency_str
+        # Convert string currency codes to enum members
+        from_currency = getattr(CurrencyType, from_currency_str)
+        to_currency = getattr(CurrencyType, to_currency_str)
+        
+        # Check if rate already exists
+        existing_rate = db.session.query(CurrencyExchangeRate).filter_by(
+            from_currency=from_currency,
+            to_currency=to_currency
         ).first()
         
-        if existing:
-            # Update existing record
-            existing.rate = rate
-            existing.inverse_rate = 1.0 / rate if rate > 0 else 0
-            existing.source = source
-            existing.last_updated = db.func.now()
-            existing.is_active = True
-            logger.info(f"Updated rate: 1 {from_currency_str} = {rate} {to_currency_str}")
+        if existing_rate:
+            # Update existing rate
+            existing_rate.rate = rate
+            existing_rate.inverse_rate = 1.0 / rate if rate != 0 else 0
+            existing_rate.last_updated = datetime.utcnow()
+            existing_rate.source = source
+            db.session.commit()
+            logger.info(f"Updated exchange rate: 1 {from_currency_str} = {rate} {to_currency_str}")
         else:
-            # Create new record
+            # Create new rate
             new_rate = CurrencyExchangeRate(
-                from_currency=from_currency_str,
-                to_currency=to_currency_str,
+                from_currency=from_currency,
+                to_currency=to_currency,
                 rate=rate,
-                inverse_rate=1.0 / rate if rate > 0 else 0,
+                inverse_rate=1.0 / rate if rate != 0 else 0,
                 source=source,
+                last_updated=datetime.utcnow(),
                 is_active=True
             )
             db.session.add(new_rate)
-            logger.info(f"Added rate: 1 {from_currency_str} = {rate} {to_currency_str}")
+            db.session.commit()
+            logger.info(f"Added new exchange rate: 1 {from_currency_str} = {rate} {to_currency_str}")
         
-        # Add inverse rate as well
-        inverse_rate = 1.0 / rate if rate > 0 else 0
+        # Also add the inverse rate
+        inverse_rate = 1.0 / rate if rate != 0 else 0
+        
+        # Check if inverse rate already exists
         existing_inverse = db.session.query(CurrencyExchangeRate).filter_by(
-            from_currency=to_currency_str,
-            to_currency=from_currency_str
+            from_currency=to_currency,
+            to_currency=from_currency
         ).first()
         
         if existing_inverse:
-            # Update existing inverse record
+            # Update existing inverse rate
             existing_inverse.rate = inverse_rate
             existing_inverse.inverse_rate = rate
+            existing_inverse.last_updated = datetime.utcnow()
             existing_inverse.source = source
-            existing_inverse.last_updated = db.func.now()
-            existing_inverse.is_active = True
+            db.session.commit()
         else:
-            # Create new inverse record
+            # Create new inverse rate
             new_inverse = CurrencyExchangeRate(
-                from_currency=to_currency_str,
-                to_currency=from_currency_str,
+                from_currency=to_currency,
+                to_currency=from_currency,
                 rate=inverse_rate,
                 inverse_rate=rate,
                 source=source,
+                last_updated=datetime.utcnow(),
                 is_active=True
             )
             db.session.add(new_inverse)
+            db.session.commit()
         
         return True
     except Exception as e:
         logger.error(f"Error adding exchange rate {from_currency_str} to {to_currency_str}: {str(e)}")
+        db.session.rollback()
         return False
 
 def migrate_currencies():
-    """Run the migration to add African currency exchange rates"""
-    logger.info("Starting migration for African currency exchange rates...")
+    """Run the migration to add currency exchange rates"""
+    logger.info("Starting currency exchange rates migration...")
     
     with app.app_context():
         try:
-            # Process each African currency
-            rates_added = 0
-            for currency_code, usd_rate in AFRICAN_CURRENCY_RATES.items():
-                try:
-                    # Add USD to African currency rate
-                    if add_exchange_rate('USD', currency_code, usd_rate):
-                        rates_added += 1
-                    
-                    # Add NVCT to African currency rate (1:1 with USD)
-                    nvct_rate = usd_rate  # NVCT has 1:1 peg with USD
-                    if add_exchange_rate('NVCT', currency_code, nvct_rate):
-                        rates_added += 1
-                except Exception as e:
-                    logger.error(f"Error processing {currency_code}: {str(e)}")
+            # Update PostgreSQL enum type
+            db.session.execute(text("BEGIN;"))
             
-            # Commit all changes
-            db.session.commit()
-            logger.info(f"Successfully added {rates_added} exchange rates for African currencies")
+            # Get current enum values
+            result = db.session.execute(text("""
+                SELECT enumlabel
+                FROM pg_enum
+                JOIN pg_type ON pg_enum.enumtypid = pg_type.oid
+                WHERE pg_type.typname = 'currencytype'
+                ORDER BY enumsortorder;
+            """))
             
-            # Verify some key rates
-            key_currencies = ['NGN', 'ZAR', 'KES', 'EGP', 'GHS']
-            for currency in key_currencies:
-                rate = db.session.query(CurrencyExchangeRate).filter_by(
-                    from_currency='USD',
-                    to_currency=currency
-                ).first()
+            current_enum_values = [row[0] for row in result]
+            logger.info(f"Current enum values: {current_enum_values}")
+            
+            # Get all values from CurrencyType enum
+            enum_values = [currency.value for currency in CurrencyType]
+            logger.info(f"Required enum values: {enum_values}")
+            
+            # Find missing values
+            missing_values = [value for value in enum_values if value not in current_enum_values]
+            logger.info(f"Missing enum values: {missing_values}")
+            
+            if missing_values:
+                # Create temporary tables
+                db.session.execute(text("""
+                    CREATE TABLE currency_exchange_rate_backup AS 
+                    SELECT * FROM currency_exchange_rate;
+                """))
                 
-                if rate:
-                    logger.info(f"Verified: 1 USD = {rate.rate} {currency}")
-                else:
-                    logger.warning(f"Rate not found: USD to {currency}")
+                # Drop constraints
+                db.session.execute(text("""
+                    ALTER TABLE currency_exchange_rate 
+                    DROP CONSTRAINT IF EXISTS currency_exchange_rate_from_currency_fkey,
+                    DROP CONSTRAINT IF EXISTS currency_exchange_rate_to_currency_fkey;
+                """))
+                
+                # Drop and recreate the enum type
+                db.session.execute(text("""
+                    DROP TABLE currency_exchange_rate;
+                """))
+                
+                db.session.execute(text("""
+                    DROP TYPE IF EXISTS currencytype CASCADE;
+                """))
+                
+                # Create new enum with all values
+                enum_values_sql = ", ".join([f"'{value}'" for value in enum_values])
+                db.session.execute(text(f"""
+                    CREATE TYPE currencytype AS ENUM ({enum_values_sql});
+                """))
+                
+                # Recreate the currency_exchange_rate table
+                db.session.execute(text("""
+                    CREATE TABLE currency_exchange_rate (
+                        id SERIAL PRIMARY KEY,
+                        from_currency currencytype NOT NULL,
+                        to_currency currencytype NOT NULL,
+                        rate FLOAT NOT NULL,
+                        inverse_rate FLOAT,
+                        last_updated TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+                        source VARCHAR(100),
+                        is_active BOOLEAN DEFAULT true
+                    );
+                """))
+                
+                # Migrate data that can be migrated (for existing enum values)
+                logger.info("Migrating existing exchange rate data...")
+                db.session.execute(text("""
+                    INSERT INTO currency_exchange_rate (
+                        id, from_currency, to_currency, rate, inverse_rate, 
+                        last_updated, source, is_active
+                    )
+                    SELECT 
+                        id, from_currency::text::currencytype, to_currency::text::currencytype, 
+                        rate, inverse_rate, last_updated, source, is_active
+                    FROM currency_exchange_rate_backup
+                    WHERE from_currency::text IN ({}) AND to_currency::text IN ({});
+                """.format(
+                    ", ".join([f"'{value}'" for value in current_enum_values]),
+                    ", ".join([f"'{value}'" for value in current_enum_values])
+                )))
+                
+                # Drop backup table
+                db.session.execute(text("""
+                    DROP TABLE currency_exchange_rate_backup;
+                """))
+                
+                db.session.execute(text("COMMIT;"))
+                logger.info("Database schema updated successfully with new currency types")
+            else:
+                db.session.execute(text("COMMIT;"))
+                logger.info("No schema changes needed - all currency types already exist")
+            
+            # Initialize essential exchange rates
+            logger.info("Initializing essential exchange rates...")
+            
+            # NVCT pegged to USD 1:1
+            add_exchange_rate("NVCT", "USD", 1.0, "system_migration")
+            
+            # Major currencies
+            add_exchange_rate("USD", "EUR", 0.93, "system_migration")
+            add_exchange_rate("USD", "GBP", 0.79, "system_migration")
+            
+            # Partner currencies
+            add_exchange_rate("NVCT", "AFD1", 339.40 / 1000, "system_migration")  # 1 AFD1 = 10% of gold price
+            add_exchange_rate("NVCT", "SFN", 1.0, "system_migration")  # 1:1 ratio as specified
+            add_exchange_rate("NVCT", "AKLUMI", 0.307, "system_migration")  # 1 AKLUMI = $3.25 USD
+            
+            # Sample cryptocurrencies
+            add_exchange_rate("USD", "BTC", 1/62000.0, "system_migration")  # Bitcoin price in USD
+            add_exchange_rate("USD", "ETH", 1/3000.0, "system_migration")  # Ethereum price in USD
+            
+            logger.info("Essential exchange rates initialized successfully")
             
             return True
+            
         except Exception as e:
-            db.session.rollback()
-            logger.error(f"Error in migration: {str(e)}")
+            logger.error(f"Error during migration: {str(e)}")
+            db.session.execute(text("ROLLBACK;"))
             return False
 
 if __name__ == "__main__":
