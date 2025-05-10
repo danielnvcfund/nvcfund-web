@@ -48,23 +48,35 @@ class AccountType(enum.Enum):
     
 class CurrencyType(enum.Enum):
     """Currency types for banking accounts"""
-    # Major currencies
-    USD = "USD"    # US Dollar
-    EUR = "EUR"    # Euro
-    GBP = "GBP"    # British Pound
-    
-    # Cryptocurrencies
-    BTC = "BTC"    # Bitcoin
-    ETH = "ETH"    # Ethereum
-    ZCASH = "ZCASH"
-    
     # NVC Tokens and partner currencies
-    NVCT = "NVCT"  # NVC Token
+    NVCT = "NVCT"  # NVC Token (primary native currency)
     SPU = "SPU"    # Special Purpose Unit
     TU = "TU"      # Treasury Unit
     AFD1 = "AFD1"  # American Federation Dollar
     SFN = "SFN"    # SFN Coin from Swifin
     AKLUMI = "AKLUMI"  # Ak Lumi currency from Eco-6
+    
+    # Major World Currencies
+    USD = "USD"    # US Dollar
+    EUR = "EUR"    # Euro
+    GBP = "GBP"    # British Pound
+    JPY = "JPY"    # Japanese Yen
+    CHF = "CHF"    # Swiss Franc
+    CAD = "CAD"    # Canadian Dollar
+    AUD = "AUD"    # Australian Dollar
+    NZD = "NZD"    # New Zealand Dollar
+    CNY = "CNY"    # Chinese Yuan Renminbi
+    HKD = "HKD"    # Hong Kong Dollar
+    SGD = "SGD"    # Singapore Dollar
+    INR = "INR"    # Indian Rupee
+    RUB = "RUB"    # Russian Ruble
+    BRL = "BRL"    # Brazilian Real
+    MXN = "MXN"    # Mexican Peso
+    SEK = "SEK"    # Swedish Krona
+    NOK = "NOK"    # Norwegian Krone
+    DKK = "DKK"    # Danish Krone
+    PLN = "PLN"    # Polish Zloty
+    TRY = "TRY"    # Turkish Lira
     
     # African Currencies
     # North Africa
@@ -117,6 +129,88 @@ class CurrencyType(enum.Enum):
     SCR = "SCR"    # Seychellois Rupee
     MUR = "MUR"    # Mauritian Rupee
     AOA = "AOA"    # Angolan Kwanza
+    
+    # Asia Pacific Currencies
+    IDR = "IDR"    # Indonesian Rupiah
+    MYR = "MYR"    # Malaysian Ringgit
+    PHP = "PHP"    # Philippine Peso
+    THB = "THB"    # Thai Baht
+    VND = "VND"    # Vietnamese Dong
+    KRW = "KRW"    # South Korean Won
+    TWD = "TWD"    # Taiwan New Dollar
+    PKR = "PKR"    # Pakistani Rupee
+    BDT = "BDT"    # Bangladeshi Taka
+    NPR = "NPR"    # Nepalese Rupee
+    LKR = "LKR"    # Sri Lankan Rupee
+    
+    # Middle East Currencies
+    AED = "AED"    # UAE Dirham
+    SAR = "SAR"    # Saudi Riyal
+    QAR = "QAR"    # Qatari Riyal
+    OMR = "OMR"    # Omani Rial
+    BHD = "BHD"    # Bahraini Dinar
+    KWD = "KWD"    # Kuwaiti Dinar
+    ILS = "ILS"    # Israeli New Shekel
+    JOD = "JOD"    # Jordanian Dinar
+    LBP = "LBP"    # Lebanese Pound
+    IRR = "IRR"    # Iranian Rial
+    IQD = "IQD"    # Iraqi Dinar
+    
+    # Latin America & Caribbean Currencies
+    ARS = "ARS"    # Argentine Peso
+    CLP = "CLP"    # Chilean Peso
+    COP = "COP"    # Colombian Peso
+    PEN = "PEN"    # Peruvian Sol
+    UYU = "UYU"    # Uruguayan Peso
+    VES = "VES"    # Venezuelan Bolivar Soberano
+    BOB = "BOB"    # Bolivian Boliviano
+    PYG = "PYG"    # Paraguayan Guarani
+    DOP = "DOP"    # Dominican Peso
+    CRC = "CRC"    # Costa Rican Colon
+    JMD = "JMD"    # Jamaican Dollar
+    TTD = "TTD"    # Trinidad and Tobago Dollar
+    
+    # Eastern European Currencies
+    CZK = "CZK"    # Czech Koruna
+    HUF = "HUF"    # Hungarian Forint
+    RON = "RON"    # Romanian Leu
+    BGN = "BGN"    # Bulgarian Lev
+    HRK = "HRK"    # Croatian Kuna
+    RSD = "RSD"    # Serbian Dinar
+    UAH = "UAH"    # Ukrainian Hryvnia
+    BYN = "BYN"    # Belarusian Ruble
+    
+    # Top 30 Cryptocurrencies
+    BTC = "BTC"    # Bitcoin
+    ETH = "ETH"    # Ethereum
+    USDT = "USDT"  # Tether
+    BNB = "BNB"    # Binance Coin
+    SOL = "SOL"    # Solana
+    XRP = "XRP"    # XRP (Ripple)
+    USDC = "USDC"  # USD Coin
+    ADA = "ADA"    # Cardano
+    AVAX = "AVAX"  # Avalanche
+    DOGE = "DOGE"  # Dogecoin
+    DOT = "DOT"    # Polkadot
+    MATIC = "MATIC" # Polygon
+    LTC = "LTC"    # Litecoin
+    SHIB = "SHIB"  # Shiba Inu
+    DAI = "DAI"    # Dai
+    TRX = "TRX"    # TRON
+    UNI = "UNI"    # Uniswap
+    LINK = "LINK"  # Chainlink
+    ATOM = "ATOM"  # Cosmos
+    XMR = "XMR"    # Monero
+    ETC = "ETC"    # Ethereum Classic
+    FIL = "FIL"    # Filecoin
+    XLM = "XLM"    # Stellar
+    NEAR = "NEAR"  # NEAR Protocol
+    ALGO = "ALGO"  # Algorand
+    ZCASH = "ZCASH" # Zcash
+    APE = "APE"    # ApeCoin
+    ICP = "ICP"    # Internet Computer
+    FLOW = "FLOW"  # Flow
+    VET = "VET"    # VeChain
 
 class AccountStatus(enum.Enum):
     """Status types for banking accounts"""
