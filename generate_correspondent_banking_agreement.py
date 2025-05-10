@@ -230,7 +230,7 @@ def generate_correspondent_banking_agreement():
     pdf.ln(2)
     
     pdf.multi_cell(0, 6, "4.4 In addition to the fees and charges set forth in Schedule A, the Respondent Bank shall reimburse NVC Fund Bank for any out-of-pocket expenses incurred in connection with the provision of the Services, including but not limited to telecommunications, postage, and courier charges.")
-    pdf.ln(5)
+    pdf.ln(3)
     
     # Compliance and AML Requirements
     pdf.set_font("Arial", "B", 12)
@@ -275,7 +275,7 @@ def generate_correspondent_banking_agreement():
     pdf.ln(2)
     
     pdf.multi_cell(0, 6, "5.6 Each Party shall notify the other promptly if it becomes aware of any actual or suspected breach of Applicable Law in connection with the Services or this Agreement.")
-    pdf.ln(5)
+    pdf.ln(3)
     
     # Term and Termination
     pdf.set_font("Arial", "B", 12)
@@ -327,7 +327,7 @@ def generate_correspondent_banking_agreement():
     pdf.ln(2)
     
     pdf.multi_cell(0, 6, "6.5 The provisions of Sections 5 (Compliance and AML Requirements), 7 (Confidentiality), 8 (Data Protection), 9 (Liability and Indemnification), and 12 (Governing Law and Dispute Resolution) shall survive the termination of this Agreement.")
-    pdf.ln(5)
+    pdf.ln(3)
     
     # Additional Sections (summarized for brevity)
     pdf.set_font("Arial", "B", 12)
@@ -338,7 +338,7 @@ def generate_correspondent_banking_agreement():
     pdf.ln(2)
     
     pdf.multi_cell(0, 6, "7.2 Each Party shall use the Confidential Information of the other Party solely for the purpose of performing its obligations under this Agreement.")
-    pdf.ln(5)
+    pdf.ln(3)
     
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 10, "8. DATA PROTECTION", 0, 1)
@@ -348,7 +348,7 @@ def generate_correspondent_banking_agreement():
     pdf.ln(2)
     
     pdf.multi_cell(0, 6, "8.2 Each Party shall implement appropriate technical and organizational measures to protect personal data processed in connection with this Agreement.")
-    pdf.ln(5)
+    pdf.ln(3)
     
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 10, "9. LIABILITY AND INDEMNIFICATION", 0, 1)
