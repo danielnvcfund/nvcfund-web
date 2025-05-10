@@ -471,6 +471,15 @@ def create_app():
             logger.error(f"Error registering Correspondent Banking routes: {str(e)}")
             logger.warning("Application will run without Correspondent Banking functionality")
         
+        # Register Document Download Center routes
+        try:
+            from routes.document_download_routes import document_download_bp
+            app.register_blueprint(document_download_bp)
+            logger.info("Document Download Center routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Document Download Center routes: {str(e)}")
+            logger.warning("Application will run without Document Download Center functionality")
+        
         # Create PHP test integration user
         try:
             from auth import create_php_test_user
