@@ -124,28 +124,40 @@ def generate_correspondent_banking_agreement():
     pdf.multi_cell(0, 6, "means the correspondent banking services to be provided by NVC Fund Bank to the Respondent Bank as set forth in this Agreement.")
     pdf.ln(2)
     
-    # Add a new page
+    # Add a new page - page 2
     pdf.add_page()
     
-    # Add header for page 2
-    pdf.set_font("Arial", "B", 10)
-    pdf.cell(0, 6, "NVC FUND BANK CORRESPONDENT BANKING AGREEMENT", 0, 1, 'L')
+    # Add header with logo description for page 2
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 6, "NVC FUND BANK", 0, 1, 'C')
+    pdf.set_font("Arial", "I", 10)
+    pdf.cell(0, 5, "Supranational Sovereign Financial Institution", 0, 1, 'C')
+    pdf.cell(0, 5, "SWIFT: NVCFBKAU | ACH: 031176110", 0, 1, 'C')
+    pdf.ln(5)
+    
+    # Add document title and page info
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 8, "CORRESPONDENT BANKING AGREEMENT", 0, 1, 'C')
     pdf.set_font("Arial", "", 10)
-    pdf.cell(0, 6, f"Date: {datetime.now().strftime('%B %d, %Y')}", 0, 1, 'L')
-    pdf.cell(0, 6, "Page 2", 0, 1, 'L')
-    pdf.ln(8)
+    pdf.cell(0, 5, f"Date: {datetime.now().strftime('%B %d, %Y')}", 0, 1, 'R')
+    pdf.set_font("Arial", "I", 9)
+    pdf.cell(0, 5, "Confidential Document - Page 2", 0, 1, 'R')
+    pdf.ln(5)
     
     # Scope of Services section title with added description
     pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 10, "2. SCOPE OF SERVICES", 0, 1)
+    pdf.cell(0, 8, "2. SCOPE OF SERVICES", 0, 1)
     
-    # Add introductory paragraph
-    pdf.set_font("Arial", "I", 11)
-    pdf.multi_cell(0, 6, "This section outlines the specific banking and financial services that NVC Fund Bank will provide to the Respondent Bank under this Agreement. These services leverage NVC Fund Bank's global settlement infrastructure and NVCT stablecoin ecosystem.")
-    pdf.ln(4)
-    
+    # Add comprehensive introductory paragraph
     pdf.set_font("Arial", "", 11)
-    pdf.multi_cell(0, 6, "2.1 NVC Fund Bank shall provide the following Services to the Respondent Bank:")
+    pdf.multi_cell(0, 6, "This section outlines the specific banking and financial services that NVC Fund Bank will provide to the Respondent Bank under this Agreement. NVC Fund Bank, as a Supranational Sovereign Financial Institution with over $10 trillion in balance sheet assets, offers comprehensive correspondent banking services through its global settlement infrastructure and proprietary NVCT stablecoin ecosystem. The following services are designed to facilitate efficient cross-border transactions, currency exchanges, and real-time settlement capabilities.")
+    pdf.ln(3)
+    
+    # Section 2.1 with enhanced formatting
+    pdf.set_font("Arial", "B", 11)
+    pdf.cell(0, 6, "2.1 Services Provided:", 0, 1)
+    pdf.set_font("Arial", "", 11)
+    pdf.multi_cell(0, 6, "NVC Fund Bank shall provide the following Services to the Respondent Bank:")
     pdf.ln(2)
     
     # Services list
@@ -305,21 +317,41 @@ def generate_correspondent_banking_agreement():
     pdf.multi_cell(0, 6, "6.3 Either Party may terminate this Agreement with immediate effect by giving written notice to the other Party if:")
     pdf.ln(2)
     
-    # Add a new page
+    # Add a new page - page 5
     pdf.add_page()
     
-    # Add more comprehensive header for page 5
-    pdf.set_font("Arial", "B", 10)
-    pdf.cell(0, 6, "NVC FUND BANK CORRESPONDENT BANKING AGREEMENT", 0, 1, 'L')
-    pdf.set_font("Arial", "", 10)
-    pdf.cell(0, 6, f"Date: {datetime.now().strftime('%B %d, %Y')}", 0, 1, 'L')
-    pdf.cell(0, 6, "Page 5 - Term and Termination (continued)", 0, 1, 'L')
-    pdf.ln(6)
+    # Add header with logo description for page 5
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 6, "NVC FUND BANK", 0, 1, 'C')
+    pdf.set_font("Arial", "I", 10)
+    pdf.cell(0, 5, "Supranational Sovereign Financial Institution", 0, 1, 'C')
+    pdf.cell(0, 5, "SWIFT: NVCFBKAU | ACH: 031176110", 0, 1, 'C')
+    pdf.ln(5)
     
-    # Add context note for continuity
-    pdf.set_font("Arial", "I", 11)
-    pdf.multi_cell(0, 6, "Continuation of Section 6.3: Either Party may terminate this Agreement with immediate effect by giving written notice to the other Party if any of the following conditions are met:")
-    pdf.ln(4)
+    # Add document title and page info
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 8, "CORRESPONDENT BANKING AGREEMENT", 0, 1, 'C')
+    pdf.set_font("Arial", "", 10)
+    pdf.cell(0, 5, f"Date: {datetime.now().strftime('%B %d, %Y')}", 0, 1, 'R')
+    pdf.set_font("Arial", "I", 9)
+    pdf.cell(0, 5, "Confidential Document - Page 5", 0, 1, 'R')
+    pdf.ln(5)
+    
+    # Add section header with enhanced formatting
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 8, "6. TERM AND TERMINATION (CONTINUED)", 0, 1)
+    
+    # Add context introduction for continuity
+    pdf.set_font("Arial", "", 11)
+    pdf.multi_cell(0, 6, "This section continues the terms and conditions under which either Party may terminate this Agreement. Clear termination provisions are essential to ensure both parties understand their rights and obligations when ending the banking relationship. The following conditions specify circumstances under which immediate termination is permitted.")
+    pdf.ln(3)
+    
+    # Section 6.3 continuation with enhanced formatting
+    pdf.set_font("Arial", "B", 11)
+    pdf.cell(0, 6, "6.3 Conditions for Immediate Termination:", 0, 1)
+    pdf.set_font("Arial", "", 11)
+    pdf.multi_cell(0, 6, "Either Party may terminate this Agreement with immediate effect by giving written notice to the other Party if any of the following conditions are met:")
+    pdf.ln(2)
     
     # Continue list from previous page
     pdf.set_font("Arial", "", 11)
