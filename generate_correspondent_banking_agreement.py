@@ -365,14 +365,14 @@ def generate_correspondent_banking_agreement():
     
     pdf.set_font("Arial", "", 11)
     pdf.multi_cell(0, 6, "10.1 Neither Party shall be liable for any delay or failure to perform its obligations under this Agreement to the extent that such delay or failure is caused by events beyond its reasonable control, including but not limited to acts of God, natural disasters, war, terrorism, riots, civil unrest, government actions, power failures, or telecommunications failures.")
-    pdf.ln(5)
+    pdf.ln(3)
     
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 10, "11. NOTICES", 0, 1)
     
     pdf.set_font("Arial", "", 11)
     pdf.multi_cell(0, 6, "11.1 All notices and other communications under this Agreement shall be in writing and shall be delivered by hand, by courier, by registered mail, or by email to the addresses set forth below or to such other addresses as may be designated by the Parties in writing.")
-    pdf.ln(5)
+    pdf.ln(3)
     
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 10, "12. GOVERNING LAW AND DISPUTE RESOLUTION", 0, 1)
@@ -382,7 +382,7 @@ def generate_correspondent_banking_agreement():
     pdf.ln(2)
     
     pdf.multi_cell(0, 6, "12.2 Any dispute, controversy, or claim arising out of or in connection with this Agreement, or the breach, termination, or invalidity thereof, shall be finally settled by arbitration in accordance with the Rules of the International Chamber of Commerce by one or more arbitrators appointed in accordance with the said Rules. The place of arbitration shall be [city, country]. The language of the arbitration shall be English.")
-    pdf.ln(5)
+    pdf.ln(3)
     
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 10, "13. MISCELLANEOUS", 0, 1)
@@ -404,7 +404,7 @@ def generate_correspondent_banking_agreement():
     pdf.ln(2)
     
     pdf.multi_cell(0, 6, "13.6 This Agreement may be executed in counterparts, each of which shall be deemed an original, but all of which together shall constitute one and the same instrument.")
-    pdf.ln(5)
+    pdf.ln(3)
     
     # Signature Block
     pdf.set_font("Arial", "B", 12)
