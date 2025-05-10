@@ -964,6 +964,16 @@
                 </a>
             </div>
             
+            <!-- Correspondent Banking Group - Newly Added -->
+            <div class="btn-group me-2 mb-2" role="group" aria-label="Correspondent Banking">
+                <a href="{{ url_for('correspondent.index') }}" class="btn btn-primary">
+                    <i class="fas fa-university me-1"></i> Correspondent Banking
+                </a>
+                <a href="{{ url_for('correspondent.agreement') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-file-contract me-1"></i> Banking Agreement
+                </a>
+            </div>
+            
             <!-- Admin Quick Links (only visible to admins) -->
             {% if current_user.is_authenticated and (current_user.username in ['admin', 'headadmin'] or current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' or current_user.role.name == 'ADMIN') %}
             <span class="section-divider d-none d-md-inline-block my-2"></span>
