@@ -57,7 +57,7 @@ def generate_correspondent_banking_agreement():
     
     pdf.set_font("Arial", "", 11)
     pdf.multi_cell(0, 6, "(each a \"Party\" and collectively the \"Parties\").")
-    pdf.ln(5)
+    pdf.ln(3)
     
     # Recitals
     pdf.set_font("Arial", "B", 12)
@@ -77,7 +77,7 @@ def generate_correspondent_banking_agreement():
     pdf.ln(2)
     
     pdf.multi_cell(0, 6, "NOW, THEREFORE, in consideration of the mutual covenants and agreements contained herein, and for other good and valuable consideration, the receipt and sufficiency of which are hereby acknowledged, the Parties hereby agree as follows:")
-    pdf.ln(5)
+    pdf.ln(3)
     
     # Definitions
     pdf.set_font("Arial", "B", 12)
@@ -121,7 +121,7 @@ def generate_correspondent_banking_agreement():
     pdf.cell(60, 6, "\"Services\"", 0, 0)
     pdf.set_font("Arial", "", 11)
     pdf.multi_cell(0, 6, "means the correspondent banking services to be provided by NVC Fund Bank to the Respondent Bank as set forth in this Agreement.")
-    pdf.ln(5)
+    pdf.ln(2)
     
     # Add a new page
     pdf.add_page()
@@ -168,7 +168,7 @@ def generate_correspondent_banking_agreement():
     pdf.ln(2)
     
     pdf.multi_cell(0, 6, "2.3 The Parties agree to cooperate with each other in good faith to ensure the efficient provision of the Services in accordance with this Agreement and Applicable Law.")
-    pdf.ln(5)
+    pdf.ln(3)
     
     # Account Opening and Operation
     pdf.set_font("Arial", "B", 12)
@@ -210,7 +210,7 @@ def generate_correspondent_banking_agreement():
     pdf.ln(2)
     
     pdf.multi_cell(0, 6, "3.5 NVC Fund Bank shall provide the Respondent Bank with periodic account statements and transaction confirmations in accordance with its standard practices or as otherwise agreed by the Parties.")
-    pdf.ln(5)
+    pdf.ln(2)
     
     # Add a new page
     pdf.add_page()
