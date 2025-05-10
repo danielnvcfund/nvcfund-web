@@ -1,0 +1,174 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="mb-0">Available Documents</h6>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="p-4">
+                        <p class="text-muted">
+                            Below you'll find official documents from NVC Banking Platform, including whitepapers, technical documentation, and user guides.
+                        </p>
+                        
+                        <div class="table-responsive">
+                            <table class="table align-items-center">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Document</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Description</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Type</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Size</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for doc in documents %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex px-2 py-1">
+                                                <div class="d-flex flex-column justify-content-center">
+                                                    <h6 class="mb-0 text-sm">{{ doc.name }}</h6>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-normal mb-0">{{ doc.description }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-normal mb-0">{{ doc.date }}</p>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-gradient-info">{{ doc.type }}</span>
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-normal mb-0">{{ doc.size }}</p>
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('docs.view_document', filename=doc.filename) }}" class="btn btn-sm btn-primary" target="_blank">
+                                                <i class="fas fa-file-pdf me-1"></i> View
+                                            </a>
+                                            <a href="{{ url_for('docs.view_document', filename=doc.filename) }}" class="btn btn-sm btn-outline-primary" download>
+                                                <i class="fas fa-download me-1"></i> Download
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6 class="mb-0">About NVC Banking Platform Exchange</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5>Transforming Global Currency Conversion and Payment Settlement</h5>
+                            <p>
+                                The NVC Banking Platform Exchange represents a revolutionary approach to global finance,
+                                combining traditional banking infrastructure with cutting-edge blockchain technology to 
+                                deliver unprecedented advantages:
+                            </p>
+                            
+                            <ul>
+                                <li>
+                                    <strong>NVCT Stablecoin:</strong> A fully asset-backed stablecoin with 1:1 USD peg, 
+                                    supported by over $10 trillion in assets
+                                </li>
+                                <li>
+                                    <strong>Multi-Currency Support:</strong> Exchange between all major world currencies,
+                                    African currencies, top cryptocurrencies, and specialized tokens
+                                </li>
+                                <li>
+                                    <strong>Near-Instant Settlement:</strong> Transactions complete in seconds, not days
+                                </li>
+                                <li>
+                                    <strong>Minimal Fees:</strong> Fixed 0.5% fee compared to traditional 3-7% for international transfers
+                                </li>
+                                <li>
+                                    <strong>Global Accessibility:</strong> Available to individuals and institutions worldwide
+                                </li>
+                            </ul>
+                            
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Download our comprehensive whitepaper to learn how the NVC Banking Platform Exchange
+                                is revolutionizing global payments, currency exchange, and financial inclusion.
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-gradient-primary">
+                                <div class="card-body p-4 text-white">
+                                    <h5 class="text-white mb-3">Key Features</h5>
+                                    
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="icon icon-shape bg-white text-primary shadow rounded-circle me-3">
+                                            <i class="fas fa-bolt"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="text-white mb-0">Fast Settlement</h6>
+                                            <p class="text-sm mb-0">Seconds vs. traditional days</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="icon icon-shape bg-white text-primary shadow rounded-circle me-3">
+                                            <i class="fas fa-globe"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="text-white mb-0">Global Coverage</h6>
+                                            <p class="text-sm mb-0">200+ currencies supported</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="icon icon-shape bg-white text-primary shadow rounded-circle me-3">
+                                            <i class="fas fa-shield-alt"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="text-white mb-0">Asset-Backed Security</h6>
+                                            <p class="text-sm mb-0">$10T+ backing value</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon icon-shape bg-white text-primary shadow rounded-circle me-3">
+                                            <i class="fas fa-percentage"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="text-white mb-0">Low Fixed Fee</h6>
+                                            <p class="text-sm mb-0">Only 0.5% per transaction</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -267,8 +267,8 @@ def create_app():
         app.register_blueprint(treasury_bp)
         
         # Register Document routes
-        from routes.document_routes import document_routes
-        app.register_blueprint(document_routes, url_prefix='/documents')
+        from routes.document_routes import docs_bp
+        app.register_blueprint(docs_bp)
         
         # Register SWIFT GPI routes
         try:

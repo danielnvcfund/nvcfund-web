@@ -1,35 +1,38 @@
+"""
+Document Routes
+This module provides routes for accessing PDF documents and other resources
+"""
+
 import os
-from flask import Blueprint, send_file, render_template, make_response
-import tempfile
-from weasyprint import HTML
+from flask import Blueprint, send_from_directory, render_template, current_app
 
-document_routes = Blueprint('documents', __name__)
+# Create blueprint
+docs_bp = Blueprint('docs', __name__, url_prefix='/documents')
 
-@document_routes.route('/nvc_funds_transfer_guide.pdf')
-def nvc_funds_transfer_guide_pdf():
-    """Generate a PDF with funds transfer instructions"""
+@docs_bp.route('/')
+def index():
+    """List available documents"""
+    documents = [
+        {
+            'name': 'NVC Banking Platform Exchange Whitepaper',
+            'description': 'Comprehensive overview of the NVC Banking Platform Exchange and how it transforms global currency conversion and payment settlement.',
+            'filename': 'NVC_Banking_Platform_Exchange.pdf',
+            'date': 'May 2025',
+            'type': 'PDF',
+            'size': '1.2 MB'
+        }
+    ]
     
-    # Render the HTML template
-    html_content = render_template('documents/nvc_funds_transfer_guide.html')
-    
-    # Create a temporary file for the PDF
-    with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp_file:
-        pdf_path = temp_file.name
-    
-    # Convert HTML to PDF using WeasyPrint with base URL for resources
-    from flask import request
-    base_url = request.url_root
-    HTML(string=html_content, base_url=base_url).write_pdf(pdf_path)
-    
-    # Send the PDF file
-    return send_file(
-        pdf_path,
-        as_attachment=True,
-        download_name='NVC_Global_Funds_Transfer_Guide.pdf',
-        mimetype='application/pdf'
+    return render_template(
+        'documents/index.html',
+        documents=documents,
+        title="NVC Banking Platform Documents"
     )
 
-@document_routes.route('/nvc_funds_transfer_guide')
-def nvc_funds_transfer_guide_html():
-    """Return the HTML version of the funds transfer guide"""
-    return render_template('documents/nvc_funds_transfer_guide.html')
+@docs_bp.route('/view/<filename>')
+def view_document(filename):
+    """View a specific document"""
+    return send_from_directory(
+        os.path.join(current_app.root_path, 'static', 'docs'),
+        filename
+    )
