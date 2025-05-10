@@ -127,14 +127,22 @@ def generate_correspondent_banking_agreement():
     # Add a new page
     pdf.add_page()
     
-    # Add current date to page 2
+    # Add header for page 2
+    pdf.set_font("Arial", "B", 10)
+    pdf.cell(0, 6, "NVC FUND BANK CORRESPONDENT BANKING AGREEMENT", 0, 1, 'L')
     pdf.set_font("Arial", "", 10)
-    pdf.cell(0, 6, f"Correspondent Banking Agreement - {datetime.now().strftime('%B %d, %Y')}", 0, 1, 'R')
-    pdf.ln(6)
+    pdf.cell(0, 6, f"Date: {datetime.now().strftime('%B %d, %Y')}", 0, 1, 'L')
+    pdf.cell(0, 6, "Page 2", 0, 1, 'L')
+    pdf.ln(8)
     
-    # Scope of Services
+    # Scope of Services section title with added description
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 10, "2. SCOPE OF SERVICES", 0, 1)
+    
+    # Add introductory paragraph
+    pdf.set_font("Arial", "I", 11)
+    pdf.multi_cell(0, 6, "This section outlines the specific banking and financial services that NVC Fund Bank will provide to the Respondent Bank under this Agreement. These services leverage NVC Fund Bank's global settlement infrastructure and NVCT stablecoin ecosystem.")
+    pdf.ln(4)
     
     pdf.set_font("Arial", "", 11)
     pdf.multi_cell(0, 6, "2.1 NVC Fund Bank shall provide the following Services to the Respondent Bank:")
@@ -300,10 +308,18 @@ def generate_correspondent_banking_agreement():
     # Add a new page
     pdf.add_page()
     
-    # Add page header 
+    # Add more comprehensive header for page 5
+    pdf.set_font("Arial", "B", 10)
+    pdf.cell(0, 6, "NVC FUND BANK CORRESPONDENT BANKING AGREEMENT", 0, 1, 'L')
     pdf.set_font("Arial", "", 10)
-    pdf.cell(0, 6, f"Correspondent Banking Agreement - {datetime.now().strftime('%B %d, %Y')}", 0, 1, 'R')
+    pdf.cell(0, 6, f"Date: {datetime.now().strftime('%B %d, %Y')}", 0, 1, 'L')
+    pdf.cell(0, 6, "Page 5 - Term and Termination (continued)", 0, 1, 'L')
     pdf.ln(6)
+    
+    # Add context note for continuity
+    pdf.set_font("Arial", "I", 11)
+    pdf.multi_cell(0, 6, "Continuation of Section 6.3: Either Party may terminate this Agreement with immediate effect by giving written notice to the other Party if any of the following conditions are met:")
+    pdf.ln(4)
     
     # Continue list from previous page
     pdf.set_font("Arial", "", 11)
