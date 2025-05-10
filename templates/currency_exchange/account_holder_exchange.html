@@ -275,9 +275,11 @@
         // Initialize exchange rate data
         let currentRate = 1.0;
         
-        // Helper function to format currency
+        // Helper function to format currency with comma separators
         function formatCurrency(amount, currency) {
-            return currency === 'NVCT' ? `NVCT ${amount.toFixed(2)}` : amount.toFixed(2);
+            // Format number with comma separators
+            const formattedNumber = amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return currency === 'NVCT' ? `NVCT ${formattedNumber}` : formattedNumber;
         }
         
         // Helper function to calculate exchange
@@ -319,7 +321,9 @@
                 .then(data => {
                     if (data.success) {
                         currentRate = data.rate;
-                        exchangeRateDisplay.textContent = `Rate: 1 ${fromCurrency} = ${data.rate.toFixed(4)} ${toCurrency}`;
+                        // Format rate with comma separators
+                        const formattedRate = data.rate.toFixed(4).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                        exchangeRateDisplay.textContent = `Rate: 1 ${fromCurrency} = ${formattedRate} ${toCurrency}`;
                         calculateExchange();
                     } else {
                         exchangeRateDisplay.textContent = `Rate unavailable`;
@@ -417,12 +421,18 @@
             // Calculate converted amount
             const convertedAmount = amountAfterFee * currentRate;
             
+            // Format numbers with comma separators
+            const formattedAmount = amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            const formattedConvertedAmount = convertedAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            const formattedRate = currentRate.toFixed(4).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            const formattedFeeAmount = feeAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            
             // Display the result
-            previewFrom.textContent = `${amount} ${fromCurrency}`;
-            previewTo.textContent = `${convertedAmount.toFixed(2)} ${toCurrency}`;
-            previewRate.textContent = `1 ${fromCurrency} = ${currentRate.toFixed(4)} ${toCurrency}`;
-            previewFee.textContent = `${feeAmount.toFixed(2)} ${fromCurrency}`;
-            previewAmount.textContent = `${convertedAmount.toFixed(2)} ${toCurrency}`;
+            previewFrom.textContent = `${formattedAmount} ${fromCurrency}`;
+            previewTo.textContent = `${formattedConvertedAmount} ${toCurrency}`;
+            previewRate.textContent = `1 ${fromCurrency} = ${formattedRate} ${toCurrency}`;
+            previewFee.textContent = `${formattedFeeAmount} ${fromCurrency}`;
+            previewAmount.textContent = `${formattedConvertedAmount} ${toCurrency}`;
             
             // Show the result container
             exchangePreview.classList.remove('d-none');

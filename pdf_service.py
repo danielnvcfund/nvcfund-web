@@ -1182,20 +1182,20 @@ class PDFService:
                             </tr>
                             <tr>
                                 <th>From Amount</th>
-                                <td class="amount">{{ transaction.exchange_from_currency }} {{ "%.2f"|format(transaction.exchange_from_amount) }}</td>
+                                <td class="amount">{{ transaction.exchange_from_currency }} {{ "{:,.2f}".format(transaction.exchange_from_amount) }}</td>
                             </tr>
                             <tr>
                                 <th>To Amount</th>
-                                <td class="amount">{{ transaction.exchange_to_currency }} {{ "%.2f"|format(transaction.exchange_to_amount) }}</td>
+                                <td class="amount">{{ transaction.exchange_to_currency }} {{ "{:,.2f}".format(transaction.exchange_to_amount) }}</td>
                             </tr>
                             <tr>
                                 <th>Exchange Rate</th>
-                                <td class="exchange-rate">1 {{ transaction.exchange_from_currency }} = {{ "%.6f"|format(transaction.exchange_rate) }} {{ transaction.exchange_to_currency }}</td>
+                                <td class="exchange-rate">1 {{ transaction.exchange_from_currency }} = {{ "{:,.6f}".format(transaction.exchange_rate) }} {{ transaction.exchange_to_currency }}</td>
                             </tr>
                             {% if transaction.exchange_fee > 0 %}
                             <tr>
                                 <th>Fee</th>
-                                <td>{{ transaction.exchange_fee_currency }} {{ "%.2f"|format(transaction.exchange_fee) }}</td>
+                                <td>{{ transaction.exchange_fee_currency }} {{ "{:,.2f}".format(transaction.exchange_fee) }}</td>
                             </tr>
                             {% endif %}
                         </table>
