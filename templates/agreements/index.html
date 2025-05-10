@@ -1,0 +1,196 @@
+{% extends "layout.html" %}
+
+{% block title %}NVC Fund Bank Agreements{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>NVC Fund Bank Institutional Agreements</h1>
+                <a href="{{ url_for('document_download.download_center') }}" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Document Center
+                </a>
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Select the type of institutional relationship you wish to establish with NVC Fund Bank. Each agreement type has a dedicated onboarding process tailored to specific requirements.
+            </div>
+
+            <!-- Agreement Types Cards -->
+            <div class="row row-cols-1 row-cols-md-2 g-4 mb-5">
+                <!-- Correspondent Banking Agreement -->
+                <div class="col">
+                    <div class="card h-100 border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="mb-0"><i class="fas fa-university"></i> Correspondent Banking</h3>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">For Financial Institutions</h5>
+                            <p class="card-text">Establish a formal relationship to facilitate cross-border payments, currency exchange, trade finance, and liquidity management between our institutions.</p>
+                            <ul class="mb-4">
+                                <li>Multi-currency correspondent accounts</li>
+                                <li>SWIFT messaging capabilities</li>
+                                <li>International wire transfers</li>
+                                <li>NVCT stablecoin integration</li>
+                                <li>API banking infrastructure access</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 text-center">
+                            <a href="{{ url_for('correspondent.onboarding') }}" class="btn btn-primary">Begin Process</a>
+                            <a href="{{ url_for('correspondent.agreement') }}" class="btn btn-outline-primary ms-2">View Agreement</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Asset Management Agreement -->
+                <div class="col">
+                    <div class="card h-100 border-success">
+                        <div class="card-header bg-success text-white">
+                            <h3 class="mb-0"><i class="fas fa-chart-line"></i> Asset Management</h3>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">For Investment Partners</h5>
+                            <p class="card-text">Engage NVC Fund Bank to manage your institution's assets with our expertise in global markets, digital assets, and traditional investments.</p>
+                            <ul class="mb-4">
+                                <li>Portfolio management services</li>
+                                <li>Access to proprietary investment vehicles</li>
+                                <li>Asset allocation strategy</li>
+                                <li>ESG investment options</li>
+                                <li>Regular performance reporting</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 text-center">
+                            <a href="{{ url_for('agreements.asset_management_onboarding') }}" class="btn btn-success">Begin Process</a>
+                            <a href="{{ url_for('agreements.asset_management_agreement') }}" class="btn btn-outline-success ms-2">View Agreement</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Custody Agreement -->
+                <div class="col">
+                    <div class="card h-100 border-info">
+                        <div class="card-header bg-info text-white">
+                            <h3 class="mb-0"><i class="fas fa-shield-alt"></i> Custody Services</h3>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">For Asset Holders</h5>
+                            <p class="card-text">Secure custody solutions for your institution's financial and digital assets with our state-of-the-art security infrastructure.</p>
+                            <ul class="mb-4">
+                                <li>Digital asset custody (cryptocurrency)</li>
+                                <li>Securities safekeeping</li>
+                                <li>Settlement services</li>
+                                <li>Corporate action processing</li>
+                                <li>Record-keeping and reporting</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 text-center">
+                            <a href="{{ url_for('agreements.custody_onboarding') }}" class="btn btn-info">Begin Process</a>
+                            <a href="{{ url_for('agreements.custody_agreement') }}" class="btn btn-outline-info ms-2">View Agreement</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Memorandum of Understanding (MOU) -->
+                <div class="col">
+                    <div class="card h-100 border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h3 class="mb-0"><i class="fas fa-handshake"></i> Memorandum of Understanding</h3>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">For Strategic Partners</h5>
+                            <p class="card-text">Establish a framework for cooperation and mutual understanding between our organizations for future collaborative initiatives.</p>
+                            <ul class="mb-4">
+                                <li>Strategic partnership framework</li>
+                                <li>Collaboration on specific projects</li>
+                                <li>Information sharing guidelines</li>
+                                <li>Joint research or development</li>
+                                <li>Non-binding preliminary agreement</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 text-center">
+                            <a href="{{ url_for('agreements.mou_onboarding') }}" class="btn btn-warning text-dark">Begin Process</a>
+                            <a href="{{ url_for('agreements.mou_agreement') }}" class="btn btn-outline-warning text-dark ms-2">View Agreement</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Process Overview -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0"><i class="fas fa-tasks"></i> Standard Onboarding Process</h3>
+                </div>
+                <div class="card-body">
+                    <p>Regardless of the agreement type you select, our streamlined onboarding process follows these key steps:</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12 mb-4">
+                            <div class="progress" style="height: 30px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 20%;" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">Initial Application</div>
+                                <div class="progress-bar bg-info" role="progressbar" style="width: 20%;" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">Due Diligence</div>
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: 20%;" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">Agreement Review</div>
+                                <div class="progress-bar bg-danger" role="progressbar" style="width: 20%;" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">Execution</div>
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 20%;" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">Implementation</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5><i class="fas fa-clipboard-check text-success"></i> Documentation Required</h5>
+                            <ul>
+                                <li>Corporate registration documents</li>
+                                <li>Regulatory licenses and approvals</li>
+                                <li>Financial statements (3 years)</li>
+                                <li>Ownership structure information</li>
+                                <li>Compliance policies and procedures</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h5><i class="fas fa-user-shield text-warning"></i> Compliance Process</h5>
+                            <ul>
+                                <li>AML/KYC requirements review</li>
+                                <li>Risk assessment and classification</li>
+                                <li>Regulatory compliance verification</li>
+                                <li>Sanction screening</li>
+                                <li>Beneficial ownership verification</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h5><i class="fas fa-calendar-alt text-info"></i> Typical Timeline</h5>
+                            <ul>
+                                <li>Initial application: 1-2 days</li>
+                                <li>Due diligence: 2-3 weeks</li>
+                                <li>Agreement negotiation: 1-2 weeks</li>
+                                <li>Execution: 1 week</li>
+                                <li>Implementation: 1-2 weeks</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="card bg-light">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Get Expert Assistance</h4>
+                            <p>Our relationship management team is available to guide you through the agreement selection and onboarding process.</p>
+                            <p><strong>Email:</strong> partnerships@nvcfundbank.com<br>
+                            <strong>Phone:</strong> +1 (555) 123-4567</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <a href="#" class="btn btn-outline-primary">
+                                <i class="fas fa-calendar-check"></i> Schedule a Consultation
+                            </a>
+                            <p class="mt-2">Available Monday-Friday, 9am-5pm EST</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
