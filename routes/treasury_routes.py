@@ -591,6 +591,28 @@ def view_investment(investment_id):
     )
 
 
+@treasury_bp.route('/investments/<int:investment_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_investment(investment_id):
+    """Edit a treasury investment."""
+    investment = TreasuryInvestment.query.get_or_404(investment_id)
+    
+    form = TreasuryInvestmentForm(obj=investment)
+    
+    if form.validate_on_submit():
+        form.populate_obj(investment)
+        db.session.commit()
+        flash('Investment updated successfully!', 'success')
+        return redirect(url_for('treasury.view_investment', investment_id=investment.id))
+    
+    return render_template(
+        'treasury/investment_form.html',
+        form=form,
+        title="Edit Investment",
+        is_edit=True
+    )
+
+
 @treasury_bp.route('/investments/<int:investment_id>/approve', methods=['POST'])
 @login_required
 @admin_required
