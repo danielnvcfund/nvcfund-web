@@ -698,6 +698,16 @@ def create_app():
             logger.error(f"Error initializing currency exchange rates: {str(e)}")
             logger.warning("Application will run with default currency exchange rates")
 
+        # Register institutional routes
+        try:
+            from routes.institutional_routes import register_routes as register_institutional_routes
+            register_institutional_routes(app)
+            logger.info("Institutional routes registered successfully")
+        except ImportError:
+            logger.warning("Institutional routes module not found")
+        except Exception as e:
+            logger.error(f"Error registering institutional routes: {str(e)}")
+
         logger.info("Application initialized successfully")
 
     return app

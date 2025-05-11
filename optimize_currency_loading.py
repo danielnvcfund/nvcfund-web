@@ -24,7 +24,7 @@ def optimize_currency_loading():
     """
     from app import app, db
     from account_holder_models import CurrencyExchangeRate, CurrencyType
-    from memory_cache import MemoryCache
+    from memory_cache import rate_cache, cache_exchange_rate, get_cached_exchange_rate
     
     with app.app_context():
         try:
@@ -60,16 +60,15 @@ def optimize_currency_loading():
                 ('USDT', 'USD'): 1.0
             }
             
-            # Store in memory cache
+            # Store in memory cache using the provided utility functions
             for (from_curr, to_curr), rate in essential_rates.items():
-                key = f"exchange_rate:{from_curr}:{to_curr}"
-                MemoryCache.set(key=key, value=rate, ttl=86400)  # Cache for 24 hours
+                # Use the cache_exchange_rate function from memory_cache
+                cache_exchange_rate(from_curr, to_curr, rate, ttl=86400)  # Cache for 24 hours
                 
-                # Also add inverse for convenience
+                # Also add inverse for convenience if not already in our list
                 if (to_curr, from_curr) not in essential_rates:
-                    inverse_key = f"exchange_rate:{to_curr}:{from_curr}" 
                     inverse_rate = 1.0 / rate if rate != 0 else 0
-                    MemoryCache.set(key=inverse_key, value=inverse_rate, ttl=86400)
+                    cache_exchange_rate(to_curr, from_curr, inverse_rate, ttl=86400)
             
             logger.info(f"Stored {len(essential_rates)} essential exchange rates in memory cache")
             
@@ -83,8 +82,8 @@ def optimize_currency_loading():
                 
                 def optimized_get_rate(from_currency, to_currency):
                     """Optimized version that checks memory cache first"""
-                    cache_key = f"exchange_rate:{from_currency}:{to_currency}"
-                    cached_rate = MemoryCache.get(key=cache_key)
+                    # Use the get_cached_exchange_rate function from memory_cache
+                    cached_rate = get_cached_exchange_rate(from_currency, to_currency)
                     
                     if cached_rate is not None:
                         return cached_rate
@@ -93,7 +92,7 @@ def optimize_currency_loading():
                     try:
                         rate = original_get_rate(from_currency, to_currency)
                         # Cache the result for future use
-                        MemoryCache.set(key=cache_key, value=rate, ttl=86400)
+                        cache_exchange_rate(from_currency, to_currency, rate, ttl=86400)
                         return rate
                     except Exception as e:
                         logger.warning(f"Error getting rate {from_currency} to {to_currency}: {str(e)}")

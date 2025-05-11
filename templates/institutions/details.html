@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Institution Details Card -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+          <div>
+            <h6>Institution Details</h6>
+            <p class="text-sm">{{ institution.name }}</p>
+          </div>
+          <a href="{{ url_for('institutional.list_institutions') }}" class="btn btn-sm btn-outline-secondary">
+            Back to List
+          </a>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="d-flex flex-column">
+                <h6>Basic Information</h6>
+                <p class="text-sm mb-1"><strong>Name:</strong> {{ institution.name }}</p>
+                <p class="text-sm mb-1"><strong>Type:</strong> {{ institution.institution_type }}</p>
+                <p class="text-sm mb-1"><strong>Country:</strong> {{ institution.country }}</p>
+                <p class="text-sm mb-1"><strong>SWIFT/BIC:</strong> {{ institution.swift_code or 'N/A' }}</p>
+                <p class="text-sm mb-1"><strong>Status:</strong> 
+                  {% if institution.is_active %}
+                  <span class="badge badge-sm bg-gradient-success">Active</span>
+                  {% else %}
+                  <span class="badge badge-sm bg-gradient-secondary">Inactive</span>
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex flex-column">
+                <h6>Integration Details</h6>
+                <p class="text-sm mb-1"><strong>API Endpoint:</strong> {{ institution.api_endpoint or 'Not Available' }}</p>
+                <p class="text-sm mb-1"><strong>RTGS Enabled:</strong> {{ 'Yes' if institution.rtgs_enabled else 'No' }}</p>
+                <p class="text-sm mb-1"><strong>S2S Enabled:</strong> {{ 'Yes' if institution.s2s_enabled else 'No' }}</p>
+                {% if institution.metadata_json %}
+                <p class="text-sm mb-1"><strong>Additional Information:</strong> Available</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Treasury Accounts Card -->
+  {% if treasury_accounts %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>Treasury Accounts</h6>
+          <p class="text-sm">Treasury accounts managed for {{ institution.name }}</p>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <div class="table-responsive p-3">
+            <table class="table align-items-center mb-0">
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Account</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Account Type</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Currency</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Balance</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for account in treasury_accounts %}
+                <tr>
+                  <td>
+                    <div class="d-flex px-2 py-1">
+                      <div class="d-flex flex-column justify-content-center">
+                        <h6 class="mb-0 text-sm">{{ account.name }}</h6>
+                        <p class="text-xs text-secondary mb-0">{{ account.account_number }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <p class="text-xs font-weight-bold mb-0">{{ account.account_type }}</p>
+                  </td>
+                  <td>
+                    <p class="text-xs font-weight-bold mb-0">{{ account.currency }}</p>
+                  </td>
+                  <td>
+                    <p class="text-xs font-weight-bold mb-0">{{ account.formatted_balance }}</p>
+                  </td>
+                  <td class="align-middle text-center text-sm">
+                    {% if account.is_active %}
+                    <span class="badge badge-sm bg-gradient-success">Active</span>
+                    {% else %}
+                    <span class="badge badge-sm bg-gradient-secondary">Inactive</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Investments Card -->
+  {% for account in treasury_accounts %}
+  {% if account.investments %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>Investments for {{ account.name }}</h6>
+          <p class="text-sm">Total investment value: {{ account.formatted_total }} {{ account.currency }}</p>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <div class="table-responsive p-3">
+            <table class="table align-items-center mb-0">
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Investment ID</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Type</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Amount</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Interest Rate</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for investment in account.investments %}
+                <tr>
+                  <td>
+                    <div class="d-flex px-2 py-1">
+                      <div class="d-flex flex-column justify-content-center">
+                        <h6 class="mb-0 text-sm">{{ investment.investment_id }}</h6>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <p class="text-xs font-weight-bold mb-0">{{ investment.investment_type }}</p>
+                  </td>
+                  <td>
+                    <p class="text-xs font-weight-bold mb-0">{{ "{:,.2f}".format(investment.amount) }}</p>
+                  </td>
+                  <td>
+                    <p class="text-xs font-weight-bold mb-0">{{ investment.interest_rate }}%</p>
+                  </td>
+                  <td class="align-middle text-center text-sm">
+                    <span class="badge badge-sm bg-gradient-info">{{ investment.status }}</span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{% endblock %}
