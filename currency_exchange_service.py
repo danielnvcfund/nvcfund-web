@@ -7,6 +7,8 @@ Support for all global currencies and cryptocurrencies added via workaround.
 
 import logging
 from datetime import datetime
+import uuid
+from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
 # Import core service from separate module to avoid circular imports
@@ -15,8 +17,13 @@ from saint_crown_integration import SaintCrownIntegration
 # Import workaround for currency exchange
 import currency_exchange_workaround
 from account_holder_models import (
-    CurrencyType,
-    CurrencyExchangeRate
+    CurrencyType, 
+    ExchangeType, 
+    ExchangeStatus,
+    BankAccount, 
+    AccountHolder,
+    CurrencyExchangeRate, 
+    CurrencyExchangeTransaction
 )
 
 # Set up logging
@@ -57,68 +64,299 @@ class CurrencyExchangeService(ExchangeServiceCore):
         # If we're here, no rate was found
         logger.warning(f"No exchange rate found for {from_currency_str} to {to_currency_str}")
         return None
+    
+    @staticmethod
+    def update_exchange_rate(from_currency, to_currency, rate, source="internal"):
+        """
+        Update or create an exchange rate
+        
+        Args:
+            from_currency (CurrencyType): Source currency
+            to_currency (CurrencyType): Target currency
+            rate (float): Exchange rate value
+            source (str): Source of the rate update
+            
+        Returns:
+            CurrencyExchangeRate: Updated or created rate object or None if using workaround
+        """
+        # Convert currency types to strings if needed
+        from_curr_str = from_currency.value if hasattr(from_currency, 'value') else str(from_currency)
+        to_curr_str = to_currency.value if hasattr(to_currency, 'value') else str(to_currency)
+        
+        # Check if either currency is problematic for DB storage
+        if (currency_exchange_workaround.is_problematic_currency(from_curr_str) or
+            currency_exchange_workaround.is_problematic_currency(to_curr_str)):
+            
+            # Use workaround for problematic currencies
+            success = currency_exchange_workaround.update_rate(from_curr_str, to_curr_str, rate)
+            if success:
+                logger.info(f"Updated exchange rate in workaround system: {from_curr_str} to {to_curr_str} = {rate}")
+                return None  # Cannot return DB object with workaround
+            else:
+                logger.error(f"Failed to update rate in workaround system: {from_curr_str} to {to_curr_str}")
+                return None
+        
+        # Use the core implementation for standard currencies
+        return ExchangeServiceCore.update_exchange_rate(from_currency, to_currency, rate, source)
+    
+    @staticmethod
+    def initialize_default_rates():
+        """
+        Initialize default exchange rates, particularly for NVCT
+        
+        Returns:
+            bool: True if successful, False otherwise
+        """
         try:
-            # First try direct rate
-            rate = CurrencyExchangeRate.query.filter_by(
-                from_currency=from_currency,
-                to_currency=to_currency,
-                is_active=True
-            ).order_by(CurrencyExchangeRate.last_updated.desc()).first()
+            # For NVCT stablecoin (1:1 with USD)
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.NVCT, CurrencyType.USD, 1.0, "system")
             
-            if rate:
-                return rate.rate
+            # Other common fiat currency rates (sample values, should be updated with real market rates)
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.USD, CurrencyType.EUR, 0.93, "system")
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.USD, CurrencyType.GBP, 0.79, "system")
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.USD, CurrencyType.NGN, 1500.0, "system")
             
-            # Try inverse rate
-            inverse_rate = CurrencyExchangeRate.query.filter_by(
-                from_currency=to_currency,
-                to_currency=from_currency,
-                is_active=True
-            ).order_by(CurrencyExchangeRate.last_updated.desc()).first()
+            # Crypto rates (sample values, should be updated with real market rates)
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.BTC, CurrencyType.USD, 62000.0, "system")
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.ETH, CurrencyType.USD, 3000.0, "system")
             
-            if inverse_rate and inverse_rate.inverse_rate:
-                return inverse_rate.inverse_rate
+            # Add AFD1 rate (AFD1 = 10% of gold price)
+            sc_integration = SaintCrownIntegration()
+            gold_price, _ = sc_integration.get_gold_price()
+            afd1_unit_value = gold_price * 0.1  # AFD1 = 10% of gold price
+            
+            # Add AFD1 to USD rate (based on gold price) 
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.AFD1, CurrencyType.USD, afd1_unit_value, "system")
+            
+            # Add NVCT to AFD1 rate
+            nvct_to_afd1_rate = 1.0 / afd1_unit_value  # 1 NVCT = 1 USD, convert to AFD1
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.NVCT, CurrencyType.AFD1, nvct_to_afd1_rate, "system")
+            
+            # Add SFN Coin rates
+            # SFN to USD rate (1 SFN = 2.50 USD)
+            sfn_to_usd_rate = 2.50  # Current SFN value in USD
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.SFN, CurrencyType.USD, sfn_to_usd_rate, "system_swifin")
+            
+            # NVCT to SFN rate (1 NVCT = 0.4 SFN since 1 NVCT = 1 USD and 1 SFN = 2.50 USD)
+            nvct_to_sfn_rate = 1.0 / sfn_to_usd_rate
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.NVCT, CurrencyType.SFN, nvct_to_sfn_rate, "system_swifin")
+            
+            # SFN to AFD1 rate
+            sfn_to_afd1_rate = sfn_to_usd_rate / afd1_unit_value
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.SFN, CurrencyType.AFD1, sfn_to_afd1_rate, "system_calculated")
+            
+            # Add Ak Lumi rates from Eco-6
+            # Ak Lumi to USD rate (1 AKLUMI = 3.25 USD)
+            aklumi_to_usd_rate = 3.25  # Current Ak Lumi value in USD
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.AKLUMI, CurrencyType.USD, aklumi_to_usd_rate, "system_eco6")
+            
+            # NVCT to Ak Lumi rate (1 NVCT = 0.3077 AKLUMI since 1 NVCT = 1 USD and 1 AKLUMI = 3.25 USD)
+            nvct_to_aklumi_rate = 1.0 / aklumi_to_usd_rate
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.NVCT, CurrencyType.AKLUMI, nvct_to_aklumi_rate, "system_eco6")
+            
+            # Ak Lumi to AFD1 rate
+            aklumi_to_afd1_rate = aklumi_to_usd_rate / afd1_unit_value
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.AKLUMI, CurrencyType.AFD1, aklumi_to_afd1_rate, "system_calculated")
+            
+            # Ak Lumi to SFN rate
+            aklumi_to_sfn_rate = aklumi_to_usd_rate / sfn_to_usd_rate
+            CurrencyExchangeService.update_exchange_rate(CurrencyType.AKLUMI, CurrencyType.SFN, aklumi_to_sfn_rate, "system_calculated")
+            
+            return True
+        except Exception as e:
+            logger.error(f"Error initializing default exchange rates: {str(e)}")
+            return False
+    
+    @staticmethod
+    def perform_exchange(
+        account_holder_id,
+        from_account_id,
+        to_account_id,
+        amount,
+        apply_fee=True,
+        fee_percentage=0.5
+    ):
+        """
+        Perform a currency exchange between two accounts
+        
+        Args:
+            account_holder_id (int): ID of the account holder
+            from_account_id (int): ID of the source account
+            to_account_id (int): ID of the target account
+            amount (float): Amount to exchange (in from_currency)
+            apply_fee (bool): Whether to apply exchange fee
+            fee_percentage (float): Fee percentage to apply (0.5 = 0.5%)
+            
+        Returns:
+            dict: Result with success status and transaction details
+        """
+        try:
+            # Get the accounts
+            from_account = BankAccount.query.get(from_account_id)
+            to_account = BankAccount.query.get(to_account_id)
+            
+            if not from_account or not to_account:
+                return {"success": False, "error": "One or both accounts not found"}
                 
-            # If still not found, try to calculate via NVCT (if neither is NVCT)
-            if from_currency != CurrencyType.NVCT and to_currency != CurrencyType.NVCT:
-                # Get rates for from_currency -> NVCT and NVCT -> to_currency
-                from_to_nvct = CurrencyExchangeService.get_exchange_rate(from_currency, CurrencyType.NVCT)
-                nvct_to_to = CurrencyExchangeService.get_exchange_rate(CurrencyType.NVCT, to_currency)
+            # Verify account holder owns both accounts
+            if from_account.account_holder_id != account_holder_id or to_account.account_holder_id != account_holder_id:
+                return {"success": False, "error": "Account holder does not own one or both accounts"}
                 
-                if from_to_nvct and nvct_to_to:
-                    # Calculate the cross rate
-                    return from_to_nvct * nvct_to_to
+            # Verify sufficient balance
+            if from_account.balance < amount:
+                return {"success": False, "error": "Insufficient balance in source account"}
+                
+            # Get exchange rate
+            rate = CurrencyExchangeService.get_exchange_rate(from_account.currency, to_account.currency)
             
-            # If database lookup fails, try our workaround for all global currencies
-            # Convert enum values to strings
-            from_currency_str = from_currency.value if hasattr(from_currency, 'value') else str(from_currency)
-            to_currency_str = to_currency.value if hasattr(to_currency, 'value') else str(to_currency)
+            if not rate:
+                return {"success": False, "error": "Exchange rate not available for these currencies"}
+                
+            # Calculate converted amount
+            converted_amount = amount * rate
             
-            # Use the workaround to get exchange rate
-            workaround_rate = currency_exchange_workaround.get_exchange_rate(from_currency_str, to_currency_str)
-            if workaround_rate:
-                logger.info(f"Using workaround exchange rate for {from_currency_str} to {to_currency_str}: {workaround_rate}")
-                return workaround_rate
+            # Apply fee if needed
+            fee_amount = 0
+            if apply_fee and fee_percentage > 0:
+                fee_amount = (amount * fee_percentage) / 100
+                amount_after_fee = amount - fee_amount
+                converted_amount = amount_after_fee * rate
+                
+            # Determine exchange type
+            fiat_currencies = [CurrencyType.USD, CurrencyType.EUR, CurrencyType.GBP, CurrencyType.NGN]
+            crypto_currencies = [CurrencyType.BTC, CurrencyType.ETH, CurrencyType.ZCASH]
             
-            # If we're here, no rate was found
-            logger.warning(f"No exchange rate found for {from_currency_str} to {to_currency_str}")
-            return None
+            # Set default exchange type
+            exchange_type = ExchangeType.FIAT_TO_FIAT
+            
+            # NVCT exchanges
+            if from_account.currency == CurrencyType.NVCT:
+                if to_account.currency == CurrencyType.AFD1:
+                    exchange_type = ExchangeType.NVCT_TO_AFD1
+                elif to_account.currency == CurrencyType.SFN:
+                    exchange_type = ExchangeType.NVCT_TO_SFN
+                elif to_account.currency == CurrencyType.AKLUMI:
+                    exchange_type = ExchangeType.NVCT_TO_AKLUMI
+                elif to_account.currency in fiat_currencies:
+                    exchange_type = ExchangeType.NVCT_TO_FIAT
+                else:
+                    exchange_type = ExchangeType.NVCT_TO_CRYPTO
+                    
+            # AFD1 exchanges
+            elif from_account.currency == CurrencyType.AFD1:
+                if to_account.currency == CurrencyType.NVCT:
+                    exchange_type = ExchangeType.AFD1_TO_NVCT
+                elif to_account.currency in fiat_currencies:
+                    exchange_type = ExchangeType.AFD1_TO_FIAT
+                
+            # SFN exchanges
+            elif from_account.currency == CurrencyType.SFN:
+                if to_account.currency == CurrencyType.NVCT:
+                    exchange_type = ExchangeType.SFN_TO_NVCT
+                elif to_account.currency in fiat_currencies:
+                    exchange_type = ExchangeType.SFN_TO_FIAT
+                else:
+                    # Default to CRYPTO_TO_CRYPTO for other SFN exchanges
+                    exchange_type = ExchangeType.CRYPTO_TO_CRYPTO
+            
+            # Ak Lumi exchanges
+            elif from_account.currency == CurrencyType.AKLUMI:
+                if to_account.currency == CurrencyType.NVCT:
+                    exchange_type = ExchangeType.AKLUMI_TO_NVCT
+                elif to_account.currency in fiat_currencies:
+                    exchange_type = ExchangeType.AKLUMI_TO_FIAT
+                else:
+                    # Default to FIAT_TO_FIAT for other Ak Lumi exchanges
+                    exchange_type = ExchangeType.FIAT_TO_FIAT
+            
+            # Fiat exchanges
+            elif from_account.currency in fiat_currencies:
+                if to_account.currency == CurrencyType.NVCT:
+                    exchange_type = ExchangeType.FIAT_TO_NVCT
+                elif to_account.currency == CurrencyType.AFD1:
+                    exchange_type = ExchangeType.FIAT_TO_AFD1
+                elif to_account.currency == CurrencyType.SFN:
+                    exchange_type = ExchangeType.FIAT_TO_SFN
+                elif to_account.currency == CurrencyType.AKLUMI:
+                    exchange_type = ExchangeType.FIAT_TO_AKLUMI
+                elif to_account.currency in fiat_currencies:
+                    exchange_type = ExchangeType.FIAT_TO_FIAT
+                else:
+                    exchange_type = ExchangeType.FIAT_TO_CRYPTO
+            
+            # Crypto exchanges
+            elif from_account.currency in crypto_currencies:
+                if to_account.currency == CurrencyType.NVCT:
+                    exchange_type = ExchangeType.CRYPTO_TO_NVCT
+                elif to_account.currency in fiat_currencies:
+                    exchange_type = ExchangeType.CRYPTO_TO_FIAT
+                else:
+                    exchange_type = ExchangeType.CRYPTO_TO_CRYPTO
+            
+            # Create transaction record
+            reference_number = f"FX-{uuid.uuid4().hex[:8]}"
+            
+            transaction = CurrencyExchangeTransaction(
+                exchange_type=exchange_type,
+                from_currency=from_account.currency,
+                to_currency=to_account.currency,
+                from_amount=amount,
+                to_amount=converted_amount,
+                rate_applied=rate,
+                fee_amount=fee_amount,
+                fee_currency=from_account.currency,
+                status=ExchangeStatus.PENDING,
+                reference_number=reference_number,
+                notes=f"Exchange from {from_account.account_number} to {to_account.account_number}",
+                account_holder_id=account_holder_id,
+                from_account_id=from_account_id,
+                to_account_id=to_account_id
+            )
+            
+            db.session.add(transaction)
+            
+            # Update account balances
+            from_account.balance -= amount
+            to_account.balance += converted_amount
+            
+            # Update available balances as well
+            from_account.available_balance -= amount
+            to_account.available_balance += converted_amount
+            
+            # Set last transaction time
+            current_time = datetime.utcnow()
+            from_account.last_transaction_at = current_time
+            to_account.last_transaction_at = current_time
+            
+            # Complete the transaction
+            transaction.status = ExchangeStatus.COMPLETED
+            transaction.completed_at = current_time
+            
+            db.session.commit()
+            
+            return {
+                "success": True,
+                "transaction": {
+                    "id": transaction.id,
+                    "reference": reference_number,
+                    "from_amount": amount,
+                    "from_currency": from_account.currency.value,
+                    "to_amount": converted_amount,
+                    "to_currency": to_account.currency.value,
+                    "rate": rate,
+                    "fee": fee_amount,
+                    "status": transaction.status.value
+                }
+            }
             
         except SQLAlchemyError as e:
-            logger.error(f"Database error retrieving exchange rate: {str(e)}")
-            
-            # If database error, try workaround as fallback
-            try:
-                from_currency_str = from_currency.value if hasattr(from_currency, 'value') else str(from_currency)
-                to_currency_str = to_currency.value if hasattr(to_currency, 'value') else str(to_currency)
-                
-                workaround_rate = currency_exchange_workaround.get_exchange_rate(from_currency_str, to_currency_str)
-                if workaround_rate:
-                    logger.info(f"Using fallback workaround rate for {from_currency_str} to {to_currency_str}: {workaround_rate}")
-                    return workaround_rate
-            except Exception as workaround_error:
-                logger.error(f"Workaround also failed: {str(workaround_error)}")
-            
-            return None
+            db.session.rollback()
+            logger.error(f"Database error performing exchange: {str(e)}")
+            return {"success": False, "error": f"Database error: {str(e)}"}
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error performing exchange: {str(e)}")
+            return {"success": False, "error": f"Error: {str(e)}"}
     
     @staticmethod
     def update_exchange_rate(from_currency, to_currency, rate, source="internal"):
