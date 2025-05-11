@@ -360,17 +360,26 @@ def new_transaction():
         if not reference_number:
             reference_number = f"TXN-{generate_unique_id()}"
         
+        # Get currency from the source account if it exists, otherwise use USD
+        from_account = None
+        if form.from_account_id.data > 0:
+            from_account = TreasuryAccount.query.get(form.from_account_id.data)
+            currency = from_account.currency if from_account else "USD"
+        else:
+            currency = "USD"
+            
         transaction = TreasuryTransaction(
             transaction_id=reference_number,
             transaction_type=form.transaction_type.data,
             amount=form.amount.data,
-            currency=form.currency.data,
-            exchange_rate=form.exchange_rate.data,
+            currency=currency,
+            exchange_rate=1.0,  # Default exchange rate
             description=form.description.data,
-            memo=form.memo.data,
+            # Get additional notes from the form if added
+            memo=request.form.get('additional_notes', ''),
             reference_number=reference_number,
             status=TransactionStatus.PENDING,
-            created_by_id=current_user.id
+            created_by=current_user.id
         )
         
         if form.from_account_id.data > 0:
@@ -394,10 +403,16 @@ def new_transaction():
         flash(f'Transaction {transaction.transaction_id} has been created and is pending approval.', 'success')
         return redirect(url_for('treasury.view_transaction', transaction_id=transaction.id))
     
+    # Check if from_account_id is set and get the account for the template
+    selected_from_account = None
+    if form.from_account_id.data and form.from_account_id.data > 0:
+        selected_from_account = TreasuryAccount.query.get(form.from_account_id.data)
+    
     return render_template(
         'treasury/transaction_form.html',
         form=form,
-        is_new=True
+        is_new=True,
+        from_account=selected_from_account
     )
 
 
