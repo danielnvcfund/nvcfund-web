@@ -76,6 +76,14 @@ try:
         logger.info("SQLAlchemy optimized")
     except Exception:
         pass
+        
+    # Apply currency exchange optimizations
+    try:
+        import optimize_currency_loading
+        optimize_currency_loading.optimize_currency_loading()
+        logger.info("Currency exchange operations optimized")
+    except (ImportError, Exception) as e:
+        logger.warning(f"Could not optimize currency exchange: {str(e)}")
 except Exception as e:
     logger.error(f"Error applying post-import optimizations: {str(e)}")
 
