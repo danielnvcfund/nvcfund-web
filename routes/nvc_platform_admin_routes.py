@@ -80,21 +80,50 @@ def dashboard():
         # Get recent sync history
         recent_syncs = sync_history[-10:] if sync_history else []
         
+        # Prepare stats for template
+        stats = {
+            'total': 0,
+            'success': 0,
+            'failed': 0
+        }
+        
+        # If available, populate with actual data
+        if sync_history:
+            latest_sync = sync_history[-1]
+            stats['total'] = latest_sync.get('total', 0)
+            stats['success'] = latest_sync.get('imported', 0) + latest_sync.get('updated', 0)
+            stats['failed'] = latest_sync.get('failed', 0)
+        
+        # Get last sync time
+        last_sync = sync_history[-1].get('timestamp') if sync_history else None
+        
+        # Check connection status
+        connection_status = api_key is not None and api_url is not None
+        
         return render_template(
             'admin/nvc_platform_sync.html',
-            status=status,
             form=form,
-            recent_syncs=recent_syncs
+            connection_status=connection_status,
+            last_sync=last_sync,
+            stats=stats,
+            sync_history=recent_syncs
         )
         
     except Exception as e:
         logger.error(f"Error rendering NVC Platform dashboard: {str(e)}")
         flash(f"Error retrieving NVC Platform status: {str(e)}", "danger")
+        
+        # Create a new form if we don't have one
+        if 'form' not in locals() or form is None:
+            form = NVCPlatformSettingsForm()
+            
         return render_template(
             'admin/nvc_platform_sync.html',
-            status=None,
-            form=NVCPlatformSettingsForm(),
-            recent_syncs=[]
+            form=form,
+            connection_status=False,
+            last_sync=None,
+            stats={'total': 0, 'success': 0, 'failed': 0},
+            sync_history=[]
         )
 
 @nvc_platform_admin_bp.route('/settings', methods=['POST'])
