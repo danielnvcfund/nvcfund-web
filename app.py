@@ -11,6 +11,15 @@ from flask_jwt_extended import JWTManager
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager
 
+# Import performance optimization modules
+try:
+    import template_cache
+    import memory_cache
+    import response_cache
+    OPTIMIZATIONS_AVAILABLE = True
+except ImportError:
+    OPTIMIZATIONS_AVAILABLE = False
+
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -46,12 +55,18 @@ def create_app():
     app.secret_key = os.environ.get("SESSION_SECRET", "dev_secret_key_for_testing_only")
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
 
-    # Configure the database
+    # Configure the database with optimized settings
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
         "pool_pre_ping": True,
+        "pool_size": 15,         # Increased pool size for better concurrency
+        "max_overflow": 20,      # Allow additional connections when pool is full
+        "pool_timeout": 60,      # Longer timeout to prevent connection errors
     }
+    
+    # Disable SQLAlchemy modification tracking for better performance
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     
     # Allow embedding in iframes for Replit
     @app.after_request
