@@ -101,10 +101,11 @@ def background_optimizations():
         # Import and apply cache warmup
         try:
             from currency_exchange_service import CurrencyExchangeService
+            from account_holder_models import CurrencyType
             # Warm up commonly used exchange rates
             CurrencyExchangeService.get_exchange_rate(
-                account_holder_models.CurrencyType.NVCT, 
-                account_holder_models.CurrencyType.USD
+                CurrencyType.NVCT, 
+                CurrencyType.USD
             )
             logger.info("Cache warmup completed")
         except Exception as e:
