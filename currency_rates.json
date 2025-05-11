@@ -1,133 +1,133 @@
 {
   "USD_NVCT": {
     "rate": 1.0,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "USD",
     "to": "NVCT"
   },
   "NVCT_USD": {
     "rate": 1.0,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "NVCT",
     "to": "USD"
   },
   "USD_XOF": {
     "rate": 601.04,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "USD",
     "to": "XOF"
   },
   "NVCT_XOF": {
     "rate": 601.04,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "NVCT",
     "to": "XOF"
   },
   "XOF_USD": {
     "rate": 0.0016637827765206975,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "XOF",
     "to": "USD"
   },
   "XOF_NVCT": {
     "rate": 0.0016637827765206975,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "XOF",
     "to": "NVCT"
   },
   "USD_XAF": {
     "rate": 601.04,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "USD",
     "to": "XAF"
   },
   "NVCT_XAF": {
     "rate": 601.04,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "NVCT",
     "to": "XAF"
   },
   "XAF_USD": {
     "rate": 0.0016637827765206975,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "XAF",
     "to": "USD"
   },
   "XAF_NVCT": {
     "rate": 0.0016637827765206975,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "XAF",
     "to": "NVCT"
   },
   "USD_AFD1": {
     "rate": 0.0029463759575721863,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "USD",
     "to": "AFD1"
   },
   "AFD1_USD": {
     "rate": 339.4,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "AFD1",
     "to": "USD"
   },
   "NVCT_AFD1": {
     "rate": 0.0029463759575721863,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "NVCT",
     "to": "AFD1"
   },
   "AFD1_NVCT": {
     "rate": 339.4,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "AFD1",
     "to": "NVCT"
   },
   "USD_SFN": {
     "rate": 1.0,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "USD",
     "to": "SFN"
   },
   "SFN_USD": {
     "rate": 1.0,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "SFN",
     "to": "USD"
   },
   "NVCT_SFN": {
     "rate": 1.0,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "NVCT",
     "to": "SFN"
   },
   "SFN_NVCT": {
     "rate": 1.0,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "SFN",
     "to": "NVCT"
   },
   "USD_AKLUMI": {
     "rate": 0.3076923076923077,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "USD",
     "to": "AKLUMI"
   },
   "AKLUMI_USD": {
     "rate": 3.25,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "AKLUMI",
     "to": "USD"
   },
   "NVCT_AKLUMI": {
     "rate": 0.3076923076923077,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "NVCT",
     "to": "AKLUMI"
   },
   "AKLUMI_NVCT": {
     "rate": 3.25,
-    "updated": "2025-05-11T00:27:02Z",
+    "updated": "2025-05-11T01:22:29Z",
     "from": "AKLUMI",
     "to": "NVCT"
   }

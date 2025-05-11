@@ -3,9 +3,9 @@ import os
 import sys
 import logging
 import signal
-from app import app
+import time
 
-# Configure logging
+# Configure logging immediately
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
@@ -14,6 +14,25 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger("main")
+
+# Record startup time
+startup_start_time = time.time()
+logger.info("NVC Banking Platform starting up (optimized version)...")
+
+# Apply performance optimizations BEFORE importing app
+try:
+    from performance_optimizations import optimize_performance
+    optimize_performance()
+    logger.info("Performance optimizations applied before startup")
+except Exception as e:
+    logger.error(f"Could not apply performance optimizations: {str(e)}")
+
+# Now import the app
+from app import app
+
+# Track and log startup time
+startup_time = time.time() - startup_start_time
+logger.info(f"Application startup completed in {startup_time:.2f} seconds")
 
 # Ensure this file properly sets up the Flask application for gunicorn
 app = app
