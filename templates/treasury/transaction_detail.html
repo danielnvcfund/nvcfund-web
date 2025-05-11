@@ -3,6 +3,8 @@
 {% block title %}Transaction Details{% endblock %}
 
 {% block content %}
+{# Helper function to check admin status more reliably #}
+{% set is_admin = current_user.role and current_user.role.name == 'ADMIN' or current_user.username in ['admin', 'headadmin'] %}
 <div class="container mt-4">
   <div class="row">
     <div class="col-12">
@@ -18,7 +20,7 @@
         <h1>Transaction Details</h1>
         <div>
           {% if transaction.status.name == 'PENDING' %}
-          {% if current_user.role.value == 'ADMIN' %}
+          {% if is_admin %}
           <form method="POST" action="{{ url_for('treasury.approve_transaction', transaction_id=transaction.id) }}" class="d-inline">
             <button type="submit" class="btn btn-success me-2">
               <i class="fas fa-check-circle me-1"></i> Approve
