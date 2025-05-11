@@ -109,9 +109,12 @@ def settings():
     if form.validate_on_submit():
         try:
             # Update environment variables
-            os.environ['NVC_PLATFORM_API_URL'] = form.api_url.data
-            os.environ['NVC_PLATFORM_API_KEY'] = form.api_key.data
-            os.environ['NVC_PLATFORM_API_SECRET'] = form.api_secret.data
+            if form.api_url.data:
+                os.environ['NVC_PLATFORM_API_URL'] = form.api_url.data
+            if form.api_key.data:
+                os.environ['NVC_PLATFORM_API_KEY'] = form.api_key.data
+            if form.api_secret.data:
+                os.environ['NVC_PLATFORM_API_SECRET'] = form.api_secret.data
             
             # Update application config
             current_app.config['NVC_PLATFORM_AUTO_SYNC'] = form.auto_sync.data
@@ -130,7 +133,21 @@ def settings():
         # Form validation failed
         for field, errors in form.errors.items():
             for error in errors:
-                flash(f"{getattr(form, field).label.text}: {error}", "danger")
+                # Use a safer approach to get field labels
+                try:
+                    # Ensure field is a string and not None
+                    field_name = str(field) if field is not None else "unknown"
+                    
+                    if hasattr(form, field_name):
+                        field_obj = getattr(form, field_name)
+                        if hasattr(field_obj, 'label') and field_obj.label:
+                            flash(f"{field_obj.label.text}: {error}", "danger")
+                        else:
+                            flash(f"{field_name}: {error}", "danger")
+                    else:
+                        flash(f"{field_name}: {error}", "danger")
+                except Exception as e:
+                    flash(f"Validation error: {error}", "danger")
     
     return redirect(url_for('nvc_platform_admin.dashboard'))
 
@@ -155,6 +172,7 @@ def test_connection():
         
         # For this endpoint, we'll simulate a successful test
         # In a real implementation, you would make an actual API request here
+        api_url_str = api_url or "https://www.nvcplatform.net/api"
         success = True
         
         if success:
@@ -162,7 +180,7 @@ def test_connection():
                 'status': 'success',
                 'message': 'Successfully connected to NVC Platform API',
                 'data': {
-                    'api_url': api_url
+                    'api_url': api_url_str
                 }
             }), 200
         else:

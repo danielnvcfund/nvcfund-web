@@ -279,14 +279,14 @@ def create_account_holder(account_data, external_id):
     """
     Create a new account holder from NVC Platform data
     """
-    account_holder = AccountHolder(
-        external_id=external_id,
-        name=account_data.get('name', 'Unknown Name'),
-        username=account_data.get('username', f"nvcplat-{account_data.get('id', 'unknown')}"),
-        email=account_data.get('email', f"nvcplat-{account_data.get('id', 'unknown')}@nvcplatform.net"),
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
-    )
+    # Create account holder with SQLAlchemy model
+    account_holder = AccountHolder()
+    account_holder.external_id = external_id
+    account_holder.name = account_data.get('name', 'Unknown Name')
+    account_holder.username = account_data.get('username', f"nvcplat-{account_data.get('id', 'unknown')}")
+    account_holder.email = account_data.get('email', f"nvcplat-{account_data.get('id', 'unknown')}@nvcplatform.net")
+    account_holder.created_at = datetime.utcnow()
+    account_holder.updated_at = datetime.utcnow()
     
     # Optional fields
     if 'is_business' in account_data:
@@ -381,18 +381,17 @@ def sync_bank_accounts(account_holder, accounts):
                     status = AccountStatus.ACTIVE
                 
                 # Create bank account
-                bank_account = BankAccount(
-                    account_number=account_number,
-                    account_name=account_name,
-                    account_type=account_type,
-                    currency=currency_enum,
-                    balance=float(account_data.get('balance', 0.0)),
-                    available_balance=float(account_data.get('balance', 0.0)),
-                    status=status,
-                    account_holder_id=account_holder.id,
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow()
-                )
+                bank_account = BankAccount()
+                bank_account.account_number = account_number
+                bank_account.account_name = account_name
+                bank_account.account_type = account_type
+                bank_account.currency = currency_enum
+                bank_account.balance = float(account_data.get('balance', 0.0))
+                bank_account.available_balance = float(account_data.get('balance', 0.0))
+                bank_account.status = status
+                bank_account.account_holder_id = account_holder.id
+                bank_account.created_at = datetime.utcnow()
+                bank_account.updated_at = datetime.utcnow()
                 
                 db.session.add(bank_account)
             
