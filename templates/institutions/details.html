@@ -51,6 +51,125 @@
       </div>
     </div>
   </div>
+  
+  {% if institution.id == 56 %}
+  <!-- Historical Information (Specific to El Banco Espaniol Isabel II) -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>Historical Background</h6>
+          <p class="text-sm">Rich history dating back to 1850</p>
+        </div>
+        <div class="card-body">
+          <div class="timeline timeline-one-side">
+            <div class="timeline-block mb-3">
+              <span class="timeline-step bg-primary">
+                <i class="ni ni-building text-white"></i>
+              </span>
+              <div class="timeline-content">
+                <h6 class="text-dark text-sm font-weight-bold mb-0">Establishment by Royal Decree</h6>
+                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">1850</p>
+                <p class="text-sm mt-3 mb-2">
+                  Banco Espanol Isabel-ll was established in Escolta, Aduana, Manila by Royal Decree from the King of Spain to the colony in the East. 
+                  Its name "Espanol" was contributed by Spain, while Queen Isabel-ll was involved in its founding through a relationship with the Borci Royal Clan.
+                </p>
+              </div>
+            </div>
+            
+            <div class="timeline-block mb-3">
+              <span class="timeline-step bg-info">
+                <i class="ni ni-money-coins text-white"></i>
+              </span>
+              <div class="timeline-content">
+                <h6 class="text-dark text-sm font-weight-bold mb-0">Expansion and Growth</h6>
+                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">1851</p>
+                <p class="text-sm mt-3 mb-2">
+                  Banco Espanol Filipino Offshore Capital was established in Iloilo City. The bank's cash and gold equities came from the fruits of the land 
+                  and income from the Spanish Galleon Trade, trading gold and silver with the U.S.A. and Europe, particularly during the boom of the sugar industry in the Visayan Region.
+                </p>
+              </div>
+            </div>
+            
+            <div class="timeline-block mb-3">
+              <span class="timeline-step bg-warning">
+                <i class="ni ni-planet text-white"></i>
+              </span>
+              <div class="timeline-content">
+                <h6 class="text-dark text-sm font-weight-bold mb-0">Treaty of Paris Era</h6>
+                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">1898</p>
+                <p class="text-sm mt-3 mb-2">
+                  Following the Treaty of Paris ratification on December 10, 1898, significant historical events affected the bank's operations and assets, 
+                  particularly during the transition of power in the Philippines.
+                </p>
+              </div>
+            </div>
+            
+            <div class="timeline-block">
+              <span class="timeline-step bg-success">
+                <i class="ni ni-world text-white"></i>
+              </span>
+              <div class="timeline-content">
+                <h6 class="text-dark text-sm font-weight-bold mb-0">Modern Era Partnership</h6>
+                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">2023</p>
+                <p class="text-sm mt-3 mb-2">
+                  New Trust Asset Deposit Management Agreement established between Gen. Absalon F. Borci Jr. (representing the Banco Espanol Filipino Offshore Capital) 
+                  and NVC Fund Bank, facilitating the management of significant assets under a trust relationship regulated by the African Finance Regulatory Authority (AFRA).
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Trust Agreement Card -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>Trust Agreements</h6>
+          <p class="text-sm">Active trust management relationships</p>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table align-items-center mb-0">
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Agreement</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Parties</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="d-flex px-2 py-1">
+                      <div class="d-flex flex-column justify-content-center">
+                        <h6 class="mb-0 text-sm">Trust Asset Deposit Management Agreement</h6>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <p class="text-xs font-weight-bold mb-0">December 20, 2023</p>
+                  </td>
+                  <td>
+                    <p class="text-xs font-weight-bold mb-0">Gen. Absalon F. Borci Jr. and NVC Fund Bank</p>
+                  </td>
+                  <td class="align-middle text-center text-sm">
+                    <span class="badge badge-sm bg-gradient-success">Active</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 
   <!-- Treasury Accounts Card -->
   {% if treasury_accounts %}
@@ -86,6 +205,9 @@
                   </td>
                   <td>
                     <p class="text-xs font-weight-bold mb-0">{{ account.account_type }}</p>
+                    {% if account.created_date %}
+                    <p class="text-xs text-secondary mb-0">Est. {{ account.created_date }}</p>
+                    {% endif %}
                   </td>
                   <td>
                     <p class="text-xs font-weight-bold mb-0">{{ account.currency }}</p>

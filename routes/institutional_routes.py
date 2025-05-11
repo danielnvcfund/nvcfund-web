@@ -38,19 +38,33 @@ def institution_details(institution_id):
     try:
         # Query financial data related to this institution directly from the database
         # Store basic info for display
-        treasury_accounts = [{
-            'id': 1,
-            'name': 'El Banco Espaniol Isabel II Treasury Account',
-            'currency': 'USD',
-            'formatted_balance': "$11,300,000,000,000,000.00",
-            'investments': [
-                {'name': 'Gold Reserves', 'amount': 2_500_000_000_000_000},
-                {'name': 'Sovereign Bonds', 'amount': 3_750_000_000_000_000},
-                {'name': 'Agricultural Land Holdings', 'amount': 1_875_000_000_000_000},
-                {'name': 'Industrial Infrastructure', 'amount': 3_175_000_000_000_000}
-            ],
-            'formatted_total': "$11,300,000,000,000,000.00"
-        }] if institution_id == 56 else []
+        if institution_id == 56:  # El Banco Espaniol Isabel II
+            # Historical and financial information from provided documents
+            treasury_accounts = [{
+                'id': 1,
+                'name': 'El Banco Espaniol Isabel II Treasury Account',
+                'account_number': 'BEFII-TRUST-01',
+                'account_type': 'Trust Asset Management',
+                'currency': 'USD',
+                'formatted_balance': "$11,300,000,000,000,000.00",
+                'is_active': True,
+                'created_date': '1850-12-20',
+                'historical_notes': 'Established by Royal Decree, with cash and gold equities from fruits of the land and Spanish Galleon Trade.',
+                'investments': [
+                    {'name': 'Gold Reserves', 'amount': 2_500_000_000_000_000, 'investment_type': 'Precious Metals', 'interest_rate': 0.0, 'status': 'Active'},
+                    {'name': 'Sovereign Bonds', 'amount': 3_750_000_000_000_000, 'investment_type': 'Government Securities', 'interest_rate': 2.5, 'status': 'Active'},
+                    {'name': 'Agricultural Land Holdings', 'amount': 1_875_000_000_000_000, 'investment_type': 'Real Estate', 'interest_rate': 3.2, 'status': 'Active'},
+                    {'name': 'Industrial Infrastructure', 'amount': 3_175_000_000_000_000, 'investment_type': 'Commercial Development', 'interest_rate': 4.1, 'status': 'Active'}
+                ],
+                'formatted_total': "$11,300,000,000,000,000.00",
+                'trust_agreements': [
+                    {'name': 'Trust Asset Deposit Management Agreement', 'date': '2023-12-20', 'status': 'Active', 'parties': ['Gen. Absalon F. Borci Jr.', 'NVC Fund Bank']}
+                ],
+                'authorized_signatories': ['Gen. Absalon F. Borci Jr.', 'Frank Ekejija'],
+                'regulatory_framework': 'African Finance Regulatory Authority (AFRA)'
+            }]
+        else:
+            treasury_accounts = []
             
     except Exception as e:
         logger.warning(f"Could not retrieve treasury accounts: {str(e)}")
