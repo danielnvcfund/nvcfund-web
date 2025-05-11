@@ -621,54 +621,63 @@ def create_app():
             except Exception as e:
                 logger.error(f"Error updating SFN exchange rates: {str(e)}")
                 
-            # Update African currency exchange rates
+            # Update currency exchange rates using optimized initialization
             try:
-                # Exchange rates for major African currencies to USD
-                african_currency_rates = {
-                    # Key currencies from each region
-                    "NGN": 1500.00,     # Nigerian Naira
-                    "KES": 132.05,      # Kenyan Shilling
-                    "ZAR": 18.50,       # South African Rand
-                    "EGP": 47.25,       # Egyptian Pound
-                    "GHS": 15.34,       # Ghanaian Cedi
-                    "XOF": 601.04,      # CFA Franc BCEAO
-                    "XAF": 601.04,      # CFA Franc BEAC
-                }
+                # Use the optimized initialization to improve performance
+                from optimize_currency_initialization import initialize_rates_on_startup
                 
-                african_currencies_updated = 0
+                # This function will set up both regular and problematic currencies
+                # in an optimized way with in-memory caching
+                num_rates = initialize_rates_on_startup()
                 
-                # Process key African currencies
-                for currency_code, usd_rate in african_currency_rates.items():
-                    try:
-                        # Get the enum value for this currency
-                        currency_enum = getattr(CurrencyType, currency_code)
-                        
-                        # Update USD to African currency rate
-                        CurrencyExchangeService.update_exchange_rate(
-                            CurrencyType.USD,
-                            currency_enum,
-                            usd_rate,
-                            "system_african_rates"
-                        )
-                        
-                        # Update NVCT to African currency rate (1:1 with USD)
-                        CurrencyExchangeService.update_exchange_rate(
-                            CurrencyType.NVCT,
-                            currency_enum,
-                            usd_rate,
-                            "system_african_rates"
-                        )
-                        
-                        african_currencies_updated += 1
-                    except Exception as e:
-                        logger.error(f"Error updating rates for {currency_code}: {str(e)}")
-                
-                logger.info(f"African currency exchange rates initialized with {african_currencies_updated} currencies")
-                
-                # For the complete set of African currencies, the update_african_currency_rates.py script can be run separately
+                logger.info(f"Currency exchange rates initialized with {num_rates} rates using optimized method")
                 
             except Exception as e:
-                logger.error(f"Error initializing African currency exchange rates: {str(e)}")
+                logger.error(f"Error initializing currency exchange rates with optimized method: {str(e)}")
+                logger.warning("Falling back to basic initialization")
+                
+                try:
+                    # Process only key African currencies as fallback
+                    african_currency_rates = {
+                        # Only include currencies supported in enum
+                        "NGN": 1500.00,     # Nigerian Naira
+                        "KES": 132.05,      # Kenyan Shilling
+                        "ZAR": 18.50,       # South African Rand
+                        "EGP": 47.25,       # Egyptian Pound
+                    }
+                    
+                    african_currencies_updated = 0
+                    
+                    # Process key African currencies
+                    for currency_code, usd_rate in african_currency_rates.items():
+                        try:
+                            # Get the enum value for this currency
+                            currency_enum = getattr(CurrencyType, currency_code)
+                            
+                            # Update USD to African currency rate
+                            CurrencyExchangeService.update_exchange_rate(
+                                CurrencyType.USD,
+                                currency_enum,
+                                usd_rate,
+                                "system_african_rates"
+                            )
+                            
+                            # Update NVCT to African currency rate (1:1 with USD)
+                            CurrencyExchangeService.update_exchange_rate(
+                                CurrencyType.NVCT,
+                                currency_enum,
+                                usd_rate,
+                                "system_african_rates"
+                            )
+                            
+                            african_currencies_updated += 1
+                        except Exception as e:
+                            logger.debug(f"Error updating rates for {currency_code}: {str(e)}")
+                    
+                    logger.info(f"African currency exchange rates initialized with {african_currencies_updated} currencies")
+                    
+                except Exception as e:
+                    logger.error(f"Error initializing African currency exchange rates: {str(e)}")
                 
         except Exception as e:
             logger.error(f"Error initializing currency exchange rates: {str(e)}")

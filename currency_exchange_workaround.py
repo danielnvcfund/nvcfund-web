@@ -1,39 +1,71 @@
 """
 Currency Exchange Workaround
 This module provides a workaround for database limitations with certain currency codes
+with an in-memory cache to improve performance
 """
 import json
 import logging
 import os
 from datetime import datetime
+import threading
 
 logger = logging.getLogger(__name__)
 
 # File to store exchange rates
 RATES_FILE = 'currency_rates.json'
 
+# In-memory cache for rates
+_RATES_CACHE = {}
+_CACHE_LOADED = False
+_CACHE_LOCK = threading.RLock()
+
 def load_rates():
-    """Load exchange rates from the JSON file"""
-    try:
-        if os.path.exists(RATES_FILE):
-            with open(RATES_FILE, 'r') as f:
-                rates = json.load(f)
-                logger.info(f"Loaded {len(rates)} exchange rate pairs from file")
-                return rates
-        return {}
-    except Exception as e:
-        logger.error(f"Error loading rates from file: {str(e)}")
-        return {}
+    """Load exchange rates with in-memory caching for performance"""
+    global _RATES_CACHE, _CACHE_LOADED
+    
+    # Return from cache if already loaded
+    with _CACHE_LOCK:
+        if _CACHE_LOADED:
+            return _RATES_CACHE
+        
+        # Load from file if cache is empty
+        try:
+            if os.path.exists(RATES_FILE):
+                with open(RATES_FILE, 'r') as f:
+                    _RATES_CACHE = json.load(f)
+                    logger.info(f"Loaded {len(_RATES_CACHE)} exchange rate pairs from file")
+            else:
+                _RATES_CACHE = {}
+                
+            _CACHE_LOADED = True
+            return _RATES_CACHE
+        except Exception as e:
+            logger.error(f"Error loading rates from file: {str(e)}")
+            _RATES_CACHE = {}
+            _CACHE_LOADED = True  # Mark as loaded even on error to prevent constant retries
+            return _RATES_CACHE
 
 def save_rates(rates):
-    """Save exchange rates to the JSON file"""
-    try:
-        with open(RATES_FILE, 'w') as f:
-            json.dump(rates, f, indent=2)
+    """Save exchange rates to both memory cache and file"""
+    global _RATES_CACHE, _CACHE_LOADED
+    
+    with _CACHE_LOCK:
+        # Update memory cache immediately
+        _RATES_CACHE = rates
+        _CACHE_LOADED = True
+        
+        # Save to disk asynchronously to prevent blocking
+        def _save_to_disk():
+            try:
+                with open(RATES_FILE, 'w') as f:
+                    json.dump(rates, f, indent=2)
+                logger.debug("Exchange rates saved to disk")
+            except Exception as e:
+                logger.error(f"Error saving rates to file: {str(e)}")
+        
+        # Start a background thread to save to disk
+        threading.Thread(target=_save_to_disk).start()
         return True
-    except Exception as e:
-        logger.error(f"Error saving rates to file: {str(e)}")
-        return False
 
 def get_rate(from_currency, to_currency):
     """Get exchange rate from file-based storage"""
