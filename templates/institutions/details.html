@@ -59,62 +59,140 @@
       <div class="card mb-4">
         <div class="card-header pb-0">
           <h6>Historical Background</h6>
-          <p class="text-sm">Rich history dating back to 1850</p>
+          <p class="text-sm">Rich history dating back to 1826 - The Philippines' first bank</p>
         </div>
         <div class="card-body">
+          <!-- Historical Timeline -->
           <div class="timeline timeline-one-side">
+            {% for event in treasury_accounts[0].detailed_history %}
             <div class="timeline-block mb-3">
-              <span class="timeline-step bg-primary">
-                <i class="ni ni-building text-white"></i>
+              <span class="timeline-step {% if loop.index % 5 == 1 %}bg-primary{% elif loop.index % 5 == 2 %}bg-info{% elif loop.index % 5 == 3 %}bg-warning{% elif loop.index % 5 == 4 %}bg-success{% else %}bg-danger{% endif %}">
+                <i class="ni {% if 'established' in event.event or 'founded' in event.event or 'creation' in event.event %}ni-building{% elif 'notes' in event.event or 'deposit' in event.event or 'financial' in event.event %}ni-money-coins{% elif 'moved' in event.event or 'branch' in event.event %}ni-pin-3{% elif 'royal' in event.event or 'agreement' in event.event %}ni-paper-diploma{% else %}ni-calendar-grid-58{% endif %} text-white"></i>
               </span>
               <div class="timeline-content">
-                <h6 class="text-dark text-sm font-weight-bold mb-0">Establishment by Royal Decree</h6>
-                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">1850</p>
-                <p class="text-sm mt-3 mb-2">
-                  Banco Espanol Isabel-ll was established in Escolta, Aduana, Manila by Royal Decree from the King of Spain to the colony in the East. 
-                  Its name "Espanol" was contributed by Spain, while Queen Isabel-ll was involved in its founding through a relationship with the Borci Royal Clan.
+                <h6 class="text-dark text-sm font-weight-bold mb-0">{{ event.event }}</h6>
+                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">{{ event.year }}</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Founding Figures -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>Founding Figures</h6>
+          <p class="text-sm">Key people in the bank's establishment and early history</p>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table align-items-center mb-0">
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Role</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Contribution</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for figure in treasury_accounts[0].founding_figures %}
+                <tr>
+                  <td>
+                    <div class="d-flex px-2 py-1">
+                      <div class="d-flex flex-column justify-content-center">
+                        <h6 class="mb-0 text-sm">{{ figure.name }}</h6>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <p class="text-xs font-weight-bold mb-0">{{ figure.role }}</p>
+                  </td>
+                  <td>
+                    <p class="text-xs text-secondary mb-0">{{ figure.contribution }}</p>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Historical Images -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>Historical Significance</h6>
+          <p class="text-sm">Notable achievements in banking history</p>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="card card-body border-0 shadow-sm h-100">
+                <div class="d-flex align-items-center mb-3">
+                  <div class="icon icon-shape bg-gradient-primary shadow text-center rounded-circle">
+                    <i class="ni ni-money-coins text-lg opacity-10" aria-hidden="true"></i>
+                  </div>
+                  <h5 class="ms-3 mb-0">First Bank Notes</h5>
+                </div>
+                <p class="mb-0 text-sm">
+                  El Banco Español Filipino de Isabel II was given the exclusive privilege to issue paper money. The first bank notes, 
+                  called "pesos fuertes" (PF), were issued on May 1, 1852, bearing the portrait of Queen Isabella II of Spain and were 
+                  redeemable at face value for gold or silver Mexican coins.
                 </p>
               </div>
             </div>
-            
-            <div class="timeline-block mb-3">
-              <span class="timeline-step bg-info">
-                <i class="ni ni-money-coins text-white"></i>
-              </span>
-              <div class="timeline-content">
-                <h6 class="text-dark text-sm font-weight-bold mb-0">Expansion and Growth</h6>
-                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">1851</p>
-                <p class="text-sm mt-3 mb-2">
-                  Banco Espanol Filipino Offshore Capital was established in Iloilo City. The bank's cash and gold equities came from the fruits of the land 
-                  and income from the Spanish Galleon Trade, trading gold and silver with the U.S.A. and Europe, particularly during the boom of the sugar industry in the Visayan Region.
+            <div class="col-md-6">
+              <div class="card card-body border-0 shadow-sm h-100">
+                <div class="d-flex align-items-center mb-3">
+                  <div class="icon icon-shape bg-gradient-info shadow text-center rounded-circle">
+                    <i class="ni ni-world text-lg opacity-10" aria-hidden="true"></i>
+                  </div>
+                  <h5 class="ms-3 mb-0">First Branch</h5>
+                </div>
+                <p class="mb-0 text-sm">
+                  It took a royal order in 1896 to enable the bank to open branches. While initially 
+                  planning to open in Central Luzon in the 1850s due to the sugar boom, the bank's first 
+                  branch was ultimately established in Iloilo on March 15, 1897, reflecting the shifting economic prominence 
+                  of the region.
                 </p>
               </div>
             </div>
-            
-            <div class="timeline-block mb-3">
-              <span class="timeline-step bg-warning">
-                <i class="ni ni-planet text-white"></i>
-              </span>
-              <div class="timeline-content">
-                <h6 class="text-dark text-sm font-weight-bold mb-0">Treaty of Paris Era</h6>
-                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">1898</p>
-                <p class="text-sm mt-3 mb-2">
-                  Following the Treaty of Paris ratification on December 10, 1898, significant historical events affected the bank's operations and assets, 
-                  particularly during the transition of power in the Philippines.
+            <div class="col-md-6">
+              <div class="card card-body border-0 shadow-sm h-100">
+                <div class="d-flex align-items-center mb-3">
+                  <div class="icon icon-shape bg-gradient-success shadow text-center rounded-circle">
+                    <i class="ni ni-single-02 text-lg opacity-10" aria-hidden="true"></i>
+                  </div>
+                  <h5 class="ms-3 mb-0">First Clients</h5>
+                </div>
+                <p class="mb-0 text-sm">
+                  The first deposit with the bank was carried out on May 1, 1852, by Fulgencio Barrera. Three days later, 
+                  a Chinese businessman named Tadian became the first borrowing client after the bank discounted to him a 
+                  promissory note amounting to ten thousand pesos fuertes.
                 </p>
               </div>
             </div>
-            
-            <div class="timeline-block">
-              <span class="timeline-step bg-success">
-                <i class="ni ni-world text-white"></i>
-              </span>
-              <div class="timeline-content">
-                <h6 class="text-dark text-sm font-weight-bold mb-0">Modern Era Partnership</h6>
-                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">2023</p>
-                <p class="text-sm mt-3 mb-2">
-                  New Trust Asset Deposit Management Agreement established between Gen. Absalon F. Borci Jr. (representing the Banco Espanol Filipino Offshore Capital) 
-                  and NVC Fund Bank, facilitating the management of significant assets under a trust relationship regulated by the African Finance Regulatory Authority (AFRA).
+            <div class="col-md-6">
+              <div class="card card-body border-0 shadow-sm h-100">
+                <div class="d-flex align-items-center mb-3">
+                  <div class="icon icon-shape bg-gradient-warning shadow text-center rounded-circle">
+                    <i class="ni ni-building text-lg opacity-10" aria-hidden="true"></i>
+                  </div>
+                  <h5 class="ms-3 mb-0">Business Transformation</h5>
+                </div>
+                <p class="mb-0 text-sm">
+                  In January 1892, the bank moved from the Royal Custom House in Intramuros to the new business district of 
+                  Binondo (4 Plaza San Gabriel, later renamed Plaza Cervantes) after finding Intramuros was becoming "economically inactive." 
+                  This property was acquired from the Dominican Order and represented a key shift in the bank's operations.
                 </p>
               </div>
             </div>
@@ -252,6 +330,7 @@
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Type</th>
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Amount</th>
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Interest Rate</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Additional Details</th>
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
                 </tr>
               </thead>
@@ -274,8 +353,24 @@
                   <td>
                     <p class="text-xs font-weight-bold mb-0">{{ investment.interest_rate }}%</p>
                   </td>
-                  <td class="align-middle text-center text-sm">
-                    <span class="badge badge-sm bg-gradient-info">{{ investment.status }}</span>
+                  <td>
+                    <div class="d-flex flex-column">
+                      {% if investment.origin %}
+                      <p class="text-xs text-secondary mb-1">Origin: {{ investment.origin }}</p>
+                      {% endif %}
+                      {% if investment.location %}
+                      <p class="text-xs text-secondary mb-1">Location: {{ investment.location }}</p>
+                      {% endif %}
+                      {% if investment.sectors %}
+                      <p class="text-xs text-secondary mb-1">Sectors: {{ investment.sectors }}</p>
+                      {% endif %}
+                      {% if investment.maturity %}
+                      <p class="text-xs text-secondary mb-1">Maturity: {{ investment.maturity }}</p>
+                      {% endif %}
+                    </div>
+                  </td>
+                  <td class="align-middle">
+                    <span class="badge badge-sm bg-gradient-{% if investment.status == 'Active' %}success{% else %}secondary{% endif %}">{{ investment.status }}</span>
                   </td>
                 </tr>
                 {% endfor %}
