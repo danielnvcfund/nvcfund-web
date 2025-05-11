@@ -1,0 +1,341 @@
+{% extends 'layout.html' %}
+
+{% block title %}NVC Platform Synchronization{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">NVC Platform Integration</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a></li>
+        <li class="breadcrumb-item active">NVC Platform Synchronization</li>
+    </ol>
+    
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-sync me-1"></i>
+                    Synchronization Status
+                </div>
+                <div class="card-body">
+                    {% if status %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p><strong>Connection Status:</strong> 
+                                    {% if status.connection_status == 'connected' %}
+                                        <span class="badge bg-success">Connected</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Disconnected</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>API Endpoint:</strong> {{ status.platform_url }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p><strong>Synchronized Accounts:</strong> {{ status.account_count }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Last Sync:</strong> {{ status.last_sync }}</p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            Unable to retrieve synchronization status.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-cog me-1"></i>
+                    API Configuration
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('admin.nvc_platform_settings') }}">
+                        {{ form.csrf_token }}
+                        
+                        <div class="mb-3">
+                            <label for="api_url" class="form-label">API URL</label>
+                            <input type="text" class="form-control" id="api_url" name="api_url" 
+                                value="{{ form.api_url.data or 'https://www.nvcplatform.net/api' }}">
+                            <div class="form-text">Base URL for the NVC Platform API</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="api_key" class="form-label">API Key</label>
+                            <input type="text" class="form-control" id="api_key" name="api_key" 
+                                value="{{ form.api_key.data or '' }}">
+                            <div class="form-text">Your API key for accessing the NVC Platform</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="api_secret" class="form-label">API Secret</label>
+                            <input type="password" class="form-control" id="api_secret" name="api_secret" 
+                                value="{{ form.api_secret.data or '' }}">
+                            <div class="form-text">Your API secret for authentication</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="auto_sync" name="auto_sync" 
+                                    {% if form.auto_sync.data %}checked{% endif %}>
+                                <label class="form-check-label" for="auto_sync">
+                                    Enable Automatic Synchronization
+                                </label>
+                            </div>
+                            <div class="form-text">Automatically sync accounts every hour</div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-exchange-alt me-1"></i>
+                    Synchronization Actions
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Test Connection</h5>
+                                    <p class="card-text">Verify connectivity to the NVC Platform API</p>
+                                    <button id="test-connection" class="btn btn-info">
+                                        <i class="fas fa-plug me-1"></i> Test Connection
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Quick Sync</h5>
+                                    <p class="card-text">Synchronize recent account changes</p>
+                                    <button id="quick-sync" class="btn btn-success">
+                                        <i class="fas fa-sync me-1"></i> Quick Sync
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Full Sync</h5>
+                                    <p class="card-text">Complete synchronization of all accounts</p>
+                                    <button id="full-sync" class="btn btn-warning">
+                                        <i class="fas fa-sync-alt me-1"></i> Full Sync
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div id="sync-result" class="alert d-none"></div>
+                        <div id="sync-progress" class="progress d-none">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if recent_syncs %}
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-history me-1"></i>
+                    Recent Synchronizations
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Date/Time</th>
+                                    <th>Type</th>
+                                    <th>Imported</th>
+                                    <th>Updated</th>
+                                    <th>Failed</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sync in recent_syncs %}
+                                <tr>
+                                    <td>{{ sync.timestamp }}</td>
+                                    <td>{{ sync.type }}</td>
+                                    <td>{{ sync.imported }}</td>
+                                    <td>{{ sync.updated }}</td>
+                                    <td>{{ sync.failed }}</td>
+                                    <td>{{ sync.duration }} seconds</td>
+                                    <td>
+                                        {% if sync.status == 'success' %}
+                                            <span class="badge bg-success">Success</span>
+                                        {% elif sync.status == 'partial' %}
+                                            <span class="badge bg-warning">Partial</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Failed</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    $(document).ready(function() {
+        // Function to show progress and hide result
+        function showProgress() {
+            $('#sync-progress').removeClass('d-none');
+            $('#sync-result').addClass('d-none');
+        }
+        
+        // Function to show result and hide progress
+        function showResult(message, type) {
+            $('#sync-progress').addClass('d-none');
+            $('#sync-result')
+                .removeClass('d-none alert-success alert-danger alert-warning alert-info')
+                .addClass('alert-' + type)
+                .html(message);
+        }
+        
+        // Test Connection
+        $('#test-connection').click(function() {
+            showProgress();
+            
+            $.ajax({
+                url: '{{ url_for("admin.nvc_platform_test") }}',
+                method: 'POST',
+                dataType: 'json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                success: function(data) {
+                    if (data.status === 'success') {
+                        showResult('<i class="fas fa-check-circle me-1"></i> ' + data.message, 'success');
+                    } else {
+                        showResult('<i class="fas fa-exclamation-triangle me-1"></i> ' + data.message, 'warning');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showResult('<i class="fas fa-times-circle me-1"></i> Connection test failed: ' + 
+                              (xhr.responseJSON ? xhr.responseJSON.message : error), 'danger');
+                }
+            });
+        });
+        
+        // Quick Sync
+        $('#quick-sync').click(function() {
+            if (!confirm('Are you sure you want to run a quick synchronization?')) {
+                return;
+            }
+            
+            showProgress();
+            
+            $.ajax({
+                url: '{{ url_for("admin.nvc_platform_sync") }}',
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                    full_sync: false
+                },
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                success: function(data) {
+                    if (data.status === 'success') {
+                        let msg = `<i class="fas fa-check-circle me-1"></i> ${data.message}<br>
+                                  <b>Imported:</b> ${data.data.imported} | 
+                                  <b>Updated:</b> ${data.data.updated} | 
+                                  <b>Failed:</b> ${data.data.failed}`;
+                        showResult(msg, 'success');
+                        
+                        // Reload the page after 3 seconds to refresh stats
+                        setTimeout(function() {
+                            location.reload();
+                        }, 3000);
+                    } else {
+                        showResult('<i class="fas fa-exclamation-triangle me-1"></i> ' + data.message, 'warning');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showResult('<i class="fas fa-times-circle me-1"></i> Synchronization failed: ' + 
+                              (xhr.responseJSON ? xhr.responseJSON.message : error), 'danger');
+                }
+            });
+        });
+        
+        // Full Sync
+        $('#full-sync').click(function() {
+            if (!confirm('Are you sure you want to run a full synchronization? This may take some time.')) {
+                return;
+            }
+            
+            showProgress();
+            
+            $.ajax({
+                url: '{{ url_for("admin.nvc_platform_sync") }}',
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                    full_sync: true
+                },
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                success: function(data) {
+                    if (data.status === 'success') {
+                        let msg = `<i class="fas fa-check-circle me-1"></i> ${data.message}<br>
+                                  <b>Imported:</b> ${data.data.imported} | 
+                                  <b>Updated:</b> ${data.data.updated} | 
+                                  <b>Failed:</b> ${data.data.failed}`;
+                        showResult(msg, 'success');
+                        
+                        // Reload the page after 3 seconds to refresh stats
+                        setTimeout(function() {
+                            location.reload();
+                        }, 3000);
+                    } else {
+                        showResult('<i class="fas fa-exclamation-triangle me-1"></i> ' + data.message, 'warning');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showResult('<i class="fas fa-times-circle me-1"></i> Synchronization failed: ' + 
+                              (xhr.responseJSON ? xhr.responseJSON.message : error), 'danger');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

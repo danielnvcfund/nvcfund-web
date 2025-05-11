@@ -256,6 +256,22 @@ class POSSendPaymentForm(BaseForm):
         Optional(),
         Length(max=250, message="Description must be 250 characters or less")
     ])
+    
+class NVCPlatformSettingsForm(FlaskForm):
+    """Form for NVC Platform integration settings"""
+    api_url = StringField('API URL', validators=[
+        DataRequired(),
+        Length(max=255, message="URL must be 255 characters or less")
+    ])
+    api_key = StringField('API Key', validators=[
+        Optional(),
+        Length(max=255, message="API Key must be 255 characters or less")
+    ])
+    api_secret = PasswordField('API Secret', validators=[
+        Optional(),
+        Length(max=255, message="API Secret must be 255 characters or less")
+    ])
+    auto_sync = BooleanField('Enable Automatic Synchronization', default=False)
 
 class ClientRegistrationForm(FlaskForm):
     """Form for client registration"""
