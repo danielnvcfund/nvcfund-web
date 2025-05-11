@@ -76,7 +76,8 @@
               <p class="mb-1"><strong>Maturity Date:</strong></p>
               <p class="text-muted mb-3">{{ investment.maturity_date.strftime('%Y-%m-%d') }}</p>
               
-              {% if investment.interest_payment_frequency is defined %}
+              <!-- Interest payment frequency field is optional -->
+              {% if investment.interest_payment_frequency is defined and investment.interest_payment_frequency %}
               <p class="mb-1"><strong>Interest Payment Frequency:</strong></p>
               <p class="text-muted mb-3">{{ investment.interest_payment_frequency.value|replace('_', ' ')|title }}</p>
               {% endif %}
@@ -84,7 +85,8 @@
               <p class="mb-1"><strong>Created Date:</strong></p>
               <p class="text-muted mb-3">{{ investment.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
               
-              {% if investment.created_by is defined %}
+              <!-- Created By field is optional -->
+              {% if investment.created_by is defined and investment.created_by %}
               <p class="mb-1"><strong>Created By:</strong></p>
               <p class="text-muted mb-3">{{ investment.created_by.username }}</p>
               {% endif %}
