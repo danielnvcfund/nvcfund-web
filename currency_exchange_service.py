@@ -6,29 +6,24 @@ Support for all global currencies and cryptocurrencies added via workaround.
 """
 
 import logging
-import uuid
 from datetime import datetime
-from decimal import Decimal, ROUND_HALF_DOWN
-from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
+# Import core service from separate module to avoid circular imports
+from exchange_service import CurrencyExchangeService as ExchangeServiceCore
 from saint_crown_integration import SaintCrownIntegration
 # Import workaround for currency exchange
 import currency_exchange_workaround
 from account_holder_models import (
-    CurrencyType, 
-    ExchangeType, 
-    ExchangeStatus,
-    BankAccount, 
-    AccountHolder,
-    CurrencyExchangeRate, 
-    CurrencyExchangeTransaction
+    CurrencyType,
+    CurrencyExchangeRate
 )
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
-class CurrencyExchangeService:
+# Extend the core service with additional functionality
+class CurrencyExchangeService(ExchangeServiceCore):
     """Service for handling currency exchanges between various currencies with NVCT as primary pair"""
     
     @staticmethod
@@ -43,6 +38,25 @@ class CurrencyExchangeService:
         Returns:
             float: Exchange rate or None if not found
         """
+        # First try the core implementation
+        rate = ExchangeServiceCore.get_exchange_rate(from_currency, to_currency)
+        if rate:
+            return rate
+            
+        # If database lookup fails, try our workaround for all global currencies
+        # Convert enum values to strings
+        from_currency_str = from_currency.value if hasattr(from_currency, 'value') else str(from_currency)
+        to_currency_str = to_currency.value if hasattr(to_currency, 'value') else str(to_currency)
+        
+        # Use the workaround to get exchange rate
+        workaround_rate = currency_exchange_workaround.get_exchange_rate(from_currency_str, to_currency_str)
+        if workaround_rate:
+            logger.info(f"Using workaround exchange rate for {from_currency_str} to {to_currency_str}: {workaround_rate}")
+            return workaround_rate
+            
+        # If we're here, no rate was found
+        logger.warning(f"No exchange rate found for {from_currency_str} to {to_currency_str}")
+        return None
         try:
             # First try direct rate
             rate = CurrencyExchangeRate.query.filter_by(
