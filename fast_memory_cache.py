@@ -20,6 +20,26 @@ logger = logging.getLogger(__name__)
 _RATE_CACHE: Dict[Tuple[str, str], float] = {}
 _CACHE_LOCK = threading.RLock()
 
+# Create a rate_cache object for compatibility with existing code
+class RateCache:
+    def __init__(self):
+        self._cache = {}
+        self._lock = threading.RLock()
+    
+    def get(self, key, default=None):
+        return self._cache.get(key, default)
+    
+    def set(self, key, value):
+        with self._lock:
+            self._cache[key] = value
+    
+    def clear(self):
+        with self._lock:
+            self._cache.clear()
+
+# Create a singleton instance
+rate_cache = RateCache()
+
 # LRU cache for high-frequency lookups
 @lru_cache(maxsize=256)
 def get_cached_rate(from_currency: str, to_currency: str) -> Optional[float]:
@@ -40,7 +60,7 @@ def get_cached_rate(from_currency: str, to_currency: str) -> Optional[float]:
         return _RATE_CACHE[key]
     return None
 
-def cache_exchange_rate(from_currency: str, to_currency: str, rate: float) -> None:
+def cache_exchange_rate(from_currency: str, to_currency: str, rate: float, ttl: int = 3600) -> None:
     """
     Cache an exchange rate with minimal locking
     
@@ -48,6 +68,7 @@ def cache_exchange_rate(from_currency: str, to_currency: str, rate: float) -> No
         from_currency: Source currency code
         to_currency: Target currency code
         rate: Exchange rate value
+        ttl: Time to live in seconds (unused, for compatibility)
     """
     key = (str(from_currency), str(to_currency))
     
@@ -78,6 +99,10 @@ def cache_value(key: str, value: Any, ttl: int = 3600) -> None:
 def get_cached_value(key: str) -> Optional[Any]:
     """Simple stub to maintain API compatibility"""
     return None
+    
+def get_cached_exchange_rate(from_currency: str, to_currency: str) -> Optional[float]:
+    """Get cached exchange rate - compatibility function"""
+    return get_cached_rate(from_currency, to_currency)
 
 # Public API compatible with the original memory_cache
 __all__ = [
@@ -85,5 +110,7 @@ __all__ = [
     'cache_exchange_rate',
     'clear_rate_cache',
     'cache_value',
-    'get_cached_value'
+    'get_cached_value',
+    'get_cached_exchange_rate',
+    'rate_cache'
 ]

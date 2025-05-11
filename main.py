@@ -68,14 +68,34 @@ try:
     except (ImportError, AttributeError):
         pass
         
-    # Apply database index optimizations
+    # Apply comprehensive database optimizations
     try:
-        # Disable SQLAlchemy echo
-        app.config["SQLALCHEMY_ECHO"] = False
-        app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-        logger.info("SQLAlchemy optimized")
-    except Exception:
-        pass
+        # Import database optimization module
+        from app import db
+        from optimize_database import optimize_database
+        
+        # Apply full database optimizations
+        with app.app_context():
+            optimize_database(app, db)
+            
+        logger.info("Database fully optimized")
+    except (ImportError, Exception) as e:
+        # Fall back to basic optimizations if the module isn't available
+        try:
+            # Disable SQLAlchemy echo
+            app.config["SQLALCHEMY_ECHO"] = False
+            app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+            
+            # Add basic performance settings
+            app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+                "pool_size": 20,
+                "max_overflow": 40,
+                "pool_recycle": 300,
+                "pool_pre_ping": True,
+            }
+            logger.info("SQLAlchemy optimized (basic mode)")
+        except Exception:
+            pass
         
     # Apply currency exchange optimizations
     try:
