@@ -771,8 +771,12 @@ class TreasuryAccountForm(FlaskForm):
     opening_balance = FloatField('Opening Balance', validators=[DataRequired(), NumberRange(min=0)])
     interest_rate = FloatField('Interest Rate (%)', validators=[Optional(), NumberRange(min=0, max=100)])
     description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
+    # Additional fields from the model
+    target_balance = FloatField('Target Balance', validators=[Optional(), NumberRange(min=0)])
+    minimum_balance = FloatField('Minimum Balance', validators=[Optional(), NumberRange(min=0)])
+    maximum_balance = FloatField('Maximum Balance', validators=[Optional(), NumberRange(min=0)])
     is_active = BooleanField('Active', default=True)
-    submit = SubmitField('Create Account')
+    submit = SubmitField('Save Account')
 
 class TreasuryTransactionForm(FlaskForm):
     """Form for creating a treasury transaction"""
