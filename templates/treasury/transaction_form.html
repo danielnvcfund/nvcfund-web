@@ -2,6 +2,41 @@
 
 {% block title %}{{ 'New Treasury Transaction' if is_new else 'Edit Treasury Transaction' }}{% endblock %}
 
+{% block head %}
+{{ super() }}
+<style>
+  /* Improved form styling */
+  .form-control:focus, .form-select:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+  }
+  
+  /* Make the form elements stand out more */
+  .form-control, .form-select {
+    transition: all 0.2s ease-in-out;
+    border-width: 2px;
+  }
+  
+  /* Highlight required fields */
+  .required-field::after {
+    content: "*";
+    color: #e74a3b;
+    margin-left: 4px;
+  }
+  
+  /* Processing indicator animation */
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  .btn-processing {
+    animation: pulse 1.5s infinite;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
   <div class="row">
@@ -27,8 +62,8 @@
             <div class="row mb-3">
               <div class="col-md-6">
                 <div class="form-group">
-                  {{ form.from_account_id.label(class="form-label") }}
-                  {{ form.from_account_id(class="form-select" + (" is-invalid" if form.from_account_id.errors else "")) }}
+                  {{ form.from_account_id.label(class="form-label required-field") }}
+                  {{ form.from_account_id(class="form-select form-control-lg" + (" is-invalid" if form.from_account_id.errors else "")) }}
                   {% if form.from_account_id.errors %}
                   <div class="invalid-feedback">
                     {% for error in form.from_account_id.errors %}
@@ -41,8 +76,8 @@
               </div>
               <div class="col-md-6">
                 <div class="form-group">
-                  {{ form.to_account_id.label(class="form-label") }}
-                  {{ form.to_account_id(class="form-select" + (" is-invalid" if form.to_account_id.errors else "")) }}
+                  {{ form.to_account_id.label(class="form-label required-field") }}
+                  {{ form.to_account_id(class="form-select form-control-lg" + (" is-invalid" if form.to_account_id.errors else "")) }}
                   {% if form.to_account_id.errors %}
                   <div class="invalid-feedback">
                     {% for error in form.to_account_id.errors %}
