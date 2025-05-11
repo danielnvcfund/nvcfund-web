@@ -268,6 +268,10 @@ def create_app():
         try:
             from routes.admin_routes import admin_bp
             app.register_blueprint(admin_bp)
+            
+            # Register NVC Platform integration admin routes
+            from routes.nvc_platform_admin_routes import nvc_platform_admin_bp
+            app.register_blueprint(nvc_platform_admin_bp)
             logger.info("Transaction Admin routes registered successfully")
         except Exception as e:
             logger.error(f"Error registering Transaction Admin routes: {str(e)}")
@@ -315,6 +319,14 @@ def create_app():
         # Register API routes
         from routes.api import api_bp as main_api_bp
         app.register_blueprint(main_api_bp)
+        
+        # Register NVC Platform integration API routes
+        try:
+            from nvc_platform_integration import nvc_platform_bp
+            app.register_blueprint(nvc_platform_bp, url_prefix='/api/nvc-platform')
+            logger.info("NVC Platform integration API routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering NVC Platform integration routes: {str(e)}")
         
         # Initialize EDI Service
         try:
