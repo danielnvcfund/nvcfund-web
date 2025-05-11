@@ -18,6 +18,7 @@ from routes.main_routes import main
 from routes.swift_routes import swift
 from routes.ach_routes import ach
 from routes.api_access_routes import api_access_bp
+from routes.institutional_routes import institutional_bp
 
 # Import PHP Bridge routes
 from api_bridge import php_bridge
@@ -47,3 +48,4 @@ web_blueprint.register_blueprint(ha_web, url_prefix='/ha')
 web_blueprint.register_blueprint(main, url_prefix='/main')
 web_blueprint.register_blueprint(swift, url_prefix='/swift')
 web_blueprint.register_blueprint(ach, url_prefix='/ach')
+web_blueprint.register_blueprint(institutional_bp, url_prefix='/institutional')

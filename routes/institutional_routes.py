@@ -11,7 +11,7 @@ from flask_login import login_required, current_user
 from datetime import datetime
 
 from app import app, db
-from models import User, Institution, FinancialInstitution
+from models import User, FinancialInstitution
 
 # Create a blueprint for institutional routes
 institutional_bp = Blueprint('institutional', __name__)
