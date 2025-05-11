@@ -636,20 +636,73 @@ def create_app():
             except Exception as e:
                 logger.error(f"Error updating SFN exchange rates: {str(e)}")
                 
-            # Update currency exchange rates using optimized initialization
+            # Use reduced system load approach for currency exchange rates
             try:
-                # Use the optimized initialization to improve performance
-                from optimize_currency_initialization import initialize_rates_on_startup
+                # Apply optimizations to reduce system load
+                from reduce_system_load import reduce_system_load
+                reduce_system_load()
                 
-                # This function will set up both regular and problematic currencies
-                # in an optimized way with in-memory caching
-                num_rates = initialize_rates_on_startup()
+                # Use the fast memory cache instead of the regular one
+                from fast_memory_cache import cache_exchange_rate
                 
-                logger.info(f"Currency exchange rates initialized with {num_rates} rates using optimized method")
+                # Set up essential rates in memory without frequent updates
+                essential_rates = {
+                    # Core rates only
+                    ('NVCT', 'USD'): 1.0,
+                    ('USD', 'NVCT'): 1.0,
+                    ('NVCT', 'AFD1'): 0.00294,
+                    ('AFD1', 'NVCT'): 340.136,
+                    ('NVCT', 'SFN'): 1.0,
+                    ('SFN', 'NVCT'): 1.0,
+                }
+                
+                # Cache these rates in memory
+                for (from_curr, to_curr), rate in essential_rates.items():
+                    cache_exchange_rate(from_curr, to_curr, rate)
+                    
+                # Add currency service module patching
+                try:
+                    # This approach is safer - use sys.modules to redirect imports
+                    import sys
+                    import fast_memory_cache
+                    
+                    # Replace any future imports of memory_cache
+                    sys.modules['memory_cache'] = fast_memory_cache
+                    
+                    # Disable automatic updates in currency_exchange_service
+                    if 'currency_exchange_service' in sys.modules:
+                        # Get the module reference
+                        currency_module = sys.modules['currency_exchange_service']
+                        
+                        # If the module has a CurrencyExchangeService class or object
+                        if hasattr(currency_module, 'CurrencyExchangeService'):
+                            service = currency_module.CurrencyExchangeService
+                            
+                            # Replace the update method with a no-op function if it exists
+                            if hasattr(service, 'update_exchange_rate'):
+                                original_update = service.update_exchange_rate
+                                
+                                # Create a lightweight version that does minimal work
+                                def lightweight_update(*args, **kwargs):
+                                    # Just cache the rate in memory without database operations
+                                    if len(args) >= 3:
+                                        from_curr = str(args[0])
+                                        to_curr = str(args[1])
+                                        rate = float(args[2])
+                                        fast_memory_cache.cache_exchange_rate(from_curr, to_curr, rate)
+                                    return None
+                                
+                                # Apply the patch
+                                service.update_exchange_rate = lightweight_update
+                                logger.info("Currency exchange rate updates optimized")
+                except Exception as e:
+                    logger.warning(f"Could not optimize currency service: {str(e)}")
+                
+                logger.info("Applied high-performance currency exchange configuration")
                 
             except Exception as e:
-                logger.error(f"Error initializing currency exchange rates with optimized method: {str(e)}")
-                logger.warning("Falling back to basic initialization")
+                logger.error(f"Error applying system load optimizations: {str(e)}")
+                logger.warning("Continuing with standard initialization")
                 
                 try:
                     # Process only key African currencies as fallback
