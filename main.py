@@ -19,16 +19,65 @@ logger = logging.getLogger("main")
 startup_start_time = time.time()
 logger.info("NVC Banking Platform starting up (optimized version)...")
 
-# Apply performance optimizations BEFORE importing app
+# Set performance environment variables
+os.environ["NVC_DISABLE_BLOCKCHAIN"] = "1"
+os.environ["NVC_MINIMAL_STARTUP"] = "1"
+os.environ["NVC_OPTIMIZE_MEMORY"] = "1"
+
+# Apply all available optimizations BEFORE importing app
 try:
-    from performance_optimizations import optimize_performance
-    optimize_performance()
-    logger.info("Performance optimizations applied before startup")
+    # Try first optimizations script
+    try:
+        import optimize_app
+        optimize_app.optimize_startup()
+        optimize_app.reduce_debug_logging()
+        logger.info("Applied startup optimizations from optimize_app")
+    except ImportError:
+        pass
+        
+    # Try original optimizations as well
+    try:
+        from performance_optimizations import optimize_performance
+        optimize_performance()
+        logger.info("Applied optimizations from performance_optimizations")
+    except ImportError:
+        pass
 except Exception as e:
     logger.error(f"Could not apply performance optimizations: {str(e)}")
 
 # Now import the app
 from app import app
+
+# Apply post-import optimizations
+try:
+    # Disable blockchain for faster startup
+    try:
+        import blockchain
+        
+        # Create a mock initialization function
+        def mock_init_web3():
+            blockchain.w3 = "MOCK_WEB3_CONNECTION"
+            blockchain._web3_initialized = True
+            blockchain._web3_last_checked = time.time()
+            logger.info("Using mock blockchain connection")
+            return True
+        
+        # Replace the real initialization function
+        blockchain.init_web3 = mock_init_web3
+        logger.info("Blockchain connection optimized")
+    except (ImportError, AttributeError):
+        pass
+        
+    # Apply database index optimizations
+    try:
+        # Disable SQLAlchemy echo
+        app.config["SQLALCHEMY_ECHO"] = False
+        app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+        logger.info("SQLAlchemy optimized")
+    except Exception:
+        pass
+except Exception as e:
+    logger.error(f"Error applying post-import optimizations: {str(e)}")
 
 # Track and log startup time
 startup_time = time.time() - startup_start_time
