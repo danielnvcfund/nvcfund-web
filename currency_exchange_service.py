@@ -118,8 +118,25 @@ class CurrencyExchangeService:
             source (str): Source of the rate update
             
         Returns:
-            CurrencyExchangeRate: Updated or created rate object
+            CurrencyExchangeRate: Updated or created rate object or None if using workaround
         """
+        # Convert currency types to strings if needed
+        from_curr_str = from_currency.value if hasattr(from_currency, 'value') else str(from_currency)
+        to_curr_str = to_currency.value if hasattr(to_currency, 'value') else str(to_currency)
+        
+        # Check if either currency is problematic for DB storage
+        if (currency_exchange_workaround.is_problematic_currency(from_curr_str) or
+            currency_exchange_workaround.is_problematic_currency(to_curr_str)):
+            
+            # Use workaround for problematic currencies
+            success = currency_exchange_workaround.update_rate(from_curr_str, to_curr_str, rate)
+            if success:
+                logger.info(f"Updated exchange rate in workaround system: {from_curr_str} to {to_curr_str} = {rate}")
+                return None  # Cannot return DB object with workaround
+            else:
+                logger.error(f"Failed to update rate in workaround system: {from_curr_str} to {to_curr_str}")
+                return None
+        
         try:
             # Calculate inverse rate
             if rate > 0:

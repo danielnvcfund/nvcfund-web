@@ -1,76 +1,46 @@
 #!/usr/bin/env python3
 """
-Initialize African Currency Exchange Rates
-This script uses the workaround to test currency exchange rates for African currencies
+Initialize Exchange Rates for African Currencies
+This script initializes exchange rates for African currencies that can't be stored directly in the database
+due to database enum limitations. These include XOF (CFA Franc BCEAO) and XAF (CFA Franc BEAC).
 """
 
 import logging
-from app import app
-from currency_exchange_service import CurrencyExchangeService
-from account_holder_models import CurrencyType
 import currency_exchange_workaround
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Test exchange rates for a selection of African currencies
-TEST_CURRENCIES = [
-    # North Africa
-    "DZD",    # Algerian Dinar
-    "EGP",    # Egyptian Pound
-    "LYD",    # Libyan Dinar
-    
-    # West Africa
-    "NGN",    # Nigerian Naira
-    "GHS",    # Ghanaian Cedi
-    "XOF",    # CFA Franc BCEAO
-    
-    # Central Africa
-    "XAF",    # CFA Franc BEAC
-    "CDF",    # Congolese Franc
-    
-    # East Africa
-    "KES",    # Kenyan Shilling
-    "ETB",    # Ethiopian Birr
-    "UGX",    # Ugandan Shilling
-    
-    # Southern Africa
-    "ZAR",    # South African Rand
-    "BWP",    # Botswana Pula
-    "ZMW",    # Zambian Kwacha
-]
+def main():
+    """Initialize African currency exchange rates"""
+    try:
+        # West African CFA Franc (XOF)
+        # Used by 8 countries: Benin, Burkina Faso, Côte d'Ivoire, Guinea-Bissau, Mali, Niger, Senegal, Togo
+        currency_exchange_workaround.update_rate("USD", "XOF", 600.0)    # Approx 600 XOF per USD
+        currency_exchange_workaround.update_rate("NVCT", "XOF", 600.0)   # Same as USD (NVCT pegged 1:1 to USD)
+        currency_exchange_workaround.update_rate("EUR", "XOF", 655.957)  # XOF is pegged to EUR
+        
+        # Central African CFA Franc (XAF)
+        # Used by 6 countries: Cameroon, Central African Republic, Chad, Republic of the Congo, Equatorial Guinea, Gabon
+        currency_exchange_workaround.update_rate("USD", "XAF", 600.0)    # Approx 600 XAF per USD
+        currency_exchange_workaround.update_rate("NVCT", "XAF", 600.0)   # Same as USD
+        currency_exchange_workaround.update_rate("EUR", "XAF", 655.957)  # XAF is pegged to EUR
+        
+        # Add other African regional currencies as needed
+        # CFP Franc (XPF) used in French overseas territories
+        currency_exchange_workaround.update_rate("USD", "XPF", 119.0)
+        currency_exchange_workaround.update_rate("NVCT", "XPF", 119.0)
+        currency_exchange_workaround.update_rate("EUR", "XPF", 119.33)   # XPF is pegged to EUR
+        
+        # Count available rates
+        rates = currency_exchange_workaround.load_rates()
+        logger.info(f"Successfully initialized {len(rates)} exchange rates for regional currencies")
+        
+        return True
+    except Exception as e:
+        logger.error(f"Error initializing African exchange rates: {str(e)}")
+        return False
 
-def test_african_rates():
-    """Test exchange rates for African currencies using the workaround"""
-    logger.info("Testing exchange rates for African currencies with workaround...")
-    
-    # Test USD to African currency rates
-    print("USD to African Currencies:")
-    for currency_code in TEST_CURRENCIES:
-        rate = currency_exchange_workaround.get_exchange_rate("USD", currency_code)
-        print(f"1 USD = {rate:.4f} {currency_code}")
-    
-    print("\nNVCT to African Currencies:")
-    for currency_code in TEST_CURRENCIES:
-        rate = currency_exchange_workaround.get_exchange_rate("NVCT", currency_code)
-        print(f"1 NVCT = {rate:.4f} {currency_code}")
-    
-    # Test a few African cross-rates
-    print("\nAfrican Cross-Rates:")
-    cross_pairs = [
-        ("NGN", "ZAR"),
-        ("EGP", "KES"),
-        ("ZAR", "XOF"),
-        ("GHS", "BWP"),
-    ]
-    
-    for from_curr, to_curr in cross_pairs:
-        rate = currency_exchange_workaround.get_exchange_rate(from_curr, to_curr)
-        print(f"1 {from_curr} = {rate:.6f} {to_curr}")
-    
-    return True
-
-# When run directly, test the rates
 if __name__ == "__main__":
-    test_african_rates()
+    main()
