@@ -368,9 +368,13 @@ def new_transaction():
         else:
             currency = "USD"
             
+        # Get transaction type from form (already in uppercase)
+        transaction_type_str = form.transaction_type.data
+        transaction_type_enum = TreasuryTransactionType[transaction_type_str]
+        
         transaction = TreasuryTransaction(
             transaction_id=reference_number,
-            transaction_type=form.transaction_type.data,
+            transaction_type=transaction_type_enum,
             amount=form.amount.data,
             currency=currency,
             exchange_rate=1.0,  # Default exchange rate

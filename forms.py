@@ -785,11 +785,14 @@ class TreasuryTransactionForm(FlaskForm):
     to_account_id = SelectField('To Account', validators=[DataRequired()], coerce=int)
     amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
     transaction_type = SelectField('Transaction Type', choices=[
-        ('transfer', 'Internal Transfer'),
-        ('deposit', 'Deposit'),
-        ('withdrawal', 'Withdrawal'),
-        ('interest', 'Interest Payment'),
-        ('fee', 'Fee Payment')
+        ('INTERNAL_TRANSFER', 'Internal Transfer'),
+        ('EXTERNAL_TRANSFER', 'External Transfer'),
+        ('INVESTMENT_PURCHASE', 'Investment Purchase'),
+        ('INVESTMENT_MATURITY', 'Investment Maturity'),
+        ('LOAN_PAYMENT', 'Loan Payment'),
+        ('LOAN_DISBURSEMENT', 'Loan Disbursement'),
+        ('INTEREST_PAYMENT', 'Interest Payment'),
+        ('FEE_PAYMENT', 'Fee Payment')
     ], validators=[DataRequired()])
     reference_number = StringField('Reference Number', validators=[Optional(), Length(max=50)])
     description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
