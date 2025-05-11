@@ -93,8 +93,8 @@
             <div class="row mb-3">
               <div class="col-md-6">
                 <div class="form-group">
-                  {{ form.transaction_type.label(class="form-label") }}
-                  {{ form.transaction_type(class="form-select" + (" is-invalid" if form.transaction_type.errors else "")) }}
+                  {{ form.transaction_type.label(class="form-label required-field") }}
+                  {{ form.transaction_type(class="form-select form-control-lg" + (" is-invalid" if form.transaction_type.errors else ""), autocomplete="on") }}
                   {% if form.transaction_type.errors %}
                   <div class="invalid-feedback">
                     {% for error in form.transaction_type.errors %}
@@ -106,8 +106,10 @@
               </div>
               <div class="col-md-6">
                 <div class="form-group">
-                  {{ form.amount.label(class="form-label") }}
-                  {{ form.amount(class="form-control" + (" is-invalid" if form.amount.errors else ""), type="number", step="0.01") }}
+                  {{ form.amount.label(class="form-label required-field") }}
+                  {{ form.amount(class="form-control form-control-lg" + (" is-invalid" if form.amount.errors else ""), 
+                                 inputmode="decimal", step="0.01", placeholder="Enter amount", 
+                                 autocomplete="on", min="0.01") }}
                   {% if form.amount.errors %}
                   <div class="invalid-feedback">
                     {% for error in form.amount.errors %}
@@ -176,8 +178,10 @@
             </div>
             
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-              <a href="{{ url_for('treasury.transaction_list') }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
-              {{ form.submit(class="btn btn-primary") }}
+              <a href="{{ url_for('treasury.transaction_list') }}" class="btn btn-outline-secondary btn-lg me-md-2">
+                <i class="fas fa-times me-1"></i> Cancel
+              </a>
+              {{ form.submit(class="btn btn-primary btn-lg", id="submit-button") }}
             </div>
           </form>
         </div>
@@ -237,4 +241,160 @@
     </div>
   </div>
 </div>
+
+{% block scripts %}
+{{ super() }}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get form elements
+    const form = document.querySelector('form.needs-validation');
+    const submitButton = document.getElementById('submit-button');
+    const fromAccountSelect = document.getElementById('from_account_id');
+    const toAccountSelect = document.getElementById('to_account_id');
+    const transactionTypeSelect = document.getElementById('transaction_type');
+    const amountInput = document.getElementById('amount');
+    
+    // Optimize form elements for faster interaction
+    form.setAttribute('autocomplete', 'on');
+    
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      // Allow Ctrl+S to submit the form
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        submitForm();
+      }
+      // Allow Escape to cancel
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        window.location.href = "{{ url_for('treasury.transaction_list') }}";
+      }
+      // Allow Alt+N to focus on next field
+      if (e.altKey && e.key === 'n') {
+        e.preventDefault();
+        focusNextField();
+      }
+    });
+    
+    // Function to focus on next form field
+    function focusNextField() {
+      const focusableElements = Array.from(form.querySelectorAll('input, select, textarea, button'))
+        .filter(el => !el.disabled && el.offsetParent !== null);
+      
+      const currentIndex = focusableElements.indexOf(document.activeElement);
+      const nextIndex = (currentIndex + 1) % focusableElements.length;
+      
+      focusableElements[nextIndex].focus();
+    }
+    
+    // Make dropdown selects more responsive
+    [fromAccountSelect, toAccountSelect, transactionTypeSelect].forEach(select => {
+      select.addEventListener('focus', function() {
+        this.classList.add('shadow-sm');
+      });
+      
+      select.addEventListener('blur', function() {
+        this.classList.remove('shadow-sm');
+      });
+      
+      // Fast typing-based selection
+      select.addEventListener('keyup', function(e) {
+        if (e.key.length === 1) { // Only for printable characters
+          for (let i = 0; i < select.options.length; i++) {
+            if (select.options[i].text.toLowerCase().startsWith(e.key.toLowerCase())) {
+              select.selectedIndex = i;
+              break;
+            }
+          }
+        }
+      });
+    });
+    
+    // Format amount with commas as user types
+    amountInput.addEventListener('input', function() {
+      const value = this.value.replace(/,/g, '');
+      
+      // Only proceed if it's a valid number
+      if (!isNaN(parseFloat(value))) {
+        // Format with commas for thousands
+        const parts = value.split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        this.value = parts.join('.');
+      }
+    });
+    
+    // Form validation and submission handling
+    function submitForm() {
+      // Visual feedback - show processing state
+      submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Processing...';
+      submitButton.disabled = true;
+      submitButton.classList.add('btn-processing');
+      
+      // Basic validation before submission
+      let valid = true;
+      
+      // Validate account selection (can't both be external)
+      if (fromAccountSelect.value === '0' && toAccountSelect.value === '0') {
+        valid = false;
+        fromAccountSelect.classList.add('is-invalid');
+        toAccountSelect.classList.add('is-invalid');
+        
+        // Add custom error message if it doesn't exist
+        let errorMsg = document.getElementById('account-error-message');
+        if (!errorMsg) {
+          errorMsg = document.createElement('div');
+          errorMsg.id = 'account-error-message';
+          errorMsg.className = 'invalid-feedback d-block mt-2 alert alert-danger';
+          errorMsg.innerHTML = 'Both source and destination cannot be external accounts.';
+          fromAccountSelect.parentNode.appendChild(errorMsg);
+        }
+      }
+      
+      // If valid, submit the form after a small delay to allow UI update
+      if (valid) {
+        setTimeout(() => {
+          form.submit();
+        }, 100);
+      } else {
+        // Reset button state if validation fails
+        submitButton.innerHTML = 'Create Transaction';
+        submitButton.disabled = false;
+        submitButton.classList.remove('btn-processing');
+      }
+    }
+    
+    // Attach submit handler
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      submitForm();
+    });
+    
+    // Focus on first field to speed up data entry
+    fromAccountSelect.focus();
+    
+    // Set up tab order
+    fromAccountSelect.tabIndex = 1;
+    toAccountSelect.tabIndex = 2;
+    transactionTypeSelect.tabIndex = 3;
+    amountInput.tabIndex = 4;
+    document.getElementById('reference_number').tabIndex = 5;
+    document.getElementById('description').tabIndex = 6;
+    document.querySelector('textarea[name="additional_notes"]').tabIndex = 7;
+    submitButton.tabIndex = 8;
+    
+    // Add keyboard shortcut hints
+    const shortcutsHint = document.createElement('div');
+    shortcutsHint.className = 'alert alert-info mt-3';
+    shortcutsHint.innerHTML = `
+      <strong>Keyboard shortcuts:</strong>
+      <ul class="mb-0">
+        <li><kbd>Ctrl</kbd>+<kbd>S</kbd> - Submit form</li>
+        <li><kbd>Esc</kbd> - Cancel and return to list</li>
+        <li><kbd>Alt</kbd>+<kbd>N</kbd> - Move to next field</li>
+      </ul>
+    `;
+    document.querySelector('.card-body').appendChild(shortcutsHint);
+  });
+</script>
+{% endblock %}
 {% endblock %}
