@@ -175,7 +175,9 @@ function createNewSettlement(event) {
     event.preventDefault();
     
     const recipient = document.getElementById('settlement-recipient').value;
-    const amount = document.getElementById('settlement-amount').value;
+    // Remove commas from the amount before sending
+    const formattedAmount = document.getElementById('settlement-amount').value;
+    const amount = unformatNumber(formattedAmount);
     const metadata = document.getElementById('settlement-metadata').value;
     
     showAlert('Creating new settlement... This may take a minute.', 'info');
@@ -217,8 +219,8 @@ function viewSettlementDetails(settlementId) {
                     <p><strong>Transaction ID:</strong> ${settlement.transactionId}</p>
                     <p><strong>From:</strong> ${settlement.from}</p>
                     <p><strong>To:</strong> ${settlement.to}</p>
-                    <p><strong>Amount:</strong> ${settlement.amount} ETH</p>
-                    <p><strong>Fee:</strong> ${settlement.fee} ETH</p>
+                    <p><strong>Amount:</strong> ${formatNumberInput(settlement.amount)} ETH</p>
+                    <p><strong>Fee:</strong> ${formatNumberInput(settlement.fee)} ETH</p>
                     <p><strong>Status:</strong> ${getStatusText(settlement.status)}</p>
                     <p><strong>Timestamp:</strong> ${new Date(settlement.timestamp * 1000).toLocaleString()}</p>
                     <p><strong>Metadata:</strong> ${settlement.metadata || 'None'}</p>
