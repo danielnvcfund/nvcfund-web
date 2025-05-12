@@ -16,18 +16,21 @@ if not DATABASE_URL:
     sys.exit(1)
 
 try:
-    # Parse the DATABASE_URL to extract connection parameters
-    # Assuming format: postgresql://username:password@hostname:port/database
-    db_url_parts = DATABASE_URL.replace('postgresql://', '').split('/')
-    db_name = db_url_parts[-1]
-    conn_parts = db_url_parts[0].split('@')
-    user_pass = conn_parts[0].split(':')
-    host_port = conn_parts[1].split(':')
+    # Use a dedicated URL parser to handle PostgreSQL URLs correctly
+    from urllib.parse import urlparse, parse_qs
     
-    username = user_pass[0]
-    password = user_pass[1] if len(user_pass) > 1 else ''
-    hostname = host_port[0]
-    port = host_port[1] if len(host_port) > 1 else '5432'
+    # Parse the DATABASE_URL
+    parsed_url = urlparse(DATABASE_URL)
+    
+    # Extract connection parameters
+    username = parsed_url.username
+    password = parsed_url.password
+    hostname = parsed_url.hostname
+    port = parsed_url.port or '5432'
+    
+    # Handle path (remove leading slash) and query parameters
+    path_parts = parsed_url.path.split('/')
+    db_name = path_parts[-1] if path_parts[-1] else path_parts[-2]  # Handle trailing slash
     
     # Connect directly with psycopg2
     print(f"Connecting to database {db_name} on {hostname}:{port} as {username}...")
