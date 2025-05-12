@@ -90,7 +90,7 @@ import paypalrestsdk
 paypalrestsdk.configure({
     "mode": "live",  # Changed to "live" for production
     "client_id": os.environ.get('PAYPAL_CLIENT_ID'),
-    "client_secret": os.environ.get('PAYPAL_SECRET')
+    "client_secret": os.environ.get('PAYPAL_CLIENT_SECRET')  # Standardized environment variable name
 })
 
 def init_payment_gateways():
