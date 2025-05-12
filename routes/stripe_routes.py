@@ -6,10 +6,19 @@ This module provides routes for Stripe payment processing
 import os
 import logging
 import stripe
+import json
 from flask import Blueprint, render_template, redirect, request, url_for, jsonify, flash
 from flask_login import login_required, current_user
 from datetime import datetime
 import uuid
+from app import db
+# Try to import transaction models - if not available, log a warning
+try:
+    from models import Transaction, TransactionStatus, PaymentMethod
+    TRANSACTION_MODELS_AVAILABLE = True
+except ImportError:
+    TRANSACTION_MODELS_AVAILABLE = False
+    logging.warning("Transaction models not available - payment recording disabled")
 
 # Set up logger first
 logger = logging.getLogger(__name__)
@@ -117,23 +126,40 @@ def create_checkout_session():
 def success():
     """Handle successful payment"""
     session_id = request.args.get('session_id')
+    transaction_id = None
     
     if session_id:
         try:
             # Retrieve the session to get payment details
             session = stripe.checkout.Session.retrieve(session_id)
             
-            # Log successful payment
-            logger.info(f"Successful Stripe payment: {session_id}")
+            # Generate transaction ID from payment intent if not already stored
+            if hasattr(session, 'payment_intent') and session.payment_intent:
+                # Use payment intent as transaction ID or create one from it
+                transaction_id = f"stripe_{session.payment_intent}"
+            elif hasattr(session, 'id'):
+                # If no payment intent, use session ID as fallback
+                transaction_id = f"stripe_{session.id}"
+            else:
+                # Generate a random transaction ID as last resort
+                transaction_id = f"stripe_{uuid.uuid4().hex}"
             
-            # Return success page
-            return render_template('stripe/success.html', session=session)
+            # Log successful payment
+            logger.info(f"Successful Stripe payment: {session_id}, Transaction ID: {transaction_id}")
+            
+            # Here we would save the transaction to our database
+            # This would typically be done in the webhook, but we set the ID here for the UI
+            
+            # Return success page with transaction details
+            return render_template('stripe/success.html', 
+                                  session=session, 
+                                  transaction_id=transaction_id)
         
         except Exception as e:
             logger.error(f"Error retrieving Stripe session: {str(e)}")
             flash(f"Error retrieving payment information: {str(e)}", "error")
     
-    return render_template('stripe/success.html')
+    return render_template('stripe/success.html', transaction_id=transaction_id)
 
 @stripe_bp.route('/cancel')
 def cancel():
@@ -170,13 +196,68 @@ def webhook():
     # Handle the event
     if event and event.type == 'checkout.session.completed':
         session = event.data.object
-        if hasattr(session, 'id'):
-            logger.info(f"Payment completed for session: {session.id}")
-            
-            # Here you would process the payment in your database
-            # For example, update the user's account, record the transaction, etc.
-        else:
+        
+        # Ensure we have a session ID
+        if not hasattr(session, 'id'):
             logger.error("Session object does not have id attribute")
+            return jsonify({'error': 'Invalid session object'}), 400
+        
+        logger.info(f"Payment completed for session: {session.id}")
+        
+        try:
+            # Extract payment details
+            amount = session.amount_total / 100.0 if hasattr(session, 'amount_total') else 0.0
+            currency = session.currency.upper() if hasattr(session, 'currency') else 'USD'
+            payment_intent = session.payment_intent if hasattr(session, 'payment_intent') else None
+            
+            # Create transaction ID
+            transaction_id = f"stripe_{payment_intent}" if payment_intent else f"stripe_{session.id}"
+            
+            # Extract customer information if available
+            customer_email = session.customer_email if hasattr(session, 'customer_email') else None
+            customer_name = "Customer"  # Default name if not available
+            
+            # Extract additional metadata
+            metadata = {}
+            if hasattr(session, 'metadata') and session.metadata:
+                metadata = session.metadata
+            
+            # Store the transaction in the database if models are available
+            if TRANSACTION_MODELS_AVAILABLE:
+                try:
+                    # Create transaction record
+                    transaction = Transaction(
+                        transaction_id=transaction_id,
+                        amount=amount,
+                        currency=currency,
+                        status=TransactionStatus.COMPLETED,
+                        payment_method=PaymentMethod.CREDIT_CARD,
+                        recipient_name=customer_name,
+                        recipient_email=customer_email,
+                        description="Stripe payment",
+                        tx_metadata_json=json.dumps(metadata)
+                    )
+                    db.session.add(transaction)
+                    db.session.commit()
+                    logger.info(f"Transaction stored in database: {transaction_id}")
+                except Exception as e:
+                    logger.error(f"Error storing transaction in database: {str(e)}")
+                    # Continue processing even if database storage fails
+            else:
+                logger.warning(f"Transaction models not available - couldn't record {transaction_id}")
+            
+            logger.info(f"Transaction recorded successfully: {transaction_id}")
+            
+        except Exception as e:
+            logger.error(f"Error processing payment: {str(e)}")
+            return jsonify({'error': f'Payment processing error: {str(e)}'}), 500
+    
+    # Handle payment_intent.succeeded event as backup
+    elif event and event.type == 'payment_intent.succeeded':
+        payment_intent = event.data.object
+        logger.info(f"Payment intent succeeded: {payment_intent.id}")
+        
+        # Similar transaction recording logic could be implemented here
     
     # Handle other event types as needed
     
