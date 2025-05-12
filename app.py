@@ -68,6 +68,15 @@ def create_app():
     # Disable SQLAlchemy modification tracking for better performance
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     
+    # Add JSON filter for templates
+    @app.template_filter('from_json')
+    def from_json(value):
+        import json
+        try:
+            return json.loads(value)
+        except (ValueError, TypeError):
+            return {}
+    
     # Allow embedding in iframes for Replit
     @app.after_request
     def set_security_headers(response):
