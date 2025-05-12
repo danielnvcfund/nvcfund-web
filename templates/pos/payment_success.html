@@ -161,16 +161,50 @@
             </div>
         </div>
         
-        <div class="d-flex justify-content-center gap-3">
-            <a href="{{ url_for('pos.view_receipt', transaction_id=transaction.transaction_id) }}" class="btn btn-primary">
-                <i class="fas fa-print me-2"></i> Print Receipt
-            </a>
-            <a href="{{ url_for('pos.pos_dashboard') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-home me-2"></i> Return to Dashboard
-            </a>
-            <a href="{{ url_for('pos.accept_payment') }}" class="btn btn-success">
-                <i class="fas fa-plus me-2"></i> New Payment
-            </a>
+        <div class="d-grid gap-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <a href="{{ url_for('pos.view_receipt', transaction_id=transaction.transaction_id) }}" class="btn btn-primary w-100">
+                        <i class="fas fa-print me-2"></i> Print Receipt
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="{{ url_for('web.pdf_receipt.generate_receipt', transaction_id=transaction.transaction_id) }}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-file-pdf me-2"></i> Download PDF Receipt
+                    </a>
+                </div>
+            </div>
+            
+            <div class="row mt-2">
+                <div class="col-md-6">
+                    <a href="{{ url_for('web.pdf_receipt.email_receipt', transaction_id=transaction.transaction_id) }}" class="btn btn-outline-info w-100">
+                        <i class="fas fa-envelope me-2"></i> Email Receipt
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="{{ url_for('web.payment_history.transaction_detail', transaction_id=transaction.transaction_id) }}" class="btn btn-outline-dark w-100">
+                        <i class="fas fa-file-alt me-2"></i> View Details
+                    </a>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <a href="{{ url_for('pos.pos_dashboard') }}" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-home me-2"></i> Dashboard
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ url_for('pos.accept_payment') }}" class="btn btn-success w-100">
+                        <i class="fas fa-plus me-2"></i> New Payment
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ url_for('web.payment_history.index') }}" class="btn btn-secondary w-100">
+                        <i class="fas fa-history me-2"></i> Payment History
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
