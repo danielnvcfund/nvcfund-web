@@ -1,0 +1,126 @@
+{% extends 'layout.html' %}
+
+{% block title %}Stripe API Status - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Stripe API Status</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert {% if api_connectivity %}alert-success{% else %}alert-danger{% endif %}">
+                        <h4 class="alert-heading">
+                            {% if api_connectivity %}
+                            <i class="fas fa-check-circle"></i> API Connection: OK
+                            {% else %}
+                            <i class="fas fa-exclamation-triangle"></i> API Connection: Failed
+                            {% endif %}
+                        </h4>
+                        <p>{{ api_response or 'No API call attempted' }}</p>
+                    </div>
+
+                    <h4 class="mb-3">Current Configuration</h4>
+                    <div class="alert alert-info">
+                        <p><strong>Active Configuration:</strong> Using {{ current_key_source|upper }} mode API key</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header {% if live_key_status.format_valid %}bg-success{% else %}bg-danger{% endif %} text-white">
+                                    <h5 class="mb-0">Live Key Status</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Key Present
+                                            {% if live_key_status.exists %}
+                                            <span class="badge bg-success rounded-pill">Yes</span>
+                                            {% else %}
+                                            <span class="badge bg-danger rounded-pill">No</span>
+                                            {% endif %}
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Key Type
+                                            <span class="badge {% if live_key_status.type == 'secret' %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                                {{ live_key_status.type }}
+                                            </span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Format Valid
+                                            {% if live_key_status.format_valid %}
+                                            <span class="badge bg-success rounded-pill">Yes</span>
+                                            {% else %}
+                                            <span class="badge bg-danger rounded-pill">No</span>
+                                            {% endif %}
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Key Prefix
+                                            <span class="badge bg-secondary rounded-pill">{{ live_key_status.prefix }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header {% if test_key_status.format_valid %}bg-success{% else %}bg-danger{% endif %} text-white">
+                                    <h5 class="mb-0">Test Key Status</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Key Present
+                                            {% if test_key_status.exists %}
+                                            <span class="badge bg-success rounded-pill">Yes</span>
+                                            {% else %}
+                                            <span class="badge bg-danger rounded-pill">No</span>
+                                            {% endif %}
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Key Type
+                                            <span class="badge {% if test_key_status.type == 'secret' %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                                {{ test_key_status.type }}
+                                            </span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Format Valid
+                                            {% if test_key_status.format_valid %}
+                                            <span class="badge bg-success rounded-pill">Yes</span>
+                                            {% else %}
+                                            <span class="badge bg-danger rounded-pill">No</span>
+                                            {% endif %}
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Key Prefix
+                                            <span class="badge bg-secondary rounded-pill">{{ test_key_status.prefix }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="mb-3">Stripe Key Requirements</h4>
+                    <div class="alert alert-warning">
+                        <ul>
+                            <li><strong>Secret Key Format:</strong> Must begin with "sk_live_" for live mode or "sk_test_" for test mode</li>
+                            <li><strong>Publishable Key Format:</strong> Begins with "pk_" but cannot be used for server-side operations</li>
+                            <li>Check the <a href="https://dashboard.stripe.com/apikeys" target="_blank">Stripe Dashboard</a> to find your API keys</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                        <a href="{{ url_for('stripe.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i> Back to Payment Page
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

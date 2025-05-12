@@ -27,10 +27,27 @@ logger = logging.getLogger(__name__)
 stripe_bp = Blueprint('stripe', __name__, url_prefix='/stripe')
 
 # Set up Stripe API key from environment - use live key if available, otherwise fall back to test key
-stripe.api_key = os.environ.get('STRIPE_LIVE_SECRET_KEY') or os.environ.get('STRIPE_SECRET_KEY')
-
-# Set to True for live mode, False for test mode
-STRIPE_LIVE_MODE = bool(os.environ.get('STRIPE_LIVE_SECRET_KEY'))
+api_key = os.environ.get('STRIPE_LIVE_SECRET_KEY')
+if api_key and api_key.startswith('sk_live_'):
+    stripe.api_key = api_key
+    STRIPE_LIVE_MODE = True
+    logger.info("Using Stripe LIVE mode with secret key")
+else:
+    api_key = os.environ.get('STRIPE_SECRET_KEY')
+    if api_key and api_key.startswith('sk_test_'):
+        stripe.api_key = api_key
+        STRIPE_LIVE_MODE = False
+        logger.info("Using Stripe TEST mode with secret key")
+    else:
+        if api_key:
+            # Log the first few characters to help diagnose the issue without exposing the full key
+            key_prefix = api_key[:7] + '...' if len(api_key) > 10 else 'invalid'
+            logger.error(f"Invalid Stripe API key format (starts with: {key_prefix})")
+        else:
+            logger.error("No valid Stripe API key found in environment variables")
+        # Don't set an invalid key
+        stripe.api_key = None
+        STRIPE_LIVE_MODE = False
 if STRIPE_LIVE_MODE:
     logger.info("Stripe configured in LIVE MODE - real payments will be processed")
 else:
@@ -58,6 +75,51 @@ def get_domain():
         # Default to localhost for development
         return 'localhost:5000'
 
+@stripe_bp.route('/status')
+def api_status():
+    """Display Stripe API status (admin only)"""
+    # This should be protected in a production environment
+    # For troubleshooting purposes, we're making it available
+    
+    # Check API key configuration
+    live_key = os.environ.get('STRIPE_LIVE_SECRET_KEY')
+    test_key = os.environ.get('STRIPE_SECRET_KEY')
+    
+    # Validate key format without showing the actual key
+    live_key_status = {
+        'exists': bool(live_key),
+        'format_valid': bool(live_key and live_key.startswith('sk_live_')),
+        'type': 'secret' if live_key and live_key.startswith('sk_') else 'publishable' if live_key and live_key.startswith('pk_') else 'unknown',
+        'prefix': live_key[:7] + '...' if live_key and len(live_key) > 10 else 'N/A'
+    }
+    
+    test_key_status = {
+        'exists': bool(test_key),
+        'format_valid': bool(test_key and test_key.startswith('sk_test_')),
+        'type': 'secret' if test_key and test_key.startswith('sk_') else 'publishable' if test_key and test_key.startswith('pk_') else 'unknown',
+        'prefix': test_key[:7] + '...' if test_key and len(test_key) > 10 else 'N/A'
+    }
+    
+    # Test API connectivity if a key is configured
+    api_connectivity = False
+    api_response = None
+    
+    if stripe.api_key:
+        try:
+            # Make a simple API call to test connectivity
+            result = stripe.Balance.retrieve()
+            api_connectivity = True
+            api_response = "Success: API connection working"
+        except Exception as e:
+            api_response = f"Error: {str(e)}"
+    
+    return render_template('stripe/status.html', 
+                           live_key_status=live_key_status,
+                           test_key_status=test_key_status,
+                           current_key_source='live' if STRIPE_LIVE_MODE else 'test',
+                           api_connectivity=api_connectivity,
+                           api_response=api_response)
+
 @stripe_bp.route('/')
 def index():
     """Display Stripe payment options"""
@@ -74,6 +136,12 @@ def index():
 def create_checkout_session():
     """Create a Stripe checkout session"""
     try:
+        # Check if Stripe API key is properly configured
+        if not stripe.api_key or not stripe.api_key.startswith('sk_'):
+            flash("Stripe API key is missing or invalid. Please check the configuration.", "danger")
+            logger.error("Attempted to create checkout session with invalid Stripe API key")
+            return redirect(url_for('stripe.api_status'))
+            
         # Get amount and currency from form
         amount = float(request.form.get('amount', 100))
         currency = request.form.get('currency', 'usd')
