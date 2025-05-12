@@ -50,7 +50,7 @@
                             <tbody>
                                 {% for tx in transactions %}
                                 <tr>
-                                    <td>{{ tx.id }}</td>
+                                    <td>{{ tx.id|format_number }}</td>
                                     <td>
                                         {% if tx.tx_hash %}
                                         <a href="https://sepolia.etherscan.io/tx/{{ tx.tx_hash }}" target="_blank">

@@ -133,6 +133,20 @@ def create_app():
     from utils import format_currency, format_transaction_type
     app.jinja_env.filters['format_currency'] = lambda amount, currency='USD': format_currency(amount, currency)
     
+    # Register number formatting filter
+    @app.template_filter('format_number')
+    def format_number_filter(value):
+        """Format a number with comma separators"""
+        if value is None:
+            return "0"
+        try:
+            return "{:,}".format(int(value))
+        except (ValueError, TypeError):
+            try:
+                return "{:,.2f}".format(float(value))
+            except (ValueError, TypeError):
+                return str(value)
+    
     # Register format_transaction_type as a template filter
     @app.template_filter('format_transaction_type')
     def format_transaction_type_filter(transaction_type):

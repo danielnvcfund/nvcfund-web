@@ -162,13 +162,13 @@
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Smart Contracts Registered
                             <span class="badge {% if db_checks.smart_contracts_count > 0 %}badge-implemented{% else %}bg-warning text-dark{% endif %}">
-                                {{ db_checks.smart_contracts_count }}
+                                {{ db_checks.smart_contracts_count|format_number }}
                             </span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Transactions Recorded
                             <span class="badge {% if db_checks.transactions_count > 0 %}badge-implemented{% else %}bg-warning text-dark{% endif %}">
-                                {{ db_checks.transactions_count }}
+                                {{ db_checks.transactions_count|format_number }}
                             </span>
                         </li>
                     </ul>
