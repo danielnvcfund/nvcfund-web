@@ -465,6 +465,16 @@ def create_app():
                 app.register_blueprint(pos_bp)
                 register_routes(app)
                 logger.info("POS Payment routes registered successfully")
+                
+                # Register Stripe routes since we have the POS routes
+                try:
+                    from routes.stripe_routes import register_stripe_routes
+                    register_stripe_routes(app)
+                    logger.info("Stripe payment routes registered successfully")
+                except ImportError as e:
+                    logger.warning(f"Could not register Stripe routes: {str(e)}")
+                except Exception as e:
+                    logger.error(f"Error registering Stripe routes: {str(e)}")
             except ImportError as e:
                 logger.warning(f"Could not register POS routes: {str(e)}")
             except Exception as e:

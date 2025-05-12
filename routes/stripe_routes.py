@@ -11,12 +11,25 @@ from flask_login import login_required, current_user
 from datetime import datetime
 import uuid
 
+# Add template filters
+from jinja2 import Markup, escape
+
 # Set up Stripe API key from environment
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 
 # Create blueprint
 stripe_bp = Blueprint('stripe', __name__, url_prefix='/stripe')
 logger = logging.getLogger(__name__)
+
+# Add custom template filter
+@stripe_bp.app_template_filter('strftime')
+def _jinja2_filter_datetime(date, fmt=None):
+    """Format a date according to the given format"""
+    if not date:
+        return ''
+    if fmt:
+        return date.strftime(fmt)
+    return date.strftime('%Y-%m-%d %H:%M:%S')
 
 # Set up domain for success and cancel URLs
 def get_domain():
@@ -136,20 +149,28 @@ def webhook():
                 payload, sig_header, endpoint_secret
             )
         else:
-            event = stripe.Event.construct_from(
-                request.json, stripe.api_key
-            )
+            request_json = request.get_json()
+            if request_json:
+                event = stripe.Event.construct_from(
+                    request_json, stripe.api_key
+                )
+            else:
+                logger.error("No JSON data in webhook request")
+                return jsonify({'error': 'No JSON data in request'}), 400
     except Exception as e:
         logger.error(f"Webhook error: {str(e)}")
         return jsonify({'error': str(e)}), 400
     
     # Handle the event
-    if event.type == 'checkout.session.completed':
+    if event and event.type == 'checkout.session.completed':
         session = event.data.object
-        logger.info(f"Payment completed for session: {session.id}")
-        
-        # Here you would process the payment in your database
-        # For example, update the user's account, record the transaction, etc.
+        if hasattr(session, 'id'):
+            logger.info(f"Payment completed for session: {session.id}")
+            
+            # Here you would process the payment in your database
+            # For example, update the user's account, record the transaction, etc.
+        else:
+            logger.error("Session object does not have id attribute")
     
     # Handle other event types as needed
     
