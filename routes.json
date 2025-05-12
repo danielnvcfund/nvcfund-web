@@ -1,0 +1,1984 @@
+{
+    "routes": [
+        {
+            "endpoint": "static",
+            "methods": "GET",
+            "url": "/static/<path:filename>"
+        },
+        {
+            "endpoint": "direct_register",
+            "methods": "GET",
+            "url": "/create-account"
+        },
+        {
+            "endpoint": "direct_register",
+            "methods": "GET",
+            "url": "/register"
+        },
+        {
+            "endpoint": "direct_register",
+            "methods": "GET",
+            "url": "/join"
+        },
+        {
+            "endpoint": "direct_register",
+            "methods": "GET",
+            "url": "/signup"
+        },
+        {
+            "endpoint": "root",
+            "methods": "GET",
+            "url": "/"
+        },
+        {
+            "endpoint": "funds_transfer_guide_direct",
+            "methods": "GET",
+            "url": "/funds-transfer-guide"
+        },
+        {
+            "endpoint": "main_index",
+            "methods": "GET",
+            "url": "/main"
+        },
+        {
+            "endpoint": "main_explicit_index",
+            "methods": "GET",
+            "url": "/main/index"
+        },
+        {
+            "endpoint": "list_routes",
+            "methods": "GET",
+            "url": "/routes"
+        },
+        {
+            "endpoint": "api.blockchain_api.get_blockchain_status",
+            "methods": "GET",
+            "url": "/api/blockchain/status"
+        },
+        {
+            "endpoint": "api.blockchain_api.deploy_all_contracts",
+            "methods": "POST",
+            "url": "/api/blockchain/deployment/start"
+        },
+        {
+            "endpoint": "api.blockchain_api.get_deployment_status",
+            "methods": "GET",
+            "url": "/api/blockchain/deployment/status"
+        },
+        {
+            "endpoint": "api.blockchain_api.deploy_specific_contract",
+            "methods": "POST",
+            "url": "/api/blockchain/deployment/contract"
+        },
+        {
+            "endpoint": "api.blockchain_api.create_settlement",
+            "methods": "POST",
+            "url": "/api/blockchain/settlement/create"
+        },
+        {
+            "endpoint": "api.blockchain_api.get_settlement",
+            "methods": "GET",
+            "url": "/api/blockchain/settlement/<settlement_id>"
+        },
+        {
+            "endpoint": "api.blockchain_api.complete_settlement",
+            "methods": "POST",
+            "url": "/api/blockchain/settlement/<settlement_id>/complete"
+        },
+        {
+            "endpoint": "api.blockchain_api.cancel_settlement",
+            "methods": "POST",
+            "url": "/api/blockchain/settlement/<settlement_id>/cancel"
+        },
+        {
+            "endpoint": "api.blockchain_api.submit_multisig",
+            "methods": "POST",
+            "url": "/api/blockchain/multisig/submit"
+        },
+        {
+            "endpoint": "api.blockchain_api.get_multisig_transaction",
+            "methods": "GET",
+            "url": "/api/blockchain/multisig/transaction/<tx_id>"
+        },
+        {
+            "endpoint": "api.blockchain_api.confirm_multisig_tx",
+            "methods": "POST",
+            "url": "/api/blockchain/multisig/confirm/<tx_id>"
+        },
+        {
+            "endpoint": "api.blockchain_api.execute_multisig_tx",
+            "methods": "POST",
+            "url": "/api/blockchain/multisig/execute/<tx_id>"
+        },
+        {
+            "endpoint": "api.blockchain_api.transfer_tokens",
+            "methods": "POST",
+            "url": "/api/blockchain/token/transfer"
+        },
+        {
+            "endpoint": "api.blockchain_api.mint_tokens",
+            "methods": "POST",
+            "url": "/api/blockchain/token/mint"
+        },
+        {
+            "endpoint": "api.blockchain_api.burn_tokens",
+            "methods": "POST",
+            "url": "/api/blockchain/token/burn"
+        },
+        {
+            "endpoint": "api.blockchain_api.token_balance",
+            "methods": "GET",
+            "url": "/api/blockchain/token/balance/<address>"
+        },
+        {
+            "endpoint": "api.xrp_api.get_xrp_info",
+            "methods": "GET",
+            "url": "/api/v1/xrp/info"
+        },
+        {
+            "endpoint": "api.xrp_api.get_user_wallet",
+            "methods": "GET",
+            "url": "/api/v1/xrp/wallet"
+        },
+        {
+            "endpoint": "api.xrp_api.get_specific_user_wallet",
+            "methods": "GET",
+            "url": "/api/v1/xrp/wallet/<user_id>"
+        },
+        {
+            "endpoint": "api.xrp_api.get_user_transactions",
+            "methods": "GET",
+            "url": "/api/v1/xrp/transactions"
+        },
+        {
+            "endpoint": "api.xrp_api.get_specific_user_transactions",
+            "methods": "GET",
+            "url": "/api/v1/xrp/transactions/<user_id>"
+        },
+        {
+            "endpoint": "api.xrp_api.create_payment",
+            "methods": "POST",
+            "url": "/api/v1/xrp/payment"
+        },
+        {
+            "endpoint": "api.xrp_api.create_payment_for_user",
+            "methods": "POST",
+            "url": "/api/v1/xrp/payment/<user_id>"
+        },
+        {
+            "endpoint": "api.xrp_api.check_transaction_status",
+            "methods": "GET",
+            "url": "/api/v1/xrp/transaction/<tx_hash>/status"
+        },
+        {
+            "endpoint": "api.xrp_api.create_escrow",
+            "methods": "POST",
+            "url": "/api/v1/xrp/escrow"
+        },
+        {
+            "endpoint": "api.xrp_api.finish_escrow",
+            "methods": "POST",
+            "url": "/api/v1/xrp/escrow/finish"
+        },
+        {
+            "endpoint": "api.xrp_api.cancel_escrow",
+            "methods": "POST",
+            "url": "/api/v1/xrp/escrow/cancel"
+        },
+        {
+            "endpoint": "api.ha_api.get_ha_status",
+            "methods": "GET",
+            "url": "/api/v1/ha/status"
+        },
+        {
+            "endpoint": "api.ha_api.get_node_status",
+            "methods": "GET",
+            "url": "/api/v1/ha/node"
+        },
+        {
+            "endpoint": "api.ha_api.get_cluster_status",
+            "methods": "GET",
+            "url": "/api/v1/ha/cluster"
+        },
+        {
+            "endpoint": "api.ha_api.get_database_status",
+            "methods": "GET",
+            "url": "/api/v1/ha/database"
+        },
+        {
+            "endpoint": "api.ha_api.list_nodes",
+            "methods": "GET",
+            "url": "/api/v1/ha/nodes"
+        },
+        {
+            "endpoint": "api.ha_api.get_cluster_nodes",
+            "methods": "GET",
+            "url": "/api/v1/ha/cluster/nodes"
+        },
+        {
+            "endpoint": "api.ha_api.get_leader",
+            "methods": "GET",
+            "url": "/api/v1/ha/leader"
+        },
+        {
+            "endpoint": "api.ha_api.list_database_servers",
+            "methods": "GET",
+            "url": "/api/v1/ha/database/servers"
+        },
+        {
+            "endpoint": "api.ha_api.get_primary_database",
+            "methods": "GET",
+            "url": "/api/v1/ha/database/primary"
+        },
+        {
+            "endpoint": "api.ha_api.ha_test",
+            "methods": "GET",
+            "url": "/api/v1/ha/test"
+        },
+        {
+            "endpoint": "api.ha_api.initiate_database_failover",
+            "methods": "POST",
+            "url": "/api/v1/ha/database/failover"
+        },
+        {
+            "endpoint": "api.ha_api.update_routing_policy",
+            "methods": "PUT",
+            "url": "/api/v1/ha/database/routing-policy"
+        },
+        {
+            "endpoint": "api.ha_api.get_transaction_status",
+            "methods": "GET",
+            "url": "/api/v1/ha/transactions/<tx_id>"
+        },
+        {
+            "endpoint": "api.ha_api.initiate_backup",
+            "methods": "POST",
+            "url": "/api/v1/ha/backup"
+        },
+        {
+            "endpoint": "api.ha_api.list_regions",
+            "methods": "GET",
+            "url": "/api/v1/ha/regions"
+        },
+        {
+            "endpoint": "api.ha_api.get_metrics",
+            "methods": "GET",
+            "url": "/api/v1/ha/metrics"
+        },
+        {
+            "endpoint": "api.ha_api.reset_ha_infrastructure",
+            "methods": "POST",
+            "url": "/api/v1/ha/reset"
+        },
+        {
+            "endpoint": "api.status.blockchain_status",
+            "methods": "GET",
+            "url": "/api/api/blockchain/status"
+        },
+        {
+            "endpoint": "api.status.payment_gateways_status",
+            "methods": "GET",
+            "url": "/api/api/payments/gateways/status"
+        },
+        {
+            "endpoint": "api.status.api_status",
+            "methods": "GET",
+            "url": "/api/api/status"
+        },
+        {
+            "endpoint": "api.status.xrp_status",
+            "methods": "GET",
+            "url": "/api/api/xrp/status"
+        },
+        {
+            "endpoint": "api.status.database_status",
+            "methods": "GET",
+            "url": "/api/api/database/status"
+        },
+        {
+            "endpoint": "api.php_bridge.sync_accounts",
+            "methods": "POST",
+            "url": "/api/php-bridge/account/sync"
+        },
+        {
+            "endpoint": "api.php_bridge.sync_transactions",
+            "methods": "POST",
+            "url": "/api/php-bridge/transaction/sync"
+        },
+        {
+            "endpoint": "api.php_bridge.process_payment",
+            "methods": "POST",
+            "url": "/api/php-bridge/payment/process"
+        },
+        {
+            "endpoint": "api.php_bridge.check_payment_status",
+            "methods": "GET",
+            "url": "/api/php-bridge/payment/status/<transaction_id>"
+        },
+        {
+            "endpoint": "api.php_bridge.payment_callback",
+            "methods": "POST",
+            "url": "/api/php-bridge/payment/callback"
+        },
+        {
+            "endpoint": "api.form_data.cleanup_expired_form_data",
+            "methods": "POST",
+            "url": "/api/api/form-data/cleanup"
+        },
+        {
+            "endpoint": "api.form_data.get_user_form_data",
+            "methods": "GET",
+            "url": "/api/api/form-data/user/<int:user_id>"
+        },
+        {
+            "endpoint": "api.form_data.get_transaction_form_data",
+            "methods": "GET",
+            "url": "/api/api/form-data/transaction/<transaction_id>/<form_type>"
+        },
+        {
+            "endpoint": "api.form_save.save_form_data",
+            "methods": "POST",
+            "url": "/api/api/save_form_data"
+        },
+        {
+            "endpoint": "api.form_save.load_form_data",
+            "methods": "GET",
+            "url": "/api/api/load_form_data/<form_name>"
+        },
+        {
+            "endpoint": "api.token_exchange_api.health_check",
+            "methods": "GET",
+            "url": "/api/v1/token-exchange/health"
+        },
+        {
+            "endpoint": "api.token_exchange_api.get_exchange_rate",
+            "methods": "GET",
+            "url": "/api/v1/token-exchange/exchange-rate"
+        },
+        {
+            "endpoint": "api.token_exchange_api.token_pair_info",
+            "methods": "GET",
+            "url": "/api/v1/token-exchange/token-pair-info"
+        },
+        {
+            "endpoint": "api.token_exchange_api.execute_trade",
+            "methods": "POST",
+            "url": "/api/v1/token-exchange/execute-trade"
+        },
+        {
+            "endpoint": "api.token_exchange_api.get_trade_history",
+            "methods": "GET",
+            "url": "/api/v1/token-exchange/trade-history"
+        },
+        {
+            "endpoint": "api.token_exchange_api.get_token_balance",
+            "methods": "GET",
+            "url": "/api/v1/token-exchange/token-balance"
+        },
+        {
+            "endpoint": "web.ha_web.dashboard",
+            "methods": "GET",
+            "url": "/ha/dashboard"
+        },
+        {
+            "endpoint": "web.main.user_list",
+            "methods": "GET",
+            "url": "/main/users"
+        },
+        {
+            "endpoint": "web.main.nvc_token_economics",
+            "methods": "GET",
+            "url": "/main/nvctoken"
+        },
+        {
+            "endpoint": "web.main.php_bridge_docs",
+            "methods": "GET",
+            "url": "/main/php-bridge-docs"
+        },
+        {
+            "endpoint": "web.main.nvc_token_economics_pdf",
+            "methods": "GET",
+            "url": "/main/nvctoken/pdf"
+        },
+        {
+            "endpoint": "web.main.index",
+            "methods": "GET",
+            "url": "/main/"
+        },
+        {
+            "endpoint": "web.main.quick_access",
+            "methods": "GET,POST",
+            "url": "/main/quick-access"
+        },
+        {
+            "endpoint": "web.main.funds_transfer_guide",
+            "methods": "GET",
+            "url": "/main/funds-transfer-guide"
+        },
+        {
+            "endpoint": "web.main.login",
+            "methods": "GET,POST",
+            "url": "/main/login"
+        },
+        {
+            "endpoint": "web.main.logout",
+            "methods": "GET",
+            "url": "/main/logout"
+        },
+        {
+            "endpoint": "web.main.signup_redirect",
+            "methods": "GET",
+            "url": "/main/register-redirect"
+        },
+        {
+            "endpoint": "web.main.signup_redirect",
+            "methods": "GET",
+            "url": "/main/create-account"
+        },
+        {
+            "endpoint": "web.main.signup_redirect",
+            "methods": "GET",
+            "url": "/main/join"
+        },
+        {
+            "endpoint": "web.main.signup_redirect",
+            "methods": "GET",
+            "url": "/main/signup"
+        },
+        {
+            "endpoint": "web.main.register",
+            "methods": "GET,POST",
+            "url": "/main/register"
+        },
+        {
+            "endpoint": "web.main.client_registration",
+            "methods": "GET,POST",
+            "url": "/main/client-registration"
+        },
+        {
+            "endpoint": "web.main.reset_request",
+            "methods": "GET,POST",
+            "url": "/main/reset_password_request"
+        },
+        {
+            "endpoint": "web.main.reset_password",
+            "methods": "GET,POST",
+            "url": "/main/reset_password/<token>"
+        },
+        {
+            "endpoint": "web.main.forgot_username",
+            "methods": "GET,POST",
+            "url": "/main/forgot_username"
+        },
+        {
+            "endpoint": "web.main.dashboard",
+            "methods": "GET",
+            "url": "/main/dashboard"
+        },
+        {
+            "endpoint": "web.main.transactions",
+            "methods": "GET",
+            "url": "/main/transactions"
+        },
+        {
+            "endpoint": "web.main.transaction_details",
+            "methods": "GET",
+            "url": "/main/transaction/<transaction_id>"
+        },
+        {
+            "endpoint": "web.main.transaction_pdf",
+            "methods": "GET",
+            "url": "/main/transaction/<transaction_id>/pdf"
+        },
+        {
+            "endpoint": "web.main.blockchain_status",
+            "methods": "GET",
+            "url": "/main/blockchain"
+        },
+        {
+            "endpoint": "web.main.issue_letter_of_credit",
+            "methods": "GET,POST",
+            "url": "/main/letter_of_credit/new"
+        },
+        {
+            "endpoint": "web.main.letter_of_credit_status",
+            "methods": "GET",
+            "url": "/main/letter_of_credit/status/<transaction_id>"
+        },
+        {
+            "endpoint": "web.main.new_payment",
+            "methods": "GET,POST",
+            "url": "/main/payment/new/<transaction_id>"
+        },
+        {
+            "endpoint": "web.main.new_payment",
+            "methods": "GET,POST",
+            "url": "/main/payment/new"
+        },
+        {
+            "endpoint": "web.main.api_docs",
+            "methods": "GET",
+            "url": "/main/api-docs"
+        },
+        {
+            "endpoint": "web.main.switch_role",
+            "methods": "GET",
+            "url": "/main/switch-role"
+        },
+        {
+            "endpoint": "web.main.terms_of_service",
+            "methods": "GET",
+            "url": "/main/terms_of_service"
+        },
+        {
+            "endpoint": "web.main.payment_return",
+            "methods": "GET",
+            "url": "/main/payments/return"
+        },
+        {
+            "endpoint": "web.main.nvc_callback",
+            "methods": "POST",
+            "url": "/main/payments/nvc-callback"
+        },
+        {
+            "endpoint": "web.main.payment_cancel",
+            "methods": "GET",
+            "url": "/main/payments/cancel"
+        },
+        {
+            "endpoint": "web.main.privacy_policy",
+            "methods": "GET",
+            "url": "/main/privacy_policy"
+        },
+        {
+            "endpoint": "web.main.token_exchange",
+            "methods": "GET",
+            "url": "/main/token-exchange"
+        },
+        {
+            "endpoint": "web.main.api_key_management",
+            "methods": "GET",
+            "url": "/main/api-key-management"
+        },
+        {
+            "endpoint": "web.main.admin_dashboard",
+            "methods": "GET",
+            "url": "/main/admin-dash"
+        },
+        {
+            "endpoint": "web.main.admin_dashboard",
+            "methods": "GET",
+            "url": "/main/admin-dashboard"
+        },
+        {
+            "endpoint": "web.main.admin_incomplete_transactions",
+            "methods": "GET",
+            "url": "/main/admin/incomplete-transactions"
+        },
+        {
+            "endpoint": "web.main.test_payment",
+            "methods": "GET,POST",
+            "url": "/main/payment/test"
+        },
+        {
+            "endpoint": "web.main.bank_transfer_form",
+            "methods": "GET,POST",
+            "url": "/main/payment/bank-transfer/<transaction_id>"
+        },
+        {
+            "endpoint": "web.main.process_bank_transfer",
+            "methods": "POST",
+            "url": "/main/payment/process-bank-transfer"
+        },
+        {
+            "endpoint": "web.main.cancel_transaction",
+            "methods": "GET,POST",
+            "url": "/main/transaction/cancel/<transaction_id>"
+        },
+        {
+            "endpoint": "web.main.edit_transaction",
+            "methods": "GET,POST",
+            "url": "/main/transaction/edit/<transaction_id>"
+        },
+        {
+            "endpoint": "web.swift.new_letter_of_credit",
+            "methods": "GET,POST",
+            "url": "/swift/letter_of_credit/new"
+        },
+        {
+            "endpoint": "web.swift.letter_of_credit_status",
+            "methods": "GET",
+            "url": "/swift/letter_of_credit/status/<transaction_id>"
+        },
+        {
+            "endpoint": "web.swift.new_fund_transfer",
+            "methods": "GET,POST",
+            "url": "/swift/fund_transfer/new"
+        },
+        {
+            "endpoint": "web.swift.new_mt542",
+            "methods": "GET,POST",
+            "url": "/swift/mt542/new"
+        },
+        {
+            "endpoint": "web.swift.new_free_format_message",
+            "methods": "GET,POST",
+            "url": "/swift/free_format/new"
+        },
+        {
+            "endpoint": "web.swift.message_status",
+            "methods": "GET",
+            "url": "/swift/message/status/<transaction_id>"
+        },
+        {
+            "endpoint": "web.swift.fund_transfer_status",
+            "methods": "GET",
+            "url": "/swift/fund_transfer/status/<transaction_id>"
+        },
+        {
+            "endpoint": "web.swift.download_swift_receipt",
+            "methods": "GET",
+            "url": "/swift/receipt/<transaction_id>/pdf"
+        },
+        {
+            "endpoint": "web.swift.cancel_message",
+            "methods": "POST",
+            "url": "/swift/cancel_message/<transaction_id>"
+        },
+        {
+            "endpoint": "web.swift.cancel_transfer",
+            "methods": "POST",
+            "url": "/swift/cancel_transfer/<transaction_id>"
+        },
+        {
+            "endpoint": "web.swift.swift_messages",
+            "methods": "GET",
+            "url": "/swift/messages"
+        },
+        {
+            "endpoint": "web.swift.view_swift_message",
+            "methods": "GET",
+            "url": "/swift/message/view/<transaction_id>"
+        },
+        {
+            "endpoint": "web.swift.download_swift_pdf",
+            "methods": "GET",
+            "url": "/swift/download_swift_pdf/<transaction_id>"
+        },
+        {
+            "endpoint": "web.swift.api_swift_status",
+            "methods": "GET",
+            "url": "/swift/api/swift/status/<transaction_id>"
+        },
+        {
+            "endpoint": "web.ach.new_ach_transfer",
+            "methods": "GET,POST",
+            "url": "/ach/new"
+        },
+        {
+            "endpoint": "web.ach.ach_transfer_status",
+            "methods": "GET",
+            "url": "/ach/status/<transaction_id>"
+        },
+        {
+            "endpoint": "web.ach.cancel_ach_transfer",
+            "methods": "POST",
+            "url": "/ach/cancel/<transaction_id>"
+        },
+        {
+            "endpoint": "web.ach.validate_routing_number",
+            "methods": "POST",
+            "url": "/ach/validate/routing"
+        },
+        {
+            "endpoint": "web.ach.ach_transfers",
+            "methods": "GET",
+            "url": "/ach/transfers"
+        },
+        {
+            "endpoint": "web.ach.download_ach_receipt",
+            "methods": "GET",
+            "url": "/ach/receipt/<transaction_id>/pdf"
+        },
+        {
+            "endpoint": "web.institutional.list_institutions",
+            "methods": "GET",
+            "url": "/institutional/institutions"
+        },
+        {
+            "endpoint": "web.institutional.institution_details",
+            "methods": "GET",
+            "url": "/institutional/institutions/<int:institution_id>"
+        },
+        {
+            "endpoint": "web.institutional.el_banco_isabel",
+            "methods": "GET",
+            "url": "/institutional/el-banco-isabel"
+        },
+        {
+            "endpoint": "api_access.request_access",
+            "methods": "GET,POST",
+            "url": "/api-access/request"
+        },
+        {
+            "endpoint": "api_access.access_status",
+            "methods": "GET",
+            "url": "/api-access/status"
+        },
+        {
+            "endpoint": "api_access.admin_review_list",
+            "methods": "GET",
+            "url": "/api-access/admin/review"
+        },
+        {
+            "endpoint": "api_access.admin_review_request",
+            "methods": "GET,POST",
+            "url": "/api-access/admin/review/<int:request_id>"
+        },
+        {
+            "endpoint": "api_access.developer_keys",
+            "methods": "GET",
+            "url": "/api-access/keys"
+        },
+        {
+            "endpoint": "api_access.create_api_key",
+            "methods": "POST",
+            "url": "/api-access/keys/create"
+        },
+        {
+            "endpoint": "api_access.update_api_key",
+            "methods": "POST",
+            "url": "/api-access/keys/update"
+        },
+        {
+            "endpoint": "api_access.delete_api_key",
+            "methods": "POST",
+            "url": "/api-access/keys/delete"
+        },
+        {
+            "endpoint": "documentation.documentation_index",
+            "methods": "GET",
+            "url": "/documentation/"
+        },
+        {
+            "endpoint": "documentation.transaction_system_pdf",
+            "methods": "GET",
+            "url": "/documentation/transaction_system_explained"
+        },
+        {
+            "endpoint": "documentation.server_to_server_pdf",
+            "methods": "GET",
+            "url": "/documentation/server_to_server_guide"
+        },
+        {
+            "endpoint": "documentation.nvct_pdf",
+            "methods": "GET",
+            "url": "/documentation/nvct_tokenomics"
+        },
+        {
+            "endpoint": "documentation.funds_transfer_pdf",
+            "methods": "GET",
+            "url": "/documentation/funds_transfer_guide"
+        },
+        {
+            "endpoint": "documentation.mainnet_pdf",
+            "methods": "GET",
+            "url": "/documentation/mainnet_readiness"
+        },
+        {
+            "endpoint": "documentation.transfer_capabilities_pdf",
+            "methods": "GET",
+            "url": "/documentation/transfer_capabilities"
+        },
+        {
+            "endpoint": "documentation.paypal_capabilities_pdf",
+            "methods": "GET",
+            "url": "/documentation/paypal_capabilities"
+        },
+        {
+            "endpoint": "documentation.ach_capabilities_pdf",
+            "methods": "GET",
+            "url": "/documentation/ach_capabilities"
+        },
+        {
+            "endpoint": "documentation.swift_telex_capabilities_pdf",
+            "methods": "GET",
+            "url": "/documentation/swift_telex_capabilities"
+        },
+        {
+            "endpoint": "documentation.swift_bic_registration_pdf",
+            "methods": "GET",
+            "url": "/documentation/swift_bic_registration"
+        },
+        {
+            "endpoint": "documentation.acquisition_strategy_pdf",
+            "methods": "GET",
+            "url": "/documentation/acquisition_strategy"
+        },
+        {
+            "endpoint": "documentation.nvct_backing",
+            "methods": "GET",
+            "url": "/documentation/nvct_stablecoin_backing"
+        },
+        {
+            "endpoint": "documentation.nvct_backing_pdf",
+            "methods": "GET",
+            "url": "/documentation/nvct_stablecoin_backing_pdf"
+        },
+        {
+            "endpoint": "admin.list_api_keys",
+            "methods": "GET",
+            "url": "/admin/api-keys"
+        },
+        {
+            "endpoint": "admin.create_saint_crowm_bank_key",
+            "methods": "GET",
+            "url": "/admin/api-keys/saint-crowm-bank/create"
+        },
+        {
+            "endpoint": "admin.api_keys_menu",
+            "methods": "GET",
+            "url": "/admin/api-keys-menu"
+        },
+        {
+            "endpoint": "admin.admin_api_keys.api_keys_list",
+            "methods": "GET",
+            "url": "/admin/admin/api-keys/"
+        },
+        {
+            "endpoint": "admin.admin_api_keys.create_partner_api_key",
+            "methods": "GET,POST",
+            "url": "/admin/admin/api-keys/create"
+        },
+        {
+            "endpoint": "admin.admin_api_keys.toggle_partner_api_key",
+            "methods": "POST",
+            "url": "/admin/admin/api-keys/toggle/<int:key_id>"
+        },
+        {
+            "endpoint": "admin.admin_api_keys.edit_partner_api_key",
+            "methods": "GET,POST",
+            "url": "/admin/admin/api-keys/edit/<int:key_id>"
+        },
+        {
+            "endpoint": "admin.admin_api_keys.create_saint_crowm_bank_key",
+            "methods": "GET",
+            "url": "/admin/admin/api-keys/saint-crowm-bank/create"
+        },
+        {
+            "endpoint": "transaction_admin.admin_transactions",
+            "methods": "GET",
+            "url": "/transaction-admin/transactions"
+        },
+        {
+            "endpoint": "transaction_admin.admin_transaction_detail",
+            "methods": "GET",
+            "url": "/transaction-admin/transaction/<transaction_id>"
+        },
+        {
+            "endpoint": "transaction_admin.update_transaction_status",
+            "methods": "POST",
+            "url": "/transaction-admin/transaction/update-status/<transaction_id>"
+        },
+        {
+            "endpoint": "transaction_admin.add_transaction_note",
+            "methods": "POST",
+            "url": "/transaction-admin/transaction/add-note/<transaction_id>"
+        },
+        {
+            "endpoint": "nvc_platform_admin.dashboard",
+            "methods": "GET",
+            "url": "/admin/nvc-platform/"
+        },
+        {
+            "endpoint": "nvc_platform_admin.settings",
+            "methods": "POST",
+            "url": "/admin/nvc-platform/settings"
+        },
+        {
+            "endpoint": "nvc_platform_admin.test_connection",
+            "methods": "POST",
+            "url": "/admin/nvc-platform/test"
+        },
+        {
+            "endpoint": "nvc_platform_admin.sync",
+            "methods": "POST",
+            "url": "/admin/nvc-platform/sync"
+        },
+        {
+            "endpoint": "edi.dashboard",
+            "methods": "GET",
+            "url": "/edi/dashboard"
+        },
+        {
+            "endpoint": "edi.partner_list",
+            "methods": "GET",
+            "url": "/edi/partners"
+        },
+        {
+            "endpoint": "edi.new_partner",
+            "methods": "GET,POST",
+            "url": "/edi/partners/new"
+        },
+        {
+            "endpoint": "edi.edit_partner",
+            "methods": "GET,POST",
+            "url": "/edi/partners/edit/<partner_id>"
+        },
+        {
+            "endpoint": "edi.delete_partner",
+            "methods": "GET",
+            "url": "/edi/partners/delete/<partner_id>"
+        },
+        {
+            "endpoint": "edi.test_edi_connection",
+            "methods": "GET",
+            "url": "/edi/partners/test-connection/<partner_id>"
+        },
+        {
+            "endpoint": "edi.transaction_list",
+            "methods": "GET",
+            "url": "/edi/transactions"
+        },
+        {
+            "endpoint": "edi.retry_transaction",
+            "methods": "GET",
+            "url": "/edi/transactions/<transaction_id>/retry"
+        },
+        {
+            "endpoint": "edi.view_edi_message",
+            "methods": "GET",
+            "url": "/edi/transactions/<transaction_id>/message"
+        },
+        {
+            "endpoint": "treasury.add_institution",
+            "methods": "POST",
+            "url": "/treasury/api/add_institution"
+        },
+        {
+            "endpoint": "treasury.dashboard",
+            "methods": "GET",
+            "url": "/treasury/"
+        },
+        {
+            "endpoint": "treasury.account_list",
+            "methods": "GET",
+            "url": "/treasury/accounts"
+        },
+        {
+            "endpoint": "treasury.new_account",
+            "methods": "GET,POST",
+            "url": "/treasury/accounts/new"
+        },
+        {
+            "endpoint": "treasury.view_account",
+            "methods": "GET",
+            "url": "/treasury/accounts/<int:account_id>"
+        },
+        {
+            "endpoint": "treasury.edit_account",
+            "methods": "GET,POST",
+            "url": "/treasury/accounts/<int:account_id>/edit"
+        },
+        {
+            "endpoint": "treasury.transaction_list",
+            "methods": "GET",
+            "url": "/treasury/transactions"
+        },
+        {
+            "endpoint": "treasury.new_transaction",
+            "methods": "GET,POST",
+            "url": "/treasury/transactions/new"
+        },
+        {
+            "endpoint": "treasury.view_transaction",
+            "methods": "GET",
+            "url": "/treasury/transactions/<int:transaction_id>"
+        },
+        {
+            "endpoint": "treasury.approve_transaction",
+            "methods": "POST",
+            "url": "/treasury/transactions/<int:transaction_id>/approve"
+        },
+        {
+            "endpoint": "treasury.reject_transaction",
+            "methods": "POST",
+            "url": "/treasury/transactions/<int:transaction_id>/reject"
+        },
+        {
+            "endpoint": "treasury.investment_list",
+            "methods": "GET",
+            "url": "/treasury/investments"
+        },
+        {
+            "endpoint": "treasury.new_investment",
+            "methods": "GET,POST",
+            "url": "/treasury/investments/new"
+        },
+        {
+            "endpoint": "treasury.view_investment",
+            "methods": "GET",
+            "url": "/treasury/investments/<int:investment_id>"
+        },
+        {
+            "endpoint": "treasury.edit_investment",
+            "methods": "GET,POST",
+            "url": "/treasury/investments/<int:investment_id>/edit"
+        },
+        {
+            "endpoint": "treasury.approve_investment",
+            "methods": "POST",
+            "url": "/treasury/investments/<int:investment_id>/approve"
+        },
+        {
+            "endpoint": "treasury.mature_investment",
+            "methods": "POST",
+            "url": "/treasury/investments/<int:investment_id>/mature"
+        },
+        {
+            "endpoint": "treasury.loan_list",
+            "methods": "GET",
+            "url": "/treasury/loans"
+        },
+        {
+            "endpoint": "treasury.new_loan",
+            "methods": "GET,POST",
+            "url": "/treasury/loans/new"
+        },
+        {
+            "endpoint": "treasury.view_loan",
+            "methods": "GET",
+            "url": "/treasury/loans/<int:loan_id>"
+        },
+        {
+            "endpoint": "treasury.disburse_loan",
+            "methods": "POST",
+            "url": "/treasury/loans/<int:loan_id>/disburse"
+        },
+        {
+            "endpoint": "treasury.make_loan_payment",
+            "methods": "GET,POST",
+            "url": "/treasury/loans/<int:loan_id>/payment"
+        },
+        {
+            "endpoint": "treasury.approve_loan_payment",
+            "methods": "POST",
+            "url": "/treasury/loans/<int:loan_id>/payment/<int:transaction_id>/approve"
+        },
+        {
+            "endpoint": "treasury.cash_flow_list",
+            "methods": "GET",
+            "url": "/treasury/cash-flows"
+        },
+        {
+            "endpoint": "treasury.new_cash_flow",
+            "methods": "GET,POST",
+            "url": "/treasury/cash-flows/new"
+        },
+        {
+            "endpoint": "docs.index",
+            "methods": "GET",
+            "url": "/documents/"
+        },
+        {
+            "endpoint": "docs.view_document",
+            "methods": "GET",
+            "url": "/documents/view/<filename>"
+        },
+        {
+            "endpoint": "swift_gpi.upload_gpi_file",
+            "methods": "GET,POST",
+            "url": "/swift-gpi/upload"
+        },
+        {
+            "endpoint": "swift_gpi.gpi_dashboard",
+            "methods": "GET",
+            "url": "/swift-gpi/dashboard"
+        },
+        {
+            "endpoint": "swift_gpi.view_message",
+            "methods": "GET",
+            "url": "/swift-gpi/view/<int:message_id>"
+        },
+        {
+            "endpoint": "swift_gpi.list_messages",
+            "methods": "GET",
+            "url": "/swift-gpi/messages"
+        },
+        {
+            "endpoint": "swift_gpi.reconcile_messages",
+            "methods": "POST",
+            "url": "/swift-gpi/api/reconcile"
+        },
+        {
+            "endpoint": "server_to_server.dashboard",
+            "methods": "GET",
+            "url": "/s2s/dashboard"
+        },
+        {
+            "endpoint": "server_to_server.new_transfer",
+            "methods": "GET,POST",
+            "url": "/s2s/new-transfer"
+        },
+        {
+            "endpoint": "server_to_server.api_transfer",
+            "methods": "POST",
+            "url": "/s2s/api/transfer"
+        },
+        {
+            "endpoint": "server_to_server.schedule_transfer",
+            "methods": "POST",
+            "url": "/s2s/api/schedule"
+        },
+        {
+            "endpoint": "server_to_server.check_status",
+            "methods": "GET",
+            "url": "/s2s/api/status/<transaction_id>"
+        },
+        {
+            "endpoint": "server_to_server.add_institution",
+            "methods": "POST",
+            "url": "/s2s/add-institution"
+        },
+        {
+            "endpoint": "server_to_server.export_transaction_pdf",
+            "methods": "GET",
+            "url": "/s2s/export/<transaction_id>"
+        },
+        {
+            "endpoint": "server_to_server.edit_transfer",
+            "methods": "GET,POST",
+            "url": "/s2s/edit/<transaction_id>"
+        },
+        {
+            "endpoint": "server_to_server.cancel_transfer",
+            "methods": "GET,POST",
+            "url": "/s2s/cancel/<transaction_id>"
+        },
+        {
+            "endpoint": "rtgs.dashboard",
+            "methods": "GET",
+            "url": "/rtgs/dashboard"
+        },
+        {
+            "endpoint": "rtgs.new_transfer",
+            "methods": "GET,POST",
+            "url": "/rtgs/new_transfer"
+        },
+        {
+            "endpoint": "rtgs.api_transfer",
+            "methods": "POST",
+            "url": "/rtgs/api/transfer"
+        },
+        {
+            "endpoint": "rtgs.cancel_transfer",
+            "methods": "GET,POST",
+            "url": "/rtgs/cancel/<transaction_id>"
+        },
+        {
+            "endpoint": "rtgs.edit_transfer",
+            "methods": "GET,POST",
+            "url": "/rtgs/edit/<transaction_id>"
+        },
+        {
+            "endpoint": "rtgs.check_status",
+            "methods": "GET",
+            "url": "/rtgs/api/status/<transaction_id>"
+        },
+        {
+            "endpoint": "rtgs.add_institution",
+            "methods": "POST",
+            "url": "/rtgs/add_institution"
+        },
+        {
+            "endpoint": "nvc_platform.sync_status",
+            "methods": "GET",
+            "url": "/api/nvc-platform/sync/status"
+        },
+        {
+            "endpoint": "nvc_platform.sync_accounts",
+            "methods": "POST",
+            "url": "/api/nvc-platform/sync/accounts"
+        },
+        {
+            "endpoint": "nvc_platform.one_way_pull",
+            "methods": "POST",
+            "url": "/api/nvc-platform/sync/one-way-pull"
+        },
+        {
+            "endpoint": "customer_support.support_index",
+            "methods": "GET",
+            "url": "/support/"
+        },
+        {
+            "endpoint": "customer_support.ask_question",
+            "methods": "POST",
+            "url": "/support/ask"
+        },
+        {
+            "endpoint": "customer_support.submit_feedback",
+            "methods": "POST",
+            "url": "/support/feedback"
+        },
+        {
+            "endpoint": "customer_support.reload_kb",
+            "methods": "GET",
+            "url": "/support/reload"
+        },
+        {
+            "endpoint": "admin_tools.financial_institutions_tool",
+            "methods": "GET",
+            "url": "/admin-tools/financial-institutions"
+        },
+        {
+            "endpoint": "admin_tools.add_financial_institution",
+            "methods": "POST",
+            "url": "/admin-tools/financial-institutions/add"
+        },
+        {
+            "endpoint": "admin_tools.add_all_financial_institutions",
+            "methods": "POST",
+            "url": "/admin-tools/financial-institutions/add-all"
+        },
+        {
+            "endpoint": "payment_processor.employee_list",
+            "methods": "GET",
+            "url": "/payment-processor/employees"
+        },
+        {
+            "endpoint": "payment_processor.new_employee",
+            "methods": "GET,POST",
+            "url": "/payment-processor/employees/new"
+        },
+        {
+            "endpoint": "payment_processor.employee_details",
+            "methods": "GET",
+            "url": "/payment-processor/employees/<int:employee_id>"
+        },
+        {
+            "endpoint": "payment_processor.edit_employee",
+            "methods": "GET,POST",
+            "url": "/payment-processor/employees/<int:employee_id>/edit"
+        },
+        {
+            "endpoint": "payment_processor.payroll_list",
+            "methods": "GET",
+            "url": "/payment-processor/payroll"
+        },
+        {
+            "endpoint": "payment_processor.new_payroll_batch",
+            "methods": "GET,POST",
+            "url": "/payment-processor/payroll/new"
+        },
+        {
+            "endpoint": "payment_processor.payroll_batch_details",
+            "methods": "GET",
+            "url": "/payment-processor/payroll/<int:batch_id>"
+        },
+        {
+            "endpoint": "payment_processor.process_payroll_batch",
+            "methods": "POST",
+            "url": "/payment-processor/payroll/<int:batch_id>/process"
+        },
+        {
+            "endpoint": "payment_processor.vendor_list",
+            "methods": "GET",
+            "url": "/payment-processor/vendors"
+        },
+        {
+            "endpoint": "payment_processor.create_vendor_ajax",
+            "methods": "POST",
+            "url": "/payment-processor/vendors/create-ajax"
+        },
+        {
+            "endpoint": "payment_processor.new_vendor",
+            "methods": "GET,POST",
+            "url": "/payment-processor/vendors/new"
+        },
+        {
+            "endpoint": "payment_processor.vendor_details",
+            "methods": "GET",
+            "url": "/payment-processor/vendors/<int:vendor_id>"
+        },
+        {
+            "endpoint": "payment_processor.add_government_agencies",
+            "methods": "GET",
+            "url": "/payment-processor/vendors/add-government-agencies"
+        },
+        {
+            "endpoint": "payment_processor.bill_list",
+            "methods": "GET",
+            "url": "/payment-processor/bills"
+        },
+        {
+            "endpoint": "payment_processor.new_bill",
+            "methods": "GET,POST",
+            "url": "/payment-processor/bills/new"
+        },
+        {
+            "endpoint": "payment_processor.bill_details",
+            "methods": "GET",
+            "url": "/payment-processor/bills/<int:bill_id>"
+        },
+        {
+            "endpoint": "payment_processor.pay_bill",
+            "methods": "GET,POST",
+            "url": "/payment-processor/bills/<int:bill_id>/pay"
+        },
+        {
+            "endpoint": "payment_processor.contract_list",
+            "methods": "GET",
+            "url": "/payment-processor/contracts"
+        },
+        {
+            "endpoint": "payment_processor.new_contract",
+            "methods": "GET,POST",
+            "url": "/payment-processor/contracts/new"
+        },
+        {
+            "endpoint": "payment_processor.contract_details",
+            "methods": "GET",
+            "url": "/payment-processor/contracts/<int:contract_id>"
+        },
+        {
+            "endpoint": "payment_processor.add_contract_payment",
+            "methods": "GET,POST",
+            "url": "/payment-processor/contracts/<int:contract_id>/add-payment"
+        },
+        {
+            "endpoint": "payment_processor.process_contract_payment",
+            "methods": "GET,POST",
+            "url": "/payment-processor/contracts/<int:contract_id>/payments/<int:payment_id>/process"
+        },
+        {
+            "endpoint": "paypal.dashboard",
+            "methods": "GET",
+            "url": "/paypal/dashboard"
+        },
+        {
+            "endpoint": "paypal.payment",
+            "methods": "GET,POST",
+            "url": "/paypal/payment"
+        },
+        {
+            "endpoint": "paypal.payment_return",
+            "methods": "GET",
+            "url": "/paypal/payment/return"
+        },
+        {
+            "endpoint": "paypal.payment_cancel",
+            "methods": "GET",
+            "url": "/paypal/payment/cancel"
+        },
+        {
+            "endpoint": "paypal.payment_details",
+            "methods": "GET",
+            "url": "/paypal/payment/<payment_id>"
+        },
+        {
+            "endpoint": "paypal.payout",
+            "methods": "GET,POST",
+            "url": "/paypal/payout"
+        },
+        {
+            "endpoint": "paypal.payout_status",
+            "methods": "GET",
+            "url": "/paypal/payout/<batch_id>"
+        },
+        {
+            "endpoint": "paypal.webhook",
+            "methods": "POST",
+            "url": "/paypal/webhook"
+        },
+        {
+            "endpoint": "telex.dashboard",
+            "methods": "GET",
+            "url": "/telex/"
+        },
+        {
+            "endpoint": "telex.message_list",
+            "methods": "GET",
+            "url": "/telex/messages"
+        },
+        {
+            "endpoint": "telex.message_detail",
+            "methods": "GET",
+            "url": "/telex/messages/<string:message_id>"
+        },
+        {
+            "endpoint": "telex.send_message",
+            "methods": "GET,POST",
+            "url": "/telex/send"
+        },
+        {
+            "endpoint": "telex.api_send_funds_transfer",
+            "methods": "POST",
+            "url": "/telex/api/send-funds-transfer"
+        },
+        {
+            "endpoint": "telex.api_send_payment_confirmation",
+            "methods": "POST",
+            "url": "/telex/api/send-payment-confirmation"
+        },
+        {
+            "endpoint": "telex.webhook",
+            "methods": "POST",
+            "url": "/telex/api/webhook"
+        },
+        {
+            "endpoint": "telex.settings",
+            "methods": "GET,POST",
+            "url": "/telex/settings"
+        },
+        {
+            "endpoint": "pdf.swift_telex_capabilities",
+            "methods": "GET",
+            "url": "/pdf/swift-telex-capabilities"
+        },
+        {
+            "endpoint": "pdf.swift_telex_capabilities_static",
+            "methods": "GET",
+            "url": "/pdf/swift-telex-capabilities-static"
+        },
+        {
+            "endpoint": "pdf.nvc_fund_holding_report",
+            "methods": "GET",
+            "url": "/pdf/nvc-fund-holding-report"
+        },
+        {
+            "endpoint": "pdf.currency_exchange_pdf",
+            "methods": "GET",
+            "url": "/pdf/currency-exchange/<int:exchange_id>"
+        },
+        {
+            "endpoint": "pdf_reports.reports_index",
+            "methods": "GET",
+            "url": "/reports/"
+        },
+        {
+            "endpoint": "pdf_reports.nvc_fund_bank_capabilities_report",
+            "methods": "GET",
+            "url": "/reports/capabilities-report"
+        },
+        {
+            "endpoint": "pdf_reports.nvc_fund_bank_capabilities_html",
+            "methods": "GET",
+            "url": "/reports/capabilities-html"
+        },
+        {
+            "endpoint": "stablecoin.index",
+            "methods": "GET",
+            "url": "/stablecoin/"
+        },
+        {
+            "endpoint": "stablecoin.accounts",
+            "methods": "GET",
+            "url": "/stablecoin/accounts"
+        },
+        {
+            "endpoint": "stablecoin.create_account",
+            "methods": "GET,POST",
+            "url": "/stablecoin/accounts/create"
+        },
+        {
+            "endpoint": "stablecoin.account_details",
+            "methods": "GET",
+            "url": "/stablecoin/accounts/<int:account_id>"
+        },
+        {
+            "endpoint": "stablecoin.transfer",
+            "methods": "GET,POST",
+            "url": "/stablecoin/transfer"
+        },
+        {
+            "endpoint": "stablecoin.correspondent_banks",
+            "methods": "GET",
+            "url": "/stablecoin/correspondent-banks"
+        },
+        {
+            "endpoint": "stablecoin.create_correspondent_bank",
+            "methods": "GET,POST",
+            "url": "/stablecoin/correspondent-banks/create"
+        },
+        {
+            "endpoint": "stablecoin.settlements",
+            "methods": "GET",
+            "url": "/stablecoin/settlements"
+        },
+        {
+            "endpoint": "stablecoin.create_settlement",
+            "methods": "GET,POST",
+            "url": "/stablecoin/settlements/create"
+        },
+        {
+            "endpoint": "stablecoin.complete_settlement",
+            "methods": "POST",
+            "url": "/stablecoin/settlements/<batch_id>/complete"
+        },
+        {
+            "endpoint": "stablecoin.api_get_accounts",
+            "methods": "GET",
+            "url": "/stablecoin/api/accounts"
+        },
+        {
+            "endpoint": "stablecoin.api_get_account_transactions",
+            "methods": "GET",
+            "url": "/stablecoin/api/accounts/<int:account_id>/transactions"
+        },
+        {
+            "endpoint": "stablecoin.api_transfer",
+            "methods": "POST",
+            "url": "/stablecoin/api/transfer"
+        },
+        {
+            "endpoint": "saint_crown.dashboard",
+            "methods": "GET",
+            "url": "/saint-crown/dashboard"
+        },
+        {
+            "endpoint": "saint_crown.asset_list",
+            "methods": "GET",
+            "url": "/saint-crown/assets"
+        },
+        {
+            "endpoint": "saint_crown.asset_detail",
+            "methods": "GET",
+            "url": "/saint-crown/asset/<asset_id>"
+        },
+        {
+            "endpoint": "saint_crown.register_assets_route",
+            "methods": "POST",
+            "url": "/saint-crown/register-assets"
+        },
+        {
+            "endpoint": "saint_crown.verify_asset",
+            "methods": "POST",
+            "url": "/saint-crown/verify-asset/<asset_id>"
+        },
+        {
+            "endpoint": "saint_crown.afd1_report",
+            "methods": "GET",
+            "url": "/saint-crown/afd1-report"
+        },
+        {
+            "endpoint": "saint_crown.public_holding_report",
+            "methods": "GET",
+            "url": "/nvc-fund-holding-trust-report.html"
+        },
+        {
+            "endpoint": "saint_crown.api_assets",
+            "methods": "GET",
+            "url": "/api/v1/saint-crown/assets"
+        },
+        {
+            "endpoint": "saint_crown.api_afd1_report",
+            "methods": "GET",
+            "url": "/api/v1/saint-crown/afd1-report"
+        },
+        {
+            "endpoint": "account_holders.index",
+            "methods": "GET",
+            "url": "/account-holders/"
+        },
+        {
+            "endpoint": "account_holders.search",
+            "methods": "GET",
+            "url": "/account-holders/search"
+        },
+        {
+            "endpoint": "account_holders.view",
+            "methods": "GET",
+            "url": "/account-holders/<int:account_holder_id>"
+        },
+        {
+            "endpoint": "account_holders.accounts",
+            "methods": "GET",
+            "url": "/account-holders/<int:account_holder_id>/accounts"
+        },
+        {
+            "endpoint": "account_holders.view_account",
+            "methods": "GET",
+            "url": "/account-holders/account/<int:account_id>"
+        },
+        {
+            "endpoint": "account_holders.api_search",
+            "methods": "GET",
+            "url": "/account-holders/api/search"
+        },
+        {
+            "endpoint": "account_holders.api_account_holders",
+            "methods": "GET",
+            "url": "/account-holders/api/account-holders"
+        },
+        {
+            "endpoint": "account_holders.api_account_holder",
+            "methods": "GET",
+            "url": "/account-holders/api/account-holder/<int:account_holder_id>"
+        },
+        {
+            "endpoint": "account_holders.account_statement",
+            "methods": "GET",
+            "url": "/account-holders/account/<int:account_id>/statement"
+        },
+        {
+            "endpoint": "account_holders.api_account_statement",
+            "methods": "GET",
+            "url": "/account-holders/api/account/<int:account_id>/statement"
+        },
+        {
+            "endpoint": "account_holders.api_account",
+            "methods": "GET",
+            "url": "/account-holders/api/accounts/<int:account_id>"
+        },
+        {
+            "endpoint": "currency_exchange.index",
+            "methods": "GET",
+            "url": "/exchange/"
+        },
+        {
+            "endpoint": "currency_exchange.view_rates",
+            "methods": "GET",
+            "url": "/exchange/rates"
+        },
+        {
+            "endpoint": "currency_exchange.update_rate",
+            "methods": "POST",
+            "url": "/exchange/rates/update"
+        },
+        {
+            "endpoint": "currency_exchange.initialize_default_rates",
+            "methods": "POST",
+            "url": "/exchange/initialize-defaults"
+        },
+        {
+            "endpoint": "currency_exchange.account_holder_exchange",
+            "methods": "GET",
+            "url": "/exchange/account-holder/<int:account_holder_id>"
+        },
+        {
+            "endpoint": "currency_exchange.perform_exchange",
+            "methods": "POST",
+            "url": "/exchange/perform-exchange"
+        },
+        {
+            "endpoint": "currency_exchange.api_rates",
+            "methods": "GET",
+            "url": "/exchange/api/rates"
+        },
+        {
+            "endpoint": "currency_exchange.api_get_specific_rate",
+            "methods": "GET",
+            "url": "/exchange/api/rates/<string:from_currency>/<string:to_currency>"
+        },
+        {
+            "endpoint": "currency_exchange.api_get_accounts_by_currency",
+            "methods": "GET",
+            "url": "/exchange/api/accounts/<int:account_holder_id>/<string:currency>"
+        },
+        {
+            "endpoint": "currency_exchange.api_calculate",
+            "methods": "POST",
+            "url": "/exchange/api/calculate"
+        },
+        {
+            "endpoint": "currency_exchange.api_perform_exchange",
+            "methods": "POST",
+            "url": "/exchange/api/perform"
+        },
+        {
+            "endpoint": "currency_exchange.api_exchange_history",
+            "methods": "GET",
+            "url": "/exchange/api/history/<int:account_holder_id>"
+        },
+        {
+            "endpoint": "pos.pos_dashboard",
+            "methods": "GET",
+            "url": "/pos/dashboard"
+        },
+        {
+            "endpoint": "pos.accept_payment",
+            "methods": "GET,POST",
+            "url": "/pos/accept-payment"
+        },
+        {
+            "endpoint": "pos.checkout",
+            "methods": "GET",
+            "url": "/pos/checkout/<transaction_id>"
+        },
+        {
+            "endpoint": "pos.payment_success",
+            "methods": "GET",
+            "url": "/pos/payment-success/<transaction_id>"
+        },
+        {
+            "endpoint": "pos.payment_cancel",
+            "methods": "GET",
+            "url": "/pos/payment-cancel/<transaction_id>"
+        },
+        {
+            "endpoint": "pos.send_payment",
+            "methods": "GET,POST",
+            "url": "/pos/send-payment"
+        },
+        {
+            "endpoint": "pos.send_payment_success",
+            "methods": "GET",
+            "url": "/pos/send-payment-success/<transaction_id>"
+        },
+        {
+            "endpoint": "pos.transactions",
+            "methods": "GET,POST",
+            "url": "/pos/transactions"
+        },
+        {
+            "endpoint": "pos.view_receipt",
+            "methods": "GET",
+            "url": "/pos/view-receipt/<transaction_id>"
+        },
+        {
+            "endpoint": "pos.webhook",
+            "methods": "POST",
+            "url": "/pos/webhook"
+        },
+        {
+            "endpoint": "trust.index",
+            "methods": "GET",
+            "url": "/trust/"
+        },
+        {
+            "endpoint": "trust.nvc_ghl_fund",
+            "methods": "GET",
+            "url": "/trust/nvc-ghl-fund"
+        },
+        {
+            "endpoint": "trust.fund_detail",
+            "methods": "GET",
+            "url": "/trust/fund/<int:fund_id>"
+        },
+        {
+            "endpoint": "trust.portfolio_detail",
+            "methods": "GET",
+            "url": "/trust/portfolio/<int:portfolio_id>"
+        },
+        {
+            "endpoint": "trust.asset_detail",
+            "methods": "GET",
+            "url": "/trust/asset/<int:asset_id>"
+        },
+        {
+            "endpoint": "trust.add_asset",
+            "methods": "GET,POST",
+            "url": "/trust/portfolio/<int:portfolio_id>/add-asset"
+        },
+        {
+            "endpoint": "trust.add_nvc_skr_072809",
+            "methods": "GET",
+            "url": "/trust/portfolio/<int:portfolio_id>/add-nvc-skr-072809"
+        },
+        {
+            "endpoint": "trust.add_paa_foundation_bond",
+            "methods": "GET",
+            "url": "/trust/portfolio/<int:portfolio_id>/add-paa-foundation-bond"
+        },
+        {
+            "endpoint": "trust.add_safekeeping_receipt",
+            "methods": "GET,POST",
+            "url": "/trust/portfolio/<int:portfolio_id>/add-safekeeping-receipt"
+        },
+        {
+            "endpoint": "trust.update_portfolio_valuation_route",
+            "methods": "POST",
+            "url": "/trust/portfolio/<int:portfolio_id>/update-valuation"
+        },
+        {
+            "endpoint": "trust.update_asset_value",
+            "methods": "POST",
+            "url": "/trust/asset/<int:asset_id>/update-value"
+        },
+        {
+            "endpoint": "trust.add_fund",
+            "methods": "GET,POST",
+            "url": "/trust/add-fund"
+        },
+        {
+            "endpoint": "trust.add_portfolio",
+            "methods": "GET,POST",
+            "url": "/trust/fund/<int:fund_id>/add-portfolio"
+        },
+        {
+            "endpoint": "trust.api_nvc_ghl_fund_valuation",
+            "methods": "GET",
+            "url": "/trust/valuation/nvc-ghl-fund"
+        },
+        {
+            "endpoint": "api_docs.index",
+            "methods": "GET",
+            "url": "/api-docs/"
+        },
+        {
+            "endpoint": "api_docs.nvc_api_infrastructure",
+            "methods": "GET",
+            "url": "/api-docs/nvc-api-infrastructure"
+        },
+        {
+            "endpoint": "api_docs.nvc_api_infrastructure_pdf",
+            "methods": "GET",
+            "url": "/api-docs/nvc-api-infrastructure.pdf"
+        },
+        {
+            "endpoint": "api_docs.api_reference",
+            "methods": "GET",
+            "url": "/api-docs/api-reference"
+        },
+        {
+            "endpoint": "api_docs.integration_guides",
+            "methods": "GET",
+            "url": "/api-docs/integration-guides"
+        },
+        {
+            "endpoint": "correspondent.index",
+            "methods": "GET",
+            "url": "/correspondent-banking/"
+        },
+        {
+            "endpoint": "correspondent.agreement",
+            "methods": "GET",
+            "url": "/correspondent-banking/agreement"
+        },
+        {
+            "endpoint": "correspondent.download_agreement",
+            "methods": "GET",
+            "url": "/correspondent-banking/agreement.pdf"
+        },
+        {
+            "endpoint": "correspondent.onboarding",
+            "methods": "GET",
+            "url": "/correspondent-banking/onboarding"
+        },
+        {
+            "endpoint": "correspondent.partners",
+            "methods": "GET",
+            "url": "/correspondent-banking/partners"
+        },
+        {
+            "endpoint": "document_download.download_center",
+            "methods": "GET",
+            "url": "/download-center"
+        },
+        {
+            "endpoint": "document_download.download_correspondent_agreement_pdf",
+            "methods": "GET",
+            "url": "/download/pdf/correspondent-banking-agreement"
+        },
+        {
+            "endpoint": "document_download.download_correspondent_agreement_docx",
+            "methods": "GET",
+            "url": "/download/docx/correspondent-banking-agreement"
+        },
+        {
+            "endpoint": "agreements.index",
+            "methods": "GET",
+            "url": "/agreements/"
+        },
+        {
+            "endpoint": "agreements.asset_management_agreement",
+            "methods": "GET",
+            "url": "/agreements/asset-management/agreement"
+        },
+        {
+            "endpoint": "agreements.download_asset_management_agreement",
+            "methods": "GET",
+            "url": "/agreements/asset-management/agreement.pdf"
+        },
+        {
+            "endpoint": "agreements.asset_management_onboarding",
+            "methods": "GET",
+            "url": "/agreements/asset-management/onboarding"
+        },
+        {
+            "endpoint": "agreements.custody_agreement",
+            "methods": "GET",
+            "url": "/agreements/custody/agreement"
+        },
+        {
+            "endpoint": "agreements.download_custody_agreement",
+            "methods": "GET",
+            "url": "/agreements/custody/agreement.pdf"
+        },
+        {
+            "endpoint": "agreements.custody_onboarding",
+            "methods": "GET",
+            "url": "/agreements/custody/onboarding"
+        },
+        {
+            "endpoint": "agreements.mou_agreement",
+            "methods": "GET",
+            "url": "/agreements/mou/agreement"
+        },
+        {
+            "endpoint": "agreements.download_mou_agreement",
+            "methods": "GET",
+            "url": "/agreements/mou/agreement.pdf"
+        },
+        {
+            "endpoint": "agreements.mou_onboarding",
+            "methods": "GET",
+            "url": "/agreements/mou/onboarding"
+        },
+        {
+            "endpoint": "healthcheck.healthcheck",
+            "methods": "GET",
+            "url": "/health/"
+        },
+        {
+            "endpoint": "healthcheck.readiness",
+            "methods": "GET",
+            "url": "/health/ready"
+        },
+        {
+            "endpoint": "healthcheck.system_status",
+            "methods": "GET",
+            "url": "/health/system"
+        },
+        {
+            "endpoint": "static_routes.favicon",
+            "methods": "GET",
+            "url": "/favicon.ico"
+        },
+        {
+            "endpoint": "static_routes.robots",
+            "methods": "GET",
+            "url": "/robots.txt"
+        },
+        {
+            "endpoint": "ping",
+            "methods": "GET",
+            "url": "/ping"
+        },
+        {
+            "endpoint": "institutional.list_institutions",
+            "methods": "GET",
+            "url": "/institutional/institutions"
+        },
+        {
+            "endpoint": "institutional.institution_details",
+            "methods": "GET",
+            "url": "/institutional/institutions/<int:institution_id>"
+        },
+        {
+            "endpoint": "institutional.el_banco_isabel",
+            "methods": "GET",
+            "url": "/institutional/el-banco-isabel"
+        },
+        {
+            "endpoint": "direct_el_banco_isabel",
+            "methods": "GET",
+            "url": "/el-banco-isabel"
+        },
+        {
+            "endpoint": "direct_institutions_list",
+            "methods": "GET",
+            "url": "/institutions"
+        }
+    ]
+}
