@@ -297,6 +297,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering Transaction Admin routes: {str(e)}")
             logger.warning("Application will run without Transaction Admin functionality")
+            
+        # Register Blockchain Admin routes
+        try:
+            from routes.blockchain_admin_routes import blockchain_admin_bp
+            app.register_blueprint(blockchain_admin_bp)
+            logger.info("Blockchain Admin routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Blockchain Admin routes: {str(e)}")
+            logger.warning("Application will run without Blockchain Admin functionality")
         
         # Register EDI Integration routes
         from routes.edi_routes import edi

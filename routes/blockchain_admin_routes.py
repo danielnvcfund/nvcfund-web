@@ -1,238 +1,185 @@
 """
 Blockchain Administration Routes for NVC Banking Platform
+These routes provide administrative tools for managing blockchain contracts and settings.
 """
 
 import os
-import logging
-import json
-from datetime import datetime
-from flask import Blueprint, render_template, redirect, url_for, flash, request
-from flask_login import login_required, current_user
-
-from app import db
-from models import SmartContract, User, Role, BlockchainTransaction
-from auth import admin_required
-
-# Import contract configuration
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from functools import wraps
+from models import User, Role, SmartContract, BlockchainTransaction
+from auth import admin_required, jwt_required
+from blockchain import (
+    get_web3_connection, 
+    get_network_status, 
+    deploy_settlement_contract,
+    deploy_multisig_wallet,
+    deploy_nvc_token,
+    validate_contract_addresses
+)
 import contract_config
 
-# Configure logging
-logger = logging.getLogger(__name__)
-
-# Create a blueprint for blockchain admin routes
+# Create blueprint
 blockchain_admin_bp = Blueprint('blockchain_admin', __name__, url_prefix='/admin/blockchain')
 
+def blockchain_admin_required(f):
+    """Decorator to require blockchain admin access"""
+    @wraps(f)
+    @admin_required
+    def decorated_function(*args, **kwargs):
+        return f(*args, **kwargs)
+    return decorated_function
+
 @blockchain_admin_bp.route('/')
-@login_required
-@admin_required
+@blockchain_admin_required
 def index():
     """Blockchain administration dashboard"""
-    # Get current network (testnet or mainnet)
-    network = os.environ.get("ETHEREUM_NETWORK", "testnet").lower()
+    # Get current network status
+    current_network = os.environ.get('ETHEREUM_NETWORK', 'testnet')
+    is_mainnet = current_network == 'mainnet'
     
-    # Get contracts from database
-    testnet_contracts = SmartContract.query.filter_by(network="testnet").all()
-    mainnet_contracts = SmartContract.query.filter_by(network="mainnet").all()
+    # Get contract addresses
+    settlement_contract_address = contract_config.get_contract_address('settlement_contract', current_network)
+    multisig_wallet_address = contract_config.get_contract_address('multisig_wallet', current_network)
+    nvc_token_address = contract_config.get_contract_address('nvc_token', current_network)
     
-    # Also get contracts from config file
-    config_contracts = contract_config.load_contract_config()
+    # Check connection status
+    try:
+        web3 = get_web3_connection()
+        is_connected = web3 is not None
+    except Exception:
+        is_connected = False
     
     # Get recent blockchain transactions
-    recent_transactions = BlockchainTransaction.query.order_by(
-        BlockchainTransaction.id.desc()
-    ).limit(10).all()
+    try:
+        recent_transactions = BlockchainTransaction.query.order_by(
+            BlockchainTransaction.timestamp.desc()
+        ).limit(10).all()
+    except Exception:
+        recent_transactions = []
     
     return render_template(
         'admin/blockchain/index.html',
-        current_network=network,
-        testnet_contracts=testnet_contracts,
-        mainnet_contracts=mainnet_contracts,
-        config_contracts=config_contracts,
+        current_network=current_network,
+        is_mainnet=is_mainnet,
+        is_connected=is_connected,
+        settlement_contract_address=settlement_contract_address,
+        multisig_wallet_address=multisig_wallet_address,
+        nvc_token_address=nvc_token_address,
         recent_transactions=recent_transactions
     )
 
-@blockchain_admin_bp.route('/network/<network>', methods=['POST'])
-@login_required
-@admin_required
+@blockchain_admin_bp.route('/set-network/<network>', methods=['POST'])
+@blockchain_admin_required
 def set_network(network):
     """Set the current blockchain network"""
-    if network not in ["testnet", "mainnet"]:
-        flash("Invalid network specified", "danger")
+    if network not in ['testnet', 'mainnet']:
+        flash('Invalid network specified', 'danger')
         return redirect(url_for('blockchain_admin.index'))
     
-    # Set environment variable
-    os.environ["ETHEREUM_NETWORK"] = network
+    # Update the environment variable
+    os.environ['ETHEREUM_NETWORK'] = network
     
-    # Try to persist in .env file
+    # Update .env file for persistence across restarts
     try:
-        env_path = ".env"
-        
-        # Check if file exists
-        env_exists = os.path.exists(env_path)
-        
-        if env_exists:
-            # Read existing content
-            with open(env_path, "r") as f:
-                lines = f.readlines()
-            
-            # Check if variable already exists
-            var_exists = False
-            new_lines = []
-            
-            for line in lines:
-                if line.strip() and not line.strip().startswith("#"):
-                    if line.strip().split("=")[0] == "ETHEREUM_NETWORK":
-                        new_lines.append(f"ETHEREUM_NETWORK={network}\n")
-                        var_exists = True
-                    else:
-                        new_lines.append(line)
-                else:
-                    new_lines.append(line)
-            
-            # Add variable if it doesn't exist
-            if not var_exists:
-                new_lines.append(f"ETHEREUM_NETWORK={network}\n")
-            
-            # Write back
-            with open(env_path, "w") as f:
-                f.writelines(new_lines)
-        else:
-            # Create new file
-            with open(env_path, "w") as f:
-                f.write(f"ETHEREUM_NETWORK={network}\n")
-        
-        flash(f"Network set to {network.upper()} and saved to .env file", "success")
+        from dotenv import load_dotenv, set_key
+        dotenv_path = os.path.join(os.getcwd(), '.env')
+        set_key(dotenv_path, 'ETHEREUM_NETWORK', network)
+        flash(f'Network set to {network.upper()}', 'success')
     except Exception as e:
-        logger.error(f"Error setting network in .env file: {str(e)}")
-        flash(f"Network set to {network.upper()} but could not save to .env file", "warning")
+        flash(f'Network temporarily set to {network.upper()}, but could not update .env file: {str(e)}', 'warning')
     
     return redirect(url_for('blockchain_admin.index'))
 
 @blockchain_admin_bp.route('/contracts/update', methods=['POST'])
-@login_required
-@admin_required
+@blockchain_admin_required
 def update_contract():
     """Update a contract address in the configuration"""
-    contract_name = request.form.get('contract_name')
-    network = request.form.get('network')
+    contract_type = request.form.get('contract_type')
+    network = request.form.get('network', 'testnet')
     address = request.form.get('address')
     
-    if not contract_name or not network or not address:
-        flash("Missing required parameters", "danger")
+    if not contract_type or not address:
+        flash('Contract type and address are required', 'danger')
         return redirect(url_for('blockchain_admin.index'))
     
-    if network not in ["testnet", "mainnet"]:
-        flash("Invalid network specified", "danger")
-        return redirect(url_for('blockchain_admin.index'))
-    
-    # Update configuration
     try:
-        contract_config.update_contract_address(network, contract_name, address)
-        flash(f"Contract {contract_name} updated for {network}", "success")
+        # Validate the address format
+        web3 = get_web3_connection()
+        if not web3.is_address(address):
+            flash('Invalid Ethereum address format', 'danger')
+            return redirect(url_for('blockchain_admin.index'))
         
-        # Also update database if it exists
-        db_name = None
-        if contract_name == "settlement_contract":
-            db_name = "SettlementContract"
-        elif contract_name == "multisig_wallet":
-            db_name = "MultiSigWallet"
-        elif contract_name == "nvc_token":
-            db_name = "NVCToken"
+        # Store the contract in the database
+        contract = SmartContract(
+            name=contract_type,
+            address=address,
+            network=network,
+            is_active=True,
+            contract_type=contract_type,
+            description=f"{contract_type} on {network}"
+        )
         
-        if db_name:
-            # Check if contract exists in database
-            contract = SmartContract.query.filter_by(
-                name=db_name, 
-                network=network
-            ).first()
-            
-            if contract:
-                # Update existing record
-                contract.address = address
-                contract.updated_at = datetime.now()
-                db.session.commit()
-                flash(f"Database record for {db_name} also updated", "success")
-            else:
-                # Create new record
-                new_contract = SmartContract(
-                    name=db_name,
-                    address=address,
-                    network=network,
-                    is_active=True,
-                    deployment_date=datetime.now()
-                )
-                db.session.add(new_contract)
-                db.session.commit()
-                flash(f"New database record created for {db_name}", "success")
-    
+        from app import db
+        db.session.add(contract)
+        db.session.commit()
+        
+        # Update the contract_config
+        contract_config.set_contract_address(contract_type, address, network)
+        
+        flash(f'{contract_type} contract address updated for {network}', 'success')
     except Exception as e:
-        logger.error(f"Error updating contract: {str(e)}")
-        flash(f"Error updating contract: {str(e)}", "danger")
+        flash(f'Error updating contract address: {str(e)}', 'danger')
     
     return redirect(url_for('blockchain_admin.index'))
 
 @blockchain_admin_bp.route('/deploy')
-@login_required
-@admin_required
+@blockchain_admin_required
 def deploy_page():
     """Show the contract deployment page"""
     return render_template('admin/blockchain/deploy.html')
 
 @blockchain_admin_bp.route('/status')
-@login_required
-@admin_required
+@blockchain_admin_required
 def status():
     """Show blockchain connection status"""
     try:
-        from blockchain import get_web3
+        web3 = get_web3_connection()
+        status_data = {
+            'is_connected': web3 is not None,
+            'network': os.environ.get('ETHEREUM_NETWORK', 'testnet'),
+            'chain_id': web3.net.version if web3 else None,
+            'current_block': web3.eth.block_number if web3 else None,
+            'gas_price': web3.from_wei(web3.eth.gas_price, 'gwei') if web3 else None
+        }
         
-        w3 = get_web3()
-        connected = w3 and w3.is_connected()
-        
-        if connected:
-            network_id = w3.net.version
-            latest_block = w3.eth.block_number
-            gas_price = w3.eth.gas_price
-            
-            # Get connected accounts
-            accounts = []
-            admin_key = os.environ.get("ADMIN_ETH_PRIVATE_KEY")
-            if admin_key:
-                from eth_account import Account
-                account = Account.from_key(admin_key)
-                
-                try:
-                    balance = w3.eth.get_balance(account.address)
-                    accounts.append({
-                        "address": account.address,
-                        "balance": w3.from_wei(balance, "ether")
-                    })
-                except Exception as e:
-                    logger.error(f"Error getting account balance: {str(e)}")
-                    accounts.append({
-                        "address": account.address,
-                        "balance": "Error"
-                    })
-            
-            return render_template(
-                'admin/blockchain/status.html',
-                connected=connected,
-                network_id=network_id,
-                latest_block=latest_block,
-                gas_price=w3.from_wei(gas_price, "gwei"),
-                accounts=accounts
-            )
-        else:
-            return render_template(
-                'admin/blockchain/status.html',
-                connected=False,
-                error="Could not connect to Ethereum node"
-            )
-    
+        # Get admin account balance
+        admin_address = os.environ.get('ADMIN_ETH_ADDRESS')
+        if admin_address and web3:
+            balance_wei = web3.eth.get_balance(admin_address)
+            status_data['admin_balance'] = web3.from_wei(balance_wei, 'ether')
+            status_data['admin_address'] = admin_address
     except Exception as e:
-        logger.error(f"Error checking blockchain status: {str(e)}")
-        return render_template(
-            'admin/blockchain/status.html',
-            connected=False,
-            error=str(e)
-        )
+        status_data = {
+            'is_connected': False,
+            'error': str(e)
+        }
+    
+    return jsonify(status_data)
+
+@blockchain_admin_bp.route('/validate-contracts')
+@blockchain_admin_required
+def validate_contracts():
+    """Validate contract addresses"""
+    network = os.environ.get('ETHEREUM_NETWORK', 'testnet')
+    
+    try:
+        validation_results = validate_contract_addresses(network)
+        return jsonify({
+            'status': 'success',
+            'validation': validation_results
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        })
