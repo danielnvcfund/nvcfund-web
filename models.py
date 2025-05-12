@@ -119,6 +119,23 @@ class TransactionType(enum.Enum):
     CORRESPONDENT_SETTLEMENT = "CORRESPONDENT_SETTLEMENT" # For settlements with correspondent banks
 
 
+class PaymentMethod(enum.Enum):
+    CREDIT_CARD = "credit_card"
+    DEBIT_CARD = "debit_card"
+    BANK_TRANSFER = "bank_transfer"
+    ACH = "ach"
+    WIRE = "wire"
+    CRYPTOCURRENCY = "cryptocurrency"
+    NVCT = "nvct"
+    PAYPAL = "paypal"
+    SWIFT = "swift"
+    RTGS = "rtgs"
+    EDI = "edi"
+    CASH = "cash"
+    CHECK = "check"
+    MONEY_ORDER = "money_order"
+    STRIPE = "stripe"
+    
 class GatewayType(enum.Enum):
     STRIPE = "stripe"
     PAYPAL = "paypal"
