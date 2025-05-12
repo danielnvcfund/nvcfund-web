@@ -383,7 +383,7 @@ class SmartContract(db.Model):
 class BlockchainTransaction(db.Model):
     """Blockchain transaction model for tracking transactions"""
     id = db.Column(db.Integer, primary_key=True)
-    tx_hash = db.Column(db.String(66), unique=True, nullable=False)
+    tx_hash = db.Column(db.String(66), unique=True, nullable=True)  # Made nullable for backward compatibility during migration
     tx_type = db.Column(db.Enum(BlockchainTransactionType), nullable=False)
     network = db.Column(db.Enum(BlockchainNetwork), nullable=False)
     from_address = db.Column(db.String(42), nullable=False)
@@ -418,7 +418,8 @@ class BlockchainTransaction(db.Model):
     smart_contract = db.relationship('SmartContract', backref='transactions')
     
     def __repr__(self):
-        return f"<BlockchainTransaction {self.tx_hash[:10]}... ({self.tx_type.value})>"
+        tx_hash_display = self.tx_hash[:10] + "..." if self.tx_hash else "None"
+        return f"<BlockchainTransaction {tx_hash_display} ({self.tx_type.value})>"
 
 class SecurityOperation(db.Model):
     """Security operation model for tracking sensitive mainnet operations"""
