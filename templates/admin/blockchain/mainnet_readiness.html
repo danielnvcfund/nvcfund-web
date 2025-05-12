@@ -28,9 +28,9 @@
                 </div>
                 <div class="card-body">
                     <div class="progress" style="height: 30px;">
-                        <div class="progress-bar {% if readiness_score < 50 %}bg-danger{% elif readiness_score < 80 %}bg-warning{% else %}bg-success{% endif %}" 
+                        <div class="progress-bar {% if readiness_score < 50 %}bg-danger{% elif readiness_score < 80 %}bg-warning text-dark{% else %}bg-success{% endif %}" 
                              role="progressbar" 
-                             style="width: {{ readiness_score }}%;" 
+                             style="width: {{ readiness_score }}%; font-weight: bold; font-size: 16px;" 
                              aria-valuenow="{{ readiness_score }}" 
                              aria-valuemin="0" 
                              aria-valuemax="100">
@@ -92,7 +92,7 @@
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Database Readiness</h5>
-                    <span class="badge {% if db_checks.tx_hash_column and db_checks.smart_contracts_count > 0 and db_checks.transactions_count > 0 %}bg-success{% else %}bg-warning{% endif %}">
+                    <span class="badge {% if db_checks.tx_hash_column and db_checks.smart_contracts_count > 0 and db_checks.transactions_count > 0 %}bg-success{% else %}bg-warning text-dark{% endif %}">
                         {% if db_checks.tx_hash_column and db_checks.smart_contracts_count > 0 and db_checks.transactions_count > 0 %}Ready{% else %}Needs Attention{% endif %}
                     </span>
                 </div>
@@ -106,13 +106,13 @@
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Smart Contracts Registered
-                            <span class="badge {% if db_checks.smart_contracts_count > 0 %}bg-success{% else %}bg-warning{% endif %}">
+                            <span class="badge {% if db_checks.smart_contracts_count > 0 %}bg-success{% else %}bg-warning text-dark{% endif %}">
                                 {{ db_checks.smart_contracts_count }}
                             </span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Transactions Recorded
-                            <span class="badge {% if db_checks.transactions_count > 0 %}bg-success{% else %}bg-warning{% endif %}">
+                            <span class="badge {% if db_checks.transactions_count > 0 %}bg-success{% else %}bg-warning text-dark{% endif %}">
                                 {{ db_checks.transactions_count }}
                             </span>
                         </li>
@@ -133,7 +133,7 @@
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Network Connectivity</h5>
-                    <span class="badge {% if connectivity_checks.mainnet_connected and connectivity_checks.testnet_connected and connectivity_checks.api_credentials %}bg-success{% else %}bg-warning{% endif %}">
+                    <span class="badge {% if connectivity_checks.mainnet_connected and connectivity_checks.testnet_connected and connectivity_checks.api_credentials %}bg-success{% else %}bg-warning text-dark{% endif %}">
                         {% if connectivity_checks.mainnet_connected and connectivity_checks.testnet_connected and connectivity_checks.api_credentials %}Ready{% else %}Needs Attention{% endif %}
                     </span>
                 </div>

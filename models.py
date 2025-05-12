@@ -417,14 +417,6 @@ class BlockchainTransaction(db.Model):
         tx_str = self.tx_hash if self.tx_hash else "Unknown"
         tx_type = self.transaction_type if self.transaction_type else "Unknown Type"
         return f"<BlockchainTransaction {tx_str} - {tx_type}>"
-    
-    # Relationships
-    contract_id = db.Column(db.Integer, db.ForeignKey('smart_contract.id'))
-    smart_contract = db.relationship('SmartContract', backref='transactions')
-    
-    def __repr__(self):
-        tx_hash_display = self.tx_hash[:10] + "..." if self.tx_hash else "None"
-        return f"<BlockchainTransaction {tx_hash_display} ({self.tx_type.value})>"
 
 class SecurityOperation(db.Model):
     """Security operation model for tracking sensitive mainnet operations"""
