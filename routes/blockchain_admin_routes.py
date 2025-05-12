@@ -16,6 +16,7 @@ from datetime import datetime
 from blockchain import connect_to_ethereum, get_contract_instance, get_token_supply, get_gas_price
 from dotenv import load_dotenv, set_key
 import contract_config
+import gas_estimator
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -514,3 +515,59 @@ def switch_to_testnet():
         logger.error(f"Error in switch_to_testnet: {str(e)}")
         flash(f"Error switching to testnet: {str(e)}", "danger")
         return redirect(url_for('blockchain_admin.mainnet_readiness'))
+
+@blockchain_admin_bp.route('/gas_estimator')
+@login_required
+@blockchain_admin_required
+def gas_estimator_view():
+    """View gas estimator for mainnet transactions"""
+    try:
+        # Get current network
+        current_network = os.environ.get('ETHEREUM_NETWORK', 'testnet')
+        
+        # Get price data
+        eth_price = gas_estimator.get_eth_price_usd()
+        
+        # Get gas price data
+        gas_price_data = gas_estimator.get_current_gas_price(current_network)
+        
+        # Get admin balance
+        balance_data = gas_estimator.get_admin_eth_balance(current_network)
+        
+        # Calculate deployment cost estimates
+        deployment_costs = {}
+        for contract_type in ['nvc_token', 'multisig_wallet', 'settlement_contract']:
+            slow_estimate = gas_estimator.estimate_deployment_cost(contract_type, current_network, 'slow')
+            medium_estimate = gas_estimator.estimate_deployment_cost(contract_type, current_network, 'medium')
+            fast_estimate = gas_estimator.estimate_deployment_cost(contract_type, current_network, 'fast')
+            
+            deployment_costs[contract_type] = {
+                'slow': slow_estimate,
+                'medium': medium_estimate,
+                'fast': fast_estimate
+            }
+        
+        # Calculate interaction cost estimates for common operations
+        interaction_costs = {}
+        for interaction_type in ['erc20_transfer', 'multisig_submit', 'multisig_confirm', 'settlement_process']:
+            estimate = gas_estimator.estimate_contract_interaction_cost(interaction_type, current_network, 'medium')
+            interaction_costs[interaction_type] = estimate
+        
+        # Get total deployment cost
+        total_costs = gas_estimator.estimate_all_deployment_costs(current_network)['total']
+        
+        return render_template(
+            'admin/blockchain/gas_estimator.html',
+            eth_price=eth_price,
+            gas_price_data=gas_price_data,
+            balance_data=balance_data,
+            deployment_costs=deployment_costs,
+            interaction_costs=interaction_costs,
+            total_costs=total_costs,
+            current_network=current_network
+        )
+    
+    except Exception as e:
+        logger.error(f"Error in gas estimator view: {str(e)}")
+        flash(f"Error estimating gas costs: {str(e)}", "danger")
+        return render_template('admin/blockchain/gas_estimator.html', error=str(e))

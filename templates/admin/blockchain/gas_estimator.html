@@ -1,0 +1,230 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}Gas Cost Estimator - NVCT Mainnet{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Gas Cost Estimator - Ethereum {{ current_network|capitalize }}</h5>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                    <div class="alert alert-danger" role="alert">
+                        <h4 class="alert-heading">Error!</h4>
+                        <p>{{ error }}</p>
+                    </div>
+                    {% else %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">Current Ethereum Network Conditions</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row align-items-center mb-3">
+                                        <div class="col-6">
+                                            <h6>Ethereum Price:</h6>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <span class="h4 text-success">${{ eth_price|float|round(2) }} USD</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row align-items-center">
+                                        <div class="col-6">
+                                            <h6>Current Network:</h6>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            {% if current_network == 'mainnet' %}
+                                            <span class="badge badge-ready">Ethereum Mainnet</span>
+                                            {% else %}
+                                            <span class="badge bg-info">Ethereum Testnet (Sepolia)</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <hr>
+                                    
+                                    <h6 class="mb-3">Current Gas Prices:</h6>
+                                    {% if gas_price_data %}
+                                        {% if 'eip1559' in gas_price_data %}
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Type</th>
+                                                        <th class="text-end">Value (Gwei)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Base Fee</td>
+                                                        <td class="text-end">{{ (gas_price_data['eip1559']['base_fee'] / 1e9)|float|round(2) }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Priority Fee (Slow)</td>
+                                                        <td class="text-end">{{ (gas_price_data['eip1559']['priority_fees']['slow'] / 1e9)|float|round(2) }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Priority Fee (Medium)</td>
+                                                        <td class="text-end">{{ (gas_price_data['eip1559']['priority_fees']['medium'] / 1e9)|float|round(2) }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Priority Fee (Fast)</td>
+                                                        <td class="text-end">{{ (gas_price_data['eip1559']['priority_fees']['fast'] / 1e9)|float|round(2) }}</td>
+                                                    </tr>
+                                                    <tr class="table-info">
+                                                        <td>Max Fee (Slow)</td>
+                                                        <td class="text-end">{{ (gas_price_data['eip1559']['max_fee_slow'] / 1e9)|float|round(2) }}</td>
+                                                    </tr>
+                                                    <tr class="table-info">
+                                                        <td>Max Fee (Medium)</td>
+                                                        <td class="text-end">{{ (gas_price_data['eip1559']['max_fee_medium'] / 1e9)|float|round(2) }}</td>
+                                                    </tr>
+                                                    <tr class="table-info">
+                                                        <td>Max Fee (Fast)</td>
+                                                        <td class="text-end">{{ (gas_price_data['eip1559']['max_fee_fast'] / 1e9)|float|round(2) }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        {% else %}
+                                        <div class="alert alert-info">
+                                            Legacy Gas Price: {{ (gas_price_data['legacy'] / 1e9)|float|round(2) }} Gwei
+                                        </div>
+                                        {% endif %}
+                                    {% else %}
+                                    <div class="alert alert-warning">
+                                        Could not retrieve current gas prices.
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if balance_data %}
+                            <div class="card mb-4">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">Admin Account Balance</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <h6>Address:</h6>
+                                        <code class="d-block text-break bg-light p-2 rounded">{{ balance_data['address'] }}</code>
+                                    </div>
+                                    
+                                    <div class="row align-items-center mb-3">
+                                        <div class="col-6">
+                                            <h6>ETH Balance:</h6>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <span class="h4 {% if balance_data['balance_eth']|float > 0.5 %}text-success{% elif balance_data['balance_eth']|float > 0.1 %}text-warning{% else %}text-danger{% endif %}">
+                                                {{ balance_data['balance_eth']|float|round(6) }} ETH
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row align-items-center">
+                                        <div class="col-6">
+                                            <h6>USD Value:</h6>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <span class="h5 text-primary">
+                                                ${{ balance_data['balance_usd']|float|round(2) }} USD
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">Contract Deployment Costs</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th>Contract</th>
+                                                    <th class="text-end">ETH Cost (Slow)</th>
+                                                    <th class="text-end">ETH Cost (Medium)</th>
+                                                    <th class="text-end">ETH Cost (Fast)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for contract_type, estimates in deployment_costs.items() %}
+                                                <tr>
+                                                    <td>{{ contract_type|replace('_', ' ')|title }}</td>
+                                                    <td class="text-end">{{ estimates['slow']['cost_eth']|float|round(6) }}</td>
+                                                    <td class="text-end">{{ estimates['medium']['cost_eth']|float|round(6) }}</td>
+                                                    <td class="text-end">{{ estimates['fast']['cost_eth']|float|round(6) }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                                <tr class="table-primary">
+                                                    <td><strong>Total</strong></td>
+                                                    <td class="text-end"><strong>{{ total_costs['slow']['cost_eth']|float|round(6) }}</strong></td>
+                                                    <td class="text-end"><strong>{{ total_costs['medium']['cost_eth']|float|round(6) }}</strong></td>
+                                                    <td class="text-end"><strong>{{ total_costs['fast']['cost_eth']|float|round(6) }}</strong></td>
+                                                </tr>
+                                                <tr class="table-info">
+                                                    <td><strong>USD Value</strong></td>
+                                                    <td class="text-end"><strong>${{ total_costs['slow']['cost_usd']|float|round(2) }}</strong></td>
+                                                    <td class="text-end"><strong>${{ total_costs['medium']['cost_usd']|float|round(2) }}</strong></td>
+                                                    <td class="text-end"><strong>${{ total_costs['fast']['cost_usd']|float|round(2) }}</strong></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5 class="mb-0">Common Transaction Costs</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th>Operation</th>
+                                                    <th class="text-end">Gas Limit</th>
+                                                    <th class="text-end">ETH Cost</th>
+                                                    <th class="text-end">USD Cost</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for interaction_type, estimate in interaction_costs.items() %}
+                                                <tr>
+                                                    <td>{{ interaction_type|replace('_', ' ')|title }}</td>
+                                                    <td class="text-end">{{ estimate['gas_limit']|int|format_number }}</td>
+                                                    <td class="text-end">{{ estimate['cost_eth']|float|round(6) }}</td>
+                                                    <td class="text-end">${{ estimate['cost_usd']|float|round(2) }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('blockchain_admin.mainnet_readiness') }}" class="btn btn-secondary">Back to Mainnet Readiness</a>
+                        <a href="{{ url_for('blockchain_admin.gas_estimator') }}" class="btn btn-primary"><i class="fas fa-sync"></i> Refresh Estimates</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
