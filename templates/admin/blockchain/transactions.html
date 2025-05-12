@@ -60,7 +60,7 @@
                                         <span class="text-muted">Not recorded</span>
                                         {% endif %}
                                     </td>
-                                    <td><span class="badge bg-info">{{ tx.transaction_type or 'UNKNOWN' }}</span></td>
+                                    <td><span class="badge bg-info text-dark">{{ tx.transaction_type or 'UNKNOWN' }}</span></td>
                                     <td>
                                         {% if tx.from_address %}
                                             {{ tx.from_address[:10] }}...{{ tx.from_address[-8:] if tx.from_address|length > 16 else tx.from_address }}
@@ -83,7 +83,7 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <span class="badge bg-{% if tx.status == 1 %}success{% elif tx.status == 0 %}danger{% else %}warning{% endif %}">
+                                        <span class="badge bg-{% if tx.status == 1 %}success{% elif tx.status == 0 %}danger{% else %}warning{% endif %} {% if tx.status != 0 and tx.status != 1 %}text-dark{% endif %}">
                                             {% if tx.status == 1 %}Success{% elif tx.status == 0 %}Failed{% else %}Pending{% endif %}
                                         </span>
                                     </td>
