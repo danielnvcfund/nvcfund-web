@@ -165,7 +165,13 @@ def generate_receipt_pdf(transaction, user):
     
     # Save PDF to BytesIO
     buffer = BytesIO()
-    pdf.output(buffer, 'F')
+    
+    # Get PDF output and write to buffer
+    pdf_output = pdf.output(dest='S')
+    if isinstance(pdf_output, str):
+        buffer.write(pdf_output.encode('latin1'))
+    else:
+        buffer.write(pdf_output)
     buffer.seek(0)
     
     return buffer
@@ -186,10 +192,10 @@ def generate_receipt(transaction_id):
     
     # Return PDF file
     return send_file(
-        pdf_buffer,
+        pdf_buffer, 
         mimetype='application/pdf',
-        as_attachment=True,
-        download_name=f'Receipt-{transaction.transaction_id}.pdf'
+        download_name=f'Receipt-{transaction.transaction_id}.pdf',
+        as_attachment=True
     )
 
 
@@ -210,11 +216,16 @@ def email_receipt(transaction_id):
     pdf_data = pdf_buffer.getvalue()
     pdf_base64 = base64.b64encode(pdf_data).decode('utf-8')
     
+    # Log for troubleshooting
+    logger.info(f"Generated PDF receipt for transaction {transaction_id}")
+    
     # Send email with receipt attachment
     if send_receipt_email(transaction, current_user, pdf_base64):
         flash('Receipt has been sent to your email.', 'success')
+        logger.info(f"Receipt email sent successfully to {current_user.email}")
     else:
         flash('Failed to send receipt email. Please try again.', 'danger')
+        logger.error(f"Failed to send receipt email for transaction {transaction_id} to {current_user.email}")
     
     # Redirect back to transaction detail page
     return redirect(url_for('payment_history.transaction_detail', transaction_id=transaction_id))
