@@ -1,502 +1,351 @@
 """
-Email service module for the NVC Banking Platform
-Uses SendGrid to send transactional emails
+Email Service Module
+This module provides email notification services using SendGrid.
 """
-import os
-import logging
-from typing import Optional
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Email, To, Content, TemplateId, Personalization
-from flask import current_app, url_for
 
+import os
+import sys
+import logging
+from datetime import datetime
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, Email, To, Content, Attachment, FileContent, FileName, FileType, Disposition
+
+# Configure logging
 logger = logging.getLogger(__name__)
 
-# Constants
+# Get SendGrid API key from environment
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
-FROM_EMAIL = 'notifications@nvcplatform.net'  # Replace with your verified sender
-FROM_NAME = 'NVC Banking Platform'
+DEFAULT_FROM_EMAIL = 'no-reply@nvcplatform.net'
 
-# Email templates
-TEMPLATES = {
-    'welcome': 'd-xxxxxxxxxxxxxxxxxxxxxxxx',  # Replace with actual template ID when available
-    'password_reset': 'd-xxxxxxxxxxxxxxxxxxxxxxxx',  # Replace with actual template ID when available
-    'account_verification': 'd-xxxxxxxxxxxxxxxxxxxxxxxx',  # Replace with actual template ID when available
-    'invitation': 'd-xxxxxxxxxxxxxxxxxxxxxxxx'  # Replace with actual template ID when available
-}
+
+def send_transaction_confirmation_email(transaction, user) -> bool:
+    """
+    Send a transaction confirmation email to a user
+    
+    Args:
+        transaction: The transaction model instance
+        user: The user model instance
+        
+    Returns:
+        Boolean indicating success or failure
+    """
+    subject = f"Transaction Confirmation - {transaction.transaction_id}"
+    
+    # Create HTML content
+    html_content = f"""
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background-color: #3498db; color: white; padding: 20px; text-align: center; }}
+            .content {{ background-color: #f9f9f9; padding: 20px; }}
+            .footer {{ font-size: 12px; color: #888; text-align: center; margin-top: 20px; }}
+            .details {{ background-color: white; padding: 15px; margin: 15px 0; border-radius: 5px; }}
+            .button {{ display: inline-block; background-color: #3498db; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Transaction Confirmation</h1>
+            </div>
+            <div class="content">
+                <p>Dear {user.username},</p>
+                <p>Your transaction has been processed. Here are the details:</p>
+                
+                <div class="details">
+                    <p><strong>Transaction ID:</strong> {transaction.transaction_id}</p>
+                    <p><strong>Amount:</strong> {transaction.currency} {transaction.amount:.2f}</p>
+                    <p><strong>Date:</strong> {transaction.created_at.strftime('%Y-%m-%d %H:%M:%S')}</p>
+                    <p><strong>Status:</strong> {transaction.status.value}</p>
+                    <p><strong>Type:</strong> {transaction.transaction_type.value.replace('_', ' ').title()}</p>
+                    <p><strong>Description:</strong> {transaction.description or 'N/A'}</p>
+                </div>
+                
+                <p>You can view the complete transaction details by logging into your account.</p>
+                
+                <p>If you have any questions or concerns, please contact our support team.</p>
+                
+                <p>Thank you for using NVC Banking Platform.</p>
+            </div>
+            <div class="footer">
+                <p>This is an automated message. Please do not reply to this email.</p>
+                <p>&copy; {datetime.now().year} NVC Banking Platform. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    # Create plain text content
+    text_content = f"""
+    Transaction Confirmation - {transaction.transaction_id}
+    
+    Dear {user.username},
+    
+    Your transaction has been processed. Here are the details:
+    
+    Transaction ID: {transaction.transaction_id}
+    Amount: {transaction.currency} {transaction.amount:.2f}
+    Date: {transaction.created_at.strftime('%Y-%m-%d %H:%M:%S')}
+    Status: {transaction.status.value}
+    Type: {transaction.transaction_type.value.replace('_', ' ').title()}
+    Description: {transaction.description or 'N/A'}
+    
+    You can view the complete transaction details by logging into your account.
+    
+    If you have any questions or concerns, please contact our support team.
+    
+    Thank you for using NVC Banking Platform.
+    
+    This is an automated message. Please do not reply to this email.
+    """
+    
+    return send_email(
+        to_email=user.email,
+        subject=subject,
+        html_content=html_content,
+        text_content=text_content
+    )
+
 
 def send_email(
     to_email: str,
     subject: str,
-    text_content: Optional[str] = None,
-    html_content: Optional[str] = None,
-    template_id: Optional[str] = None,
-    dynamic_template_data: Optional[dict] = None
+    html_content: str | None = None,
+    text_content: str | None = None,
+    from_email: str = DEFAULT_FROM_EMAIL,
+    attachments=None
 ) -> bool:
     """
     Send an email using SendGrid
     
     Args:
-        to_email (str): Recipient email address
-        subject (str): Email subject
-        text_content (str, optional): Plain text content. Required if template_id is not provided.
-        html_content (str, optional): HTML content. If not provided, text_content will be used.
-        template_id (str, optional): SendGrid template ID. If provided, content will be ignored.
-        dynamic_template_data (dict, optional): Data for template. Required if template_id is provided.
+        to_email: Recipient email address
+        subject: Email subject
+        html_content: HTML content of the email (optional)
+        text_content: Plain text content of the email (optional)
+        from_email: Sender email address (defaults to DEFAULT_FROM_EMAIL)
+        attachments: List of dictionaries with attachment data (optional)
         
     Returns:
-        bool: True if email sent successfully, False otherwise
+        Boolean indicating success or failure
     """
     if not SENDGRID_API_KEY:
-        logger.error("SendGrid API key is not configured")
+        logger.error("SendGrid API key not found in environment variables")
         return False
-    
-    if not template_id and not (text_content or html_content):
-        logger.error("Either template_id or content (text or html) must be provided")
+        
+    if not html_content and not text_content:
+        logger.error("Either html_content or text_content must be provided")
         return False
+        
+    # Create SendGrid client
+    sg = SendGridAPIClient(SENDGRID_API_KEY)
     
-    if template_id and not dynamic_template_data:
-        logger.warning("Template ID provided without dynamic template data")
-    
+    # Create message
     message = Mail(
-        from_email=Email(FROM_EMAIL, FROM_NAME),
+        from_email=Email(from_email),
         to_emails=To(to_email),
         subject=subject
     )
     
-    if template_id:
-        message.template_id = TemplateId(template_id)
-        
-        if dynamic_template_data:
-            personalization = Personalization()
-            personalization.add_to(To(to_email))
-            for key, value in dynamic_template_data.items():
-                personalization.dynamic_template_data = {
-                    key: value
-                }
-            message.add_personalization(personalization)
-    else:
-        if html_content:
-            message.content = Content("text/html", html_content)
-        elif text_content:
-            message.content = Content("text/plain", text_content)
+    # Add content (HTML or Plain Text)
+    if html_content:
+        message.content = Content("text/html", html_content)
+    elif text_content:
+        message.content = Content("text/plain", text_content)
     
+    # Add attachments if any
+    if attachments:
+        for attachment_data in attachments:
+            attachment = Attachment()
+            attachment.file_content = FileContent(attachment_data['content'])
+            attachment.file_name = FileName(attachment_data['filename'])
+            attachment.file_type = FileType(attachment_data['mimetype'])
+            attachment.disposition = Disposition('attachment')
+            message.add_attachment(attachment)
+    
+    # Send email
     try:
-        sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
-        
-        if response.status_code >= 200 and response.status_code < 300:
-            logger.info(f"Email sent successfully to {to_email}")
-            return True
-        else:
-            logger.error(f"Failed to send email to {to_email}. Status code: {response.status_code}")
-            return False
+        logger.info(f"Email sent to {to_email}, status code: {response.status_code}")
+        return response.status_code >= 200 and response.status_code < 300
     except Exception as e:
         logger.error(f"SendGrid error: {str(e)}")
         return False
 
-def send_password_reset_email(user, token):
-    """
-    Send password reset email
-    
-    Args:
-        user: User object with email and username
-        token: Password reset token
-        
-    Returns:
-        bool: True if email sent successfully, False otherwise
-    """
-    reset_url = url_for('web.main.reset_password', token=token, _external=True)
-    
-    subject = "Password Reset Request - NVC Banking Platform"
-    html_content = f"""
-    <html>
-        <body>
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-                <h2 style="color: #4A6FFF;">Password Reset Request</h2>
-                <p>Hello {user.username},</p>
-                <p>You recently requested to reset your password for your NVC Banking Platform account. Click the button below to reset it:</p>
-                <div style="text-align: center; margin: 25px 0;">
-                    <a href="{reset_url}" style="background-color: #4A6FFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Your Password</a>
-                </div>
-                <p>If you did not request a password reset, please ignore this email or contact support if you have questions.</p>
-                <p>This link will expire in 1 hour.</p>
-                <p>Regards,<br>The NVC Banking Platform Team</p>
-                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #888;">
-                    <p>If you're having trouble clicking the button, copy and paste this URL into your web browser:</p>
-                    <p>{reset_url}</p>
-                </div>
-            </div>
-        </body>
-    </html>
-    """
-    
-    return send_email(
-        to_email=user.email,
-        subject=subject,
-        html_content=html_content
-    )
 
-def send_username_reminder_email(user):
+def send_payment_confirmation(transaction, user) -> bool:
     """
-    Send username reminder email
+    Send a payment confirmation email
     
     Args:
-        user: User object with email and username
+        transaction: The Transaction model instance
+        user: The User model instance
         
     Returns:
-        bool: True if email sent successfully, False otherwise
+        Boolean indicating success or failure
     """
-    login_url = url_for('web.main.login', _external=True)
+    subject = f"Payment Confirmation - {transaction.transaction_id}"
     
-    subject = "Username Reminder - NVC Banking Platform"
+    # Create HTML content
     html_content = f"""
     <html>
-        <body>
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-                <h2 style="color: #4A6FFF;">Username Reminder</h2>
-                <p>Hello,</p>
-                <p>You recently requested a reminder of your username for the NVC Banking Platform.</p>
-                <p>Your username is: <strong>{user.username}</strong></p>
-                <div style="text-align: center; margin: 25px 0;">
-                    <a href="{login_url}" style="background-color: #4A6FFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Sign In Now</a>
-                </div>
-                <p>If you did not request this information, please contact our support team immediately.</p>
-                <p>Regards,<br>The NVC Banking Platform Team</p>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background-color: #3498db; color: white; padding: 20px; text-align: center; }}
+            .content {{ background-color: #f9f9f9; padding: 20px; }}
+            .footer {{ font-size: 12px; color: #888; text-align: center; margin-top: 20px; }}
+            .details {{ background-color: white; padding: 15px; margin: 15px 0; border-radius: 5px; }}
+            .button {{ display: inline-block; background-color: #3498db; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Payment Confirmation</h1>
             </div>
-        </body>
-    </html>
-    """
-    
-    return send_email(
-        to_email=user.email,
-        subject=subject,
-        html_content=html_content
-    )
-
-def send_welcome_email(user):
-    """
-    Send welcome email to new users
-    
-    Args:
-        user: User object with email and username
-        
-    Returns:
-        bool: True if email sent successfully, False otherwise
-    """
-    dashboard_url = url_for('web.main.dashboard', _external=True)
-    
-    subject = "Welcome to NVC Banking Platform"
-    html_content = f"""
-    <html>
-        <body>
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-                <h2 style="color: #4A6FFF;">Welcome to NVC Banking Platform!</h2>
-                <p>Hello {user.username},</p>
-                <p>Thank you for registering with NVC Banking Platform. We're excited to have you on board!</p>
-                <p>With your new account, you can:</p>
-                <ul>
-                    <li>Process secure blockchain-based transactions</li>
-                    <li>Connect with financial institutions</li>
-                    <li>Use multiple payment gateways</li>
-                    <li>Monitor your transactions in real-time</li>
-                </ul>
-                <div style="text-align: center; margin: 25px 0;">
-                    <a href="{dashboard_url}" style="background-color: #4A6FFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Go to Your Dashboard</a>
-                </div>
-                <p>If you have any questions, please don't hesitate to contact our support team.</p>
-                <p>Regards,<br>The NVC Banking Platform Team</p>
-            </div>
-        </body>
-    </html>
-    """
-    
-    return send_email(
-        to_email=user.email,
-        subject=subject,
-        html_content=html_content
-    )
-
-def send_invitation_email(invitation, invitation_url):
-    """
-    Send invitation email
-    
-    Args:
-        invitation: Invitation object
-        invitation_url: URL for accepting invitation
-        
-    Returns:
-        bool: True if email sent successfully, False otherwise
-    """
-    subject = f"You've been invited to join NVC Banking Platform by {invitation.invited_by_user.username}"
-    
-    html_content = f"""
-    <html>
-        <body>
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-                <h2 style="color: #4A6FFF;">You've Been Invited!</h2>
-                <p>Hello,</p>
-                <p>You have been invited to join the NVC Banking Platform by {invitation.invited_by_user.username} from {invitation.organization_name}.</p>
+            <div class="content">
+                <p>Dear {user.username},</p>
+                <p>Your payment has been successfully processed. Here are the details:</p>
                 
-                {f"<p>Message from {invitation.invited_by_user.username}:</p><blockquote style='border-left: 3px solid #ddd; padding-left: 15px; margin-left: 10px; color: #555;'>{invitation.message}</blockquote>" if invitation.message else ""}
-                
-                <div style="text-align: center; margin: 25px 0;">
-                    <a href="{invitation_url}" style="background-color: #4A6FFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Accept Invitation</a>
-                </div>
-                <p>This invitation will expire in {invitation.expiration_days} days.</p>
-                <p>Regards,<br>The NVC Banking Platform Team</p>
-                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #888;">
-                    <p>If you're having trouble clicking the button, copy and paste this URL into your web browser:</p>
-                    <p>{invitation_url}</p>
-                </div>
-            </div>
-        </body>
-    </html>
-    """
-    
-    return send_email(
-        to_email=invitation.email,
-        subject=subject,
-        html_content=html_content
-    )
-
-def send_client_welcome_email(user):
-    """
-    Send welcome email to new client accounts
-    
-    Args:
-        user: User object with email and username
-        
-    Returns:
-        bool: True if email sent successfully, False otherwise
-    """
-    dashboard_url = url_for('web.main.dashboard', _external=True)
-    
-    subject = "Welcome to NVC Banking Platform - Client Account"
-    html_content = f"""
-    <html>
-        <body>
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-                <h2 style="color: #4A6FFF;">Welcome to NVC Banking Platform!</h2>
-                <p>Hello {user.first_name or user.username},</p>
-                <p>Thank you for creating a client account with NVC Banking Platform. We're excited to have you on board!</p>
-                <p>Your client account provides you with access to our complete suite of financial services:</p>
-                <ul>
-                    <li>Process secure blockchain-based transactions</li>
-                    <li>Access SWIFT messaging capabilities</li>
-                    <li>Use multiple payment gateways including Stripe, PayPal, and NVC Global</li>
-                    <li>Manage your digital assets with NVC Tokens (NVCT)</li>
-                    <li>Connect with global financial institutions</li>
-                    <li>Monitor your transactions in real-time</li>
-                </ul>
-                <div style="text-align: center; margin: 25px 0;">
-                    <a href="{dashboard_url}" style="background-color: #4A6FFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Go to Your Dashboard</a>
-                </div>
-                <p>We've created an Ethereum wallet for your account that you can use for digital asset transactions.</p>
-                <p>If you have any questions, please don't hesitate to contact our support team.</p>
-                <p>Regards,<br>The NVC Banking Platform Team</p>
-            </div>
-        </body>
-    </html>
-    """
-    
-    return send_email(
-        to_email=user.email,
-        subject=subject,
-        html_content=html_content
-    )
-
-def send_transaction_confirmation_email(user, transaction):
-    """
-    Send transaction confirmation email
-    
-    Args:
-        user: User object with email and username
-        transaction: Transaction object with details
-        
-    Returns:
-        bool: True if email sent successfully, False otherwise
-    """
-    transaction_url = url_for('web.main.transaction_details', transaction_id=transaction.transaction_id, _external=True)
-    
-    subject = f"Transaction Confirmation #{transaction.transaction_id}"
-    
-    # Format amount with currency symbol
-    if transaction.currency == 'USD':
-        formatted_amount = f"${transaction.amount:.2f}"
-    elif transaction.currency == 'EUR':
-        formatted_amount = f"€{transaction.amount:.2f}"
-    elif transaction.currency == 'GBP':
-        formatted_amount = f"£{transaction.amount:.2f}"
-    else:
-        formatted_amount = f"{transaction.amount:.2f} {transaction.currency}"
-    
-    # Get transaction type in a readable format
-    transaction_type = transaction.transaction_type.name.replace('_', ' ').title()
-    
-    html_content = f"""
-    <html>
-        <body>
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-                <h2 style="color: #4A6FFF;">Transaction Confirmation</h2>
-                <p>Hello {user.username},</p>
-                <p>Your {transaction_type.lower()} transaction has been processed successfully:</p>
-                
-                <div style="background-color: #f8f9fa; border-radius: 5px; padding: 15px; margin: 20px 0;">
+                <div class="details">
                     <p><strong>Transaction ID:</strong> {transaction.transaction_id}</p>
-                    <p><strong>Type:</strong> {transaction_type}</p>
-                    <p><strong>Amount:</strong> {formatted_amount}</p>
+                    <p><strong>Amount:</strong> {transaction.currency} {transaction.amount:.2f}</p>
                     <p><strong>Date:</strong> {transaction.created_at.strftime('%Y-%m-%d %H:%M:%S')}</p>
-                    <p><strong>Status:</strong> {transaction.status.name.replace('_', ' ').title()}</p>
-                    
-                    {f"<p><strong>Description:</strong> {transaction.description}</p>" if transaction.description else ""}
-                    
-                    {f"<p><strong>Blockchain Transaction Hash:</strong> {transaction.eth_transaction_hash}</p>" if transaction.eth_transaction_hash else ""}
+                    <p><strong>Status:</strong> {transaction.status.value}</p>
+                    <p><strong>Description:</strong> {transaction.description or 'N/A'}</p>
                 </div>
                 
-                <div style="text-align: center; margin: 25px 0;">
-                    <a href="{transaction_url}" style="background-color: #4A6FFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View Transaction Details</a>
-                </div>
+                <p>You can view the complete transaction details and download a receipt by clicking the button below:</p>
                 
-                <p>If you did not authorize this transaction, please contact our support team immediately.</p>
-                <p>Regards,<br>The NVC Banking Platform Team</p>
+                <p style="text-align: center;">
+                    <a href="https://{os.environ.get('REPLIT_DOMAINS', 'localhost:5000').split(',')[0]}/payment-history/transaction/{transaction.transaction_id}" class="button">View Transaction</a>
+                </p>
+                
+                <p>If you have any questions or concerns, please contact our support team.</p>
+                
+                <p>Thank you for using NVC Banking Platform.</p>
             </div>
-        </body>
+            <div class="footer">
+                <p>This is an automated message. Please do not reply to this email.</p>
+                <p>&copy; {transaction.created_at.year} NVC Banking Platform. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
     </html>
+    """
+    
+    # Create plain text content
+    text_content = f"""
+    Payment Confirmation - {transaction.transaction_id}
+    
+    Dear {user.username},
+    
+    Your payment has been successfully processed. Here are the details:
+    
+    Transaction ID: {transaction.transaction_id}
+    Amount: {transaction.currency} {transaction.amount:.2f}
+    Date: {transaction.created_at.strftime('%Y-%m-%d %H:%M:%S')}
+    Status: {transaction.status.value}
+    Description: {transaction.description or 'N/A'}
+    
+    You can view the complete transaction details and download a receipt by visiting:
+    https://{os.environ.get('REPLIT_DOMAINS', 'localhost:5000').split(',')[0]}/payment-history/transaction/{transaction.transaction_id}
+    
+    If you have any questions or concerns, please contact our support team.
+    
+    Thank you for using NVC Banking Platform.
+    
+    This is an automated message. Please do not reply to this email.
     """
     
     return send_email(
         to_email=user.email,
         subject=subject,
-        html_content=html_content
+        html_content=html_content,
+        text_content=text_content
     )
 
-def send_payment_initiated_email(user, transaction):
-    """
-    Send payment initiated email for Stripe or other payment gateways
-    
-    Args:
-        user: User object with email and username
-        transaction: Transaction object with details
-        
-    Returns:
-        bool: True if email sent successfully, False otherwise
-    """
-    transaction_url = url_for('web.main.transaction_details', transaction_id=transaction.transaction_id, _external=True)
-    
-    subject = f"Payment Initiated #{transaction.transaction_id}"
-    
-    # Format amount with currency symbol
-    if transaction.currency == 'USD':
-        formatted_amount = f"${transaction.amount:.2f}"
-    elif transaction.currency == 'EUR':
-        formatted_amount = f"€{transaction.amount:.2f}"
-    elif transaction.currency == 'GBP':
-        formatted_amount = f"£{transaction.amount:.2f}"
-    else:
-        formatted_amount = f"{transaction.amount:.2f} {transaction.currency}"
-    
-    html_content = f"""
-    <html>
-        <body>
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-                <h2 style="color: #4A6FFF;">Payment Initiated</h2>
-                <p>Hello {user.username},</p>
-                <p>Your payment has been initiated and is awaiting processing:</p>
-                
-                <div style="background-color: #f8f9fa; border-radius: 5px; padding: 15px; margin: 20px 0;">
-                    <p><strong>Transaction ID:</strong> {transaction.transaction_id}</p>
-                    <p><strong>Amount:</strong> {formatted_amount}</p>
-                    <p><strong>Date:</strong> {transaction.created_at.strftime('%Y-%m-%d %H:%M:%S')}</p>
-                    <p><strong>Status:</strong> {transaction.status.name.replace('_', ' ').title()}</p>
-                    
-                    {f"<p><strong>Description:</strong> {transaction.description}</p>" if transaction.description else ""}
-                </div>
-                
-                <p>You will receive a confirmation email once the payment is completed.</p>
-                
-                <div style="text-align: center; margin: 25px 0;">
-                    <a href="{transaction_url}" style="background-color: #4A6FFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View Transaction Details</a>
-                </div>
-                
-                <p>If you did not authorize this transaction, please contact our support team immediately.</p>
-                <p>Regards,<br>The NVC Banking Platform Team</p>
-            </div>
-        </body>
-    </html>
-    """
-    
-    return send_email(
-        to_email=user.email,
-        subject=subject,
-        html_content=html_content
-    )
 
-def send_refund_notification_email(user, transaction, refund_amount):
+def send_receipt_email(transaction, user, pdf_content) -> bool:
     """
-    Send refund notification email
+    Send a receipt email with PDF attachment
     
     Args:
-        user: User object with email and username
-        transaction: Transaction object with details
-        refund_amount: Amount refunded (may be partial)
+        transaction: The Transaction model instance
+        user: The User model instance
+        pdf_content: The PDF receipt content as base64 string
         
     Returns:
-        bool: True if email sent successfully, False otherwise
+        Boolean indicating success or failure
     """
-    transaction_url = url_for('web.main.transaction_details', transaction_id=transaction.transaction_id, _external=True)
+    subject = f"Your Receipt - {transaction.transaction_id}"
     
-    subject = f"Refund Notification #{transaction.transaction_id}"
-    
-    # Format amount with currency symbol
-    if transaction.currency == 'USD':
-        formatted_amount = f"${refund_amount:.2f}"
-        original_amount = f"${transaction.amount:.2f}"
-    elif transaction.currency == 'EUR':
-        formatted_amount = f"€{refund_amount:.2f}"
-        original_amount = f"€{transaction.amount:.2f}"
-    elif transaction.currency == 'GBP':
-        formatted_amount = f"£{refund_amount:.2f}"
-        original_amount = f"£{transaction.amount:.2f}"
-    else:
-        formatted_amount = f"{refund_amount:.2f} {transaction.currency}"
-        original_amount = f"{transaction.amount:.2f} {transaction.currency}"
-    
-    # Check if it's a partial or full refund
-    is_partial = refund_amount < transaction.amount
-    refund_type = "Partial Refund" if is_partial else "Full Refund"
-    
+    # Create HTML content
     html_content = f"""
     <html>
-        <body>
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-                <h2 style="color: #4A6FFF;">{refund_type} Issued</h2>
-                <p>Hello {user.username},</p>
-                <p>We've processed a refund for your recent transaction:</p>
-                
-                <div style="background-color: #f8f9fa; border-radius: 5px; padding: 15px; margin: 20px 0;">
-                    <p><strong>Transaction ID:</strong> {transaction.transaction_id}</p>
-                    <p><strong>Original Amount:</strong> {original_amount}</p>
-                    <p><strong>Refund Amount:</strong> {formatted_amount}</p>
-                    <p><strong>Date:</strong> {transaction.updated_at.strftime('%Y-%m-%d %H:%M:%S')}</p>
-                    
-                    {f"<p><strong>Description:</strong> {transaction.description}</p>" if transaction.description else ""}
-                </div>
-                
-                <p>The refunded amount should be credited back to your original payment method within 5-10 business days, depending on your payment provider.</p>
-                
-                <div style="text-align: center; margin: 25px 0;">
-                    <a href="{transaction_url}" style="background-color: #4A6FFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View Transaction Details</a>
-                </div>
-                
-                <p>If you have any questions about this refund, please contact our support team.</p>
-                <p>Regards,<br>The NVC Banking Platform Team</p>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background-color: #3498db; color: white; padding: 20px; text-align: center; }}
+            .content {{ background-color: #f9f9f9; padding: 20px; }}
+            .footer {{ font-size: 12px; color: #888; text-align: center; margin-top: 20px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Your Receipt</h1>
             </div>
-        </body>
+            <div class="content">
+                <p>Dear {user.username},</p>
+                <p>Please find attached the receipt for your recent transaction.</p>
+                <p>Transaction ID: {transaction.transaction_id}</p>
+                <p>Thank you for using NVC Banking Platform.</p>
+                <p>If you have any questions or concerns, please contact our support team.</p>
+            </div>
+            <div class="footer">
+                <p>This is an automated message. Please do not reply to this email.</p>
+                <p>&copy; {transaction.created_at.year} NVC Banking Platform. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
     </html>
     """
+    
+    # Create plain text content
+    text_content = f"""
+    Your Receipt - {transaction.transaction_id}
+    
+    Dear {user.username},
+    
+    Please find attached the receipt for your recent transaction.
+    
+    Transaction ID: {transaction.transaction_id}
+    
+    Thank you for using NVC Banking Platform.
+    
+    If you have any questions or concerns, please contact our support team.
+    
+    This is an automated message. Please do not reply to this email.
+    """
+    
+    # Create attachment data
+    attachments = [{
+        'content': pdf_content,
+        'filename': f'Receipt-{transaction.transaction_id}.pdf',
+        'mimetype': 'application/pdf'
+    }]
     
     return send_email(
         to_email=user.email,
         subject=subject,
-        html_content=html_content
+        html_content=html_content,
+        text_content=text_content,
+        attachments=attachments
     )

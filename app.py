@@ -129,6 +129,7 @@ def create_app():
         return redirect('/main/register')
     
     # Add custom filters
+    import json
     from utils import format_currency, format_transaction_type
     app.jinja_env.filters['format_currency'] = lambda amount, currency='USD': format_currency(amount, currency)
     
@@ -136,6 +137,17 @@ def create_app():
     @app.template_filter('format_transaction_type')
     def format_transaction_type_filter(transaction_type):
         return format_transaction_type(transaction_type)
+        
+    # Add JSON parsing filter for transaction metadata
+    @app.template_filter('from_json')
+    def from_json_filter(value):
+        """Convert JSON string to Python dictionary"""
+        if not value:
+            return {}
+        try:
+            return json.loads(value)
+        except (ValueError, TypeError):
+            return {}
 
     # Set debug mode to True
     app.config['DEBUG'] = True

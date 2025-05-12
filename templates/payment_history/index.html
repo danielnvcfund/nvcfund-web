@@ -1,0 +1,284 @@
+{% extends 'layout.html' %}
+
+{% block title %}Payment History{% endblock %}
+
+{% block styles %}
+<style>
+    .transaction-item {
+        transition: all 0.2s;
+    }
+    .transaction-item:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+        transform: translateY(-2px);
+    }
+    .status-badge {
+        min-width: 100px;
+    }
+    .filter-card {
+        border-radius: 0.5rem;
+    }
+    .transaction-amount {
+        font-weight: 600;
+    }
+    .transaction-icon {
+        font-size: 1.75rem;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .pagination-container {
+        margin-top: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Payment History</h1>
+        <div>
+            <a href="{{ url_for('pos.send_payment') }}" class="btn btn-primary">
+                <i class="fas fa-paper-plane me-2"></i> Send Payment
+            </a>
+            <a href="{{ url_for('stripe.index') }}" class="btn btn-outline-primary">
+                <i class="fab fa-stripe me-2"></i> Stripe Payment
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Filters -->
+        <div class="col-md-3 mb-4">
+            <div class="card filter-card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i> Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" id="filter-form">
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="all" {% if current_status == 'all' %}selected{% endif %}>All Statuses</option>
+                                {% for status in status_options %}
+                                <option value="{{ status }}" {% if current_status == status %}selected{% endif %}>
+                                    {{ status|title }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Payment Type</label>
+                            <select class="form-select" id="type" name="type">
+                                <option value="all" {% if current_type == 'all' %}selected{% endif %}>All Types</option>
+                                {% for type in payment_type_options %}
+                                <option value="{{ type }}" {% if current_type == type %}selected{% endif %}>
+                                    {{ type|replace('_', ' ')|title }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="days" class="form-label">Time Period</label>
+                            <select class="form-select" id="days" name="days">
+                                <option value="7" {% if current_days == '7' %}selected{% endif %}>Last 7 days</option>
+                                <option value="30" {% if current_days == '30' %}selected{% endif %}>Last 30 days</option>
+                                <option value="90" {% if current_days == '90' %}selected{% endif %}>Last 90 days</option>
+                                <option value="365" {% if current_days == '365' %}selected{% endif %}>Last year</option>
+                                <option value="0" {% if current_days == '0' %}selected{% endif %}>All time</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Transaction List -->
+        <div class="col-md-9">
+            {% if transactions.items %}
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for transaction in transactions.items %}
+                                <a href="{{ url_for('payment_history.transaction_detail', transaction_id=transaction.transaction_id) }}" 
+                                   class="list-group-item list-group-item-action transaction-item p-3">
+                                    <div class="d-flex align-items-center">
+                                        <!-- Transaction Icon -->
+                                        <div class="me-3">
+                                            {% if 'STRIPE' in transaction.transaction_type.value %}
+                                                <div class="transaction-icon bg-info text-white">
+                                                    <i class="fab fa-stripe"></i>
+                                                </div>
+                                            {% elif 'CRYPTO' in transaction.transaction_type.value %}
+                                                <div class="transaction-icon bg-warning text-white">
+                                                    <i class="fas fa-coins"></i>
+                                                </div>
+                                            {% elif 'POS' in transaction.transaction_type.value or 'CARD' in transaction.transaction_type.value %}
+                                                <div class="transaction-icon bg-success text-white">
+                                                    <i class="fas fa-credit-card"></i>
+                                                </div>
+                                            {% elif 'TRANSFER' in transaction.transaction_type.value %}
+                                                <div class="transaction-icon bg-primary text-white">
+                                                    <i class="fas fa-exchange-alt"></i>
+                                                </div>
+                                            {% else %}
+                                                <div class="transaction-icon bg-secondary text-white">
+                                                    <i class="fas fa-money-bill-wave"></i>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Transaction Details -->
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                                <h5 class="mb-1">
+                                                    {{ transaction.transaction_type.value|replace('_', ' ')|title }}
+                                                    <small class="text-muted">#{{ transaction.transaction_id }}</small>
+                                                </h5>
+                                                <span class="transaction-amount">
+                                                    {{ transaction.currency }} {{ "%.2f"|format(transaction.amount) }}
+                                                </span>
+                                            </div>
+                                            
+                                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                                <p class="mb-1 text-muted">
+                                                    {% if transaction.description %}
+                                                        {{ transaction.description }}
+                                                    {% else %}
+                                                        {{ transaction.transaction_type.value|replace('_', ' ')|title }}
+                                                    {% endif %}
+                                                </p>
+                                                
+                                                <!-- Status Badge -->
+                                                {% if transaction.status.value == 'COMPLETED' %}
+                                                    <span class="badge bg-success text-center status-badge">Completed</span>
+                                                {% elif transaction.status.value == 'PENDING' %}
+                                                    <span class="badge bg-warning text-dark text-center status-badge">Pending</span>
+                                                {% elif transaction.status.value == 'FAILED' %}
+                                                    <span class="badge bg-danger text-center status-badge">Failed</span>
+                                                {% elif transaction.status.value == 'CANCELLED' %}
+                                                    <span class="badge bg-secondary text-center status-badge">Cancelled</span>
+                                                {% else %}
+                                                    <span class="badge bg-info text-center status-badge">{{ transaction.status.value|title }}</span>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <small class="text-muted">
+                                                {{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                                {% if transaction.recipient_name %}
+                                                    • To: {{ transaction.recipient_name }}
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        
+                                        <!-- Arrow Icon -->
+                                        <div class="ms-2">
+                                            <i class="fas fa-chevron-right text-muted"></i>
+                                        </div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                {% if transactions.pages > 1 %}
+                <div class="pagination-container d-flex justify-content-center">
+                    <nav aria-label="Transaction pagination">
+                        <ul class="pagination">
+                            {% if transactions.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('payment_history.index', page=transactions.prev_num, status=current_status, type=current_type, days=current_days) }}">
+                                        <i class="fas fa-chevron-left"></i> Previous
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-chevron-left"></i> Previous</span>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page_num in transactions.iter_pages(left_edge=2, right_edge=2, left_current=1, right_current=1) %}
+                                {% if page_num %}
+                                    {% if page_num == transactions.page %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('payment_history.index', page=page_num, status=current_status, type=current_type, days=current_days) }}">
+                                                {{ page_num }}
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if transactions.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('payment_history.index', page=transactions.next_num, status=current_status, type=current_type, days=current_days) }}">
+                                        Next <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">Next <i class="fas fa-chevron-right"></i></span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+                
+            {% else %}
+                <div class="card shadow-sm">
+                    <div class="card-body py-5 text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-search fa-3x text-muted"></i>
+                        </div>
+                        <h3>No Transactions Found</h3>
+                        <p class="text-muted">
+                            No payment transactions match your current filters.
+                            Try adjusting your filters or create a new transaction.
+                        </p>
+                        <div class="mt-4">
+                            <a href="{{ url_for('payment_history.index') }}" class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-redo me-2"></i> Reset Filters
+                            </a>
+                            <a href="{{ url_for('pos.send_payment') }}" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i> Send Payment
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-submit filter form when select values change
+    document.addEventListener('DOMContentLoaded', function() {
+        const selects = document.querySelectorAll('#filter-form select');
+        selects.forEach(select => {
+            select.addEventListener('change', function() {
+                document.getElementById('filter-form').submit();
+            });
+        });
+    });
+</script>
+{% endblock %}

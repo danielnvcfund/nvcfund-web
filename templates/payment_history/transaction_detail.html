@@ -1,0 +1,326 @@
+{% extends 'layout.html' %}
+
+{% block title %}Transaction Details{% endblock %}
+
+{% block styles %}
+<style>
+    .transaction-detail-card {
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    .detail-header {
+        padding: 1.5rem;
+    }
+    .detail-section {
+        padding: 1.5rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .detail-label {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+    .detail-value {
+        font-weight: 500;
+    }
+    .transaction-icon-lg {
+        font-size: 2.5rem;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+    .metadata-table {
+        font-size: 0.875rem;
+    }
+    .metadata-table th {
+        width: 40%;
+    }
+    .action-button {
+        padding: 0.5rem 1rem;
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('payment_history.index') }}">Payment History</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Transaction Details</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Transaction Details Card -->
+            <div class="card transaction-detail-card shadow-sm mb-4">
+                <!-- Header with status and amount -->
+                <div class="detail-header bg-light">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h4 class="mb-1">{{ transaction.transaction_type.value|replace('_', ' ')|title }}</h4>
+                            <p class="text-muted mb-0">
+                                #{{ transaction.transaction_id }}
+                                <span class="ms-2">•</span>
+                                <span class="ms-2">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            {% if transaction.status.value == 'COMPLETED' %}
+                                <span class="badge bg-success p-2 mb-2">Completed</span>
+                            {% elif transaction.status.value == 'PENDING' %}
+                                <span class="badge bg-warning text-dark p-2 mb-2">Pending</span>
+                            {% elif transaction.status.value == 'FAILED' %}
+                                <span class="badge bg-danger p-2 mb-2">Failed</span>
+                            {% elif transaction.status.value == 'CANCELLED' %}
+                                <span class="badge bg-secondary p-2 mb-2">Cancelled</span>
+                            {% else %}
+                                <span class="badge bg-info p-2 mb-2">{{ transaction.status.value|title }}</span>
+                            {% endif %}
+                            <h3 class="mb-0">{{ transaction.currency }} {{ "%.2f"|format(transaction.amount) }}</h3>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Transaction Details -->
+                <div class="detail-section">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="detail-label">Payment Method</div>
+                                <div class="detail-value">
+                                    {% if 'STRIPE' in transaction.transaction_type.value %}
+                                        <i class="fab fa-cc-stripe me-1"></i> Stripe
+                                    {% elif 'POS' in transaction.transaction_type.value %}
+                                        <i class="fas fa-credit-card me-1"></i> Card Payment (POS)
+                                    {% elif 'CRYPTO' in transaction.transaction_type.value %}
+                                        <i class="fas fa-coins me-1"></i> Cryptocurrency
+                                    {% elif 'TRANSFER' in transaction.transaction_type.value %}
+                                        <i class="fas fa-exchange-alt me-1"></i> Bank Transfer
+                                    {% else %}
+                                        <i class="fas fa-money-bill-wave me-1"></i> Standard Payment
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="detail-label">Description</div>
+                                <div class="detail-value">
+                                    {% if transaction.description %}
+                                        {{ transaction.description }}
+                                    {% else %}
+                                        <span class="text-muted">No description provided</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="detail-label">Transaction Type</div>
+                                <div class="detail-value">{{ transaction.transaction_type.value|replace('_', ' ')|title }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            {% if transaction.recipient_name %}
+                            <div class="mb-3">
+                                <div class="detail-label">Recipient</div>
+                                <div class="detail-value">{{ transaction.recipient_name }}</div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if transaction.recipient_account %}
+                            <div class="mb-3">
+                                <div class="detail-label">Recipient Account</div>
+                                <div class="detail-value">{{ transaction.recipient_account }}</div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if transaction.recipient_institution %}
+                            <div class="mb-3">
+                                <div class="detail-label">Recipient Institution</div>
+                                <div class="detail-value">{{ transaction.recipient_institution }}</div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if transaction.completed_at %}
+                            <div class="mb-3">
+                                <div class="detail-label">Completed Date</div>
+                                <div class="detail-value">{{ transaction.completed_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Details Section -->
+                {% if transaction.tx_metadata_json %}
+                <div class="detail-section">
+                    <h5 class="mb-3">Additional Details</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered metadata-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if transaction.tx_metadata_json %}
+                                    {% set metadata = transaction.tx_metadata_json|from_json %}
+                                    {% for key, value in metadata.items() %}
+                                        {% if key != 'card_last4' and key != 'payout_id' and key != 'payout_status' %}
+                                        <tr>
+                                            <th>{{ key|replace('_', ' ')|title }}</th>
+                                            <td>{{ value }}</td>
+                                        </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                                
+                                {% if transaction.eth_transaction_hash %}
+                                <tr>
+                                    <th>Blockchain Transaction</th>
+                                    <td><code>{{ transaction.eth_transaction_hash }}</code></td>
+                                </tr>
+                                {% endif %}
+                                
+                                {% if transaction.external_id %}
+                                <tr>
+                                    <th>External Reference</th>
+                                    <td>{{ transaction.external_id }}</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Actions Section -->
+                <div class="detail-section bg-light">
+                    <div class="d-flex flex-wrap">
+                        <a href="{{ url_for('payment_history.download_receipt', transaction_id=transaction.transaction_id) }}" 
+                           class="btn btn-primary action-button">
+                            <i class="fas fa-file-pdf me-2"></i> Download Receipt
+                        </a>
+                        <a href="{{ url_for('payment_history.index') }}" class="btn btn-outline-secondary action-button">
+                            <i class="fas fa-arrow-left me-2"></i> Back to Payments
+                        </a>
+                        
+                        {% if transaction.status.value == 'PENDING' %}
+                        <button type="button" class="btn btn-outline-danger action-button" 
+                                onclick="confirmCancel('{{ transaction.transaction_id }}')">
+                            <i class="fas fa-times me-2"></i> Cancel Transaction
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Transaction Summary Card -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body text-center">
+                    {% if 'STRIPE' in transaction.transaction_type.value %}
+                        <div class="transaction-icon-lg bg-info text-white mx-auto">
+                            <i class="fab fa-stripe"></i>
+                        </div>
+                    {% elif 'CRYPTO' in transaction.transaction_type.value %}
+                        <div class="transaction-icon-lg bg-warning text-white mx-auto">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                    {% elif 'POS' in transaction.transaction_type.value or 'CARD' in transaction.transaction_type.value %}
+                        <div class="transaction-icon-lg bg-success text-white mx-auto">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                    {% elif 'TRANSFER' in transaction.transaction_type.value %}
+                        <div class="transaction-icon-lg bg-primary text-white mx-auto">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                    {% else %}
+                        <div class="transaction-icon-lg bg-secondary text-white mx-auto">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <h5 class="card-title">Payment Summary</h5>
+                    <h2 class="mb-3">{{ transaction.currency }} {{ "%.2f"|format(transaction.amount) }}</h2>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Status:</span>
+                        <span>
+                            {% if transaction.status.value == 'COMPLETED' %}
+                                <span class="text-success">Completed</span>
+                            {% elif transaction.status.value == 'PENDING' %}
+                                <span class="text-warning">Pending</span>
+                            {% elif transaction.status.value == 'FAILED' %}
+                                <span class="text-danger">Failed</span>
+                            {% elif transaction.status.value == 'CANCELLED' %}
+                                <span class="text-secondary">Cancelled</span>
+                            {% else %}
+                                <span>{{ transaction.status.value|title }}</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Date:</span>
+                        <span>{{ transaction.created_at.strftime('%Y-%m-%d') }}</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Time:</span>
+                        <span>{{ transaction.created_at.strftime('%H:%M:%S') }}</span>
+                    </div>
+                    
+                    {% if transaction.tx_metadata_json %}
+                        {% set metadata = transaction.tx_metadata_json|from_json %}
+                        {% if metadata.payment_type %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Payment Type:</span>
+                            <span>{{ metadata.payment_type|replace('_', ' ')|title }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if metadata.created_via %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Created Via:</span>
+                            <span>{{ metadata.created_via|replace('_', ' ')|title }}</span>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Support Card -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Need Help?</h5>
+                    <p class="card-text">If you have any questions about this transaction, please contact our support team.</p>
+                    <div class="d-grid gap-2">
+                        <a href="mailto:support@nvcplatform.net" class="btn btn-outline-primary">
+                            <i class="fas fa-envelope me-2"></i> Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function confirmCancel(transactionId) {
+        if (confirm('Are you sure you want to cancel this transaction? This action cannot be undone.')) {
+            window.location.href = `/payment-history/cancel/${transactionId}`;
+        }
+    }
+</script>
+{% endblock %}

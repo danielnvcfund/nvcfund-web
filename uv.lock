@@ -2169,6 +2169,18 @@ wheels = [
 ]
 
 [[package]]
+name = "qrcode"
+version = "8.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8f/b2/7fc2931bfae0af02d5f53b174e9cf701adbb35f39d69c2af63d4a39f81a9/qrcode-8.2.tar.gz", hash = "sha256:35c3f2a4172b33136ab9f6b3ef1c00260dd2f66f858f24d88418a015f446506c", size = 43317 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dd/b8/d2d6d731733f51684bbf76bf34dab3b70a9148e8f2cef2bb544fccec681a/qrcode-8.2-py3-none-any.whl", hash = "sha256:16e64e0716c14960108e85d853062c9e8bba5ca8252c0b4d0231b9df4060ff4f", size = 45986 },
+]
+
+[[package]]
 name = "regex"
 version = "2024.11.6"
 source = { registry = "https://pypi.org/simple" }
@@ -2239,6 +2251,7 @@ dependencies = [
     { name = "flask-wtf" },
     { name = "fpdf" },
     { name = "gunicorn" },
+    { name = "jinja2" },
     { name = "markdown" },
     { name = "openai" },
     { name = "paramiko" },
@@ -2250,6 +2263,7 @@ dependencies = [
     { name = "pyppeteer" },
     { name = "pysftp" },
     { name = "python-docx" },
+    { name = "qrcode" },
     { name = "requests" },
     { name = "routes" },
     { name = "sendgrid" },
@@ -2278,6 +2292,7 @@ requires-dist = [
     { name = "flask-wtf", specifier = ">=1.2.2" },
     { name = "fpdf", specifier = ">=1.7.2" },
     { name = "gunicorn", specifier = ">=23.0.0" },
+    { name = "jinja2", specifier = ">=3.1.6" },
     { name = "markdown", specifier = ">=3.8" },
     { name = "openai", specifier = ">=1.76.0" },
     { name = "paramiko", specifier = ">=3.5.1" },
@@ -2289,6 +2304,7 @@ requires-dist = [
     { name = "pyppeteer", specifier = ">=0.0.25" },
     { name = "pysftp", specifier = ">=0.2.9" },
     { name = "python-docx", specifier = ">=1.1.2" },
+    { name = "qrcode", specifier = ">=8.2" },
     { name = "requests", specifier = ">=2.32.3" },
     { name = "routes", specifier = ">=2.5.1" },
     { name = "sendgrid", specifier = ">=6.11.0" },
