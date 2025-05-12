@@ -336,14 +336,134 @@ class AssetReporting(db.Model):
     institution_id = db.Column(db.Integer, db.ForeignKey('financial_institution.id'), nullable=True)
     report_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     report_type = db.Column(db.String(64), nullable=False)  # VALUATION, VERIFICATION, AUDIT, etc.
-    report_status = db.Column(db.String(32), default="PENDING")  # PENDING, COMPLETE, REJECTED
-    report_data = db.Column(db.Text)  # Report data as JSON
+    report_status = db.Column(db.String(32), default="PENDING")  # PENDING, COMPLETED, REJECTED
+
+class BlockchainNetwork(enum.Enum):
+    """Blockchain networks supported by the platform"""
+    MAINNET = "mainnet"
+    TESTNET = "testnet"  # Sepolia testnet
+
+class BlockchainTransactionType(enum.Enum):
+    """Types of blockchain transactions"""
+    TOKEN_TRANSFER = "token_transfer"
+    CONTRACT_DEPLOY = "contract_deploy"
+    CONTRACT_CALL = "contract_call"
+    ETH_TRANSFER = "eth_transfer"
+    OTHER = "other"
+
+class SmartContractType(enum.Enum):
+    """Types of smart contracts used in the platform"""
+    NVC_TOKEN = "nvc_token"
+    SETTLEMENT_CONTRACT = "settlement_contract"
+    MULTISIG_WALLET = "multisig_wallet"
+    STAKING_CONTRACT = "staking_contract"
+    OTHER = "other"
+
+class SmartContract(db.Model):
+    """Smart contract model for storing contract addresses and ABIs"""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    contract_type = db.Column(db.Enum(SmartContractType), nullable=False)
+    address = db.Column(db.String(42), nullable=False)
+    network = db.Column(db.Enum(BlockchainNetwork), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    abi = db.Column(db.Text)  # JSON string of contract ABI
+    deployed_at = db.Column(db.DateTime, default=datetime.utcnow)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    # Address can be unique per network and type, but not globally
+    __table_args__ = (
+        db.UniqueConstraint('contract_type', 'network', 'address', name='_contract_type_network_address_uc'),
+    )
+    
+    def __repr__(self):
+        return f"<SmartContract {self.contract_type.value}:{self.address} ({self.network.value})>"
+
+class BlockchainTransaction(db.Model):
+    """Blockchain transaction model for tracking transactions"""
+    id = db.Column(db.Integer, primary_key=True)
+    tx_hash = db.Column(db.String(66), unique=True, nullable=False)
+    tx_type = db.Column(db.Enum(BlockchainTransactionType), nullable=False)
+    network = db.Column(db.Enum(BlockchainNetwork), nullable=False)
+    from_address = db.Column(db.String(42), nullable=False)
+    to_address = db.Column(db.String(42))
+    contract_address = db.Column(db.String(42))
+    value = db.Column(db.Float, default=0.0)  # ETH value
+    gas_limit = db.Column(db.Integer)
+    gas_price = db.Column(db.Integer)  # In wei
+    gas_used = db.Column(db.Integer)
+    status = db.Column(db.Integer)  # 1 for success, 0 for failure, NULL for pending
+    block_number = db.Column(db.Integer)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # For token transfers
+    token_value = db.Column(db.Float)  # Token amount
+    token_symbol = db.Column(db.String(10))  # E.g., NVCT, SPU, TU
+    
+    # For contract calls
+    function_name = db.Column(db.String(100))
+    function_args = db.Column(db.Text)  # JSON string of function arguments
+    
+    # Error information
+    error = db.Column(db.Text)
+    
+    # Audit
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    recorded_by = db.Column(db.String(100))  # Username or system identifier
+    
     # Relationships
-    asset = db.relationship('Asset', backref=db.backref('reports', lazy=True))
-    institution = db.relationship('FinancialInstitution', backref=db.backref('asset_reports', lazy=True))
+    contract_id = db.Column(db.Integer, db.ForeignKey('smart_contract.id'))
+    smart_contract = db.relationship('SmartContract', backref='transactions')
+    
+    def __repr__(self):
+        return f"<BlockchainTransaction {self.tx_hash[:10]}... ({self.tx_type.value})>"
+
+class SecurityOperation(db.Model):
+    """Security operation model for tracking sensitive mainnet operations"""
+    id = db.Column(db.Integer, primary_key=True)
+    operation_id = db.Column(db.String(36), unique=True, nullable=False)  # UUID
+    operation_type = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.String(255), nullable=False)
+    status = db.Column(db.String(20), default="pending")  # pending, completed, failed, cancelled
+    
+    # Operation details
+    from_address = db.Column(db.String(42))
+    to_address = db.Column(db.String(42))
+    contract_address = db.Column(db.String(42))
+    value = db.Column(db.Float)
+    currency = db.Column(db.String(10))
+    gas_estimate = db.Column(db.Integer)
+    gas_price = db.Column(db.Integer)
+    is_high_risk = db.Column(db.Boolean, default=False)
+    
+    # For contract operations
+    contract_type = db.Column(db.String(50))
+    function_name = db.Column(db.String(100))
+    function_args = db.Column(db.Text)  # JSON string
+    
+    # Security
+    security_code = db.Column(db.String(10))
+    security_code_expires_at = db.Column(db.DateTime)
+    verified_at = db.Column(db.DateTime)
+    verified_by_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    verified_by_ip = db.Column(db.String(45))
+    
+    # Result
+    result_tx_hash = db.Column(db.String(66))
+    error = db.Column(db.Text)
+    
+    # Audit
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    expires_at = db.Column(db.DateTime)
+    created_by_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_by_ip = db.Column(db.String(45))
+    
+    # Relationships
+    verified_by_user = db.relationship('User', foreign_keys=[verified_by_user_id])
+    created_by_user = db.relationship('User', foreign_keys=[created_by_user_id])
 
 class LiquidityPool(db.Model):
     """Model for liquidity pools like AFD1"""
@@ -542,28 +662,8 @@ class SwiftMessage(db.Model):
     # Relationship to the user who uploaded the message
     user = db.relationship('User', backref=db.backref('swift_messages', lazy=True))
 
-class BlockchainTransaction(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    eth_tx_hash = db.Column(db.String(128), unique=True, nullable=False)
-    from_address = db.Column(db.String(64), nullable=False)
-    to_address = db.Column(db.String(64), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
-    contract_address = db.Column(db.String(64))
-    transaction_type = db.Column(db.String(64), nullable=False)
-    gas_used = db.Column(db.Integer)
-    gas_price = db.Column(db.Float)
-    block_number = db.Column(db.Integer)
-    status = db.Column(db.String(64), default="pending")
-    tx_metadata = db.Column(db.Text)  # Changed from 'metadata' which is reserved in SQLAlchemy
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    user = db.relationship('User', backref=db.backref('blockchain_transactions', lazy=True))
-
-    # Optional link to a main application transaction
-    transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
-    transaction = db.relationship('Transaction', backref=db.backref('blockchain_transactions', lazy=True))
+# BlockchainTransaction model is already defined above
+# Legacy model has been replaced with the new one that supports mainnet/testnet
 
 class XRPLedgerTransaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -587,16 +687,8 @@ class XRPLedgerTransaction(db.Model):
     transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
     transaction = db.relationship('Transaction', backref=db.backref('xrp_transactions', lazy=True))
 
-class SmartContract(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), nullable=False)
-    address = db.Column(db.String(64), unique=True, nullable=False)
-    abi = db.Column(db.Text, nullable=False)
-    bytecode = db.Column(db.Text)
-    is_active = db.Column(db.Boolean, default=True)
-    description = db.Column(db.String(256))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+# SmartContract model is already defined above
+# Legacy model has been replaced with the new one that supports contract types and networks
 
 class AssetManager(db.Model):
     id = db.Column(db.Integer, primary_key=True)
