@@ -117,6 +117,11 @@ class TransactionType(enum.Enum):
     STABLECOIN_TRANSFER = "STABLECOIN_TRANSFER"        # For NVC Token Stablecoin transfers
     P2P_LEDGER_TRANSFER = "P2P_LEDGER_TRANSFER"        # For Peer-to-Peer ledger transfers
     CORRESPONDENT_SETTLEMENT = "CORRESPONDENT_SETTLEMENT" # For settlements with correspondent banks
+    CRYPTO_PAYMENT = "CRYPTO_PAYMENT"                  # For cryptocurrency payments (BTC, ETH, etc.)
+    CRYPTO_TRANSFER = "CRYPTO_TRANSFER"                # For cryptocurrency transfers between wallets
+    CRYPTO_EXCHANGE = "CRYPTO_EXCHANGE"                # For cryptocurrency exchange transactions
+    NVCT_PAYMENT = "NVCT_PAYMENT"                      # For NVC Token specific payments
+    AFD1_PAYMENT = "AFD1_PAYMENT"                      # For American Federation Dollar payments
 
 
 class PaymentMethod(enum.Enum):

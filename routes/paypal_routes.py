@@ -87,18 +87,44 @@ def payment():
                 flash("PayPal gateway not configured", "danger")
                 return redirect(url_for('paypal.dashboard'))
             
+            # Check if this is a cryptocurrency transaction
+            crypto_currencies = ['NVCT', 'ETH', 'BTC', 'USDT', 'USDC', 'AFD1']
+            is_crypto = form.currency.data in crypto_currencies
+            
+            # Determine transaction type based on currency
+            if is_crypto:
+                if form.currency.data == 'NVCT':
+                    tx_type = TransactionType.NVCT_PAYMENT
+                elif form.currency.data == 'AFD1':
+                    tx_type = TransactionType.AFD1_PAYMENT
+                else:
+                    tx_type = TransactionType.CRYPTO_PAYMENT
+            else:
+                tx_type = TransactionType.PAYMENT
+            
+            # Build metadata including cryptocurrency details if applicable
+            tx_metadata = {}
+            if form.notes.data:
+                tx_metadata["notes"] = form.notes.data
+            
+            if is_crypto:
+                tx_metadata["is_cryptocurrency"] = True
+                tx_metadata["crypto_currency"] = form.currency.data
+                tx_metadata["original_amount"] = form.amount.data
+                tx_metadata["payment_method"] = "cryptocurrency"
+            
             transaction = Transaction(
                 transaction_id=transaction_id,
                 user_id=current_user.id,
                 amount=form.amount.data,
                 currency=form.currency.data,
-                transaction_type=TransactionType.PAYMENT,
+                transaction_type=tx_type,
                 status=TransactionStatus.PENDING,
-                description=form.description.data,
+                description=form.description.data + (" (Cryptocurrency Payment)" if is_crypto else ""),
                 recipient_name=form.recipient_email.data,
                 gateway_id=gateway.id,
                 external_id=payment_id,  # Store PayPal payment ID
-                tx_metadata_json={"notes": form.notes.data} if form.notes.data else None
+                tx_metadata_json=tx_metadata
             )
             
             db.session.add(transaction)
@@ -224,21 +250,46 @@ def payout():
                 flash("PayPal gateway not configured", "danger")
                 return redirect(url_for('paypal.dashboard'))
             
+            # Check if this is a cryptocurrency transaction
+            crypto_currencies = ['NVCT', 'ETH', 'BTC', 'USDT', 'USDC', 'AFD1']
+            is_crypto = form.currency.data in crypto_currencies
+            
+            # Determine transaction type based on currency
+            if is_crypto:
+                if form.currency.data == 'NVCT':
+                    tx_type = TransactionType.NVCT_PAYMENT
+                elif form.currency.data == 'AFD1':
+                    tx_type = TransactionType.AFD1_PAYMENT
+                else:
+                    tx_type = TransactionType.CRYPTO_PAYMENT
+            else:
+                tx_type = TransactionType.PAYOUT
+            
+            # Build metadata including cryptocurrency details if applicable
+            tx_metadata = {}
+            if form.email_subject.data:
+                tx_metadata["email_subject"] = form.email_subject.data
+            if form.email_message.data:
+                tx_metadata["email_message"] = form.email_message.data
+            
+            if is_crypto:
+                tx_metadata["is_cryptocurrency"] = True
+                tx_metadata["crypto_currency"] = form.currency.data
+                tx_metadata["original_amount"] = form.amount.data
+                tx_metadata["payment_method"] = "cryptocurrency"
+            
             transaction = Transaction(
                 transaction_id=transaction_id,
                 user_id=current_user.id,
                 amount=form.amount.data,
                 currency=form.currency.data,
-                transaction_type=TransactionType.PAYOUT,
+                transaction_type=tx_type,
                 status=TransactionStatus.PROCESSING,  # Payouts are asynchronous
-                description=form.note.data,
+                description=form.note.data + (" (Cryptocurrency Payout)" if is_crypto else ""),
                 recipient_name=form.recipient_email.data,
                 gateway_id=gateway.id,
                 external_id=batch_id,  # Store PayPal batch ID
-                tx_metadata_json={
-                    "email_subject": form.email_subject.data,
-                    "email_message": form.email_message.data
-                } if form.email_subject.data or form.email_message.data else None
+                tx_metadata_json=tx_metadata
             )
             
             db.session.add(transaction)
