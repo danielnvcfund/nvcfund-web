@@ -26,6 +26,161 @@ _web3_initialized = False
 _web3_last_checked = 0
 _WEB3_REFRESH_INTERVAL = 600  # 10 minutes between initialization checks
 
+def get_contract_instance(contract_address, abi, network='sepolia'):
+    """
+    Get a contract instance for the given contract address and ABI
+    
+    Args:
+        contract_address (str): The Ethereum address of the contract
+        abi (list): The ABI of the contract
+        network (str): Network to connect to - 'mainnet' or 'sepolia'
+        
+    Returns:
+        web3.eth.Contract instance or None if connection fails
+    """
+    try:
+        w3 = connect_to_ethereum(network)
+        if not w3:
+            logger.error("Could not connect to Ethereum network")
+            return None
+            
+        # Create the contract instance
+        contract = w3.eth.contract(address=contract_address, abi=abi)
+        return contract
+    except Exception as e:
+        logger.error(f"Error getting contract instance: {e}")
+        return None
+
+def get_token_supply(contract_address=None, abi=None, network='sepolia'):
+    """
+    Get the total supply of tokens for an ERC-20 contract
+    
+    Args:
+        contract_address (str): The Ethereum address of the contract
+        abi (list): The ABI of the contract
+        network (str): Network to connect to - 'mainnet' or 'sepolia'
+        
+    Returns:
+        int: Total supply of tokens or None if the call fails
+    """
+    try:
+        # If contract address or ABI not provided, use defaults
+        if not contract_address or not abi:
+            # Get the NVCT contract info from config
+            contract_info = contract_config.get_contract_config("NVCToken", network)
+            if not contract_info:
+                logger.error("Contract configuration not found")
+                return None
+                
+            contract_address = contract_info.get('address')
+            abi = contract_info.get('abi')
+            
+            if not contract_address or not abi:
+                logger.error("Contract address or ABI not found in config")
+                return None
+        
+        # Get the contract instance
+        contract = get_contract_instance(contract_address, abi, network)
+        if not contract:
+            return None
+            
+        # Call the totalSupply function on the contract
+        total_supply = contract.functions.totalSupply().call()
+        
+        # Convert from wei to tokens (assuming 18 decimals for ERC-20)
+        w3 = connect_to_ethereum(network)
+        if not w3:
+            return total_supply
+            
+        total_supply_eth = w3.from_wei(total_supply, 'ether')
+        return total_supply_eth
+    except Exception as e:
+        logger.error(f"Error getting token supply: {e}")
+        return None
+
+def get_gas_price(network='sepolia'):
+    """
+    Get the current gas price on the Ethereum network
+    
+    Args:
+        network (str): Network to connect to - 'mainnet' or 'sepolia'
+        
+    Returns:
+        float: Gas price in Gwei or None if the call fails
+    """
+    try:
+        # Check if we have cached gas price
+        cache_key = f"gas_price_{network}"
+        cached = cache_utils.get_cached_data(cache_key)
+        if cached:
+            return cached
+        
+        # Get the gas price from the network
+        w3 = connect_to_ethereum(network)
+        if not w3:
+            logger.error("Could not connect to Ethereum network")
+            return None
+            
+        gas_price = w3.eth.gas_price
+        
+        # Convert from wei to gwei
+        gas_price_gwei = w3.from_wei(gas_price, 'gwei')
+        
+        # Cache the result for 5 minutes
+        cache_utils.cache_data(cache_key, gas_price_gwei, 300)
+        
+        return gas_price_gwei
+    except Exception as e:
+        logger.error(f"Error getting gas price: {e}")
+        return None
+        
+def connect_to_ethereum(network='sepolia'):
+    """
+    Connect to Ethereum network (mainnet or testnet)
+    
+    Args:
+        network (str): Network to connect to - 'mainnet' or 'sepolia'
+        
+    Returns:
+        Web3 instance or None if connection fails
+    """
+    # Check if we have a valid API key
+    infura_key = os.environ.get('INFURA_API_KEY')
+    if not infura_key:
+        logger.warning("Infura API key not set. Cannot connect to Ethereum network.")
+        return None
+        
+    # Determine the endpoint URL based on the network
+    if network.lower() == 'mainnet':
+        endpoint_url = f"https://mainnet.infura.io/v3/{infura_key}"
+    else:  # default to sepolia testnet
+        endpoint_url = f"https://sepolia.infura.io/v3/{infura_key}"
+    
+    try:
+        # Connect to the Ethereum node
+        w3 = Web3(HTTPProvider(endpoint_url))
+        
+        # Check if the connection is successful
+        if w3.is_connected():
+            # For Sepolia testnet, add the PoA middleware
+            if network.lower() != 'mainnet':
+                try:
+                    from web3.middleware import geth_poa_middleware
+                    w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+                except Exception as e:
+                    logger.warning(f"Error injecting PoA middleware: {e}")
+            
+            # Get the network ID/version to confirm connection
+            network_version = w3.net.version
+            logger.info(f"Successfully connected to Ethereum node. Network version: {network_version}")
+            return w3
+        else:
+            logger.error(f"Failed to connect to Ethereum {network} network.")
+            return None
+    except Exception as e:
+        logger.error(f"Error connecting to Ethereum {network} network: {e}")
+        return None
+
 def get_web3():
     """
     Get the Web3 instance, initializing it if necessary
