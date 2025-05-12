@@ -459,11 +459,49 @@ function deployNVCToken() {
     });
 }
 
+/**
+ * Format number input with commas as thousands separators
+ * @param {string} value - Input value to format
+ * @return {string} Formatted value with commas
+ */
+function formatNumberInput(value) {
+    // Remove any non-digit characters except decimal point
+    let numberOnly = value.replace(/[^\d.]/g, '');
+    
+    // Ensure only one decimal point
+    const decimalParts = numberOnly.split('.');
+    if (decimalParts.length > 2) {
+        numberOnly = decimalParts[0] + '.' + decimalParts.slice(1).join('');
+    }
+    
+    // Split into whole and decimal parts
+    const parts = numberOnly.split('.');
+    let wholePart = parts[0];
+    const decimalPart = parts.length > 1 ? parts[1] : '';
+    
+    // Add commas to the whole part
+    wholePart = wholePart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    
+    // Reconstruct the number with decimal part if exists
+    return decimalPart.length > 0 ? wholePart + '.' + decimalPart : wholePart;
+}
+
+/**
+ * Remove commas from a formatted number string
+ * @param {string} formattedValue - Input value with commas
+ * @return {string} Value without commas
+ */
+function unformatNumber(formattedValue) {
+    return formattedValue.replace(/,/g, '');
+}
+
 function transferTokens(event) {
     event.preventDefault();
     
     const recipient = document.getElementById('token-recipient').value;
-    const amount = document.getElementById('token-amount').value;
+    // Remove commas from the amount before sending
+    const formattedAmount = document.getElementById('token-amount').value;
+    const amount = unformatNumber(formattedAmount);
     
     showAlert('Transferring tokens... This may take a minute.', 'info');
     

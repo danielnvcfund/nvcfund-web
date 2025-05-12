@@ -400,7 +400,8 @@
                                     </div>
                                     <div class="mb-3">
                                         <label for="mint-amount" class="form-label">Amount to Mint</label>
-                                        <input type="number" step="1" min="1" class="form-control" id="mint-amount" placeholder="1000" required>
+                                        <input type="text" class="form-control" id="mint-amount" placeholder="1000" required
+                                               oninput="this.value = formatNumberInput(this.value)">
                                     </div>
                                     <button type="submit" class="btn btn-warning">
                                         <i class="fas fa-coins me-2"></i> Mint Tokens
@@ -415,7 +416,8 @@
                                     </div>
                                     <div class="mb-3">
                                         <label for="burn-amount" class="form-label">Amount to Burn</label>
-                                        <input type="number" step="1" min="1" class="form-control" id="burn-amount" placeholder="1000" required>
+                                        <input type="text" class="form-control" id="burn-amount" placeholder="1000" required
+                                               oninput="this.value = formatNumberInput(this.value)">
                                     </div>
                                     <button type="submit" class="btn btn-danger">
                                         <i class="fas fa-fire me-2"></i> Burn Tokens
