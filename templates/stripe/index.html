@@ -11,9 +11,15 @@
                     <h3 class="mb-0">Stripe Payment</h3>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> Securely process payments with Stripe. Your payment information is never stored on our servers.
+                                        {% if stripe_live_mode %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> <strong>LIVE MODE</strong> - Stripe is configured to process real payments. Your payment information is securely processed by Stripe and never stored on our servers.
                     </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>TEST MODE</strong> - Stripe is in test mode. No real charges will be made. Use test card 4242 4242 4242 4242 with any future expiration date and any CVC.
+                    </div>
+                    {% endif %}
                     
                     <form action="{{ url_for('stripe.create_checkout_session') }}" method="POST" class="needs-validation" novalidate>
                         <div class="mb-3">

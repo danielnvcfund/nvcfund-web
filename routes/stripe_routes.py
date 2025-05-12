@@ -11,12 +11,21 @@ from flask_login import login_required, current_user
 from datetime import datetime
 import uuid
 
-# Set up Stripe API key from environment
-stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+# Set up logger first
+logger = logging.getLogger(__name__)
 
 # Create blueprint
 stripe_bp = Blueprint('stripe', __name__, url_prefix='/stripe')
-logger = logging.getLogger(__name__)
+
+# Set up Stripe API key from environment - use live key if available, otherwise fall back to test key
+stripe.api_key = os.environ.get('STRIPE_LIVE_SECRET_KEY') or os.environ.get('STRIPE_SECRET_KEY')
+
+# Set to True for live mode, False for test mode
+STRIPE_LIVE_MODE = bool(os.environ.get('STRIPE_LIVE_SECRET_KEY'))
+if STRIPE_LIVE_MODE:
+    logger.info("Stripe configured in LIVE MODE - real payments will be processed")
+else:
+    logger.warning("Stripe configured in TEST MODE - no real payments will be processed")
 
 # Add custom template filter
 @stripe_bp.app_template_filter('strftime')
@@ -43,7 +52,7 @@ def get_domain():
 @stripe_bp.route('/')
 def index():
     """Display Stripe payment options"""
-    return render_template('stripe/index.html')
+    return render_template('stripe/index.html', stripe_live_mode=STRIPE_LIVE_MODE)
 
 @stripe_bp.route('/create-checkout-session', methods=['POST'])
 def create_checkout_session():
