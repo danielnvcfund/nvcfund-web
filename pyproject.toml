@@ -41,4 +41,5 @@ dependencies = [
     "docx>=0.2.4",
     "jinja2>=3.1.6",
     "qrcode>=8.2",
+    "python-dotenv>=1.1.0",
 ]

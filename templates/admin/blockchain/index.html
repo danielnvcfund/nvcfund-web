@@ -1,0 +1,324 @@
+{% extends 'admin/layout.html' %}
+
+{% block title %}Blockchain Administration - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Blockchain Network Management</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-uppercase text-muted mb-3">Current Network</h6>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="me-3">
+                                    {% if current_network == "mainnet" %}
+                                    <span class="badge bg-success fs-5 p-2">MAINNET</span>
+                                    {% else %}
+                                    <span class="badge bg-warning fs-5 p-2">TESTNET</span>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <p class="mb-0">
+                                        {% if current_network == "mainnet" %}
+                                        Connected to Ethereum mainnet for production use.
+                                        {% else %}
+                                        Connected to Ethereum Sepolia testnet for testing only.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                {% if current_network == "mainnet" %}
+                                <strong>Note:</strong> You are in production mode using real ETH for transactions.
+                                {% else %}
+                                <strong>Note:</strong> You are in test mode. No real value is being transferred.
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-uppercase text-muted mb-3">Change Network</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <form action="{{ url_for('blockchain_admin.set_network', network='testnet') }}" method="post">
+                                        <button type="submit" class="btn btn-outline-warning btn-lg w-100 {% if current_network == 'testnet' %}disabled{% endif %}">
+                                            <i class="fas fa-flask me-2"></i> Switch to Testnet
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="col-6">
+                                    <form action="{{ url_for('blockchain_admin.set_network', network='mainnet') }}" method="post">
+                                        <button type="submit" class="btn btn-outline-success btn-lg w-100 {% if current_network == 'mainnet' %}disabled{% endif %}">
+                                            <i class="fas fa-globe me-2"></i> Switch to Mainnet
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <a href="{{ url_for('blockchain_admin.status') }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-network-wired me-2"></i> Check Connection Status
+                                </a>
+                                <a href="{{ url_for('blockchain_admin.deploy_page') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-upload me-2"></i> Deploy Contracts
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Testnet Contract Addresses</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Contract</th>
+                                    <th>Address</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contract_key in ["settlement_contract", "multisig_wallet", "nvc_token"] %}
+                                <tr>
+                                    <td>
+                                        {% if contract_key == "settlement_contract" %}SettlementContract
+                                        {% elif contract_key == "multisig_wallet" %}MultiSigWallet
+                                        {% elif contract_key == "nvc_token" %}NVCToken
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if config_contracts and "testnet" in config_contracts and contract_key in config_contracts["testnet"] %}
+                                            {% set address = config_contracts["testnet"][contract_key] %}
+                                            {% if address %}
+                                                <code class="small">{{ address }}</code>
+                                            {% else %}
+                                                <span class="badge bg-warning">Not Deployed</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-warning">Not Configured</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#updateContractModal"
+                                                data-contract="{{ contract_key }}"
+                                                data-network="testnet">
+                                            <i class="fas fa-edit"></i> Update
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Mainnet Contract Addresses</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Contract</th>
+                                    <th>Address</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contract_key in ["settlement_contract", "multisig_wallet", "nvc_token"] %}
+                                <tr>
+                                    <td>
+                                        {% if contract_key == "settlement_contract" %}SettlementContract
+                                        {% elif contract_key == "multisig_wallet" %}MultiSigWallet
+                                        {% elif contract_key == "nvc_token" %}NVCToken
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if config_contracts and "mainnet" in config_contracts and contract_key in config_contracts["mainnet"] %}
+                                            {% set address = config_contracts["mainnet"][contract_key] %}
+                                            {% if address %}
+                                                <code class="small">{{ address }}</code>
+                                            {% else %}
+                                                <span class="badge bg-warning">Not Deployed</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-warning">Not Configured</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#updateContractModal"
+                                                data-contract="{{ contract_key }}"
+                                                data-network="mainnet">
+                                            <i class="fas fa-edit"></i> Update
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Recent Blockchain Transactions</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Transaction Hash</th>
+                                    <th>Type</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Network</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tx in recent_transactions %}
+                                <tr>
+                                    <td>
+                                        <code class="small">{{ tx.transaction_hash[:10] }}...{{ tx.transaction_hash[-6:] }}</code>
+                                    </td>
+                                    <td>{{ tx.transaction_type }}</td>
+                                    <td>
+                                        <code class="small">{{ tx.from_address[:6] }}...{{ tx.from_address[-4:] }}</code>
+                                    </td>
+                                    <td>
+                                        {% if tx.to_address %}
+                                        <code class="small">{{ tx.to_address[:6] }}...{{ tx.to_address[-4:] }}</code>
+                                        {% else %}
+                                        <span class="badge bg-info">Contract Creation</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ tx.amount }} ETH</td>
+                                    <td>
+                                        {% if tx.status %}
+                                        <span class="badge bg-success">Success</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Failed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if tx.network == "mainnet" %}
+                                        <span class="badge bg-success">Mainnet</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Testnet</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No recent blockchain transactions found.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Contract Modal -->
+<div class="modal fade" id="updateContractModal" tabindex="-1" aria-labelledby="updateContractModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateContractModalLabel">Update Contract Address</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('blockchain_admin.update_contract') }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="contract_name" class="form-label">Contract</label>
+                        <input type="text" class="form-control" id="contract_name" name="contract_name" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="network" class="form-label">Network</label>
+                        <input type="text" class="form-control" id="network" name="network" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Contract Address</label>
+                        <input type="text" class="form-control" id="address" name="address" required 
+                               placeholder="0x...">
+                        <div class="form-text">
+                            Enter the Ethereum address of the deployed contract
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Contract</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set up contract modal
+        var updateContractModal = document.getElementById('updateContractModal');
+        if (updateContractModal) {
+            updateContractModal.addEventListener('show.bs.modal', function(event) {
+                var button = event.relatedTarget;
+                var contract = button.getAttribute('data-contract');
+                var network = button.getAttribute('data-network');
+                
+                var modalTitle = this.querySelector('.modal-title');
+                var contractInput = this.querySelector('#contract_name');
+                var networkInput = this.querySelector('#network');
+                
+                // Update modal content
+                modalTitle.textContent = 'Update ' + getContractName(contract) + ' Address (' + network.toUpperCase() + ')';
+                contractInput.value = contract;
+                networkInput.value = network;
+            });
+        }
+        
+        function getContractName(key) {
+            if (key === "settlement_contract") return "Settlement Contract";
+            if (key === "multisig_wallet") return "MultiSig Wallet";
+            if (key === "nvc_token") return "NVC Token";
+            return key;
+        }
+    });
+</script>
+{% endblock %}

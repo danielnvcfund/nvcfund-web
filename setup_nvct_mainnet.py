@@ -19,9 +19,26 @@ import sys
 import argparse
 import getpass
 import logging
-import dotenv
 import json
 from pathlib import Path
+
+# Import python-dotenv with error handling
+try:
+    from dotenv import load_dotenv, set_key
+    DOTENV_AVAILABLE = True
+except ImportError:
+    DOTENV_AVAILABLE = False
+    print("Warning: python-dotenv not installed. Environment file operations will be limited.")
+    print("Run: pip install python-dotenv to enable full functionality.")
+    
+    # Create stub functions that log but don't do anything
+    def load_dotenv():
+        print("Notice: python-dotenv not available, skipping .env loading")
+        return False
+        
+    def set_key(env_file, key, value):
+        print(f"Notice: python-dotenv not available, would set {key}={value} in {env_file}")
+        return False
 
 # Configure logging
 logging.basicConfig(
@@ -38,8 +55,11 @@ def check_environment():
     env_file = Path('.env')
     if env_file.exists():
         print(f".env file: Found")
-        # Load environment variables from .env
-        dotenv.load_dotenv()
+        # Load environment variables from .env if dotenv is available
+        if DOTENV_AVAILABLE:
+            load_dotenv()
+        else:
+            print("Note: .env file exists but python-dotenv not installed")
     else:
         print(f".env file: Not found")
     
