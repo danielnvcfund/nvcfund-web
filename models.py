@@ -411,6 +411,25 @@ class BlockchainTransaction(db.Model):
     # Audit
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __init__(self, **kwargs):
+        """
+        Initialize a new BlockchainTransaction
+        
+        Handle backward compatibility with eth_tx_hash parameter
+        """
+        # Handle eth_tx_hash parameter for backward compatibility
+        if 'eth_tx_hash' in kwargs and 'tx_hash' not in kwargs:
+            kwargs['tx_hash'] = kwargs.pop('eth_tx_hash')
+        
+        # Initialize with processed kwargs
+        super(BlockchainTransaction, self).__init__(**kwargs)
+    
+    def __repr__(self):
+        """String representation of this model"""
+        tx_str = self.tx_hash if self.tx_hash else "Unknown"
+        network_str = self.network.name if self.network else "Unknown Network"
+        return f"<BlockchainTransaction {tx_str} on {network_str}>"
     recorded_by = db.Column(db.String(100))  # Username or system identifier
     
     # Relationships

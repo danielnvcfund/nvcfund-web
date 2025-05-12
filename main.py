@@ -1,4 +1,27 @@
 from app import app  # noqa: F401
+import logging
+import threading
+import time
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Database migration for tx_hash column
+def run_tx_hash_migration():
+    """Run tx_hash migration in background to avoid blocking startup"""
+    try:
+        time.sleep(5)  # Let the app start up first
+        from db_operations import add_tx_hash_column
+        add_tx_hash_column()
+        logger.info("Blockchain transaction schema migration completed")
+    except Exception as e:
+        logger.error(f"Error running blockchain transaction schema migration: {str(e)}")
+
+# Start migration in background thread to avoid blocking app startup
+migration_thread = threading.Thread(target=run_tx_hash_migration)
+migration_thread.daemon = True
+migration_thread.start()
 from flask import send_from_directory
 import os
 
