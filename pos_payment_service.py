@@ -105,13 +105,24 @@ class POSPaymentService:
             # Update transaction status
             transaction.status = TransactionStatus.COMPLETED
             transaction.completed_at = datetime.utcnow()
-            transaction.metadata['payout_id'] = f"po_{uuid.uuid4().hex[:16]}"
-            transaction.metadata['payout_status'] = 'paid'
+            
+            # Get the existing metadata as a dictionary
+            try:
+                metadata = json.loads(transaction.tx_metadata_json) if transaction.tx_metadata_json else {}
+            except (json.JSONDecodeError, TypeError):
+                metadata = {}
+                
+            # Update the metadata dictionary
+            metadata['payout_id'] = f"po_{uuid.uuid4().hex[:16]}"
+            metadata['payout_status'] = 'paid'
+            
+            # Save the updated metadata back to the transaction
+            transaction.tx_metadata_json = json.dumps(metadata)
             db.session.commit()
             
             return {
                 'status': 'success',
-                'payout_id': transaction.metadata['payout_id'],
+                'payout_id': metadata['payout_id'],
                 'transaction_id': transaction.transaction_id
             }
             
@@ -169,9 +180,11 @@ class POSPaymentService:
                 # Get the payment intent object
                 payment_intent = event['data']['object']
                 
-                # Find the transaction by payment intent ID
+                # Find the transaction containing the payment intent ID in its metadata
+                # Using SQLAlchemy's ilike for a basic JSON string search
+                # This is a simplified approach - in a production system, consider using proper JSON querying
                 transaction = Transaction.query.filter(
-                    Transaction.metadata.contains({'payment_intent': payment_intent.id})
+                    Transaction.tx_metadata_json.ilike(f'%"payment_intent": "{payment_intent.id}"%')
                 ).first()
                 
                 if not transaction:
