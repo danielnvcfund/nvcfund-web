@@ -22,9 +22,10 @@ logger = logging.getLogger(__name__)
 def get_domain():
     """Get the domain for the application"""
     if os.environ.get('REPLIT_DEPLOYMENT'):
-        return os.environ.get('REPLIT_DEV_DOMAIN')
+        return os.environ.get('REPLIT_DEV_DOMAIN', 'localhost:5000')
     elif os.environ.get('REPLIT_DOMAINS'):
-        return os.environ.get('REPLIT_DOMAINS').split(',')[0]
+        domains = os.environ.get('REPLIT_DOMAINS', '')
+        return domains.split(',')[0] if domains else 'localhost:5000'
     else:
         # Default to localhost for development
         return 'localhost:5000'
@@ -80,7 +81,13 @@ def create_checkout_session():
         )
         
         # Redirect to Stripe hosted checkout page
-        return redirect(checkout_session.url, code=303)
+        checkout_url = checkout_session.url
+        if checkout_url:
+            return redirect(checkout_url, code=303)
+        else:
+            logger.error("Stripe checkout URL is None")
+            flash("Error creating checkout session. Please try again.", "error")
+            return redirect(url_for('stripe.index'))
     
     except Exception as e:
         logger.error(f"Error creating Stripe checkout session: {str(e)}")

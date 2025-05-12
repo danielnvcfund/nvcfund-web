@@ -149,11 +149,11 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating mb-3">
-                                    {{ form.card_number(class="form-control", placeholder="Last 4 Digits of Card", id="card_number") }}
+                                    {{ form.card_last4(class="form-control", placeholder="Last 4 Digits of Card", id="card_number") }}
                                     <label for="card_number">Last 4 Digits of Card</label>
-                                    {% if form.card_number.errors %}
+                                    {% if form.card_last4.errors %}
                                     <div class="invalid-feedback d-block">
-                                        {% for error in form.card_number.errors %}
+                                        {% for error in form.card_last4.errors %}
                                         <span>{{ error }}</span>
                                         {% endfor %}
                                     </div>
