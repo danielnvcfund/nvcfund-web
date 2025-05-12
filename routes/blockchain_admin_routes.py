@@ -13,12 +13,51 @@ import os
 import subprocess
 import json
 from datetime import datetime
-from blockchain import connect_to_ethereum, get_contract_instance, get_token_supply, get_gas_price, validate_contract_addresses
+from blockchain import connect_to_ethereum, get_contract_instance, get_token_supply, get_gas_price
 from dotenv import load_dotenv, set_key
+import contract_config
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def validate_contracts(network='mainnet'):
+    """Validate contract addresses for the specified network
+    
+    Args:
+        network (str): The network to validate (mainnet, testnet)
+        
+    Returns:
+        dict: Dictionary with validation results
+    """
+    result = {
+        'status': 'success',
+        'network': network,
+        'contracts': {},
+        'all_configured': True
+    }
+    
+    for contract_type in contract_config.CONTRACT_TYPES:
+        address = contract_config.get_contract_address(contract_type, network)
+        status = {
+            'address': address,
+            'valid': bool(address),
+            'message': 'Contract address found' if address else 'Contract address not configured'
+        }
+        result['contracts'][contract_type] = status
+        
+        # Update all_configured flag
+        if not address:
+            result['all_configured'] = False
+    
+    # Add a summary message
+    if result['all_configured']:
+        result['message'] = f'All contracts are properly configured for {network}'
+    else:
+        result['message'] = f'Some contracts are not configured for {network}'
+        result['status'] = 'warning'
+    
+    return result
 
 # Create blueprint
 blockchain_admin_bp = Blueprint('blockchain_admin', __name__, url_prefix='/admin/blockchain')
@@ -274,3 +313,156 @@ def check_connectivity():
             'success': False,
             'error': f'Server error: {str(e)}'
         })
+
+@blockchain_admin_bp.route('/enable-mainnet')
+@login_required
+@blockchain_admin_required
+def enable_mainnet():
+    """Enable Ethereum mainnet for NVCT operations"""
+    try:
+        # Check if INFURA_API_KEY is configured
+        infura_key = os.environ.get('INFURA_API_KEY')
+        if not infura_key:
+            flash("INFURA_API_KEY is not configured. Please set it up before enabling mainnet.", "danger")
+            return redirect(url_for('blockchain_admin.mainnet_readiness'))
+        
+        # Check if ADMIN_ETH_PRIVATE_KEY is configured
+        admin_eth_key = os.environ.get('ADMIN_ETH_PRIVATE_KEY')
+        if not admin_eth_key:
+            flash("ADMIN_ETH_PRIVATE_KEY is not configured. This is required for contract deployment.", "danger")
+            return redirect(url_for('blockchain_admin.mainnet_readiness'))
+        
+        # Run the enable_mainnet.py script with --force option
+        try:
+            result = subprocess.run(
+                ["python", "enable_mainnet.py", "--force"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            # Log the output for debugging
+            logger.info(f"Enable mainnet output: {result.stdout}")
+            
+            # Check if it was successful
+            if "Mainnet mode enabled" in result.stdout:
+                flash("NVCT is now configured to use Ethereum mainnet. All transactions will use real ETH.", "success")
+            else:
+                flash("Mainnet mode enabled, but with some warnings. Please check the logs.", "warning")
+            
+            # Set the environment variable
+            os.environ['ETHEREUM_NETWORK'] = 'mainnet'
+            # Update .env file
+            dotenv_path = os.path.join(os.getcwd(), '.env')
+            if os.path.exists(dotenv_path):
+                set_key(dotenv_path, 'ETHEREUM_NETWORK', 'mainnet')
+                logger.info("Updated ETHEREUM_NETWORK=mainnet in .env file")
+            
+            # Validate contract addresses
+            validation = validate_contracts('mainnet')
+            if validation and validation.get('all_configured', False):
+                flash("All contracts are properly configured for mainnet.", "success")
+            else:
+                flash("Some contracts need to be deployed to mainnet. Use the deploy options.", "warning")
+            
+            return redirect(url_for('blockchain_admin.mainnet_readiness'))
+            
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Error running enable_mainnet.py: {e}")
+            logger.error(f"Error output: {e.stderr}")
+            flash(f"Error enabling mainnet mode: {e.stderr}", "danger")
+            return redirect(url_for('blockchain_admin.mainnet_readiness'))
+    
+    except Exception as e:
+        logger.error(f"Error in enable_mainnet: {str(e)}")
+        flash(f"Error enabling mainnet: {str(e)}", "danger")
+        return redirect(url_for('blockchain_admin.mainnet_readiness'))
+
+@blockchain_admin_bp.route('/deploy-contract/<contract_type>')
+@login_required
+@blockchain_admin_required
+def deploy_contract(contract_type):
+    """Deploy a specific contract to mainnet"""
+    valid_contracts = ['settlement_contract', 'multisig_wallet', 'nvc_token']
+    if contract_type not in valid_contracts:
+        flash(f"Invalid contract type: {contract_type}", "danger")
+        return redirect(url_for('blockchain_admin.mainnet_readiness'))
+    
+    try:
+        # Check if ADMIN_ETH_PRIVATE_KEY is configured
+        admin_eth_key = os.environ.get('ADMIN_ETH_PRIVATE_KEY')
+        if not admin_eth_key:
+            flash("ADMIN_ETH_PRIVATE_KEY is not configured. This is required for contract deployment.", "danger")
+            return redirect(url_for('blockchain_admin.mainnet_readiness'))
+        
+        # Run the mainnet_migration.py script to deploy the contract
+        try:
+            result = subprocess.run(
+                ["python", "mainnet_migration.py", "deploy", f"--contract={contract_type}"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            # Log the output for debugging
+            logger.info(f"Deploy contract output: {result.stdout}")
+            
+            # Check if it was successful
+            if "Successfully deployed" in result.stdout:
+                # Extract the contract address from the output
+                import re
+                match = re.search(r"Contract address: (0x[a-fA-F0-9]{40})", result.stdout)
+                if match:
+                    contract_address = match.group(1)
+                    flash(f"{contract_type} successfully deployed to mainnet at address {contract_address}", "success")
+                else:
+                    flash(f"{contract_type} successfully deployed to mainnet", "success")
+            else:
+                flash(f"Contract deployment completed with warnings. Please check the logs.", "warning")
+            
+            return redirect(url_for('blockchain_admin.mainnet_readiness'))
+            
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Error deploying contract: {e}")
+            logger.error(f"Error output: {e.stderr}")
+            flash(f"Error deploying {contract_type}: {e.stderr}", "danger")
+            return redirect(url_for('blockchain_admin.mainnet_readiness'))
+    
+    except Exception as e:
+        logger.error(f"Error in deploy_contract: {str(e)}")
+        flash(f"Error deploying contract: {str(e)}", "danger")
+        return redirect(url_for('blockchain_admin.mainnet_readiness'))
+
+@blockchain_admin_bp.route('/validate-mainnet')
+@login_required
+@blockchain_admin_required
+def validate_mainnet():
+    """Validate the mainnet setup"""
+    try:
+        # Run the mainnet_migration.py script to validate the setup
+        try:
+            result = subprocess.run(
+                ["python", "mainnet_migration.py", "validate"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            # Log the output for debugging
+            logger.info(f"Validate mainnet output: {result.stdout}")
+            
+            # Check if it was successful
+            if "Validation successful!" in result.stdout:
+                flash("Mainnet setup validation successful! All contracts are properly deployed on mainnet.", "success")
+            else:
+                flash("Validation completed with warnings. Please check the logs.", "warning")
+            
+            return redirect(url_for('blockchain_admin.mainnet_readiness'))
+            
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Error validating mainnet: {e}")
+            logger.error(f"Error output: {e.stderr}")
+            flash(f"Error validating mainnet setup: {e.stderr}", "danger")
+            return redirect(url_for('blockchain_admin.mainnet_readiness'))
+    
+    except Exception as e:
+        logger.error(f"Error in validate_mainnet: {str(e)}")
+        flash(f"Error validating mainnet setup: {str(e)}", "danger")
+        return redirect(url_for('blockchain_admin.mainnet_readiness'))
