@@ -34,7 +34,7 @@
                             <dd class="col-sm-8">Credit/Debit Card</dd>
                             
                             <dt class="col-sm-4">Date:</dt>
-                            <dd class="col-sm-8">{{ session.created|default(now, true)|strftime("%B %d, %Y, %H:%M %p") }}</dd>
+                            <dd class="col-sm-8">{{ session.created|default(now, true) }}</dd>
                         </dl>
                         {% else %}
                         <p class="mb-0">Your payment has been processed successfully.</p>

@@ -11,9 +11,6 @@ from flask_login import login_required, current_user
 from datetime import datetime
 import uuid
 
-# Add template filters
-from jinja2 import Markup, escape
-
 # Set up Stripe API key from environment
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 
