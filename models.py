@@ -393,22 +393,7 @@ class BlockchainTransaction(db.Model):
     block_number = db.Column(db.Integer)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     
-    # For token transfers
-    token_value = db.Column(db.Float)  # Token amount
-    token_symbol = db.Column(db.String(10))  # E.g., NVCT, SPU, TU
-    
     # Audit timestamps from database
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # For contract calls
-    function_name = db.Column(db.String(100))
-    function_args = db.Column(db.Text)  # JSON string of function arguments
-    
-    # Error information
-    error = db.Column(db.Text)
-    
-    # Audit
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
