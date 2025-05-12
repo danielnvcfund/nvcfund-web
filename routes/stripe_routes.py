@@ -70,6 +70,7 @@ def create_checkout_session():
         # Get amount and currency from form
         amount = float(request.form.get('amount', 100))
         currency = request.form.get('currency', 'usd')
+        payment_description = request.form.get('payment_description', 'NVC Banking Services')
         
         # Create a unique reference for this payment
         payment_reference = f"payment_{uuid.uuid4().hex[:8]}"
@@ -79,34 +80,93 @@ def create_checkout_session():
         success_url = f"https://{domain}{url_for('stripe.success')}?session_id={{CHECKOUT_SESSION_ID}}"
         cancel_url = f"https://{domain}{url_for('stripe.cancel')}"
         
-        # Log successful payment information creation
-        logger.info(f"Creating Stripe checkout session for {amount} {currency}")
+        # Check if this is a cryptocurrency payment
+        crypto_currencies = ['nvct', 'afd1', 'btc', 'eth', 'usdt', 'usdc']
+        is_crypto = currency.lower() in crypto_currencies
         
-        # Create Stripe checkout session
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=[
-                {
-                    'price_data': {
-                        'currency': currency,
-                        'product_data': {
-                            'name': 'NVC Banking Services',
-                            'description': 'Payment for NVC Banking Platform services',
-                        },
-                        'unit_amount': int(amount * 100),  # Convert to cents
-                    },
-                    'quantity': 1,
-                },
-            ],
-            mode='payment',
-            success_url=success_url,
-            cancel_url=cancel_url,
-            client_reference_id=payment_reference,
-            metadata={
-                'payment_reference': payment_reference,
-                'user_id': str(current_user.id) if hasattr(current_user, 'id') else 'guest',
+        # For cryptocurrencies, we need to handle them differently
+        # as Stripe doesn't natively support these currencies
+        if is_crypto:
+            # For crypto payments, we'll create a custom checkout page that will handle the conversion
+            # Store the intent in a session with the cryptocurrency details
+            original_currency = currency.upper()
+            
+            # Convert to USD for Stripe processing (which requires a supported currency)
+            # In production, you would get real exchange rates from an oracle or API
+            # This is a simplified conversion for demonstration purposes
+            usd_conversion_rates = {
+                'nvct': 0.90,      # 1 NVCT = $0.90 USD
+                'afd1': 339.40,    # 1 AFD1 = $339.40 USD (from your logs)
+                'btc': 59000.00,   # 1 BTC = $59,000 USD
+                'eth': 3100.00,    # 1 ETH = $3,100 USD
+                'usdt': 1.00,      # 1 USDT = $1.00 USD
+                'usdc': 1.00       # 1 USDC = $1.00 USD
             }
-        )
+            
+            # Calculate USD equivalent amount
+            usd_amount = amount * usd_conversion_rates.get(currency.lower(), 1.0)
+            
+            logger.info(f"Creating Stripe checkout session for {amount} {original_currency} (${usd_amount} USD equivalent)")
+            
+            # Create Stripe checkout session with USD as currency but store original crypto details
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[
+                    {
+                        'price_data': {
+                            'currency': 'usd',  # Always use USD for Stripe processing
+                            'product_data': {
+                                'name': f'{original_currency} Payment - NVC Banking Services',
+                                'description': f'Payment of {amount} {original_currency} for NVC Banking Platform services',
+                            },
+                            'unit_amount': int(usd_amount * 100),  # Convert to cents
+                        },
+                        'quantity': 1,
+                    },
+                ],
+                mode='payment',
+                success_url=success_url,
+                cancel_url=cancel_url,
+                client_reference_id=payment_reference,
+                metadata={
+                    'payment_reference': payment_reference,
+                    'user_id': str(current_user.id) if hasattr(current_user, 'id') else 'guest',
+                    'original_currency': original_currency,
+                    'original_amount': str(amount),
+                    'is_cryptocurrency': 'true',
+                    'description': payment_description
+                }
+            )
+        else:
+            # Standard fiat currency processing
+            logger.info(f"Creating Stripe checkout session for {amount} {currency}")
+            
+            # Create Stripe checkout session
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[
+                    {
+                        'price_data': {
+                            'currency': currency,
+                            'product_data': {
+                                'name': 'NVC Banking Services',
+                                'description': payment_description,
+                            },
+                            'unit_amount': int(amount * 100),  # Convert to cents
+                        },
+                        'quantity': 1,
+                    },
+                ],
+                mode='payment',
+                success_url=success_url,
+                cancel_url=cancel_url,
+                client_reference_id=payment_reference,
+                metadata={
+                    'payment_reference': payment_reference,
+                    'user_id': str(current_user.id) if hasattr(current_user, 'id') else 'guest',
+                    'description': payment_description
+                }
+            )
         
         # Redirect to Stripe hosted checkout page
         checkout_url = checkout_session.url
@@ -222,24 +282,71 @@ def webhook():
             if hasattr(session, 'metadata') and session.metadata:
                 metadata = session.metadata
             
+            # Check if this was a cryptocurrency transaction
+            is_crypto = False
+            original_currency = currency.upper()
+            original_amount = amount
+            
+            if metadata and 'is_cryptocurrency' in metadata and metadata['is_cryptocurrency'] == 'true':
+                is_crypto = True
+                if 'original_currency' in metadata:
+                    original_currency = metadata['original_currency']
+                if 'original_amount' in metadata:
+                    try:
+                        original_amount = float(metadata['original_amount'])
+                    except (ValueError, TypeError):
+                        logger.warning(f"Could not convert original amount {metadata.get('original_amount')} to float")
+            
             # Store the transaction in the database if models are available
             if TRANSACTION_MODELS_AVAILABLE:
                 try:
+                    # Determine transaction type based on cryptocurrency
+                    if is_crypto:
+                        if original_currency == 'NVCT':
+                            tx_type = TransactionType.NVCT_PAYMENT
+                        elif original_currency == 'AFD1':
+                            tx_type = TransactionType.AFD1_PAYMENT
+                        else:
+                            tx_type = TransactionType.CRYPTO_PAYMENT
+                    else:
+                        tx_type = TransactionType.PAYMENT
+                    
+                    # Prepare metadata JSON with cryptocurrency information if applicable
+                    if is_crypto:
+                        tx_metadata = {
+                            'is_cryptocurrency': True,
+                            'original_currency': original_currency,
+                            'original_amount': original_amount,
+                            'usd_equivalent': amount,
+                            'payment_method': 'cryptocurrency',
+                            'processor': 'stripe'
+                        }
+                        
+                        # Add any additional metadata
+                        for key, value in metadata.items():
+                            if key not in ['is_cryptocurrency', 'original_currency', 'original_amount']:
+                                tx_metadata[key] = value
+                        
+                        tx_metadata_json = json.dumps(tx_metadata)
+                    else:
+                        tx_metadata_json = json.dumps(metadata) if metadata else None
+                    
                     # Create transaction record
                     transaction = Transaction(
                         transaction_id=transaction_id,
-                        amount=amount,
-                        currency=currency,
+                        amount=original_amount,  # Use original crypto amount
+                        currency=original_currency,  # Use original crypto currency
                         status=TransactionStatus.COMPLETED,
                         payment_method=PaymentMethod.CREDIT_CARD,
+                        transaction_type=tx_type,
                         recipient_name=customer_name,
                         recipient_email=customer_email,
-                        description="Stripe payment",
-                        tx_metadata_json=json.dumps(metadata)
+                        description=f"Stripe {original_currency} payment" if is_crypto else "Stripe payment",
+                        tx_metadata_json=tx_metadata_json
                     )
                     db.session.add(transaction)
                     db.session.commit()
-                    logger.info(f"Transaction stored in database: {transaction_id}")
+                    logger.info(f"Transaction stored in database: {transaction_id} - {'Cryptocurrency' if is_crypto else 'Fiat'} payment")
                 except Exception as e:
                     logger.error(f"Error storing transaction in database: {str(e)}")
                     # Continue processing even if database storage fails

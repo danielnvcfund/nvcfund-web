@@ -34,11 +34,21 @@
                         <div class="mb-3">
                             <label for="currency" class="form-label">Currency</label>
                             <select class="form-select" id="currency" name="currency" required>
-                                <option value="usd" selected>USD - US Dollar</option>
-                                <option value="eur">EUR - Euro</option>
-                                <option value="gbp">GBP - British Pound</option>
-                                <option value="cad">CAD - Canadian Dollar</option>
-                                <option value="aud">AUD - Australian Dollar</option>
+                                <optgroup label="Fiat Currencies">
+                                    <option value="usd" selected>USD - US Dollar</option>
+                                    <option value="eur">EUR - Euro</option>
+                                    <option value="gbp">GBP - British Pound</option>
+                                    <option value="cad">CAD - Canadian Dollar</option>
+                                    <option value="aud">AUD - Australian Dollar</option>
+                                </optgroup>
+                                <optgroup label="Cryptocurrencies">
+                                    <option value="nvct">NVCT - NVC Token</option>
+                                    <option value="afd1">AFD1 - American Federation Dollar</option>
+                                    <option value="btc">BTC - Bitcoin</option>
+                                    <option value="eth">ETH - Ethereum</option>
+                                    <option value="usdt">USDT - Tether</option>
+                                    <option value="usdc">USDC - USD Coin</option>
+                                </optgroup>
                             </select>
                         </div>
                         
