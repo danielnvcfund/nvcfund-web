@@ -285,10 +285,16 @@ def success():
             # Here we would save the transaction to our database
             # This would typically be done in the webhook, but we set the ID here for the UI
             
-            # Return success page with transaction details
-            return render_template('stripe/success.html', 
-                                  session=session, 
-                                  transaction_id=transaction_id)
+            # Check if payment history is available
+            try:
+                # First try to redirect to payment history detail page
+                return redirect(url_for('payment_history.transaction_detail', 
+                                       transaction_id=transaction_id))
+            except:
+                # Fall back to simple success page
+                return render_template('stripe/success.html', 
+                                      session=session, 
+                                      transaction_id=transaction_id)
         
         except Exception as e:
             logger.error(f"Error retrieving Stripe session: {str(e)}")
