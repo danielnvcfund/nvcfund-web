@@ -174,7 +174,7 @@
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Security Readiness</h5>
-                    <span class="badge {% if security_checks.contract_verified and security_checks.audit_complete and security_checks.permission_controls %}bg-success{% else %}bg-warning{% endif %}">
+                    <span class="badge {% if security_checks.contract_verified and security_checks.audit_complete and security_checks.permission_controls %}bg-success{% else %}bg-warning text-dark{% endif %}">
                         {% if security_checks.contract_verified and security_checks.audit_complete and security_checks.permission_controls %}Ready{% else %}Needs Attention{% endif %}
                     </span>
                 </div>
@@ -188,13 +188,13 @@
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Security Audit
-                            <span class="badge {% if security_checks.audit_complete %}bg-success{% else %}bg-warning{% endif %}">
+                            <span class="badge {% if security_checks.audit_complete %}bg-success{% else %}bg-warning text-dark{% endif %}">
                                 {{ 'Completed' if security_checks.audit_complete else 'Pending' }}
                             </span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Permission Controls
-                            <span class="badge {% if security_checks.permission_controls %}bg-success{% else %}bg-warning{% endif %}">
+                            <span class="badge {% if security_checks.permission_controls %}bg-success{% else %}bg-warning text-dark{% endif %}">
                                 {{ 'Implemented' if security_checks.permission_controls else 'Missing' }}
                             </span>
                         </li>
@@ -208,7 +208,7 @@
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Monitoring Readiness</h5>
-                    <span class="badge {% if monitoring_checks.tracking_system and monitoring_checks.gas_price_monitoring and monitoring_checks.alerts_configured %}bg-success{% else %}bg-warning{% endif %}">
+                    <span class="badge {% if monitoring_checks.tracking_system and monitoring_checks.gas_price_monitoring and monitoring_checks.alerts_configured %}bg-success{% else %}bg-warning text-dark{% endif %}">
                         {% if monitoring_checks.tracking_system and monitoring_checks.gas_price_monitoring and monitoring_checks.alerts_configured %}Ready{% else %}Needs Attention{% endif %}
                     </span>
                 </div>
@@ -222,13 +222,13 @@
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Gas Price Monitoring
-                            <span class="badge {% if monitoring_checks.gas_price_monitoring %}bg-success{% else %}bg-warning{% endif %}">
+                            <span class="badge {% if monitoring_checks.gas_price_monitoring %}bg-success{% else %}bg-warning text-dark{% endif %}">
                                 {{ 'Configured' if monitoring_checks.gas_price_monitoring else 'Missing' }}
                             </span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Alert System
-                            <span class="badge {% if monitoring_checks.alerts_configured %}bg-success{% else %}bg-warning{% endif %}">
+                            <span class="badge {% if monitoring_checks.alerts_configured %}bg-success{% else %}bg-warning text-dark{% endif %}">
                                 {{ 'Configured' if monitoring_checks.alerts_configured else 'Missing' }}
                             </span>
                         </li>
