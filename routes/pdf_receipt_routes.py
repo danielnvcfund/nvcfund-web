@@ -139,38 +139,48 @@ class ReceiptPDF(FPDF):
         self.ln(5)
         
     def add_status_badge(self, status):
-        """Add a status badge with appropriate color"""
-        status_lower = status.lower()
+        """Add a status badge with appropriate color matching web UI"""
+        status_lower = str(status).lower()
         
-        # Set badge colors based on status
+        # Set badge colors based on status - matching the UI colors
         if 'completed' in status_lower or 'success' in status_lower:
-            bg_color = (220, 255, 220)  # Light green
-            text_color = (0, 120, 0)    # Dark green
+            bg_color = (100, 149, 237)  # Cornflower blue - matching the UI blue
+            text_color = (255, 255, 255)  # White text
         elif 'pending' in status_lower or 'processing' in status_lower:
-            bg_color = (255, 255, 220)  # Light yellow
-            text_color = (150, 120, 0)  # Dark yellow/gold
-        elif 'failed' in status_lower or 'cancelled' in status_lower:
-            bg_color = (255, 220, 220)  # Light red
-            text_color = (200, 0, 0)    # Dark red
+            bg_color = (255, 193, 7)  # Warning yellow
+            text_color = (33, 37, 41)   # Dark text
+        elif 'failed' in status_lower or 'cancelled' in status_lower or 'rejected' in status_lower:
+            bg_color = (220, 53, 69)    # Danger red
+            text_color = (255, 255, 255)  # White text
         else:
-            bg_color = (240, 240, 240)  # Light gray
-            text_color = (100, 100, 100)  # Dark gray
+            bg_color = (108, 117, 125)  # Secondary gray
+            text_color = (255, 255, 255)  # White text
             
         # Store current position
         x, y = self.get_x(), self.get_y()
         
-        # Add background rectangle
-        self.set_fill_color(*bg_color)
-        self.rect(x, y, 40, 8, 'F')
+        # We'll use a simple rectangle instead of trying to implement rounded corners
+        # as FPDF doesn't support them easily
         
-        # Add text
+        # Add styled badge with text
+        self.set_fill_color(*bg_color)
+        
+        # Draw rectangle with slight rounding at corners
+        badge_width = 50
+        badge_height = 12
+        self.rect(x, y, badge_width, badge_height, 'F')
+        
+        # Add text centered in badge
         self.set_text_color(*text_color)
-        self.set_font('Arial', 'B', 10)
-        self.set_xy(x, y)
-        self.cell(40, 8, status.upper(), 0, 1, 'C')
+        self.set_font('Arial', 'B', 9)
+        
+        # Center the text in the badge
+        text = status.upper()
+        self.set_xy(x, y + 2.5)  # Vertically center
+        self.cell(badge_width, 7, text, 0, 1, 'C')
         
         # Reset position and colors
-        self.set_xy(x + 45, y)  # Move right after the badge
+        self.set_xy(x + badge_width + 5, y)  # Move right after the badge
         self.set_text_color(0, 0, 0)
         
     def add_qr_code(self, data, x=None, y=None, w=35, h=35):
@@ -248,9 +258,10 @@ def generate_receipt_pdf(transaction, user):
     pdf.rect(10, pdf.get_y(), 190, 20, 'F')
     pdf.set_xy(15, pdf.get_y() + 3)
     
-    # Add status badge on the right side
+    # Add status badge on the right side with styling to match the web UI
     pdf.set_xy(150, pdf.get_y())
-    pdf.add_status_badge(transaction.status.value)
+    status_text = transaction.status.value if hasattr(transaction.status, 'value') else str(transaction.status)
+    pdf.add_status_badge(status_text)
     
     # Add transaction ID on the left side
     pdf.set_xy(15, pdf.get_y())
@@ -271,14 +282,28 @@ def generate_receipt_pdf(transaction, user):
     col_width = 90
     left_margin = 15
     
-    # Left column - Amount and Date
+    # Key Transaction Information matching UI format
+    # Type
     pdf.set_xy(left_margin, pdf.get_y() + 3)
-    pdf.add_detail_row('Amount:', f"{transaction.currency} {transaction.amount:.2f}", highlight=True)
+    tx_type = transaction.transaction_type.value if hasattr(transaction.transaction_type, 'value') else str(transaction.transaction_type)
+    pdf.add_detail_row('Type:', tx_type.replace('_', ' ').title())
     
-    # Date on left side
+    # Amount with proper AFD1 formatting if needed
     pdf.set_xy(left_margin, pdf.get_y() + 2)
-    date_str = transaction.created_at.strftime('%B %d, %Y at %H:%M:%S UTC')
-    pdf.add_detail_row('Date:', date_str)
+    amount_str = f"{transaction.amount:.2f}"
+    currency_str = transaction.currency
+    pdf.add_detail_row('Amount:', f"{currency_str} {amount_str}", highlight=True)
+    
+    # Created date using same format as transaction details page
+    pdf.set_xy(left_margin, pdf.get_y() + 2)
+    created_date = transaction.created_at.strftime('%Y-%m-%d %H:%M:%S')
+    pdf.add_detail_row('Created:', created_date)
+    
+    # Last updated date if different from created
+    if hasattr(transaction, 'updated_at') and transaction.updated_at and transaction.updated_at != transaction.created_at:
+        pdf.set_xy(left_margin, pdf.get_y() + 2)
+        updated_date = transaction.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+        pdf.add_detail_row('Last Updated:', updated_date)
     
     # Right column - Payment Method and Type
     right_col_x = left_margin + col_width + 10
@@ -377,30 +402,49 @@ def generate_receipt_pdf(transaction, user):
         # Address information not available - skip
         pass
     
-    # Recipient Information (if available)
-    if transaction.recipient_name or transaction.recipient_institution or transaction.recipient_account:
+    # Recipient & Bank Details (if available)
+    if (transaction.recipient_name or transaction.recipient_institution or transaction.recipient_account or
+         hasattr(transaction, 'recipient_country') and transaction.recipient_country):
+        
         pdf.set_xy(right_col_x, pdf.get_y() - 30)  # Position at top of this section but in right column
         pdf.set_font('Arial', 'B', 10)
         pdf.set_text_color(70, 70, 70)
-        pdf.cell(col_width, 7, 'Recipient Information', 0, 1, 'L')
+        pdf.cell(col_width, 7, 'Recipient & Bank Details', 0, 1, 'L')
         
         if transaction.recipient_name:
             pdf.set_xy(right_col_x, pdf.get_y() + 1)
-            pdf.add_detail_row('Recipient:', transaction.recipient_name)
+            pdf.add_detail_row('Recipient Name:', transaction.recipient_name)
         
-        if transaction.recipient_institution:
-            pdf.set_xy(right_col_x, pdf.get_y() + 1)
-            pdf.add_detail_row('Institution:', transaction.recipient_institution)
+        # Add receiving bank information as in transaction details page
+        pdf.set_xy(right_col_x, pdf.get_y() + 3)
+        pdf.set_font('Arial', 'B', 9)
+        pdf.set_text_color(100, 120, 190)  # Blue text for header
+        pdf.cell(col_width, 5, 'Receiving Bank Information:', 0, 1, 'L')
+        pdf.set_text_color(0, 0, 0)
         
+        # Processing Institution
+        pdf.set_xy(right_col_x, pdf.get_y() + 1)
+        institution = transaction.recipient_institution if transaction.recipient_institution else "Not specified"
+        pdf.add_detail_row('Processing Institution:', institution)
+        
+        # Beneficiary Bank
+        pdf.set_xy(right_col_x, pdf.get_y() + 1)
+        beneficiary_bank = "Not specified"
+        if hasattr(transaction, 'recipient_bank') and transaction.recipient_bank:
+            beneficiary_bank = transaction.recipient_bank
+        pdf.add_detail_row('Beneficiary Bank:', beneficiary_bank)
+        
+        # Account Number
+        pdf.set_xy(right_col_x, pdf.get_y() + 1)
+        account = "Not specified"
         if transaction.recipient_account:
-            pdf.set_xy(right_col_x, pdf.get_y() + 1)
             # Mask account number for security
-            masked_account = transaction.recipient_account
-            if len(masked_account) > 4:
-                masked_account = '*' * (len(masked_account) - 4) + masked_account[-4:]
-            pdf.add_detail_row('Account:', masked_account)
+            account = transaction.recipient_account
+            if len(account) > 4:
+                account = '*' * (len(account) - 4) + account[-4:]
+        pdf.add_detail_row('Account Number:', account)
         
-        # Check if recipient_country attribute exists and has a value
+        # Country
         if hasattr(transaction, 'recipient_country') and transaction.recipient_country:
             pdf.set_xy(right_col_x, pdf.get_y() + 1)
             pdf.add_detail_row('Country:', transaction.recipient_country)
@@ -427,7 +471,61 @@ def generate_receipt_pdf(transaction, user):
             # Failed to parse metadata - skip this section
             pass
     
-    # Add verification QR code
+    # Add Transaction Timeline section
+    pdf.ln(10)
+    pdf.add_section('Transaction Timeline')
+    
+    # Timeline event visualization
+    pdf.set_xy(left_margin, pdf.get_y() + 5)
+    
+    # Create a circle with timeline connector
+    def add_timeline_event(pdf, y_pos, event_text, timestamp, is_last=False):
+        # Draw circle
+        pdf.set_fill_color(100, 149, 237)  # Cornflower blue
+        pdf.set_draw_color(100, 149, 237)
+        circle_x = left_margin + 5
+        circle_y = y_pos
+        circle_radius = 3
+        pdf.circle(circle_x, circle_y, circle_radius, style="F")
+        
+        # Draw timeline connector line (if not the last event)
+        if not is_last:
+            pdf.set_draw_color(200, 200, 200)
+            pdf.line(circle_x, circle_y + circle_radius, circle_x, circle_y + 20)
+        
+        # Add event text
+        pdf.set_xy(circle_x + 10, y_pos - 3)
+        pdf.set_font('Arial', 'B', 10)
+        pdf.set_text_color(70, 70, 70)
+        pdf.cell(100, 6, event_text, 0, 1, 'L')
+        
+        # Add timestamp
+        pdf.set_xy(circle_x + 10, y_pos + 3)
+        pdf.set_font('Arial', '', 9)
+        pdf.set_text_color(120, 120, 120)
+        pdf.cell(100, 6, timestamp, 0, 1, 'L')
+    
+    # Add created event
+    timeline_y = pdf.get_y()
+    add_timeline_event(
+        pdf, 
+        timeline_y, 
+        "Transaction was created", 
+        transaction.created_at.strftime('%Y-%m-%d %H:%M:%S')
+    )
+    
+    # Add completed event if transaction is completed
+    if hasattr(transaction, 'status') and str(transaction.status).upper() == 'COMPLETED':
+        completed_time = transaction.updated_at if hasattr(transaction, 'updated_at') and transaction.updated_at else transaction.created_at
+        add_timeline_event(
+            pdf,
+            timeline_y + 25,
+            "Transaction was completed",
+            completed_time.strftime('%Y-%m-%d %H:%M:%S'),
+            is_last=True
+        )
+    
+    # Add verification section
     pdf.ln(10)
     pdf.add_section('Verification')
     
