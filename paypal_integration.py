@@ -45,7 +45,7 @@ class PayPalService:
         
         Args:
             amount: The payment amount
-            currency: The currency code (e.g., USD)
+            currency: The currency code (e.g., USD, BTC, ETH)
             description: The payment description
             return_url: The URL to redirect to after approval
             cancel_url: The URL to redirect to if cancelled
@@ -53,29 +53,69 @@ class PayPalService:
         Returns:
             Tuple containing the payment ID and approval URL if successful, or (None, None) if failed
         """
+        # Check if this is a cryptocurrency transaction
+        crypto_currencies = ['NVCT', 'ETH', 'BTC', 'USDT', 'USDC', 'AFD1']
+        
         try:
-            payment = paypalrestsdk.Payment({
-                "intent": "sale",
-                "payer": {
-                    "payment_method": "paypal"
-                },
-                "transactions": [{
-                    "amount": {
-                        "total": str(amount),
-                        "currency": currency
+            # For standard fiat currencies (USD, EUR, etc.)
+            if currency not in crypto_currencies:
+                payment = paypalrestsdk.Payment({
+                    "intent": "sale",
+                    "payer": {
+                        "payment_method": "paypal"
                     },
-                    "description": description
-                }],
-                "redirect_urls": {
-                    "return_url": return_url,
-                    "cancel_url": cancel_url
-                }
-            })
+                    "transactions": [{
+                        "amount": {
+                            "total": str(amount),
+                            "currency": currency
+                        },
+                        "description": description
+                    }],
+                    "redirect_urls": {
+                        "return_url": return_url,
+                        "cancel_url": cancel_url
+                    }
+                })
+            else:
+                # For cryptocurrency transactions
+                # Add cryptocurrency as an item in the payment with crypto handling
+                payment = paypalrestsdk.Payment({
+                    "intent": "sale",
+                    "payer": {
+                        "payment_method": "paypal"
+                    },
+                    "transactions": [{
+                        "amount": {
+                            # For cryptocurrency transactions, PayPal requires a base currency (USD)
+                            "total": str(amount),
+                            "currency": "USD"
+                        },
+                        "description": f"{description} ({amount} {currency})",
+                        "item_list": {
+                            "items": [{
+                                "name": f"{currency} cryptocurrency transfer",
+                                "quantity": "1",
+                                "price": str(amount),
+                                "currency": "USD",
+                                "description": f"Payment of {amount} {currency}"
+                            }]
+                        },
+                        # Save cryptocurrency information in custom field
+                        "custom": json.dumps({
+                            "original_currency": currency,
+                            "original_amount": amount
+                        })
+                    }],
+                    "redirect_urls": {
+                        "return_url": return_url,
+                        "cancel_url": cancel_url
+                    }
+                })
             
             if payment.create():
                 # Extract approval URL
                 approval_url = next(link.href for link in payment.links if link.rel == 'approval_url')
-                logger.info(f"Payment created successfully: {payment.id}")
+                logger.info(f"Payment created successfully: {payment.id} ({currency})")
                 return payment.id, approval_url
             else:
                 logger.error(f"Failed to create payment: {payment.error}")
@@ -137,7 +177,7 @@ class PayPalService:
         
         Args:
             amount: The payout amount
-            currency: The currency code (e.g., USD)
+            currency: The currency code (e.g., USD, BTC, ETH)
             recipient_email: The recipient's PayPal email
             note: Note to the recipient
             email_subject: Subject for the payout email notification
@@ -146,38 +186,85 @@ class PayPalService:
         Returns:
             Tuple containing (success status, batch ID, details)
         """
+        # Check if this is a cryptocurrency transaction
+        crypto_currencies = ['NVCT', 'ETH', 'BTC', 'USDT', 'USDC', 'AFD1']
+        is_crypto = currency in crypto_currencies
+        
         try:
             # Create a unique batch ID for this payout
             sender_batch_id = str(uuid.uuid4())
+            
+            # For cryptocurrency transactions, we use USD as the base currency for PayPal
+            # but include the crypto details in the note and email
+            payout_currency = "USD" if is_crypto else currency
+            
+            # Customize email subjects and messages for crypto transactions
+            if is_crypto:
+                if email_subject is None:
+                    email_subject = f"You received a crypto payment of {amount} {currency}"
+                
+                crypto_note = f"{note} - {amount} {currency} cryptocurrency payment"
+            else:
+                if email_subject is None:
+                    email_subject = f"You received a payment of {amount} {currency}"
+                
+                crypto_note = note
             
             # Set up the payout
             payout = paypalrestsdk.Payout({
                 "sender_batch_header": {
                     "sender_batch_id": sender_batch_id,
-                    "email_subject": email_subject or f"You received a payment of {currency} {amount}",
+                    "email_subject": email_subject,
                 },
                 "items": [
                     {
                         "recipient_type": "EMAIL",
                         "amount": {
                             "value": str(amount),
-                            "currency": currency
+                            "currency": payout_currency
                         },
-                        "note": note,
+                        "note": crypto_note,
                         "receiver": recipient_email,
                         "sender_item_id": str(uuid.uuid4()),
                     }
                 ]
             })
             
+            # Build custom email message for crypto transactions
+            if is_crypto and email_message is None:
+                email_message = (f"You have received a cryptocurrency payment of {amount} {currency}. "
+                                f"This payment was processed through PayPal via the NVC Banking Platform.")
+            
             # Include email message if provided
             if email_message:
                 payout.sender_batch_header["email_message"] = email_message
             
+            # Add metadata for crypto transactions
+            if is_crypto:
+                # Store crypto information in the payout metadata
+                payout.items[0]["custom"] = json.dumps({
+                    "original_currency": currency,
+                    "original_amount": amount,
+                    "is_cryptocurrency": True
+                })
+            
             # Create the payout
             if payout.create(sync_mode=False):  # Async mode
-                logger.info(f"Payout created successfully: {payout.batch_header.payout_batch_id}")
-                return True, payout.batch_header.payout_batch_id, payout.to_dict()
+                logger.info(f"Payout created successfully: {payout.batch_header.payout_batch_id} ({currency})")
+                
+                # Add cryptocurrency information to the returned details
+                payout_data = payout.to_dict()
+                if is_crypto:
+                    # Make sure there's a place to store custom metadata
+                    if 'custom_data' not in payout_data:
+                        payout_data['custom_data'] = {}
+                    
+                    # Add cryptocurrency information to the details
+                    payout_data['custom_data']['original_currency'] = currency
+                    payout_data['custom_data']['original_amount'] = amount
+                    payout_data['custom_data']['is_cryptocurrency'] = True
+                
+                return True, payout.batch_header.payout_batch_id, payout_data
             else:
                 logger.error(f"Failed to create payout: {payout.error}")
                 return False, None, None

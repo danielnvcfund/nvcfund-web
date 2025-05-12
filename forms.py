@@ -190,12 +190,21 @@ class PayPalPayoutForm(FlaskForm):
     """Form for PayPal payouts (sending money)"""
     amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01, message="Amount must be greater than 0.01")])
     currency = SelectField('Currency', choices=[
+        # Fiat currencies
         ('USD', 'USD - US Dollar'),
         ('EUR', 'EUR - Euro'),
         ('GBP', 'GBP - British Pound'),
         ('CAD', 'CAD - Canadian Dollar'),
         ('AUD', 'AUD - Australian Dollar'),
-        ('JPY', 'JPY - Japanese Yen')
+        ('JPY', 'JPY - Japanese Yen'),
+        
+        # Cryptocurrencies
+        ('NVCT', 'NVCT - NVC Token'),
+        ('ETH', 'ETH - Ethereum'),
+        ('BTC', 'BTC - Bitcoin'),
+        ('USDT', 'USDT - Tether'),
+        ('USDC', 'USDC - USD Coin'),
+        ('AFD1', 'AFD1 - American Federation Dollar')
     ], default='USD', validators=[DataRequired()])
     recipient_email = StringField('Recipient PayPal Email', validators=[
         DataRequired(),
