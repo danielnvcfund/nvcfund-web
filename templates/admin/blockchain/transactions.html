@@ -39,10 +39,10 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Transaction Hash</th>
-                                    <th>Network</th>
+                                    <th>Type</th>
                                     <th>From</th>
                                     <th>To</th>
-                                    <th>Value</th>
+                                    <th>Contract</th>
                                     <th>Status</th>
                                     <th>Timestamp</th>
                                 </tr>
@@ -53,14 +53,14 @@
                                     <td>{{ tx.id }}</td>
                                     <td>
                                         {% if tx.tx_hash %}
-                                        <a href="https://{% if tx.network and tx.network != 'MAINNET' %}sepolia.{% endif %}etherscan.io/tx/{{ tx.tx_hash }}" target="_blank">
+                                        <a href="https://sepolia.etherscan.io/tx/{{ tx.tx_hash }}" target="_blank">
                                             {{ tx.tx_hash[:10] }}...{{ tx.tx_hash[-8:] if tx.tx_hash|length > 16 else tx.tx_hash }}
                                         </a>
                                         {% else %}
                                         <span class="text-muted">Not recorded</span>
                                         {% endif %}
                                     </td>
-                                    <td><span class="badge bg-{% if tx.network == 'MAINNET' %}success{% else %}info{% endif %}">{{ tx.network or 'UNKNOWN' }}</span></td>
+                                    <td><span class="badge bg-info">{{ tx.transaction_type or 'UNKNOWN' }}</span></td>
                                     <td>
                                         {% if tx.from_address %}
                                             {{ tx.from_address[:10] }}...{{ tx.from_address[-8:] if tx.from_address|length > 16 else tx.from_address }}
@@ -76,8 +76,8 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% if tx.value %}
-                                            {{ tx.value }} ETH
+                                        {% if tx.contract_address %}
+                                            {{ tx.contract_address[:10] }}...{{ tx.contract_address[-8:] if tx.contract_address|length > 16 else tx.contract_address }}
                                         {% else %}
                                             <span class="text-muted">N/A</span>
                                         {% endif %}

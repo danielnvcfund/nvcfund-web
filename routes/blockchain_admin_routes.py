@@ -76,8 +76,8 @@ def transactions():
         try:
             # Use a safe query that doesn't require specific column names
             query = text("""
-                SELECT id, tx_hash, network, from_address, to_address, 
-                       contract_address, value, status, created_at
+                SELECT id, tx_hash, from_address, to_address, 
+                       contract_address, status, created_at, transaction_type
                 FROM blockchain_transaction 
                 ORDER BY created_at DESC 
                 LIMIT 100
