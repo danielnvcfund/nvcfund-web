@@ -1,334 +1,302 @@
-{% extends 'admin/layout.html' %}
+{% extends "admin/admin_base.html" %}
 
-{% block title %}Mainnet Readiness Assessment - NVC Banking Platform{% endblock %}
+{% block title %}Mainnet Readiness Assessment{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row mb-4">
+<div class="container-fluid">
+    <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Mainnet Migration Readiness Assessment</h4>
-                    <div>
-                        <a href="{{ url_for('blockchain_admin.index') }}" class="btn btn-sm btn-outline-light me-2">
-                            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
-                        </a>
-                        <button id="run-assessment" class="btn btn-sm btn-outline-light">
-                            <i class="fas fa-sync-alt me-1"></i> Run Assessment
-                        </button>
-                    </div>
+            <h1 class="mb-4">Mainnet Readiness Assessment</h1>
+            <div class="alert alert-info">
+                <p>This tool assesses the platform's readiness for migrating NVCT tokens to Ethereum mainnet.</p>
+            </div>
+            
+            {% if error %}
+            <div class="alert alert-danger">
+                <h4 class="alert-heading">Error</h4>
+                <p>{{ error }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Overall Readiness Score</h5>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info">
-                        <h5 class="alert-heading">
-                            <i class="fas fa-info-circle me-2"></i>
-                            NVCT Token Mainnet Migration Readiness
-                        </h5>
+                    <div class="progress" style="height: 30px;">
+                        <div class="progress-bar {% if readiness_score < 50 %}bg-danger{% elif readiness_score < 80 %}bg-warning{% else %}bg-success{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ readiness_score }}%;" 
+                             aria-valuenow="{{ readiness_score }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ readiness_score }}%
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h5>Assessment Summary</h5>
                         <p>
-                            This tool assesses the readiness of our platform for migrating the NVCT token from Sepolia testnet to Ethereum mainnet.
-                            It checks various requirements and provides recommendations for a successful migration.
+                            {% if readiness_score < 50 %}
+                            <span class="text-danger">Not Ready</span>: Several critical system components need to be addressed before mainnet migration.
+                            {% elif readiness_score < 80 %}
+                            <span class="text-warning">Partially Ready</span>: Some components still need attention before mainnet migration.
+                            {% else %}
+                            <span class="text-success">Ready for Migration</span>: The system meets most requirements for mainnet migration.
+                            {% endif %}
                         </p>
                     </div>
-                    
-                    <!-- Overall Status -->
-                    <div class="row mb-4">
-                        <div class="col-md-4">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h5 class="card-title">Overall Readiness</h5>
-                                    <div class="text-center mt-3">
-                                        {% if overall_readiness == 'ready' %}
-                                        <div class="my-3">
-                                            <span class="display-4 text-success">
-                                                <i class="fas fa-check-circle"></i>
-                                            </span>
-                                            <h4 class="text-success mt-2">READY</h4>
-                                        </div>
-                                        <p class="mb-0">All prerequisites are met for safe mainnet migration.</p>
-                                        {% elif overall_readiness == 'partial' %}
-                                        <div class="my-3">
-                                            <span class="display-4 text-warning">
-                                                <i class="fas fa-exclamation-triangle"></i>
-                                            </span>
-                                            <h4 class="text-warning mt-2">PARTIAL</h4>
-                                        </div>
-                                        <p class="mb-0">Some requirements need attention before proceeding.</p>
-                                        {% else %}
-                                        <div class="my-3">
-                                            <span class="display-4 text-danger">
-                                                <i class="fas fa-times-circle"></i>
-                                            </span>
-                                            <h4 class="text-danger mt-2">NOT READY</h4>
-                                        </div>
-                                        <p class="mb-0">Critical requirements must be addressed before migration.</p>
-                                        {% endif %}
-                                    </div>
-                                </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ url_for('blockchain_admin.mainnet_readiness') }}?migrate=true" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">Update Schema</h5>
+                                <small class="text-muted">Run</small>
                             </div>
-                        </div>
-                        
-                        <div class="col-md-8">
-                            <div class="card h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">Readiness Score</h5>
-                                    <div class="progress mt-3" style="height: 25px;">
-                                        <div class="progress-bar bg-{{ readiness_color }}" role="progressbar" 
-                                             style="width: {{ readiness_percentage }}%;" 
-                                             aria-valuenow="{{ readiness_percentage }}" 
-                                             aria-valuemin="0" 
-                                             aria-valuemax="100">
-                                            {{ readiness_percentage }}%
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="row mt-4">
-                                        <div class="col-md-4 text-center">
-                                            <div class="bg-light rounded p-3">
-                                                <h6 class="text-muted">Requirements</h6>
-                                                <h3>{{ total_requirements }}</h3>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 text-center">
-                                            <div class="bg-success bg-opacity-10 rounded p-3">
-                                                <h6 class="text-success">Passed</h6>
-                                                <h3>{{ passed_requirements }}</h3>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 text-center">
-                                            <div class="bg-danger bg-opacity-10 rounded p-3">
-                                                <h6 class="text-danger">Failed</h6>
-                                                <h3>{{ failed_requirements }}</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <p class="mb-1">Migrate database schema to support tx_hash</p>
+                        </a>
+                        <a href="{{ url_for('blockchain_admin.mainnet_readiness') }}?refresh=true" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">Refresh Assessment</h5>
+                                <small class="text-muted">Run</small>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Assessment Categories -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0">Assessment Categories</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th>Category</th>
-                                                    <th>Status</th>
-                                                    <th>Passed</th>
-                                                    <th>Progress</th>
-                                                    <th>Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for category in categories %}
-                                                <tr>
-                                                    <td>
-                                                        <strong>{{ category.name }}</strong>
-                                                        <p class="mb-0 text-muted small">{{ category.description }}</p>
-                                                    </td>
-                                                    <td>
-                                                        {% if category.status == 'passed' %}
-                                                        <span class="badge bg-success">Passed</span>
-                                                        {% elif category.status == 'warning' %}
-                                                        <span class="badge bg-warning text-dark">Warning</span>
-                                                        {% else %}
-                                                        <span class="badge bg-danger">Failed</span>
-                                                        {% endif %}
-                                                    </td>
-                                                    <td>{{ category.passed }}/{{ category.total }}</td>
-                                                    <td>
-                                                        <div class="progress" style="height: 5px;">
-                                                            <div class="progress-bar bg-{{ category.color }}" role="progressbar" 
-                                                                 style="width: {{ category.percentage }}%;" 
-                                                                 aria-valuenow="{{ category.percentage }}" 
-                                                                 aria-valuemin="0" 
-                                                                 aria-valuemax="100"></div>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-outline-primary view-details-btn" data-category="{{ category.id }}">
-                                                            <i class="fas fa-list me-1"></i> View Details
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                            <p class="mb-1">Refresh the readiness assessment</p>
+                        </a>
+                        <a href="{{ url_for('blockchain_admin.transactions') }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">Transactions</h5>
+                                <small class="text-muted">View</small>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Detailed Assessment Results -->
-                    {% for category in categories %}
-                    <div class="row mb-4 category-details" id="category-{{ category.id }}-details" style="display: none;">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header bg-{{ category.color }} {% if category.color == 'success' or category.color == 'danger' %}text-white{% endif %}">
-                                    <h5 class="mb-0">{{ category.name }} - Detailed Assessment</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Requirement</th>
-                                                    <th>Status</th>
-                                                    <th>Details</th>
-                                                    <th>Recommendation</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for check in category.checks %}
-                                                <tr>
-                                                    <td>
-                                                        {% if check.critical %}
-                                                        <span class="badge bg-danger me-1">Critical</span>
-                                                        {% endif %}
-                                                        {{ check.name }}
-                                                    </td>
-                                                    <td>
-                                                        {% if check.status == 'passed' %}
-                                                        <span class="badge bg-success">Passed</span>
-                                                        {% elif check.status == 'warning' %}
-                                                        <span class="badge bg-warning text-dark">Warning</span>
-                                                        {% else %}
-                                                        <span class="badge bg-danger">Failed</span>
-                                                        {% endif %}
-                                                    </td>
-                                                    <td>{{ check.details|safe }}</td>
-                                                    <td>
-                                                        {% if check.recommendation %}
-                                                        <div class="alert alert-light p-2 mb-0">
-                                                            {{ check.recommendation|safe }}
-                                                        </div>
-                                                        {% endif %}
-                                                    </td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                    
-                    <!-- Migration Plan -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header bg-info text-white">
-                                    <h5 class="mb-0">Migration Action Plan</h5>
-                                </div>
-                                <div class="card-body">
-                                    {% if failed_requirements > 0 %}
-                                    <div class="alert alert-warning">
-                                        <h5 class="alert-heading">
-                                            <i class="fas fa-exclamation-triangle me-2"></i>
-                                            Attention Required
-                                        </h5>
-                                        <p>
-                                            Before proceeding with mainnet migration, please address the following issues:
-                                        </p>
-                                        <ul>
-                                            {% for action in action_items %}
-                                            <li>
-                                                <strong>{{ action.name }}:</strong> {{ action.description }}
-                                            </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                    {% else %}
-                                    <div class="alert alert-success">
-                                        <h5 class="alert-heading">
-                                            <i class="fas fa-check-circle me-2"></i>
-                                            Ready for Migration
-                                        </h5>
-                                        <p>
-                                            All requirements have been met. You may proceed with the migration to mainnet.
-                                        </p>
-                                    </div>
-                                    
-                                    <div class="card bg-light mt-3">
-                                        <div class="card-body">
-                                            <h5 class="card-title">Migration Checklist</h5>
-                                            <ol>
-                                                <li>Verify you have sufficient ETH in the admin wallet for gas fees</li>
-                                                <li>Deploy the token contract on mainnet</li>
-                                                <li>Update contract addresses in system configuration</li>
-                                                <li>Run validation tests on mainnet</li>
-                                                <li>Enable mainnet operations for users</li>
-                                            </ol>
-                                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                                <a href="{{ url_for('blockchain_admin.deploy_page') }}" class="btn btn-primary">
-                                                    <i class="fas fa-rocket me-1"></i> Begin Migration
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
+                            <p class="mb-1">View blockchain transactions</p>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
 
-{% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // View Details Button Handlers
-        const viewDetailsButtons = document.querySelectorAll('.view-details-btn');
-        
-        viewDetailsButtons.forEach(function(button) {
-            button.addEventListener('click', function() {
-                const categoryId = this.getAttribute('data-category');
-                const detailsDiv = document.getElementById(`category-${categoryId}-details`);
-                
-                // Toggle visibility
-                if (detailsDiv.style.display === 'none') {
-                    // Hide all other details first
-                    document.querySelectorAll('.category-details').forEach(function(div) {
-                        div.style.display = 'none';
-                    });
-                    
-                    // Show this one
-                    detailsDiv.style.display = 'block';
-                    this.innerHTML = '<i class="fas fa-chevron-up me-1"></i> Hide Details';
-                } else {
-                    detailsDiv.style.display = 'none';
-                    this.innerHTML = '<i class="fas fa-list me-1"></i> View Details';
-                }
-            });
-        });
-        
-        // Run Assessment Button
-        const runAssessmentBtn = document.getElementById('run-assessment');
-        
-        if (runAssessmentBtn) {
-            runAssessmentBtn.addEventListener('click', function() {
-                this.disabled = true;
-                this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Running Assessment...';
-                
-                // Reload the page to get fresh assessment
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            });
-        }
-    });
-</script>
+    <div class="row">
+        <!-- Database Readiness -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Database Readiness</h5>
+                    <span class="badge {% if db_checks.tx_hash_column and db_checks.smart_contracts_count > 0 and db_checks.transactions_count > 0 %}bg-success{% else %}bg-warning{% endif %}">
+                        {% if db_checks.tx_hash_column and db_checks.smart_contracts_count > 0 and db_checks.transactions_count > 0 %}Ready{% else %}Needs Attention{% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Transaction Hash Tracking
+                            <span class="badge {% if db_checks.tx_hash_column %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ 'Implemented' if db_checks.tx_hash_column else 'Missing' }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Smart Contracts Registered
+                            <span class="badge {% if db_checks.smart_contracts_count > 0 %}bg-success{% else %}bg-warning{% endif %}">
+                                {{ db_checks.smart_contracts_count }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Transactions Recorded
+                            <span class="badge {% if db_checks.transactions_count > 0 %}bg-success{% else %}bg-warning{% endif %}">
+                                {{ db_checks.transactions_count }}
+                            </span>
+                        </li>
+                    </ul>
+                    {% if not db_checks.tx_hash_column %}
+                    <div class="mt-3">
+                        <a href="{{ url_for('blockchain_admin.mainnet_readiness') }}?migrate=true" class="btn btn-warning">
+                            Add Transaction Hash Support
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Connectivity -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Network Connectivity</h5>
+                    <span class="badge {% if connectivity_checks.mainnet_connected and connectivity_checks.testnet_connected and connectivity_checks.api_credentials %}bg-success{% else %}bg-warning{% endif %}">
+                        {% if connectivity_checks.mainnet_connected and connectivity_checks.testnet_connected and connectivity_checks.api_credentials %}Ready{% else %}Needs Attention{% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Mainnet Connection
+                            <span class="badge {% if connectivity_checks.mainnet_connected %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ 'Connected' if connectivity_checks.mainnet_connected else 'Disconnected' }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Testnet Connection
+                            <span class="badge {% if connectivity_checks.testnet_connected %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ 'Connected' if connectivity_checks.testnet_connected else 'Disconnected' }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            API Credentials
+                            <span class="badge {% if connectivity_checks.api_credentials %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ 'Configured' if connectivity_checks.api_credentials else 'Missing' }}
+                            </span>
+                        </li>
+                    </ul>
+                    {% if not connectivity_checks.api_credentials %}
+                    <div class="mt-3 alert alert-warning">
+                        <p><strong>Action Required:</strong> API credentials (e.g., Infura API key) must be configured in environment variables.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Security Readiness -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Security Readiness</h5>
+                    <span class="badge {% if security_checks.contract_verified and security_checks.audit_complete and security_checks.permission_controls %}bg-success{% else %}bg-warning{% endif %}">
+                        {% if security_checks.contract_verified and security_checks.audit_complete and security_checks.permission_controls %}Ready{% else %}Needs Attention{% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Smart Contract Verification
+                            <span class="badge {% if security_checks.contract_verified %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ 'Verified' if security_checks.contract_verified else 'Unverified' }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Security Audit
+                            <span class="badge {% if security_checks.audit_complete %}bg-success{% else %}bg-warning{% endif %}">
+                                {{ 'Completed' if security_checks.audit_complete else 'Pending' }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Permission Controls
+                            <span class="badge {% if security_checks.permission_controls %}bg-success{% else %}bg-warning{% endif %}">
+                                {{ 'Implemented' if security_checks.permission_controls else 'Missing' }}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monitoring Readiness -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Monitoring Readiness</h5>
+                    <span class="badge {% if monitoring_checks.tracking_system and monitoring_checks.gas_price_monitoring and monitoring_checks.alerts_configured %}bg-success{% else %}bg-warning{% endif %}">
+                        {% if monitoring_checks.tracking_system and monitoring_checks.gas_price_monitoring and monitoring_checks.alerts_configured %}Ready{% else %}Needs Attention{% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Transaction Tracking
+                            <span class="badge {% if monitoring_checks.tracking_system %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ 'Implemented' if monitoring_checks.tracking_system else 'Missing' }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Gas Price Monitoring
+                            <span class="badge {% if monitoring_checks.gas_price_monitoring %}bg-success{% else %}bg-warning{% endif %}">
+                                {{ 'Configured' if monitoring_checks.gas_price_monitoring else 'Missing' }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Alert System
+                            <span class="badge {% if monitoring_checks.alerts_configured %}bg-success{% else %}bg-warning{% endif %}">
+                                {{ 'Configured' if monitoring_checks.alerts_configured else 'Missing' }}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Readiness Report</h5>
+                </div>
+                <div class="card-body">
+                    <p>Based on the assessment, the following actions are recommended before proceeding with mainnet migration:</p>
+                    <ul>
+                        {% if not db_checks.tx_hash_column %}
+                        <li class="text-danger">Add transaction hash tracking to the database schema</li>
+                        {% endif %}
+                        
+                        {% if db_checks.smart_contracts_count == 0 %}
+                        <li class="text-warning">Register smart contracts in the system</li>
+                        {% endif %}
+                        
+                        {% if not connectivity_checks.mainnet_connected %}
+                        <li class="text-danger">Configure mainnet connection</li>
+                        {% endif %}
+                        
+                        {% if not connectivity_checks.testnet_connected %}
+                        <li class="text-warning">Restore testnet connection</li>
+                        {% endif %}
+                        
+                        {% if not connectivity_checks.api_credentials %}
+                        <li class="text-danger">Configure API credentials (Infura API Key)</li>
+                        {% endif %}
+                        
+                        {% if not security_checks.contract_verified %}
+                        <li class="text-warning">Verify smart contracts on Etherscan</li>
+                        {% endif %}
+                        
+                        {% if not security_checks.audit_complete %}
+                        <li class="text-warning">Complete security audit</li>
+                        {% endif %}
+                        
+                        {% if not monitoring_checks.tracking_system %}
+                        <li class="text-danger">Implement transaction tracking system</li>
+                        {% endif %}
+                        
+                        {% if not monitoring_checks.gas_price_monitoring %}
+                        <li class="text-warning">Configure gas price monitoring</li>
+                        {% endif %}
+                        
+                        {% if not monitoring_checks.alerts_configured %}
+                        <li class="text-warning">Set up blockchain event alerts</li>
+                        {% endif %}
+                        
+                        {% if readiness_score >= 80 %}
+                        <li class="text-success">The system appears ready for mainnet migration. Verify all critical components before proceeding.</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('blockchain_admin.index') }}" class="btn btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
