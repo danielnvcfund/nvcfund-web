@@ -266,13 +266,13 @@
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Gas Price Monitoring
-                            <span class="badge {% if monitoring_checks.gas_price_monitoring %}bg-dark-green{% else %}bg-warning text-dark{% endif %}">
+                            <span class="badge {% if monitoring_checks.gas_price_monitoring %}badge-configured{% else %}bg-warning text-dark{% endif %}">
                                 {{ 'Configured' if monitoring_checks.gas_price_monitoring else 'Missing' }}
                             </span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Alert System
-                            <span class="badge {% if monitoring_checks.alerts_configured %}bg-dark-green{% else %}bg-warning text-dark{% endif %}">
+                            <span class="badge {% if monitoring_checks.alerts_configured %}badge-configured{% else %}bg-warning text-dark{% endif %}">
                                 {{ 'Configured' if monitoring_checks.alerts_configured else 'Missing' }}
                             </span>
                         </li>
