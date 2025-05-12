@@ -402,52 +402,99 @@ def generate_receipt_pdf(transaction, user):
         # Address information not available - skip
         pass
     
-    # Recipient & Bank Details (if available)
+    # Recipient & Bank Details (exactly matching transaction details page format)
     if (transaction.recipient_name or transaction.recipient_institution or transaction.recipient_account or
          hasattr(transaction, 'recipient_country') and transaction.recipient_country):
         
         pdf.set_xy(right_col_x, pdf.get_y() - 30)  # Position at top of this section but in right column
-        pdf.set_font('Arial', 'B', 10)
-        pdf.set_text_color(70, 70, 70)
-        pdf.cell(col_width, 7, 'Recipient & Bank Details', 0, 1, 'L')
         
-        if transaction.recipient_name:
-            pdf.set_xy(right_col_x, pdf.get_y() + 1)
-            pdf.add_detail_row('Recipient Name:', transaction.recipient_name)
+        # Add Recipient & Bank Details header with icon
+        pdf.set_fill_color(240, 248, 255)  # Light blue background for section header
+        pdf.rect(right_col_x, pdf.get_y(), col_width, 10, 'F')
         
-        # Add receiving bank information as in transaction details page
-        pdf.set_xy(right_col_x, pdf.get_y() + 3)
-        pdf.set_font('Arial', 'B', 9)
-        pdf.set_text_color(100, 120, 190)  # Blue text for header
-        pdf.cell(col_width, 5, 'Receiving Bank Information:', 0, 1, 'L')
+        # Bank icon
+        pdf.set_font('Arial', 'B', 11)
+        pdf.set_text_color(0, 51, 102)  # Dark blue for header
+        pdf.set_xy(right_col_x + 2, pdf.get_y() + 2)
+        pdf.cell(6, 6, '🏦', 0, 0, 'L')  # Bank emoji character
+        
+        # Header title
+        pdf.set_xy(right_col_x + 10, pdf.get_y() + 2)
+        pdf.cell(col_width - 10, 6, 'Recipient & Bank Details', 0, 1, 'L')
         pdf.set_text_color(0, 0, 0)
         
+        # Recipient Name with exact text from UI
+        if transaction.recipient_name:
+            pdf.set_xy(right_col_x, pdf.get_y() + 4)
+            pdf.set_font('Arial', 'B', 10)
+            pdf.set_text_color(70, 70, 70)
+            pdf.cell(col_width, 6, 'Recipient Name:', 0, 1, 'L')
+            
+            pdf.set_xy(right_col_x, pdf.get_y() + 1)
+            pdf.set_font('Arial', '', 10)
+            pdf.set_text_color(0, 0, 0)
+            pdf.cell(col_width, 6, transaction.recipient_name, 0, 1, 'L')
+        
+        # Add Receiving Bank Information section header
+        pdf.set_xy(right_col_x, pdf.get_y() + 3)
+        pdf.set_font('Arial', 'B', 10)
+        pdf.set_text_color(100, 100, 230)  # Blue for section header matching UI
+        pdf.cell(col_width, 6, 'Receiving Bank Information:', 0, 1, 'L')
+        
         # Processing Institution
+        pdf.set_xy(right_col_x, pdf.get_y() + 3)
+        pdf.set_font('Arial', 'B', 10)
+        pdf.set_text_color(70, 70, 70)
+        pdf.cell(col_width, 6, 'Processing Institution:', 0, 1, 'L')
+        
         pdf.set_xy(right_col_x, pdf.get_y() + 1)
+        pdf.set_font('Arial', '', 10)
+        pdf.set_text_color(0, 0, 0)
         institution = transaction.recipient_institution if transaction.recipient_institution else "Not specified"
-        pdf.add_detail_row('Processing Institution:', institution)
+        pdf.cell(col_width, 6, institution, 0, 1, 'L')
         
         # Beneficiary Bank
+        pdf.set_xy(right_col_x, pdf.get_y() + 3)
+        pdf.set_font('Arial', 'B', 10)
+        pdf.set_text_color(70, 70, 70)
+        pdf.cell(col_width, 6, 'Beneficiary Bank:', 0, 1, 'L')
+        
         pdf.set_xy(right_col_x, pdf.get_y() + 1)
+        pdf.set_font('Arial', '', 10)
+        pdf.set_text_color(0, 0, 0)
         beneficiary_bank = "Not specified"
         if hasattr(transaction, 'recipient_bank') and transaction.recipient_bank:
             beneficiary_bank = transaction.recipient_bank
-        pdf.add_detail_row('Beneficiary Bank:', beneficiary_bank)
+        pdf.cell(col_width, 6, beneficiary_bank, 0, 1, 'L')
         
         # Account Number
+        pdf.set_xy(right_col_x, pdf.get_y() + 3)
+        pdf.set_font('Arial', 'B', 10)
+        pdf.set_text_color(70, 70, 70)
+        pdf.cell(col_width, 6, 'Account Number:', 0, 1, 'L')
+        
         pdf.set_xy(right_col_x, pdf.get_y() + 1)
+        pdf.set_font('Arial', '', 10)
+        pdf.set_text_color(0, 0, 0)
         account = "Not specified"
         if transaction.recipient_account:
             # Mask account number for security
             account = transaction.recipient_account
             if len(account) > 4:
                 account = '*' * (len(account) - 4) + account[-4:]
-        pdf.add_detail_row('Account Number:', account)
+        pdf.cell(col_width, 6, account, 0, 1, 'L')
         
-        # Country
+        # Country (if available)
         if hasattr(transaction, 'recipient_country') and transaction.recipient_country:
+            pdf.set_xy(right_col_x, pdf.get_y() + 3)
+            pdf.set_font('Arial', 'B', 10)
+            pdf.set_text_color(70, 70, 70)
+            pdf.cell(col_width, 6, 'Country:', 0, 1, 'L')
+            
             pdf.set_xy(right_col_x, pdf.get_y() + 1)
-            pdf.add_detail_row('Country:', transaction.recipient_country)
+            pdf.set_font('Arial', '', 10)
+            pdf.set_text_color(0, 0, 0)
+            pdf.cell(col_width, 6, transaction.recipient_country, 0, 1, 'L')
     
     # Additional details (optional)
     if hasattr(transaction, 'tx_metadata_json') and transaction.tx_metadata_json:
