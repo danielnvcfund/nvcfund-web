@@ -51,22 +51,33 @@
                                     <td>{{ tx.id }}</td>
                                     <td>
                                         {% if tx.tx_hash %}
-                                        <a href="https://{% if tx.network.name == 'SEPOLIA' %}sepolia.{% endif %}etherscan.io/tx/{{ tx.tx_hash }}" target="_blank">
-                                            {{ tx.tx_hash[:10] }}...{{ tx.tx_hash[-8:] }}
+                                        <a href="https://{% if tx.network and tx.network != 'MAINNET' %}sepolia.{% endif %}etherscan.io/tx/{{ tx.tx_hash }}" target="_blank">
+                                            {{ tx.tx_hash[:10] }}...{{ tx.tx_hash[-8:] if tx.tx_hash|length > 16 else tx.tx_hash }}
                                         </a>
                                         {% else %}
                                         <span class="text-muted">Not recorded</span>
                                         {% endif %}
                                     </td>
-                                    <td><span class="badge bg-{% if tx.network.name == 'MAINNET' %}success{% else %}info{% endif %}">{{ tx.network.name }}</span></td>
-                                    <td>{{ tx.from_address[:10] }}...{{ tx.from_address[-8:] }}</td>
-                                    <td>{% if tx.to_address %}{{ tx.to_address[:10] }}...{{ tx.to_address[-8:] }}{% else %}Contract Creation{% endif %}</td>
+                                    <td><span class="badge bg-{% if tx.network == 'MAINNET' %}success{% else %}info{% endif %}">{{ tx.network or 'UNKNOWN' }}</span></td>
+                                    <td>
+                                        {% if tx.from_address %}
+                                            {{ tx.from_address[:10] }}...{{ tx.from_address[-8:] if tx.from_address|length > 16 else tx.from_address }}
+                                        {% else %}
+                                            <span class="text-muted">Unknown</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if tx.to_address %}
+                                            {{ tx.to_address[:10] }}...{{ tx.to_address[-8:] if tx.to_address|length > 16 else tx.to_address }}
+                                        {% else %}
+                                            Contract Creation
+                                        {% endif %}
+                                    </td>
                                     <td>
                                         {% if tx.value %}
-                                        {{ tx.value }} ETH
-                                        {% endif %}
-                                        {% if tx.token_value %}
-                                        {{ tx.token_value }} {{ tx.token_symbol }}
+                                            {{ tx.value }} ETH
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
                                         {% endif %}
                                     </td>
                                     <td>
@@ -74,7 +85,17 @@
                                             {% if tx.status == 1 %}Success{% elif tx.status == 0 %}Failed{% else %}Pending{% endif %}
                                         </span>
                                     </td>
-                                    <td>{{ tx.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>
+                                        {% if tx.created_at %}
+                                            {% if tx.created_at is string %}
+                                                {{ tx.created_at }}
+                                            {% else %}
+                                                {{ tx.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">Unknown</span>
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

@@ -72,9 +72,23 @@ def index():
 def transactions():
     """View blockchain transactions"""
     try:
-        # Get transactions - with backup in case of schema issues
+        # Get transactions with raw SQL to avoid ORM column mapping issues
         try:
-            transactions = BlockchainTransaction.query.order_by(BlockchainTransaction.created_at.desc()).limit(100).all()
+            # Use a safe query that doesn't require specific column names
+            query = text("""
+                SELECT id, tx_hash, network, from_address, to_address, 
+                       contract_address, value, status, created_at
+                FROM blockchain_transaction 
+                ORDER BY created_at DESC 
+                LIMIT 100
+            """)
+            
+            result = db.session.execute(query)
+            
+            # Convert to dictionary for template usage
+            transactions = [dict(row._mapping) for row in result]
+            
+            logger.info(f"Successfully fetched {len(transactions)} blockchain transactions")
         except Exception as e:
             logger.error(f"Error fetching blockchain transactions: {str(e)}")
             transactions = []
