@@ -102,7 +102,7 @@ def transactions():
         flash(f"Error loading transactions: {str(e)}", "danger")
         return render_template('admin/blockchain/transactions.html', error=str(e))
 
-@blockchain_admin_bp.route('/mainnet-readiness')
+@blockchain_admin_bp.route('/mainnet_readiness')
 @login_required
 @blockchain_admin_required
 def mainnet_readiness():
