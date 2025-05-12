@@ -8,242 +8,188 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Blockchain Network Administration</h4>
+                    <h4 class="mb-0">Blockchain Administration Dashboard</h4>
                 </div>
                 <div class="card-body">
-                    <div class="row">
+                    <div class="row mb-4">
                         <div class="col-md-6">
-                            <h5 class="text-uppercase">Current Configuration</h5>
-                            <div class="table-responsive">
-                                <table class="table table-bordered">
-                                    <tbody>
-                                        <tr>
-                                            <th style="width: 40%">Network</th>
-                                            <td>
-                                                {% if is_mainnet %}
-                                                <span class="badge bg-success">MAINNET</span>
+                            <div class="card bg-light h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Network Status</h5>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <div>
+                                            <h6 class="text-muted">Current Network</h6>
+                                            <h4>
+                                                {% if current_network == 'mainnet' %}
+                                                <span class="badge bg-success p-2">MAINNET</span>
                                                 {% else %}
-                                                <span class="badge bg-warning text-dark">TESTNET</span>
+                                                <span class="badge bg-warning text-dark p-2">TESTNET (Sepolia)</span>
                                                 {% endif %}
-                                                <span class="ms-2">{{ current_network }}</span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th>Connection Status</th>
-                                            <td>
-                                                {% if is_connected %}
-                                                <span class="badge bg-success">CONNECTED</span>
+                                            </h4>
+                                        </div>
+                                        <div>
+                                            <h6 class="text-muted">Status</h6>
+                                            <h4>
+                                                {% if connection_status %}
+                                                <span class="badge bg-success p-2">Connected</span>
                                                 {% else %}
-                                                <span class="badge bg-danger">DISCONNECTED</span>
+                                                <span class="badge bg-danger p-2">Disconnected</span>
                                                 {% endif %}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th>Settlement Contract</th>
-                                            <td class="text-break">
-                                                {% if settlement_contract_address %}
-                                                <a href="{{ 'https://sepolia.etherscan.io/address/' + settlement_contract_address if not is_mainnet else 'https://etherscan.io/address/' + settlement_contract_address }}" target="_blank" class="text-primary">
-                                                    {{ settlement_contract_address }}
-                                                    <i class="fas fa-external-link-alt ms-1 small"></i>
-                                                </a>
-                                                {% else %}
-                                                <span class="text-muted">Not configured</span>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th>MultiSig Wallet</th>
-                                            <td class="text-break">
-                                                {% if multisig_wallet_address %}
-                                                <a href="{{ 'https://sepolia.etherscan.io/address/' + multisig_wallet_address if not is_mainnet else 'https://etherscan.io/address/' + multisig_wallet_address }}" target="_blank" class="text-primary">
-                                                    {{ multisig_wallet_address }}
-                                                    <i class="fas fa-external-link-alt ms-1 small"></i>
-                                                </a>
-                                                {% else %}
-                                                <span class="text-muted">Not configured</span>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th>NVC Token</th>
-                                            <td class="text-break">
-                                                {% if nvc_token_address %}
-                                                <a href="{{ 'https://sepolia.etherscan.io/token/' + nvc_token_address if not is_mainnet else 'https://etherscan.io/token/' + nvc_token_address }}" target="_blank" class="text-primary">
-                                                    {{ nvc_token_address }}
-                                                    <i class="fas fa-external-link-alt ms-1 small"></i>
-                                                </a>
-                                                {% else %}
-                                                <span class="text-muted">Not configured</span>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                            </h4>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="text-muted">Latest Block</span>
+                                            <h5>{{ network_data.latest_block|default('N/A') }}</h5>
+                                        </div>
+                                        <div>
+                                            <span class="text-muted">Gas Price</span>
+                                            <h5>{{ network_data.gas_price|default('N/A') }} Gwei</h5>
+                                        </div>
+                                        <div>
+                                            <span class="text-muted">Chain ID</span>
+                                            <h5>{{ network_data.chain_id|default('N/A') }}</h5>
+                                        </div>
+                                    </div>
+                                    <div class="d-grid gap-2 mt-3">
+                                        <a href="{{ url_for('blockchain_admin.set_network', network='mainnet' if current_network != 'mainnet' else 'testnet') }}" 
+                                           class="btn {{ 'btn-success' if current_network != 'mainnet' else 'btn-warning text-dark' }}">
+                                            <i class="fas {{ 'fa-globe' if current_network != 'mainnet' else 'fa-flask' }} me-2"></i>
+                                            Switch to {{ 'MAINNET' if current_network != 'mainnet' else 'TESTNET' }}
+                                        </a>
+                                        <a href="{{ url_for('blockchain_admin.status') }}" class="btn btn-info">
+                                            <i class="fas fa-sync-alt me-2"></i> Refresh Connection Status
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Contract Configuration</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Contract</th>
+                                                    <th>Address</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for contract in contracts %}
+                                                <tr>
+                                                    <td>{{ contract.name }}</td>
+                                                    <td>
+                                                        {% if contract.address %}
+                                                        <a href="{{ 'https://sepolia.etherscan.io/address/' + contract.address if current_network != 'mainnet' else 'https://etherscan.io/address/' + contract.address }}" 
+                                                           target="_blank" 
+                                                           class="text-primary text-truncate d-inline-block" 
+                                                           style="max-width: 200px;">
+                                                            {{ contract.address }}
+                                                            <i class="fas fa-external-link-alt ms-1 small"></i>
+                                                        </a>
+                                                        {% else %}
+                                                        <span class="text-muted">Not Configured</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if contract.deployed %}
+                                                        <span class="badge bg-success">Deployed</span>
+                                                        {% else %}
+                                                        <span class="badge bg-warning text-dark">Not Deployed</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="d-grid gap-2 mt-3">
+                                        <a href="{{ url_for('blockchain_admin.deploy_page') }}" class="btn btn-primary">
+                                            <i class="fas fa-upload me-2"></i> Deploy Contracts
+                                        </a>
+                                        <button id="validate-contracts-btn" class="btn btn-outline-secondary">
+                                            <i class="fas fa-check-circle me-2"></i> Validate Contract Addresses
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Links Cards -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="mb-3">Quick Links</h5>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <div class="icon-circle bg-primary text-white mb-3">
+                                        <i class="fas fa-chart-line fa-2x"></i>
+                                    </div>
+                                    <h5 class="card-title">Transaction Tracker</h5>
+                                    <p class="card-text text-muted">Monitor and trace blockchain transactions across networks</p>
+                                    <a href="{{ url_for('blockchain_admin.transactions') }}" class="btn btn-primary mt-2">
+                                        <i class="fas fa-search me-2"></i>View Transactions
+                                    </a>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="col-md-6">
-                            <h5 class="text-uppercase">Network Management</h5>
-                            <div class="card-body bg-light rounded mb-3">
-                                <h6 class="text-uppercase">Switch Network Environment</h6>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <form action="{{ url_for('blockchain_admin.set_network', network='testnet') }}" method="post" class="d-grid">
-                                            <button type="submit" class="btn btn-warning {{ 'disabled' if not is_mainnet }}" {{ 'disabled' if not is_mainnet }}>
-                                                <i class="fas fa-flask me-2"></i>Switch to TESTNET
-                                            </button>
-                                        </form>
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <div class="icon-circle bg-success text-white mb-3">
+                                        <i class="fas fa-coins fa-2x"></i>
                                     </div>
-                                    <div class="col-6">
-                                        <form action="{{ url_for('blockchain_admin.set_network', network='mainnet') }}" method="post" class="d-grid">
-                                            <button type="submit" class="btn btn-success {{ 'disabled' if is_mainnet }}" {{ 'disabled' if is_mainnet }}>
-                                                <i class="fas fa-globe me-2"></i>Switch to MAINNET
-                                            </button>
-                                        </form>
-                                    </div>
+                                    <h5 class="card-title">Token Dashboard</h5>
+                                    <p class="card-text text-muted">Monitor token supply, distribution and transfers</p>
+                                    <a href="{{ url_for('blockchain_admin.token_dashboard') }}" class="btn btn-success mt-2">
+                                        <i class="fas fa-chart-pie me-2"></i>View Dashboard
+                                    </a>
                                 </div>
-                                
-                                {% if is_mainnet %}
-                                <div class="alert alert-warning mt-3">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    <strong>Warning:</strong> You are currently in MAINNET mode. All transactions use real ETH and affect the main Ethereum network.
-                                </div>
-                                {% else %}
-                                <div class="alert alert-info mt-3">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    <strong>Note:</strong> You are in TESTNET mode. Transactions use Sepolia testnet ETH and do not affect the main Ethereum network.
-                                </div>
-                                {% endif %}
                             </div>
-                            
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h6 class="text-uppercase">Actions</h6>
-                                    <div class="d-grid gap-2">
-                                        <a href="{{ url_for('blockchain_admin.deploy_page') }}" class="btn btn-primary">
-                                            <i class="fas fa-rocket me-2"></i>Deploy Contracts
-                                        </a>
-                                        <button id="validate-contracts" class="btn btn-outline-primary">
-                                            <i class="fas fa-check-circle me-2"></i>Validate Contract Addresses
-                                        </button>
-                                        <button id="check-status" class="btn btn-outline-info">
-                                            <i class="fas fa-info-circle me-2"></i>Check Network Status
-                                        </button>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <div class="icon-circle bg-warning text-white mb-3">
+                                        <i class="fas fa-shield-alt fa-2x"></i>
                                     </div>
+                                    <h5 class="card-title">Security Operations</h5>
+                                    <p class="card-text text-muted">Manage secure operations for mainnet transactions</p>
+                                    <!-- Security operations are initiated from other interfaces -->
+                                    <button type="button" class="btn btn-warning mt-2" data-bs-toggle="modal" data-bs-target="#securityInfoModal">
+                                        <i class="fas fa-info-circle me-2"></i>Security Info
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Contract Update Section -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">Update Contract Addresses</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted">
-                        After deploying contracts on testnet or mainnet, update their addresses here to configure the system.
-                    </p>
                     
-                    <form action="{{ url_for('blockchain_admin.update_contract') }}" method="post">
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label">Contract Type</label>
-                                    <select name="contract_type" class="form-select" required>
-                                        <option value="settlement_contract">Settlement Contract</option>
-                                        <option value="multisig_wallet">MultiSig Wallet</option>
-                                        <option value="nvc_token">NVC Token</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label">Network</label>
-                                    <select name="network" class="form-select" required>
-                                        <option value="testnet" {{ 'selected' if not is_mainnet }}>Testnet (Sepolia)</option>
-                                        <option value="mainnet" {{ 'selected' if is_mainnet }}>Mainnet</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label">Contract Address</label>
-                                    <input type="text" name="address" class="form-control" placeholder="0x..." required pattern="0x[a-fA-F0-9]{40}">
-                                </div>
-                            </div>
-                            <div class="col-12 text-end">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-2"></i>Update Contract Address
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Recent Transactions -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">Recent Blockchain Transactions</h5>
-                </div>
-                <div class="card-body">
-                    {% if recent_transactions %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Transaction Hash</th>
-                                    <th>Type</th>
-                                    <th>From</th>
-                                    <th>To</th>
-                                    <th>Value</th>
-                                    <th>Status</th>
-                                    <th>Timestamp</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for tx in recent_transactions %}
-                                <tr>
-                                    <td>
-                                        <a href="{{ 'https://sepolia.etherscan.io/tx/' + tx.tx_hash if not is_mainnet else 'https://etherscan.io/tx/' + tx.tx_hash }}" target="_blank" class="text-primary">
-                                            {{ tx.tx_hash[:10] }}...{{ tx.tx_hash[-6:] }}
-                                            <i class="fas fa-external-link-alt ms-1 small"></i>
-                                        </a>
-                                    </td>
-                                    <td>{{ tx.tx_type }}</td>
-                                    <td class="text-truncate" style="max-width: 150px;">{{ tx.from_address }}</td>
-                                    <td class="text-truncate" style="max-width: 150px;">{{ tx.to_address or 'Contract Creation' }}</td>
-                                    <td>{{ tx.value }} ETH</td>
-                                    <td>
-                                        {% if tx.status == 1 %}
-                                        <span class="badge bg-success">Success</span>
-                                        {% elif tx.status == 0 %}
-                                        <span class="badge bg-danger">Failed</span>
-                                        {% else %}
-                                        <span class="badge bg-warning text-dark">Pending</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ tx.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        No recent blockchain transactions found.
+                    <!-- Mainnet Warning -->
+                    {% if current_network == 'mainnet' %}
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Important Mainnet Notice
+                        </h5>
+                        <p>
+                            You are currently connected to the <strong>Ethereum Mainnet</strong>. All transactions will use real ETH 
+                            and interact with production contracts. Exercise extreme caution when performing operations.
+                        </p>
+                        <hr>
+                        <p class="mb-0">
+                            All mainnet operations require additional security verification and authorization.
+                            For additional security, transactions are logged and audited.
+                        </p>
                     </div>
                     {% endif %}
                 </div>
@@ -252,22 +198,88 @@
     </div>
 </div>
 
-<!-- Status Modal -->
-<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<!-- Security Information Modal -->
+<div class="modal fade" id="securityInfoModal" tabindex="-1" aria-labelledby="securityInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header bg-info text-white">
-                <h5 class="modal-title" id="statusModalLabel">Network Status</h5>
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title" id="securityInfoModalLabel">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Mainnet Security Features
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="d-flex justify-content-center my-3">
-                    <div class="spinner-border text-primary" role="status" id="status-spinner">
-                        <span class="visually-hidden">Loading...</span>
+                <div class="mb-4">
+                    <h5>About Security Confirmation</h5>
+                    <p>
+                        When operating on the Ethereum Mainnet, critical operations such as token transfers, contract deployments,
+                        and sensitive contract function calls require additional security verification to prevent unauthorized or accidental 
+                        transactions that could affect real assets.
+                    </p>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">Security Measures</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="d-flex mb-3">
+                                    <div class="me-3 text-primary">
+                                        <i class="fas fa-mobile-alt fa-2x"></i>
+                                    </div>
+                                    <div>
+                                        <h6>Two-Factor Authentication</h6>
+                                        <p class="small text-muted mb-0">Security code sent to your registered email/device</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex mb-3">
+                                    <div class="me-3 text-primary">
+                                        <i class="fas fa-key fa-2x"></i>
+                                    </div>
+                                    <div>
+                                        <h6>Password Re-confirmation</h6>
+                                        <p class="small text-muted mb-0">Admin password required for verification</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="d-flex mb-3">
+                                    <div class="me-3 text-primary">
+                                        <i class="fas fa-clipboard-list fa-2x"></i>
+                                    </div>
+                                    <div>
+                                        <h6>Comprehensive Audit Logging</h6>
+                                        <p class="small text-muted mb-0">All operations are logged with timestamps and user details</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex mb-3">
+                                    <div class="me-3 text-primary">
+                                        <i class="fas fa-stopwatch fa-2x"></i>
+                                    </div>
+                                    <div>
+                                        <h6>Timeout Protection</h6>
+                                        <p class="small text-muted mb-0">Security codes expire after 10 minutes</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div id="status-content" class="d-none">
-                    <!-- Status content will be inserted here -->
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Note:</strong> Security operations are initiated from the relevant interfaces (transactions, deployments, etc.) 
+                    and cannot be started directly from this page. When performing a sensitive operation on mainnet, you will automatically 
+                    be redirected to the security confirmation page.
                 </div>
             </div>
             <div class="modal-footer">
@@ -277,12 +289,12 @@
     </div>
 </div>
 
-<!-- Validation Modal -->
-<div class="modal fade" id="validationModal" tabindex="-1" aria-labelledby="validationModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<!-- Contract Validation Modal -->
+<div class="modal fade" id="contractValidationModal" tabindex="-1" aria-labelledby="contractValidationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="validationModalLabel">Contract Validation</h5>
+                <h5 class="modal-title" id="contractValidationModalLabel">Contract Validation</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -291,8 +303,8 @@
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
-                <div id="validation-content" class="d-none">
-                    <!-- Validation content will be inserted here -->
+                <div id="validation-results" class="d-none">
+                    <!-- Validation results will be loaded here -->
                 </div>
             </div>
             <div class="modal-footer">
@@ -306,167 +318,93 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Network Status Check
-        document.getElementById('check-status').addEventListener('click', function() {
-            const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
-            statusModal.show();
-            
-            const spinner = document.getElementById('status-spinner');
-            const content = document.getElementById('status-content');
-            
-            spinner.classList.remove('d-none');
-            content.classList.add('d-none');
-            content.innerHTML = '';
-            
-            fetch('{{ url_for("blockchain_admin.status") }}')
-                .then(response => response.json())
-                .then(data => {
-                    let html = '';
-                    
-                    if (data.is_connected) {
-                        html += `
-                            <div class="alert alert-success">
-                                <i class="fas fa-check-circle me-2"></i>
-                                Successfully connected to the ${data.network} network.
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-bordered">
-                                    <tbody>
-                                        <tr>
-                                            <th>Network</th>
-                                            <td>${data.network}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Chain ID</th>
-                                            <td>${data.chain_id}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Current Block</th>
-                                            <td>${data.current_block}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Gas Price</th>
-                                            <td>${data.gas_price} Gwei</td>
-                                        </tr>`;
-                                        
-                        if (data.admin_address) {
-                            html += `
-                                        <tr>
-                                            <th>Admin Address</th>
-                                            <td>${data.admin_address}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Admin Balance</th>
-                                            <td>${data.admin_balance} ETH</td>
-                                        </tr>`;
-                        }
-                        
-                        html += `
-                                    </tbody>
-                                </table>
-                            </div>`;
-                    } else {
-                        html = `
-                            <div class="alert alert-danger">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                <strong>Failed to connect to the blockchain network</strong>
-                                <p class="mb-0 mt-2">${data.error || 'Unknown error occurred'}</p>
-                            </div>`;
-                    }
-                    
-                    content.innerHTML = html;
-                    spinner.classList.add('d-none');
-                    content.classList.remove('d-none');
-                })
-                .catch(error => {
-                    content.innerHTML = `
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Error checking status</strong>
-                            <p class="mb-0 mt-2">${error.message}</p>
-                        </div>`;
-                    spinner.classList.add('d-none');
-                    content.classList.remove('d-none');
-                });
-        });
+        const validateContractsBtn = document.getElementById('validate-contracts-btn');
+        const validationModal = new bootstrap.Modal(document.getElementById('contractValidationModal'));
+        const validationSpinner = document.getElementById('validation-spinner');
+        const validationResults = document.getElementById('validation-results');
         
-        // Contract Validation
-        document.getElementById('validate-contracts').addEventListener('click', function() {
-            const validationModal = new bootstrap.Modal(document.getElementById('validationModal'));
-            validationModal.show();
-            
-            const spinner = document.getElementById('validation-spinner');
-            const content = document.getElementById('validation-content');
-            
-            spinner.classList.remove('d-none');
-            content.classList.add('d-none');
-            content.innerHTML = '';
-            
-            fetch('{{ url_for("blockchain_admin.validate_contracts") }}')
-                .then(response => response.json())
-                .then(data => {
-                    let html = '';
-                    
-                    if (data.status === 'success') {
-                        const validation = data.validation;
-                        html += `
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle me-2"></i>
-                                Contract validation results for the ${validation.network} network:
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>Contract</th>
-                                            <th>Status</th>
-                                            <th>Details</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>`;
+        if (validateContractsBtn) {
+            validateContractsBtn.addEventListener('click', function() {
+                validationModal.show();
+                validationSpinner.classList.remove('d-none');
+                validationResults.classList.add('d-none');
+                validationResults.innerHTML = '';
+                
+                fetch('{{ url_for("blockchain_admin.validate_contracts") }}')
+                    .then(response => response.json())
+                    .then(data => {
+                        let html = '';
+                        
+                        if (data.status === 'success') {
+                            if (data.validation && Object.keys(data.validation).length > 0) {
+                                html += '<div class="table-responsive"><table class="table table-bordered">';
+                                html += '<thead><tr><th>Contract</th><th>Status</th><th>Details</th></tr></thead>';
+                                html += '<tbody>';
+                                
+                                for (const contract in data.validation) {
+                                    const result = data.validation[contract];
                                     
-                        for (const contract in validation.contracts) {
-                            const result = validation.contracts[contract];
+                                    html += `<tr>
+                                        <td>${contract}</td>
+                                        <td>
+                                            ${result.valid ? 
+                                            '<span class="badge bg-success">Valid</span>' : 
+                                            '<span class="badge bg-danger">Invalid</span>'}
+                                        </td>
+                                        <td>${result.message}</td>
+                                    </tr>`;
+                                }
+                                
+                                html += '</tbody></table></div>';
+                            } else {
+                                html += `
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        No contract addresses are currently configured for validation.
+                                    </div>`;
+                            }
+                        } else {
                             html += `
-                                        <tr>
-                                            <td>${contract}</td>
-                                            <td>
-                                                ${result.valid ? 
-                                                    '<span class="badge bg-success">Valid</span>' : 
-                                                    '<span class="badge bg-danger">Invalid</span>'}
-                                            </td>
-                                            <td>${result.message}</td>
-                                        </tr>`;
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Error validating contracts</strong>
+                                    <p class="mb-0 mt-2">${data.message || 'Unknown error occurred'}</p>
+                                </div>`;
                         }
                         
-                        html += `
-                                    </tbody>
-                                </table>
-                            </div>`;
-                    } else {
-                        html = `
+                        validationResults.innerHTML = html;
+                        validationSpinner.classList.add('d-none');
+                        validationResults.classList.remove('d-none');
+                    })
+                    .catch(error => {
+                        validationResults.innerHTML = `
                             <div class="alert alert-danger">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
-                                <strong>Validation failed</strong>
-                                <p class="mb-0 mt-2">${data.message || 'Unknown error occurred'}</p>
+                                <strong>Error validating contracts</strong>
+                                <p class="mb-0 mt-2">${error.message}</p>
                             </div>`;
-                    }
-                    
-                    content.innerHTML = html;
-                    spinner.classList.add('d-none');
-                    content.classList.remove('d-none');
-                })
-                .catch(error => {
-                    content.innerHTML = `
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Error validating contracts</strong>
-                            <p class="mb-0 mt-2">${error.message}</p>
-                        </div>`;
-                    spinner.classList.add('d-none');
-                    content.classList.remove('d-none');
-                });
-        });
+                        validationSpinner.classList.add('d-none');
+                        validationResults.classList.remove('d-none');
+                    });
+            });
+        }
     });
 </script>
+
+<style>
+    .icon-circle {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        transition: transform 0.3s;
+    }
+    
+    .card:hover .icon-circle {
+        transform: scale(1.1);
+    }
+</style>
 {% endblock %}

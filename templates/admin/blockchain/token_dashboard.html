@@ -1,0 +1,341 @@
+{% extends 'admin/layout.html' %}
+
+{% block title %}Token Supply Dashboard - NVC Banking Platform{% endblock %}
+
+{% block head %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">NVCT Token Dashboard</h4>
+                    <div>
+                        <a href="{{ url_for('blockchain_admin.index') }}" class="btn btn-sm btn-outline-light me-2">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                        </a>
+                        <button id="refresh-dashboard" class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-sync-alt me-1"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <!-- Current Network -->
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">Current Network</h5>
+                                    <h4 class="text-center mt-3">
+                                        {% if current_network == 'mainnet' %}
+                                        <span class="badge bg-success p-2">MAINNET</span>
+                                        {% else %}
+                                        <span class="badge bg-warning text-dark p-2">TESTNET (Sepolia)</span>
+                                        {% endif %}
+                                    </h4>
+                                    <div class="mt-3">
+                                        <p class="mb-1 text-muted">Token Contract:</p>
+                                        {% if token_address %}
+                                        <a href="{{ 'https://sepolia.etherscan.io/token/' + token_address if current_network != 'mainnet' else 'https://etherscan.io/token/' + token_address }}" target="_blank" class="d-block text-truncate small">
+                                            {{ token_address }}
+                                            <i class="fas fa-external-link-alt ms-1"></i>
+                                        </a>
+                                        {% else %}
+                                        <span class="text-danger">Not configured</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Total Supply -->
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total Supply</h5>
+                                    <div class="d-flex align-items-center justify-content-between mt-3">
+                                        <h3 class="mb-0">{{ total_supply|format_number }}</h3>
+                                        <i class="fas fa-coins fa-2x opacity-50"></i>
+                                    </div>
+                                    <p class="mb-0 mt-2">NVCT</p>
+                                    <hr class="my-2 opacity-25">
+                                    <small>Current USD Value: ${{ (total_supply * token_price)|format_number }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Circulating Supply -->
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Circulating Supply</h5>
+                                    <div class="d-flex align-items-center justify-content-between mt-3">
+                                        <h3 class="mb-0">{{ circulating_supply|format_number }}</h3>
+                                        <i class="fas fa-chart-pie fa-2x opacity-50"></i>
+                                    </div>
+                                    <p class="mb-0 mt-2">NVCT</p>
+                                    <hr class="my-2 opacity-25">
+                                    <small>{{ (circulating_supply / total_supply * 100)|round(2) }}% of Total Supply</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Current Price -->
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Current Price</h5>
+                                    <div class="d-flex align-items-center justify-content-between mt-3">
+                                        <h3 class="mb-0">${{ token_price }}</h3>
+                                        <i class="fas fa-dollar-sign fa-2x opacity-50"></i>
+                                    </div>
+                                    <p class="mb-0 mt-2">per NVCT</p>
+                                    <hr class="my-2 opacity-25">
+                                    <small>
+                                        {% if price_change >= 0 %}
+                                        <i class="fas fa-arrow-up me-1"></i>+{{ price_change }}%
+                                        {% else %}
+                                        <i class="fas fa-arrow-down me-1"></i>{{ price_change }}%
+                                        {% endif %}
+                                        in 24h
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Supply Distribution -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Supply Distribution</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="supplyDistributionChart" height="250"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Token Transfer Volume (Last 30 days)</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="transferVolumeChart" height="250"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Token Holders -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Top Token Holders</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Address</th>
+                                                    <th>Balance</th>
+                                                    <th>Percentage</th>
+                                                    <th>Label</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for holder in top_holders %}
+                                                <tr>
+                                                    <td>{{ loop.index }}</td>
+                                                    <td>
+                                                        <a href="{{ 'https://sepolia.etherscan.io/address/' + holder.address if current_network != 'mainnet' else 'https://etherscan.io/address/' + holder.address }}" target="_blank" class="text-primary">
+                                                            {{ holder.address }}
+                                                            <i class="fas fa-external-link-alt ms-1 small"></i>
+                                                        </a>
+                                                    </td>
+                                                    <td>{{ holder.balance|format_number }} NVCT</td>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="progress flex-grow-1 me-2" style="height: 5px;">
+                                                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ (holder.balance / total_supply * 100)|round|int }}%"></div>
+                                                            </div>
+                                                            <span>{{ (holder.balance / total_supply * 100)|round(2) }}%</span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {% if holder.label %}
+                                                        <span class="badge bg-info">{{ holder.label }}</span>
+                                                        {% else %}
+                                                        <span class="text-muted">Unknown</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Token Transfers -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Recent Token Transfers</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Transaction Hash</th>
+                                                    <th>Block</th>
+                                                    <th>From</th>
+                                                    <th>To</th>
+                                                    <th>Amount</th>
+                                                    <th>Timestamp</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for tx in recent_transfers %}
+                                                <tr>
+                                                    <td>
+                                                        <a href="{{ 'https://sepolia.etherscan.io/tx/' + tx.tx_hash if current_network != 'mainnet' else 'https://etherscan.io/tx/' + tx.tx_hash }}" target="_blank" class="text-primary">
+                                                            {{ tx.tx_hash[:8] }}...{{ tx.tx_hash[-6:] }}
+                                                            <i class="fas fa-external-link-alt ms-1 small"></i>
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        {% if tx.block_number %}
+                                                        <a href="{{ 'https://sepolia.etherscan.io/block/' + tx.block_number|string if current_network != 'mainnet' else 'https://etherscan.io/block/' + tx.block_number|string }}" target="_blank" class="text-primary">
+                                                            {{ tx.block_number }}
+                                                            <i class="fas fa-external-link-alt ms-1 small"></i>
+                                                        </a>
+                                                        {% else %}
+                                                        <span class="text-muted">Pending</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="text-truncate" style="max-width: 150px;">
+                                                        <a href="{{ 'https://sepolia.etherscan.io/address/' + tx.from_address if current_network != 'mainnet' else 'https://etherscan.io/address/' + tx.from_address }}" target="_blank" class="text-primary">
+                                                            {{ tx.from_address }}
+                                                            <i class="fas fa-external-link-alt ms-1 small"></i>
+                                                        </a>
+                                                    </td>
+                                                    <td class="text-truncate" style="max-width: 150px;">
+                                                        <a href="{{ 'https://sepolia.etherscan.io/address/' + tx.to_address if current_network != 'mainnet' else 'https://etherscan.io/address/' + tx.to_address }}" target="_blank" class="text-primary">
+                                                            {{ tx.to_address }}
+                                                            <i class="fas fa-external-link-alt ms-1 small"></i>
+                                                        </a>
+                                                    </td>
+                                                    <td>{{ tx.token_value|format_number }} NVCT</td>
+                                                    <td>{{ tx.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Refresh button
+        document.getElementById('refresh-dashboard').addEventListener('click', function() {
+            window.location.reload();
+        });
+        
+        // Supply Distribution Chart
+        const supplyDistributionCtx = document.getElementById('supplyDistributionChart').getContext('2d');
+        const supplyDistributionChart = new Chart(supplyDistributionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ supply_distribution.labels|tojson }},
+                datasets: [{
+                    data: {{ supply_distribution.data|tojson }},
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.7)',
+                        'rgba(255, 205, 86, 0.7)',
+                        'rgba(201, 203, 207, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgb(75, 192, 192)',
+                        'rgb(54, 162, 235)',
+                        'rgb(153, 102, 255)',
+                        'rgb(255, 159, 64)',
+                        'rgb(255, 205, 86)',
+                        'rgb(201, 203, 207)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value.toLocaleString()} NVCT (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Transfer Volume Chart
+        const transferVolumeCtx = document.getElementById('transferVolumeChart').getContext('2d');
+        const transferVolumeChart = new Chart(transferVolumeCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ transfer_volume.dates|tojson }},
+                datasets: [{
+                    label: 'Token Transfer Volume',
+                    data: {{ transfer_volume.volumes|tojson }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
