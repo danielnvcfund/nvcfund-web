@@ -61,7 +61,14 @@ def get_domain():
 @stripe_bp.route('/')
 def index():
     """Display Stripe payment options"""
-    return render_template('stripe/index.html', stripe_live_mode=STRIPE_LIVE_MODE)
+    # Check if Stripe API key is properly configured
+    api_key_status = {
+        'valid': bool(stripe.api_key) and stripe.api_key.startswith('sk_'),
+        'mode': 'live' if stripe.api_key and stripe.api_key.startswith('sk_live_') else 'test' if stripe.api_key and stripe.api_key.startswith('sk_test_') else 'invalid',
+        'key_type': 'secret' if stripe.api_key and stripe.api_key.startswith('sk_') else 'publishable' if stripe.api_key and stripe.api_key.startswith('pk_') else 'unknown'
+    }
+    
+    return render_template('stripe/index.html', stripe_live_mode=STRIPE_LIVE_MODE, api_key_status=api_key_status)
 
 @stripe_bp.route('/create-checkout-session', methods=['POST'])
 def create_checkout_session():
