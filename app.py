@@ -508,6 +508,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering Document Download Center routes: {str(e)}")
             logger.warning("Application will run without Document Download Center functionality")
+            
+        # Register Client Dashboard routes
+        try:
+            from routes.client_dashboard_routes import register_client_dashboard_routes
+            register_client_dashboard_routes(app)
+            logger.info("Client Dashboard routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Client Dashboard routes: {str(e)}")
+            logger.warning("Application will run without Client Dashboard functionality")
         
         # Register Institutional Agreements routes
         try:

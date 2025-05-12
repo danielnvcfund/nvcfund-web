@@ -1,0 +1,344 @@
+{% extends 'layout.html' %}
+
+{% block title %}Client Dashboard - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Dashboard Header with Welcome Message -->
+    <div class="bg-primary bg-opacity-10 rounded-3 mb-4 p-4 border border-1 border-primary shadow-sm">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="display-6 fw-bold mb-1">
+                    <i class="fas fa-tachometer-alt me-2 text-primary"></i>Client Dashboard
+                </h1>
+                <p class="lead text-muted mb-0">Welcome back, {{ user.username }}!</p>
+            </div>
+            <div class="d-flex gap-2">
+                <div class="btn-group me-2">
+                    <a href="{{ url_for('web.main.new_payment') }}" class="btn btn-primary btn-lg shadow-sm">
+                        <i class="fas fa-credit-card me-1"></i> Make Payment
+                    </a>
+                    <a href="{{ url_for('web.ach.new_ach_transfer') }}" class="btn btn-success btn-lg shadow-sm">
+                        <i class="fas fa-money-bill-wave me-1"></i> ACH Transfer
+                    </a>
+                    <a href="{{ url_for('correspondent.index') }}" class="btn btn-info btn-lg shadow-sm">
+                        <i class="fas fa-university me-1"></i> Correspondent Banking
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-4 mb-4">
+        <!-- Account Balance Card -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card dashboard-widget quick-stats-card h-100 border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-dollar-sign text-success"></i>
+                        </div>
+                        <h3 class="h5 fw-bold mb-0">Balance</h3>
+                    </div>
+                    <div class="value">$50,000.00</div>
+                    <div class="label">Available funds</div>
+                    
+                    <a href="#" class="btn btn-sm btn-outline-success mt-3">
+                        <i class="fas fa-plus-circle me-1"></i> Deposit Funds
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Transactions Count Card -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card dashboard-widget quick-stats-card h-100 border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-exchange-alt text-info"></i>
+                        </div>
+                        <h3 class="h5 fw-bold mb-0">Transactions</h3>
+                    </div>
+                    <div class="value">{{ recent_transactions|length }}</div>
+                    <div class="label">Recent transactions</div>
+                    
+                    <a href="{{ url_for('web.main.transactions') }}" class="btn btn-sm btn-outline-info mt-3">
+                        <i class="fas fa-list me-1"></i> View All
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Completed Transactions Card -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card dashboard-widget quick-stats-card h-100 border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-check-circle text-success"></i>
+                        </div>
+                        <h3 class="h5 fw-bold mb-0">Completed</h3>
+                    </div>
+                    <div class="value">
+                        {% set completed = namespace(count=0) %}
+                        {% for tx in recent_transactions %}
+                            {% if tx.status.value == 'completed' %}
+                                {% set completed.count = completed.count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ completed.count }}
+                    </div>
+                    <div class="label">Successful transactions</div>
+                    
+                    <div class="progress mt-3" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: {% if recent_transactions %}{{ (completed.count / recent_transactions|length * 100)|round }}{% else %}0{% endif %}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pending Transactions Card -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card dashboard-widget quick-stats-card h-100 border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-spinner text-primary"></i>
+                        </div>
+                        <h3 class="h5 fw-bold mb-0">Pending</h3>
+                    </div>
+                    <div class="value">
+                        {% set pending = namespace(count=0) %}
+                        {% for tx in recent_transactions %}
+                            {% if tx.status.value == 'pending' or tx.status.value == 'processing' %}
+                                {% set pending.count = pending.count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ pending.count }}
+                    </div>
+                    <div class="label">Waiting for completion</div>
+                    
+                    <div class="progress mt-3" style="height: 8px;">
+                        <div class="progress-bar bg-primary" style="width: {% if recent_transactions %}{{ (pending.count / recent_transactions|length * 100)|round }}{% else %}0{% endif %}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Dashboard Sections Row -->
+    <div class="row g-4">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Recent Transactions -->
+            <div class="card dashboard-widget border-0 shadow mb-4">
+                <div class="card-header bg-dark bg-opacity-10 border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                                <i class="fas fa-exchange-alt text-primary"></i>
+                            </div>
+                            <h5 class="mb-0 fw-bold">Recent Transactions</h5>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary btn-refresh">
+                                <i class="fas fa-sync-alt me-1"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th class="text-end pe-4">View</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tx in recent_transactions %}
+                                <tr class="transaction-row">
+                                    <td class="ps-4">
+                                        <a href="{{ url_for('web.main.transaction_details', transaction_id=tx.transaction_id) }}" class="fw-medium">
+                                            {{ tx.transaction_id[:8] }}...
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {% if tx.transaction_type.value == 'DEPOSIT' %}
+                                            <span class="badge bg-success rounded-pill">Deposit</span>
+                                        {% elif tx.transaction_type.value == 'WITHDRAWAL' %}
+                                            <span class="badge bg-warning rounded-pill">Withdrawal</span>
+                                        {% elif tx.transaction_type.value == 'TRANSFER' %}
+                                            <span class="badge bg-info rounded-pill">Transfer</span>
+                                        {% elif tx.transaction_type.value == 'PAYMENT' %}
+                                            <span class="badge bg-primary rounded-pill">Payment</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary rounded-pill">{{ tx.transaction_type.value|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="fw-semibold">{{ tx.amount }} {{ tx.currency }}</td>
+                                    <td>
+                                        {% if tx.status.value == 'COMPLETED' %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% elif tx.status.value == 'PENDING' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif tx.status.value == 'PROCESSING' %}
+                                            <span class="badge bg-info">Processing</span>
+                                        {% elif tx.status.value == 'FAILED' %}
+                                            <span class="badge bg-danger">Failed</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ tx.status.value|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ tx.created_at.strftime('%b %d, %Y') }}</td>
+                                    <td class="text-end pe-4">
+                                        <a href="{{ url_for('web.main.transaction_details', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="fas fa-info-circle me-2"></i>No transactions found
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer text-center py-2">
+                    <a href="{{ url_for('web.main.transactions') }}" class="text-primary fw-semibold">
+                        <i class="fas fa-list me-1"></i> View All Transactions
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Quick Actions Card -->
+            <div class="card border-0 shadow mb-4">
+                <div class="card-header bg-dark bg-opacity-10 border-0">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                            <i class="fas fa-bolt text-primary"></i>
+                        </div>
+                        <h5 class="mb-0 fw-bold">Quick Actions</h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{{ url_for('web.main.new_payment') }}" class="list-group-item list-group-item-action d-flex align-items-center border-0 py-3">
+                            <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                                <i class="fas fa-credit-card text-primary"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold">Make Payment</div>
+                                <div class="small text-muted">Send funds to a recipient</div>
+                            </div>
+                        </a>
+                        
+                        <a href="{{ url_for('web.ach.new_ach_transfer') }}" class="list-group-item list-group-item-action d-flex align-items-center border-0 py-3">
+                            <div class="rounded-circle bg-success bg-opacity-10 p-2 me-3">
+                                <i class="fas fa-money-bill-wave text-success"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold">ACH Transfer</div>
+                                <div class="small text-muted">Domestic bank transfers</div>
+                            </div>
+                        </a>
+                        
+                        <a href="{{ url_for('correspondent.index') }}" class="list-group-item list-group-item-action d-flex align-items-center border-0 py-3">
+                            <div class="rounded-circle bg-info bg-opacity-10 p-2 me-3">
+                                <i class="fas fa-university text-info"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold">Correspondent Banking</div>
+                                <div class="small text-muted">International wire transfers</div>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center border-0 py-3">
+                            <div class="rounded-circle bg-warning bg-opacity-10 p-2 me-3">
+                                <i class="fas fa-coins text-warning"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold">Currency Exchange</div>
+                                <div class="small text-muted">Convert between currencies</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Account Information Card -->
+            <div class="card border-0 shadow mb-4">
+                <div class="card-header bg-dark bg-opacity-10 border-0">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-info bg-opacity-10 p-2 me-3">
+                            <i class="fas fa-user-circle text-info"></i>
+                        </div>
+                        <h5 class="mb-0 fw-bold">Account Information</h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item border-0 py-3">
+                            <div class="small text-muted mb-1">Account ID</div>
+                            <div class="fw-semibold">{{ user.id }}</div>
+                        </div>
+                        
+                        <div class="list-group-item border-0 py-3">
+                            <div class="small text-muted mb-1">Account Type</div>
+                            <div class="fw-semibold">Business Client</div>
+                        </div>
+                        
+                        <div class="list-group-item border-0 py-3">
+                            <div class="small text-muted mb-1">Email</div>
+                            <div class="fw-semibold">{{ user.email }}</div>
+                        </div>
+                        
+                        <div class="list-group-item border-0 py-3">
+                            <div class="small text-muted mb-1">Created On</div>
+                            <div class="fw-semibold">{{ user.created_at.strftime('%B %d, %Y') }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 text-center">
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-edit me-1"></i> Edit Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Add any client dashboard specific JavaScript here
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Client dashboard loaded successfully');
+        
+        // Add refresh button functionality
+        document.querySelectorAll('.btn-refresh').forEach(button => {
+            button.addEventListener('click', function() {
+                location.reload();
+            });
+        });
+    });
+</script>
+{% endblock %}
