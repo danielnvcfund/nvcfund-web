@@ -380,7 +380,8 @@
                             </div>
                             <div class="mb-3">
                                 <label for="token-amount" class="form-label">Amount</label>
-                                <input type="number" step="0.01" min="0.01" class="form-control" id="token-amount" placeholder="100" required>
+                                <input type="text" class="form-control" id="token-amount" placeholder="100" required 
+                                       oninput="this.value = formatNumberInput(this.value)">
                             </div>
                             <button type="submit" class="btn btn-success">
                                 <i class="fas fa-exchange-alt me-2"></i> Transfer Tokens
