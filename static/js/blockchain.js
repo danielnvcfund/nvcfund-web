@@ -324,7 +324,9 @@ function submitMultisigTransaction(event) {
     event.preventDefault();
     
     const destination = document.getElementById('multisig-destination').value;
-    const amount = document.getElementById('multisig-amount').value;
+    // Remove commas from the amount before sending
+    const formattedAmount = document.getElementById('multisig-amount').value;
+    const amount = unformatNumber(formattedAmount);
     const data = document.getElementById('multisig-data').value || '0x';
     
     showAlert('Submitting transaction to MultiSig Wallet... This may take a minute.', 'info');
@@ -533,7 +535,9 @@ function mintTokens(event) {
     event.preventDefault();
     
     const recipient = document.getElementById('mint-recipient').value;
-    const amount = document.getElementById('mint-amount').value;
+    // Remove commas from the amount before sending
+    const formattedAmount = document.getElementById('mint-amount').value;
+    const amount = unformatNumber(formattedAmount);
     
     showAlert('Minting tokens... This may take a minute.', 'info');
     
@@ -565,7 +569,9 @@ function burnTokens(event) {
     event.preventDefault();
     
     const fromAddress = document.getElementById('burn-address').value;
-    const amount = document.getElementById('burn-amount').value;
+    // Remove commas from the amount before sending
+    const formattedAmount = document.getElementById('burn-amount').value;
+    const amount = unformatNumber(formattedAmount);
     
     showAlert('Burning tokens... This may take a minute.', 'info');
     
