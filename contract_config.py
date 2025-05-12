@@ -1,103 +1,216 @@
 """
-Contract configuration for NVC Banking Platform
-Manages contract addresses for both testnet and mainnet environments
+Contract Configuration for NVC Banking Platform
+
+This module manages the configuration of smart contract addresses for different networks.
+It provides a simple interface to store and retrieve contract addresses from the database
+and from environment variables.
+
+Usage:
+    from contract_config import get_contract_address, set_contract_address
+    
+    # Get a contract address for a specific network
+    settlement_address = get_contract_address('settlement_contract', 'testnet')
+    
+    # Set a contract address for a specific network
+    set_contract_address('settlement_contract', '0x1234...', 'testnet')
 """
+
 import os
 import json
 import logging
+from datetime import datetime
+from models import SmartContract
 
+# Configure logging
 logger = logging.getLogger(__name__)
 
-# Default contract addresses
-# These should be updated with your actual deployed mainnet contract addresses
-DEFAULT_CONTRACT_ADDRESSES = {
-    "testnet": {
-        "settlement_contract": "0xE4eA76e830D1A10df277b9D3a1824F216F8F1A5A",
-        "multisig_wallet": "0xB2C857F7AeCB1dEad987ceB5323f88C3Ef0B7C3E",
-        "nvc_token": "0xA4Bc40DD1f6d56d5EF6EE6D5c8FE6C2fE10CaA4c"
-    },
-    "mainnet": {
-        "settlement_contract": "",  # To be filled after mainnet deployment
-        "multisig_wallet": "",      # To be filled after mainnet deployment
-        "nvc_token": ""             # To be filled after mainnet deployment
-    }
+# Default contract types
+CONTRACT_TYPES = [
+    'settlement_contract',
+    'multisig_wallet',
+    'nvc_token'
+]
+
+# Environment variable prefixes for different networks
+ENV_PREFIXES = {
+    'testnet': 'TESTNET_',
+    'mainnet': 'MAINNET_'
 }
 
-# Try to load contract addresses from environment variables
-SETTLEMENT_CONTRACT_MAINNET = os.environ.get("SETTLEMENT_CONTRACT_MAINNET", "")
-MULTISIG_WALLET_MAINNET = os.environ.get("MULTISIG_WALLET_MAINNET", "")
-NVC_TOKEN_MAINNET = os.environ.get("NVC_TOKEN_MAINNET", "")
-
-# Update mainnet addresses if provided via environment variables
-if SETTLEMENT_CONTRACT_MAINNET:
-    DEFAULT_CONTRACT_ADDRESSES["mainnet"]["settlement_contract"] = SETTLEMENT_CONTRACT_MAINNET
-if MULTISIG_WALLET_MAINNET:
-    DEFAULT_CONTRACT_ADDRESSES["mainnet"]["multisig_wallet"] = MULTISIG_WALLET_MAINNET
-if NVC_TOKEN_MAINNET:
-    DEFAULT_CONTRACT_ADDRESSES["mainnet"]["nvc_token"] = NVC_TOKEN_MAINNET
-
-# Configuration file path (optional)
-CONFIG_FILE_PATH = os.environ.get("CONTRACT_CONFIG_PATH", "contract_addresses.json")
-
-# Load contract configuration from file if it exists
-def load_contract_config():
-    """Load contract configuration from file if available"""
+def get_contract_address(contract_type, network='testnet'):
+    """Get a contract address for a specific network
+    
+    Args:
+        contract_type (str): The type of contract (settlement_contract, multisig_wallet, nvc_token)
+        network (str): The network (testnet, mainnet)
+        
+    Returns:
+        str: The contract address, or None if not found
+    """
+    if contract_type not in CONTRACT_TYPES:
+        logger.warning(f"Unknown contract type: {contract_type}")
+        return None
+        
+    # Try to get the address from environment variables first
+    env_var = f"{ENV_PREFIXES.get(network, '')}{contract_type.upper()}_ADDRESS"
+    address = os.environ.get(env_var)
+    
+    if address:
+        logger.debug(f"Found contract address in environment variable {env_var}: {address}")
+        return address
+        
+    # If not in environment, try to get from database
     try:
-        if os.path.exists(CONFIG_FILE_PATH):
-            with open(CONFIG_FILE_PATH, 'r') as f:
-                config = json.load(f)
-                logger.info(f"Loaded contract configuration from {CONFIG_FILE_PATH}")
-                return config
-        else:
-            logger.info(f"Contract configuration file {CONFIG_FILE_PATH} not found, using defaults")
-            return DEFAULT_CONTRACT_ADDRESSES
+        contract = SmartContract.query.filter_by(
+            contract_type=contract_type,
+            network=network,
+            is_active=True
+        ).order_by(SmartContract.created_at.desc()).first()
+        
+        if contract:
+            logger.debug(f"Found contract address in database: {contract.address}")
+            return contract.address
     except Exception as e:
-        logger.error(f"Error loading contract configuration: {str(e)}")
-        return DEFAULT_CONTRACT_ADDRESSES
+        logger.error(f"Error querying database for contract address: {str(e)}")
+    
+    logger.warning(f"Contract address not found for {contract_type} on {network}")
+    return None
 
-# Save contract configuration to file
-def save_contract_config(config):
-    """Save contract configuration to file"""
+def set_contract_address(contract_type, address, network='testnet'):
+    """Set a contract address for a specific network
+    
+    This function stores the contract address in the database and in environment variables
+    for persistence across restarts.
+    
+    Args:
+        contract_type (str): The type of contract (settlement_contract, multisig_wallet, nvc_token)
+        address (str): The contract address
+        network (str): The network (testnet, mainnet)
+    
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    if contract_type not in CONTRACT_TYPES:
+        logger.warning(f"Unknown contract type: {contract_type}")
+        return False
+        
+    # Set the environment variable
+    env_var = f"{ENV_PREFIXES.get(network, '')}{contract_type.upper()}_ADDRESS"
+    os.environ[env_var] = address
+    
+    # Update .env file for persistence
     try:
-        with open(CONFIG_FILE_PATH, 'w') as f:
-            json.dump(config, f, indent=4)
-        logger.info(f"Saved contract configuration to {CONFIG_FILE_PATH}")
+        from dotenv import load_dotenv, set_key
+        dotenv_path = os.path.join(os.getcwd(), '.env')
+        if os.path.exists(dotenv_path):
+            set_key(dotenv_path, env_var, address)
+            logger.debug(f"Updated {env_var} in .env file")
+    except Exception as e:
+        logger.warning(f"Could not update .env file: {str(e)}")
+    
+    # Store in database
+    try:
+        from app import db
+        
+        # Deactivate any existing contracts of this type on this network
+        existing_contracts = SmartContract.query.filter_by(
+            contract_type=contract_type,
+            network=network,
+            is_active=True
+        ).all()
+        
+        for contract in existing_contracts:
+            contract.is_active = False
+            db.session.add(contract)
+        
+        # Create a new contract record
+        contract = SmartContract(
+            name=f"{contract_type} ({network})",
+            contract_type=contract_type,
+            address=address,
+            network=network,
+            is_active=True,
+            description=f"{contract_type} deployed on {network}",
+            created_at=datetime.utcnow()
+        )
+        
+        db.session.add(contract)
+        db.session.commit()
+        logger.info(f"Updated contract address in database: {contract_type} on {network} = {address}")
         return True
     except Exception as e:
-        logger.error(f"Error saving contract configuration: {str(e)}")
+        logger.error(f"Error storing contract address in database: {str(e)}")
         return False
 
-# Update a specific contract address
-def update_contract_address(network, contract_name, address):
-    """Update a specific contract address in the configuration"""
-    config = load_contract_config()
+def get_all_contracts(network=None):
+    """Get all contract addresses for a specific network or all networks
     
-    if network not in config:
-        config[network] = {}
+    Args:
+        network (str, optional): The network to filter by. If None, returns all networks.
+        
+    Returns:
+        dict: A dictionary of contract addresses by network and type
+    """
+    result = {}
     
-    config[network][contract_name] = address
+    # First, get from environment variables
+    for net, prefix in ENV_PREFIXES.items():
+        if network and net != network:
+            continue
+            
+        result[net] = {}
+        for contract_type in CONTRACT_TYPES:
+            env_var = f"{prefix}{contract_type.upper()}_ADDRESS"
+            address = os.environ.get(env_var)
+            if address:
+                result[net][contract_type] = address
     
-    return save_contract_config(config)
+    # Then, supplement or override with database values
+    try:
+        query = SmartContract.query.filter_by(is_active=True)
+        if network:
+            query = query.filter_by(network=network)
+            
+        contracts = query.all()
+        for contract in contracts:
+            if contract.network not in result:
+                result[contract.network] = {}
+            result[contract.network][contract.contract_type] = contract.address
+    except Exception as e:
+        logger.error(f"Error querying database for contract addresses: {str(e)}")
+    
+    return result
 
-# Get contract address for the current network
-def get_contract_address(contract_name, network=None):
+def validate_config():
+    """Validate the contract configuration
+    
+    Returns:
+        dict: A dictionary with validation results
     """
-    Get the contract address for the specified network
-    If network is not specified, use the ETHEREUM_NETWORK env var or default to testnet
-    """
-    if network is None:
-        network = os.environ.get("ETHEREUM_NETWORK", "testnet").lower()
+    current_network = os.environ.get('ETHEREUM_NETWORK', 'testnet')
+    result = {
+        'status': 'success',
+        'network': current_network,
+        'contracts': {}
+    }
     
-    config = load_contract_config()
+    for contract_type in CONTRACT_TYPES:
+        address = get_contract_address(contract_type, current_network)
+        status = {
+            'address': address,
+            'valid': bool(address),
+            'message': 'Contract address found' if address else 'Contract address not configured'
+        }
+        result['contracts'][contract_type] = status
     
-    # Check if the network exists in config
-    if network not in config:
-        logger.warning(f"Network {network} not found in contract configuration, using testnet")
-        network = "testnet"
+    # Check if all contracts are configured
+    all_configured = all(result['contracts'][ct]['valid'] for ct in CONTRACT_TYPES)
+    result['all_configured'] = all_configured
     
-    # Check if the contract exists in the network configuration
-    if contract_name not in config[network]:
-        logger.error(f"Contract {contract_name} not found in {network} configuration")
-        return None
+    if all_configured:
+        result['message'] = f'All contracts are properly configured for {current_network}'
+    else:
+        result['message'] = f'Some contracts are not configured for {current_network}'
+        result['status'] = 'warning'
     
-    return config[network][contract_name]
+    return result

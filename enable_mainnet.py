@@ -19,139 +19,98 @@ import os
 import sys
 import argparse
 import logging
+from dotenv import load_dotenv, set_key
+import contract_config
+from blockchain import validate_contract_addresses
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("nvct-mainnet")
+logger = logging.getLogger(__name__)
 
 def set_environment_variable(name, value):
     """Set an environment variable both in memory and in .env file"""
     os.environ[name] = value
     
-    # Also try to add to .env file for persistence
+    # Update .env file
     try:
-        env_path = ".env"
-        
-        # Check if file exists
-        env_exists = os.path.exists(env_path)
-        
-        if env_exists:
-            # Read existing content
-            with open(env_path, "r") as f:
-                lines = f.readlines()
-            
-            # Check if variable already exists
-            var_exists = False
-            new_lines = []
-            
-            for line in lines:
-                if line.strip() and not line.strip().startswith("#"):
-                    if line.strip().split("=")[0] == name:
-                        new_lines.append(f"{name}={value}\n")
-                        var_exists = True
-                    else:
-                        new_lines.append(line)
-                else:
-                    new_lines.append(line)
-            
-            # Add variable if it doesn't exist
-            if not var_exists:
-                new_lines.append(f"{name}={value}\n")
-            
-            # Write back
-            with open(env_path, "w") as f:
-                f.writelines(new_lines)
-        else:
-            # Create new file
-            with open(env_path, "w") as f:
-                f.write(f"{name}={value}\n")
-        
-        logger.info(f"Environment variable {name}={value} set in .env file")
-        return True
-    
+        dotenv_path = os.path.join(os.getcwd(), '.env')
+        if os.path.exists(dotenv_path):
+            set_key(dotenv_path, name, value)
+            logger.info(f"Updated {name}={value} in .env file")
     except Exception as e:
-        logger.error(f"Error setting environment variable in .env file: {str(e)}")
-        return False
+        logger.warning(f"Could not update .env file: {str(e)}")
+        logger.info(f"Environment variable {name}={value} set in memory only")
 
 def check_contract_addresses():
     """Check if contract addresses are available for mainnet"""
     try:
-        import contract_config
-        
-        # Check the three required contracts
-        contracts = ["settlement_contract", "multisig_wallet", "nvc_token"]
-        missing_contracts = []
-        
-        for contract in contracts:
-            address = contract_config.get_contract_address(contract, "mainnet")
+        # Check each required contract
+        for contract_type in contract_config.CONTRACT_TYPES:
+            address = contract_config.get_contract_address(contract_type, 'mainnet')
             if not address:
-                missing_contracts.append(contract)
-        
-        if missing_contracts:
-            logger.warning(f"Missing mainnet contract addresses: {', '.join(missing_contracts)}")
-            return False
-        
+                logger.error(f"No mainnet address found for {contract_type}")
+                return False
+            logger.info(f"Found mainnet address for {contract_type}: {address}")
         return True
-    
-    except ImportError:
-        logger.error("contract_config module not available")
-        return False
-    
     except Exception as e:
         logger.error(f"Error checking contract addresses: {str(e)}")
         return False
 
 def main():
     """Main function to process command line arguments"""
-    parser = argparse.ArgumentParser(description="NVCT Mainnet Enabler")
-    parser.add_argument("--force", action="store_true", 
-                      help="Force enable mainnet even if contracts are not deployed")
-    
+    parser = argparse.ArgumentParser(description="Enable NVCT mainnet operation")
+    parser.add_argument('--force', action='store_true', help="Force enable mainnet even if contracts are not deployed")
     args = parser.parse_args()
     
-    print("\n===== NVCT MAINNET ENABLER =====\n")
+    # Load environment variables from .env file
+    load_dotenv()
     
-    # Check current network setting
-    current_network = os.environ.get("ETHEREUM_NETWORK", "testnet").lower()
-    
-    if current_network == "mainnet":
-        print("Mainnet is already enabled.")
-        print(f"Current ETHEREUM_NETWORK value: {current_network}")
-        return 0
-    
-    # Check if contracts are available if not forcing
-    if not args.force:
-        contracts_available = check_contract_addresses()
+    # Check if we're already in mainnet mode
+    current_network = os.environ.get('ETHEREUM_NETWORK')
+    if current_network == 'mainnet':
+        logger.info("Already in mainnet mode")
         
-        if not contracts_available:
-            print("\nWARNING: Not all mainnet contracts appear to be deployed.")
-            print("You should deploy contracts before enabling mainnet.")
-            print("\nTo deploy contracts, use:")
-            print("  python mainnet_migration.py deploy --contract=settlement_contract")
-            print("  python mainnet_migration.py deploy --contract=multisig_wallet")
-            print("  python mainnet_migration.py deploy --contract=nvc_token")
-            print("\nIf you want to enable mainnet anyway, use the --force flag:")
-            print("  python enable_mainnet.py --force")
-            return 1
+        # Validate contract addresses
+        if check_contract_addresses():
+            logger.info("All required contract addresses are available for mainnet")
+        else:
+            logger.warning("Some contract addresses are missing for mainnet")
+            logger.info("Please deploy the missing contracts or update their addresses")
+            if not args.force:
+                return
+        return
     
-    # Enable mainnet
-    success = set_environment_variable("ETHEREUM_NETWORK", "mainnet")
-    
-    if success:
-        print("\nSuccess! NVCT mainnet has been enabled.")
-        print("\nImportant next steps:")
-        print("1. Restart the application to apply changes")
-        print("2. Verify functionality with the new mainnet contracts")
-        print("3. Monitor initial transactions closely")
-        
-        if args.force:
-            print("\nNOTE: Mainnet was enabled with the --force flag.")
-            print("      Make sure to deploy all contracts if not already done.")
-        
-        return 0
+    # Check if mainnet contracts are deployed
+    if check_contract_addresses():
+        logger.info("All required contract addresses are available for mainnet")
     else:
-        print("\nError enabling mainnet. See log for details.")
-        return 1
+        logger.warning("Some contract addresses are missing for mainnet")
+        logger.info("Please deploy the contracts using:")
+        logger.info("  python mainnet_migration.py deploy --contract=settlement_contract")
+        logger.info("  python mainnet_migration.py deploy --contract=multisig_wallet")
+        logger.info("  python mainnet_migration.py deploy --contract=nvc_token")
+        
+        if not args.force:
+            logger.error("Aborting mainnet enablement. Use --force to override.")
+            return
+        
+        logger.warning("Forcing mainnet mode despite missing contract addresses")
+    
+    # Set the environment variable
+    set_environment_variable('ETHEREUM_NETWORK', 'mainnet')
+    logger.info("Mainnet mode enabled")
+    
+    # Validate contract configuration
+    validation = validate_contract_addresses('mainnet')
+    if validation:
+        logger.info("Contract validation results:")
+        for contract_type, status in validation.get('contracts', {}).items():
+            valid = "✓" if status.get('valid') else "✗"
+            address = status.get('address', 'Not configured')
+            logger.info(f"  {valid} {contract_type}: {address}")
+    
+    logger.info("NVCT is now configured to use Ethereum mainnet")
+    logger.info("IMPORTANT: All transactions will use real ETH and affect the main Ethereum network")
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
