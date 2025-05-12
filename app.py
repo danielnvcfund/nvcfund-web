@@ -76,6 +76,15 @@ def create_app():
             return json.loads(value)
         except (ValueError, TypeError):
             return {}
+            
+    # Add format_number filter for formatting large numbers with commas
+    @app.template_filter('format_number')
+    def format_number(value):
+        """Format a number with commas as thousands separators"""
+        try:
+            return "{:,}".format(int(value))
+        except (ValueError, TypeError):
+            return value
     
     # Allow embedding in iframes for Replit
     @app.after_request
