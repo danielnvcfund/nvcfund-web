@@ -362,44 +362,44 @@ class SmartContractType(enum.Enum):
 class SmartContract(db.Model):
     """Smart contract model for storing contract addresses and ABIs"""
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    contract_type = db.Column(db.Enum(SmartContractType), nullable=False)
-    address = db.Column(db.String(42), nullable=False)
-    network = db.Column(db.Enum(BlockchainNetwork), nullable=False)
+    name = db.Column(db.String(100))
+    address = db.Column(db.String(42))
     is_active = db.Column(db.Boolean, default=True)
     abi = db.Column(db.Text)  # JSON string of contract ABI
-    deployed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    bytecode = db.Column(db.Text)  # Contract bytecode
+    description = db.Column(db.Text)  # Description of contract
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Address can be unique per network and type, but not globally
-    __table_args__ = (
-        db.UniqueConstraint('contract_type', 'network', 'address', name='_contract_type_network_address_uc'),
-    )
-    
     def __repr__(self):
-        return f"<SmartContract {self.contract_type.value}:{self.address} ({self.network.value})>"
+        return f"<SmartContract {self.name}:{self.address}>"
 
 class BlockchainTransaction(db.Model):
     """Blockchain transaction model for tracking transactions"""
     id = db.Column(db.Integer, primary_key=True)
+    # Use original column names from database
+    transaction_id = db.Column(db.Integer)
+    amount = db.Column(db.Float)
     tx_hash = db.Column(db.String(66), unique=True, nullable=True)  # Made nullable for backward compatibility during migration
-    tx_type = db.Column(db.Enum(BlockchainTransactionType), nullable=False)
-    network = db.Column(db.Enum(BlockchainNetwork), nullable=False)
-    from_address = db.Column(db.String(42), nullable=False)
+    eth_tx_hash = db.Column(db.String(66), unique=True, nullable=True)  # Legacy column
+    transaction_type = db.Column(db.String(50))  # Using string type to match database
+    from_address = db.Column(db.String(42))
     to_address = db.Column(db.String(42))
     contract_address = db.Column(db.String(42))
-    value = db.Column(db.Float, default=0.0)  # ETH value
-    gas_limit = db.Column(db.Integer)
+    tx_metadata = db.Column(db.Text)  # JSON data
     gas_price = db.Column(db.Integer)  # In wei
     gas_used = db.Column(db.Integer)
     status = db.Column(db.Integer)  # 1 for success, 0 for failure, NULL for pending
     block_number = db.Column(db.Integer)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     
     # For token transfers
     token_value = db.Column(db.Float)  # Token amount
     token_symbol = db.Column(db.String(10))  # E.g., NVCT, SPU, TU
+    
+    # Audit timestamps from database
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # For contract calls
     function_name = db.Column(db.String(100))
