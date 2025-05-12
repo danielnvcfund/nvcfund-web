@@ -10,8 +10,11 @@ from auth import admin_required, blockchain_admin_required
 from db_operations import add_tx_hash_column
 import logging
 import os
+import subprocess
+import json
 from datetime import datetime
-from blockchain import connect_to_ethereum, get_contract_instance, get_token_supply, get_gas_price
+from blockchain import connect_to_ethereum, get_contract_instance, get_token_supply, get_gas_price, validate_contract_addresses
+from dotenv import load_dotenv, set_key
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

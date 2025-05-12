@@ -348,7 +348,29 @@
                     </ul>
                 </div>
                 <div class="card-footer">
-                    <a href="{{ url_for('blockchain_admin.index') }}" class="btn btn-secondary">Back to Dashboard</a>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('blockchain_admin.index') }}" class="btn btn-secondary">Back to Dashboard</a>
+                        
+                        {% if readiness_score >= 80 %}
+                        <div class="btn-group">
+                            <a href="{{ url_for('blockchain_admin.enable_mainnet') }}" 
+                               class="btn btn-primary"
+                               onclick="return confirm('WARNING: This will enable Ethereum mainnet for all transactions. Real ETH will be used for gas fees. Are you sure you want to proceed?')">
+                                <i class="fas fa-rocket"></i> Enable Mainnet
+                            </a>
+                            <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="visually-hidden">Toggle Dropdown</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('blockchain_admin.deploy_contract', contract_type='settlement_contract') }}">Deploy Settlement Contract</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('blockchain_admin.deploy_contract', contract_type='multisig_wallet') }}">Deploy MultiSig Wallet</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('blockchain_admin.deploy_contract', contract_type='nvc_token') }}">Deploy NVC Token</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('blockchain_admin.validate_mainnet') }}">Validate Mainnet Setup</a></li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
