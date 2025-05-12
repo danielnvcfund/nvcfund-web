@@ -376,26 +376,28 @@ class SmartContract(db.Model):
 
 class BlockchainTransaction(db.Model):
     """Blockchain transaction model for tracking transactions"""
+    __tablename__ = 'blockchain_transaction'
+    
+    # Define columns exactly as they appear in the database
     id = db.Column(db.Integer, primary_key=True)
-    # Use original column names from database
     transaction_id = db.Column(db.Integer)
     amount = db.Column(db.Float)
-    tx_hash = db.Column(db.String(66), unique=True, nullable=True)  # Made nullable for backward compatibility during migration
-    eth_tx_hash = db.Column(db.String(66), unique=True, nullable=True)  # Legacy column
-    transaction_type = db.Column(db.String(50))  # Using string type to match database
-    from_address = db.Column(db.String(42))
-    to_address = db.Column(db.String(42))
-    contract_address = db.Column(db.String(42))
-    tx_metadata = db.Column(db.Text)  # JSON data
-    gas_price = db.Column(db.Integer)  # In wei
     gas_used = db.Column(db.Integer)
-    status = db.Column(db.Integer)  # 1 for success, 0 for failure, NULL for pending
+    gas_price = db.Column(db.Integer)  # In wei
     block_number = db.Column(db.Integer)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    
-    # Audit timestamps from database
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    status = db.Column(db.Integer)  # 1 for success, 0 for failure, NULL for pending
+    eth_tx_hash = db.Column(db.String(66), unique=True, nullable=True)  # Legacy column
+    from_address = db.Column(db.String(42))
+    to_address = db.Column(db.String(42))
+    transaction_type = db.Column(db.String(50))
+    tx_metadata = db.Column(db.Text)  # JSON data
+    tx_hash = db.Column(db.String(66), unique=True, nullable=True)
+    contract_address = db.Column(db.String(42))
+    
+    # No recorded_by column - it was removed from the database
     
     def __init__(self, **kwargs):
         """
@@ -409,8 +411,6 @@ class BlockchainTransaction(db.Model):
         
         # Initialize with processed kwargs
         super(BlockchainTransaction, self).__init__(**kwargs)
-    
-    # Removed recorded_by column as it doesn't exist in the database
     
     def __repr__(self):
         """String representation of this model"""
