@@ -517,6 +517,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering Client Dashboard routes: {str(e)}")
             logger.warning("Application will run without Client Dashboard functionality")
+            
+        # Register Public Download routes
+        try:
+            from routes.public_downloads import public_downloads_bp
+            app.register_blueprint(public_downloads_bp)
+            logger.info("Public download routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Public Download routes: {str(e)}")
+            logger.warning("Application will run without Public Download functionality")
         
         # Register Institutional Agreements routes
         try:

@@ -7,7 +7,7 @@ import os
 import datetime
 from generate_custody_agreement import generate_custody_agreement
 
-document_download_bp = Blueprint('document_download', __name__)
+document_download_bp = Blueprint('document_download', __name__, url_prefix='')
 
 
 @document_download_bp.route('/download-center')
