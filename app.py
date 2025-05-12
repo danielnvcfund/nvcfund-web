@@ -526,6 +526,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering Public Download routes: {str(e)}")
             logger.warning("Application will run without Public Download functionality")
+            
+        # Register Direct Static File routes
+        try:
+            from static_routes import register_static_routes
+            register_static_routes(app)
+            logger.info("Direct static file routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Direct Static File routes: {str(e)}")
+            logger.warning("Application will run without Direct Static File functionality")
         
         # Register Institutional Agreements routes
         try:
