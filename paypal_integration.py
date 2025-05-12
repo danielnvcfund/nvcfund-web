@@ -53,6 +53,11 @@ class PayPalService:
         Returns:
             Tuple containing the payment ID and approval URL if successful, or (None, None) if failed
         """
+        # Verify PayPal credentials are valid
+        if not PAYPAL_CLIENT_ID or not PAYPAL_CLIENT_SECRET:
+            logger.error("PayPal credentials not configured properly")
+            return None, None
+            
         # Check if this is a cryptocurrency transaction
         crypto_currencies = ['NVCT', 'ETH', 'BTC', 'USDT', 'USDC', 'AFD1']
         
@@ -112,17 +117,31 @@ class PayPalService:
                     }
                 })
             
-            if payment.create():
-                # Extract approval URL
-                approval_url = next(link.href for link in payment.links if link.rel == 'approval_url')
-                logger.info(f"Payment created successfully: {payment.id} ({currency})")
-                return payment.id, approval_url
-            else:
-                logger.error(f"Failed to create payment: {payment.error}")
+            try:
+                if payment.create():
+                    # Extract approval URL
+                    approval_url = next(link.href for link in payment.links if link.rel == 'approval_url')
+                    logger.info(f"Payment created successfully: {payment.id} ({currency})")
+                    return payment.id, approval_url
+                else:
+                    logger.error(f"Failed to create payment: {payment.error}")
+                    return None, None
+                    
+            except paypalrestsdk.exceptions.ResourceNotFound as e:
+                logger.error(f"PayPal API error: Resource not found - {str(e)}")
+                return None, None
+            except paypalrestsdk.exceptions.UnauthorizedAccess as e:
+                logger.error(f"PayPal API authentication failed - {str(e)}")
+                logger.warning("Check that PayPal API credentials are valid and for the correct environment (live/sandbox)")
+                return None, None
+            except paypalrestsdk.exceptions.MissingConfig as e:
+                logger.error(f"PayPal SDK configuration missing - {str(e)}")
                 return None, None
                 
         except Exception as e:
             logger.error(f"Error creating PayPal payment: {str(e)}")
+            error_type = type(e).__name__
+            logger.error(f"Exception type: {error_type}")
             return None, None
     
     @staticmethod
