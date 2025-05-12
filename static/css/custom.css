@@ -226,17 +226,6 @@ pre {
     text-transform: uppercase;
 }
 
-/* Improved badge contrast */
-.badge.bg-warning {
-    background-color: #996600 !important; /* Much darker green-yellow for better contrast */
-    color: #ffffff !important; /* White text for highest contrast */
-}
-
-.badge.bg-info {
-    background-color: #004466 !important; /* Darker blue for better contrast */
-    color: #ffffff !important; /* White text for highest contrast */
-}
-
 /* ==== Navigation Enhancements ==== */
 .navbar {
     backdrop-filter: blur(10px);
