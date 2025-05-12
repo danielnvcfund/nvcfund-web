@@ -18,6 +18,46 @@ SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
 DEFAULT_FROM_EMAIL = 'no-reply@nvcplatform.net'
 
 
+def is_email_configured() -> bool:
+    """
+    Check if email service is properly configured
+
+    Returns:
+        Boolean indicating if email service is configured
+    """
+    if not SENDGRID_API_KEY:
+        logger.warning("SendGrid API key not found in environment variables")
+        return False
+    
+    # Validate API key format (basic validation)
+    if not SENDGRID_API_KEY.startswith('SG.'):
+        logger.warning("SendGrid API key appears to be in incorrect format")
+        return False
+    
+    return True
+
+
+def send_admin_email(subject: str, html_content: str, recipient_email: str = None) -> bool:
+    """
+    Send an email to the admin user
+    
+    Args:
+        subject: Email subject
+        html_content: HTML content of the email
+        recipient_email: Override recipient email (defaults to admin email from env)
+        
+    Returns:
+        Boolean indicating success or failure
+    """
+    admin_email = recipient_email or os.environ.get('ADMIN_EMAIL', DEFAULT_FROM_EMAIL)
+    
+    return send_email(
+        to_email=admin_email,
+        subject=subject,
+        html_content=html_content
+    )
+
+
 def send_transaction_confirmation_email(transaction, user) -> bool:
     """
     Send a transaction confirmation email to a user

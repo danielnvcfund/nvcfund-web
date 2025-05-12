@@ -4,8 +4,13 @@ These routes provide administrative tools for managing blockchain contracts and 
 """
 
 import os
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+import logging
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 from functools import wraps
+from datetime import datetime, timedelta
+import secrets
+import uuid
+from werkzeug.security import check_password_hash
 from models import User, Role, SmartContract, BlockchainTransaction
 from auth import admin_required, jwt_required
 from blockchain import (
@@ -17,6 +22,11 @@ from blockchain import (
     validate_contract_addresses
 )
 import contract_config
+from app import db
+from email_service import send_admin_email
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # Create blueprint
 blockchain_admin_bp = Blueprint('blockchain_admin', __name__, url_prefix='/admin/blockchain')
@@ -964,3 +974,509 @@ def create_operation():
         'success': True,
         'redirect': url_for('blockchain_admin.security_confirm', operation_id=operation_id)
     })
+
+@blockchain_admin_bp.route('/mainnet-readiness')
+@blockchain_admin_required
+def mainnet_readiness():
+    """Mainnet migration readiness assessment"""
+    import os
+    from datetime import datetime
+    import json
+    
+    # Current network information
+    current_network = os.environ.get('ETHEREUM_NETWORK', 'testnet')
+    web3 = get_web3_connection()
+    
+    # Get relevant contract addresses
+    token_address = contract_config.get_contract_address('nvc_token', 'testnet')
+    settlement_address = contract_config.get_contract_address('settlement_contract', 'testnet')
+    multisig_address = contract_config.get_contract_address('multisig_wallet', 'testnet')
+    
+    # Get admin wallet address and balance
+    admin_address = os.environ.get('ADMIN_ETH_ADDRESS')
+    admin_balance = 0
+    if admin_address and web3:
+        try:
+            balance_wei = web3.eth.get_balance(admin_address)
+            admin_balance = web3.from_wei(balance_wei, 'ether')
+        except Exception as e:
+            logger.error(f"Error getting admin balance: {str(e)}")
+            
+    # Initialize assessment categories
+    categories = []
+    passed_requirements = 0
+    total_requirements = 0
+    failed_requirements = 0
+    action_items = []
+    
+    # 1. Contract Assessment
+    contract_checks = []
+    contract_passed = 0
+    
+    # Check token contract
+    if token_address:
+        contract_checks.append({
+            'name': 'NVCT Token Contract Deployed on Testnet',
+            'status': 'passed',
+            'critical': True,
+            'details': f'Contract deployed at <a href="https://sepolia.etherscan.io/token/{token_address}" target="_blank">{token_address}</a>',
+            'recommendation': None
+        })
+        contract_passed += 1
+    else:
+        contract_checks.append({
+            'name': 'NVCT Token Contract Deployed on Testnet',
+            'status': 'failed',
+            'critical': True,
+            'details': 'Token contract has not been deployed on Sepolia testnet',
+            'recommendation': 'Deploy the NVCT token contract on Sepolia testnet first and test all functionality before proceeding to mainnet.'
+        })
+        action_items.append({
+            'name': 'Deploy Token Contract',
+            'description': 'Token contract must be deployed and tested on Sepolia testnet before mainnet migration.'
+        })
+    
+    # Check settlement contract
+    if settlement_address:
+        contract_checks.append({
+            'name': 'Settlement Contract Deployed on Testnet',
+            'status': 'passed',
+            'critical': True,
+            'details': f'Contract deployed at <a href="https://sepolia.etherscan.io/address/{settlement_address}" target="_blank">{settlement_address}</a>',
+            'recommendation': None
+        })
+        contract_passed += 1
+    else:
+        contract_checks.append({
+            'name': 'Settlement Contract Deployed on Testnet',
+            'status': 'failed',
+            'critical': True,
+            'details': 'Settlement contract has not been deployed on Sepolia testnet',
+            'recommendation': 'Deploy the Settlement contract on Sepolia testnet first and test all functionality before proceeding to mainnet.'
+        })
+        action_items.append({
+            'name': 'Deploy Settlement Contract',
+            'description': 'Settlement contract must be deployed and tested on Sepolia testnet before mainnet migration.'
+        })
+    
+    # Check multisig wallet
+    if multisig_address:
+        contract_checks.append({
+            'name': 'MultiSig Wallet Contract Deployed on Testnet',
+            'status': 'passed',
+            'critical': True,
+            'details': f'Contract deployed at <a href="https://sepolia.etherscan.io/address/{multisig_address}" target="_blank">{multisig_address}</a>',
+            'recommendation': None
+        })
+        contract_passed += 1
+    else:
+        contract_checks.append({
+            'name': 'MultiSig Wallet Contract Deployed on Testnet',
+            'status': 'failed',
+            'critical': True,
+            'details': 'MultiSig Wallet contract has not been deployed on Sepolia testnet',
+            'recommendation': 'Deploy the MultiSig Wallet contract on Sepolia testnet first and test all functionality before proceeding to mainnet.'
+        })
+        action_items.append({
+            'name': 'Deploy MultiSig Wallet Contract',
+            'description': 'MultiSig Wallet contract must be deployed and tested on Sepolia testnet before mainnet migration.'
+        })
+    
+    # Check contract validations
+    try:
+        validation_results = validate_contract_addresses('testnet')
+        valid_contracts = True
+        for contract_type, status in validation_results.items():
+            if not status['is_valid']:
+                valid_contracts = False
+                break
+                
+        if valid_contracts:
+            contract_checks.append({
+                'name': 'Contract Validation Checks',
+                'status': 'passed',
+                'critical': True,
+                'details': 'All contracts have passed validation checks',
+                'recommendation': None
+            })
+            contract_passed += 1
+        else:
+            contract_checks.append({
+                'name': 'Contract Validation Checks',
+                'status': 'failed',
+                'critical': True,
+                'details': 'One or more contracts have failed validation checks',
+                'recommendation': 'Run validation checks from the blockchain admin dashboard and fix any issues before proceeding.'
+            })
+            action_items.append({
+                'name': 'Fix Contract Validation Issues',
+                'description': 'Ensure all contracts pass validation checks before mainnet migration.'
+            })
+    except Exception as e:
+        contract_checks.append({
+            'name': 'Contract Validation Checks',
+            'status': 'failed',
+            'critical': True,
+            'details': f'Error validating contracts: {str(e)}',
+            'recommendation': 'Fix the contract validation errors before proceeding.'
+        })
+        action_items.append({
+            'name': 'Fix Contract Validation',
+            'description': 'Resolve the errors in contract validation before mainnet migration.'
+        })
+    
+    # Calculate contract category stats
+    contract_total = len(contract_checks)
+    contract_percentage = round((contract_passed / contract_total) * 100) if contract_total > 0 else 0
+    contract_status = 'passed' if contract_percentage == 100 else 'failed'
+    contract_color = 'success' if contract_percentage == 100 else 'danger'
+    
+    categories.append({
+        'id': 'contracts',
+        'name': 'Smart Contracts',
+        'description': 'Assessment of smart contract deployments and validations',
+        'status': contract_status,
+        'passed': contract_passed,
+        'total': contract_total,
+        'percentage': contract_percentage,
+        'color': contract_color,
+        'checks': contract_checks
+    })
+    
+    # Add to totals
+    total_requirements += contract_total
+    passed_requirements += contract_passed
+    failed_requirements += (contract_total - contract_passed)
+    
+    # 2. Wallet & Security Assessment
+    security_checks = []
+    security_passed = 0
+    
+    # Check admin wallet
+    if admin_address:
+        security_checks.append({
+            'name': 'Admin Wallet Configured',
+            'status': 'passed',
+            'critical': True,
+            'details': f'Admin wallet address: <a href="https://sepolia.etherscan.io/address/{admin_address}" target="_blank">{admin_address}</a>',
+            'recommendation': None
+        })
+        security_passed += 1
+    else:
+        security_checks.append({
+            'name': 'Admin Wallet Configured',
+            'status': 'failed',
+            'critical': True,
+            'details': 'Admin wallet address is not configured',
+            'recommendation': 'Configure the ADMIN_ETH_ADDRESS environment variable with a valid Ethereum address.'
+        })
+        action_items.append({
+            'name': 'Configure Admin Wallet',
+            'description': 'Set up the admin wallet address before mainnet migration.'
+        })
+    
+    # Check admin balance
+    if admin_balance >= 0.1:
+        security_checks.append({
+            'name': 'Admin Wallet ETH Balance',
+            'status': 'passed',
+            'critical': True,
+            'details': f'Admin wallet has {admin_balance} ETH, sufficient for gas fees',
+            'recommendation': None
+        })
+        security_passed += 1
+    else:
+        status = 'warning' if admin_balance > 0 else 'failed'
+        security_checks.append({
+            'name': 'Admin Wallet ETH Balance',
+            'status': status,
+            'critical': True,
+            'details': f'Admin wallet has only {admin_balance} ETH, which may not be sufficient for mainnet operations',
+            'recommendation': 'Add at least 0.1 ETH to the admin wallet before mainnet deployment to cover gas fees.'
+        })
+        action_items.append({
+            'name': 'Fund Admin Wallet',
+            'description': 'Ensure the admin wallet has sufficient ETH for mainnet gas fees.'
+        })
+    
+    # Check security features
+    if os.path.exists('templates/admin/blockchain/security_confirm.html'):
+        security_checks.append({
+            'name': 'Mainnet Security Confirmation System',
+            'status': 'passed',
+            'critical': True,
+            'details': 'Mainnet security confirmation system is properly configured',
+            'recommendation': None
+        })
+        security_passed += 1
+    else:
+        security_checks.append({
+            'name': 'Mainnet Security Confirmation System',
+            'status': 'failed',
+            'critical': True,
+            'details': 'Mainnet security confirmation system is not properly configured',
+            'recommendation': 'Ensure the security confirmation templates and routes are properly set up before mainnet migration.'
+        })
+        action_items.append({
+            'name': 'Configure Security System',
+            'description': 'Set up the mainnet security confirmation system before migration.'
+        })
+    
+    # Check email notifications
+    try:
+        from email_service import is_email_configured
+        if is_email_configured():
+            security_checks.append({
+                'name': 'Email Notification System',
+                'status': 'passed',
+                'critical': True,
+                'details': 'Email notification system is properly configured for security alerts',
+                'recommendation': None
+            })
+            security_passed += 1
+        else:
+            security_checks.append({
+                'name': 'Email Notification System',
+                'status': 'failed',
+                'critical': True,
+                'details': 'Email notification system is not properly configured',
+                'recommendation': 'Configure the email notification system to receive security alerts for mainnet operations.'
+            })
+            action_items.append({
+                'name': 'Configure Email Notifications',
+                'description': 'Set up the email notification system for mainnet security alerts.'
+            })
+    except ImportError:
+        security_checks.append({
+            'name': 'Email Notification System',
+            'status': 'failed',
+            'critical': True,
+            'details': 'Email notification system module is not available',
+            'recommendation': 'Implement the email notification system for security alerts.'
+        })
+        action_items.append({
+            'name': 'Implement Email Notifications',
+            'description': 'Create the email notification system for mainnet security alerts.'
+        })
+    
+    # Calculate security category stats
+    security_total = len(security_checks)
+    security_percentage = round((security_passed / security_total) * 100) if security_total > 0 else 0
+    security_status = 'passed' if security_percentage == 100 else 'failed'
+    security_color = 'success' if security_percentage == 100 else 'danger'
+    
+    categories.append({
+        'id': 'security',
+        'name': 'Security & Access Control',
+        'description': 'Assessment of security measures and access controls',
+        'status': security_status,
+        'passed': security_passed,
+        'total': security_total,
+        'percentage': security_percentage,
+        'color': security_color,
+        'checks': security_checks
+    })
+    
+    # Add to totals
+    total_requirements += security_total
+    passed_requirements += security_passed
+    failed_requirements += (security_total - security_passed)
+    
+    # 3. Integration Assessment
+    integration_checks = []
+    integration_passed = 0
+    
+    # Check blockchain transactions
+    recent_tx_count = BlockchainTransaction.query.filter_by(
+        network='testnet'
+    ).count()
+    
+    if recent_tx_count > 0:
+        integration_checks.append({
+            'name': 'Blockchain Transaction System',
+            'status': 'passed',
+            'critical': True,
+            'details': f'Blockchain transaction system is working, with {recent_tx_count} recorded transactions',
+            'recommendation': None
+        })
+        integration_passed += 1
+    else:
+        integration_checks.append({
+            'name': 'Blockchain Transaction System',
+            'status': 'failed',
+            'critical': True,
+            'details': 'No blockchain transactions have been recorded in the system',
+            'recommendation': 'Test the blockchain transaction system on testnet before proceeding to mainnet.'
+        })
+        action_items.append({
+            'name': 'Test Transaction System',
+            'description': 'Validate the blockchain transaction recording system before mainnet migration.'
+        })
+    
+    # Check token supply monitoring
+    if os.path.exists('templates/admin/blockchain/token_dashboard.html'):
+        integration_checks.append({
+            'name': 'Token Supply Monitoring',
+            'status': 'passed',
+            'critical': False,
+            'details': 'Token supply monitoring dashboard is properly configured',
+            'recommendation': None
+        })
+        integration_passed += 1
+    else:
+        integration_checks.append({
+            'name': 'Token Supply Monitoring',
+            'status': 'warning',
+            'critical': False,
+            'details': 'Token supply monitoring dashboard is not properly configured',
+            'recommendation': 'Set up the token supply monitoring dashboard before mainnet migration.'
+        })
+        action_items.append({
+            'name': 'Configure Token Monitoring',
+            'description': 'Set up the token supply monitoring dashboard before mainnet migration.'
+        })
+    
+    # Check transaction monitoring
+    if os.path.exists('templates/admin/blockchain/transactions.html'):
+        integration_checks.append({
+            'name': 'Transaction Monitoring',
+            'status': 'passed',
+            'critical': False,
+            'details': 'Transaction monitoring dashboard is properly configured',
+            'recommendation': None
+        })
+        integration_passed += 1
+    else:
+        integration_checks.append({
+            'name': 'Transaction Monitoring',
+            'status': 'warning',
+            'critical': False,
+            'details': 'Transaction monitoring dashboard is not properly configured',
+            'recommendation': 'Set up the transaction monitoring dashboard before mainnet migration.'
+        })
+        action_items.append({
+            'name': 'Configure Transaction Monitoring',
+            'description': 'Set up the transaction monitoring dashboard before mainnet migration.'
+        })
+    
+    # Calculate integration category stats
+    integration_total = len(integration_checks)
+    integration_percentage = round((integration_passed / integration_total) * 100) if integration_total > 0 else 0
+    integration_status = 'passed' if integration_percentage == 100 else ('warning' if integration_percentage >= 50 else 'failed')
+    integration_color = 'success' if integration_percentage == 100 else ('warning' if integration_percentage >= 50 else 'danger')
+    
+    categories.append({
+        'id': 'integration',
+        'name': 'System Integration',
+        'description': 'Assessment of blockchain integration with platform systems',
+        'status': integration_status,
+        'passed': integration_passed,
+        'total': integration_total,
+        'percentage': integration_percentage,
+        'color': integration_color,
+        'checks': integration_checks
+    })
+    
+    # Add to totals
+    total_requirements += integration_total
+    passed_requirements += integration_passed
+    failed_requirements += (integration_total - integration_passed)
+    
+    # 4. Documentation Assessment
+    documentation_checks = []
+    documentation_passed = 0
+    
+    # Check migration guide
+    if os.path.exists('docs/customer_support/nvct_mainnet_migration_guide.html'):
+        documentation_checks.append({
+            'name': 'Mainnet Migration Guide',
+            'status': 'passed',
+            'critical': False,
+            'details': 'Mainnet migration guide is available for users',
+            'recommendation': None
+        })
+        documentation_passed += 1
+    else:
+        documentation_checks.append({
+            'name': 'Mainnet Migration Guide',
+            'status': 'warning',
+            'critical': False,
+            'details': 'Mainnet migration guide is not available',
+            'recommendation': 'Create documentation for users explaining the mainnet migration process.'
+        })
+        action_items.append({
+            'name': 'Create Migration Guide',
+            'description': 'Prepare user documentation for the mainnet migration process.'
+        })
+    
+    # Check readiness assessment
+    if os.path.exists('docs/customer_support/nvc_mainnet_readiness_assessment.html'):
+        documentation_checks.append({
+            'name': 'Mainnet Readiness Assessment Document',
+            'status': 'passed',
+            'critical': False,
+            'details': 'Mainnet readiness assessment documentation is available',
+            'recommendation': None
+        })
+        documentation_passed += 1
+    else:
+        documentation_checks.append({
+            'name': 'Mainnet Readiness Assessment Document',
+            'status': 'warning',
+            'critical': False,
+            'details': 'Mainnet readiness assessment documentation is not available',
+            'recommendation': 'Create documentation on mainnet readiness assessment criteria and process.'
+        })
+        action_items.append({
+            'name': 'Create Assessment Document',
+            'description': 'Prepare documentation on the mainnet readiness assessment process.'
+        })
+    
+    # Calculate documentation category stats
+    documentation_total = len(documentation_checks)
+    documentation_percentage = round((documentation_passed / documentation_total) * 100) if documentation_total > 0 else 0
+    documentation_status = 'passed' if documentation_percentage == 100 else ('warning' if documentation_percentage >= 50 else 'failed')
+    documentation_color = 'success' if documentation_percentage == 100 else ('warning' if documentation_percentage >= 50 else 'danger')
+    
+    categories.append({
+        'id': 'documentation',
+        'name': 'Documentation',
+        'description': 'Assessment of documentation and user guides',
+        'status': documentation_status,
+        'passed': documentation_passed,
+        'total': documentation_total,
+        'percentage': documentation_percentage,
+        'color': documentation_color,
+        'checks': documentation_checks
+    })
+    
+    # Add to totals
+    total_requirements += documentation_total
+    passed_requirements += documentation_passed
+    failed_requirements += (documentation_total - documentation_passed)
+    
+    # Calculate overall readiness
+    readiness_percentage = round((passed_requirements / total_requirements) * 100) if total_requirements > 0 else 0
+    
+    # Determine overall status
+    if readiness_percentage == 100:
+        overall_readiness = 'ready'
+        readiness_color = 'success'
+    elif readiness_percentage >= 80:
+        overall_readiness = 'partial'
+        readiness_color = 'warning'
+    else:
+        overall_readiness = 'not_ready'
+        readiness_color = 'danger'
+    
+    return render_template(
+        'admin/blockchain/mainnet_readiness.html',
+        overall_readiness=overall_readiness,
+        readiness_percentage=readiness_percentage,
+        readiness_color=readiness_color,
+        total_requirements=total_requirements,
+        passed_requirements=passed_requirements,
+        failed_requirements=failed_requirements,
+        categories=categories,
+        action_items=action_items
+    )

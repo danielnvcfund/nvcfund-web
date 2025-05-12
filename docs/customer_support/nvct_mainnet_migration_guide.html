@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVCT Token Mainnet Migration Guide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3, h4 {
+            color: #2a5885;
+            margin-top: 1.5em;
+        }
+        h1 {
+            font-size: 28px;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+        h2 {
+            font-size: 24px;
+        }
+        h3 {
+            font-size: 20px;
+        }
+        h4 {
+            font-size: 18px;
+        }
+        p, ul, ol {
+            margin-bottom: 15px;
+        }
+        ul, ol {
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        code, pre {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+            font-size: 14px;
+            padding: 2px 4px;
+        }
+        pre {
+            padding: 10px;
+            overflow-x: auto;
+        }
+        blockquote {
+            border-left: 4px solid #2a5885;
+            padding-left: 15px;
+            margin-left: 0;
+            color: #555;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f8f8;
+        }
+        .note {
+            background-color: #e8f4fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 3px;
+        }
+        .warning {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 3px;
+        }
+        .important {
+            background-color: #fde8e8;
+            border-left: 4px solid #e53935;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 3px;
+        }
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 30px auto;
+        }
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            background-color: #2a5885;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -3px;
+        }
+        .container {
+            padding: 10px 40px;
+            position: relative;
+            background-color: inherit;
+            width: 50%;
+        }
+        .container::after {
+            content: '';
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            right: -13px;
+            background-color: white;
+            border: 4px solid #2a5885;
+            top: 15px;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .left {
+            left: 0;
+        }
+        .right {
+            left: 50%;
+        }
+        .left::before {
+            content: " ";
+            height: 0;
+            position: absolute;
+            top: 22px;
+            width: 0;
+            z-index: 1;
+            right: 30px;
+            border: medium solid #eaeaea;
+            border-width: 10px 0 10px 10px;
+            border-color: transparent transparent transparent #eaeaea;
+        }
+        .right::before {
+            content: " ";
+            height: 0;
+            position: absolute;
+            top: 22px;
+            width: 0;
+            z-index: 1;
+            left: 30px;
+            border: medium solid #eaeaea;
+            border-width: 10px 10px 10px 0;
+            border-color: transparent #eaeaea transparent transparent;
+        }
+        .right::after {
+            left: -13px;
+        }
+        .content {
+            padding: 20px;
+            background-color: white;
+            position: relative;
+            border-radius: 6px;
+            border: 1px solid #eaeaea;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #2a5885;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .cta-button:hover {
+            background-color: #1e3a5f;
+        }
+        @media screen and (max-width: 600px) {
+            .timeline::after {
+                left: 31px;
+            }
+            .container {
+                width: 100%;
+                padding-left: 70px;
+                padding-right: 25px;
+            }
+            .container::before {
+                left: 60px;
+                border: medium solid #eaeaea;
+                border-width: 10px 10px 10px 0;
+                border-color: transparent #eaeaea transparent transparent;
+            }
+            .left::after, .right::after {
+                left: 18px;
+            }
+            .right {
+                left: 0%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>NVCT Token Mainnet Migration Guide</h1>
+    
+    <div class="note">
+        <strong>What is this guide about?</strong> This document explains the upcoming migration of NVCT tokens from the Ethereum Sepolia testnet to the Ethereum mainnet, including what this means for users, expected timeline, and necessary actions.
+    </div>
+    
+    <h2>Overview: NVCT Token Migration</h2>
+    <p>
+        The NVC Banking Platform is preparing to migrate the NVCT token from the Ethereum Sepolia testnet to the Ethereum mainnet. This is a significant milestone that represents the transition of NVCT tokens from a testing environment to a production blockchain network.
+    </p>
+    
+    <div class="important">
+        <strong>Important:</strong> All testnet NVCT tokens will be migrated to the mainnet. The testnet tokens will no longer have any value after the migration. You do not need to perform any actions to migrate your tokens - the platform will handle the migration automatically.
+    </div>
+    
+    <h2>What This Means for You</h2>
+    <p>As a user of the NVC Banking Platform, here's what you need to know about the mainnet migration:</p>
+    
+    <h3>Benefits of Mainnet Migration</h3>
+    <ul>
+        <li><strong>Real Value:</strong> NVCT tokens on mainnet will have real-world value and can be used for actual financial transactions.</li>
+        <li><strong>Security:</strong> The Ethereum mainnet provides greater security and stability than the testnet.</li>
+        <li><strong>Integration:</strong> NVCT tokens can potentially be integrated with other cryptocurrency exchanges and services.</li>
+        <li><strong>Permanence:</strong> Unlike testnet tokens which can be reset, mainnet tokens represent permanent digital assets.</li>
+    </ul>
+    
+    <h3>What Will Change</h3>
+    <table>
+        <tr>
+            <th>Feature</th>
+            <th>Before Migration (Testnet)</th>
+            <th>After Migration (Mainnet)</th>
+        </tr>
+        <tr>
+            <td>Token Value</td>
+            <td>Test value only (no real-world value)</td>
+            <td>Real-world value</td>
+        </tr>
+        <tr>
+            <td>Transaction Fees</td>
+            <td>Testnet ETH (freely available)</td>
+            <td>Real ETH required for gas fees</td>
+        </tr>
+        <tr>
+            <td>Contract Address</td>
+            <td>Sepolia testnet contract</td>
+            <td>New Ethereum mainnet contract</td>
+        </tr>
+        <tr>
+            <td>Security Measures</td>
+            <td>Standard testnet security</td>
+            <td>Enhanced mainnet security protocols</td>
+        </tr>
+        <tr>
+            <td>Transaction Finality</td>
+            <td>Test transactions only</td>
+            <td>Permanent, immutable transactions</td>
+        </tr>
+    </table>
+    
+    <h2>Migration Timeline</h2>
+    
+    <div class="timeline">
+        <div class="container left">
+            <div class="content">
+                <h3>Preparation Phase</h3>
+                <p><strong>Now - [Migration Date - 2 weeks]</strong></p>
+                <ul>
+                    <li>Platform readiness assessment</li>
+                    <li>Security audits and testing</li>
+                    <li>User communications</li>
+                </ul>
+            </div>
+        </div>
+        <div class="container right">
+            <div class="content">
+                <h3>Pre-Migration Freeze</h3>
+                <p><strong>[Migration Date - 48 hours] to [Migration Date]</strong></p>
+                <ul>
+                    <li>Temporarily pause new NVCT transactions</li>
+                    <li>Snapshot of all token balances</li>
+                    <li>Final system checks</li>
+                </ul>
+            </div>
+        </div>
+        <div class="container left">
+            <div class="content">
+                <h3>Migration Day</h3>
+                <p><strong>[Migration Date]</strong></p>
+                <ul>
+                    <li>Deploy NVCT token contract on mainnet</li>
+                    <li>Mint tokens based on testnet snapshot</li>
+                    <li>Update platform configurations</li>
+                </ul>
+            </div>
+        </div>
+        <div class="container right">
+            <div class="content">
+                <h3>Post-Migration</h3>
+                <p><strong>[Migration Date + 1 day] and beyond</strong></p>
+                <ul>
+                    <li>Resume NVCT transactions on mainnet</li>
+                    <li>Enhanced monitoring period</li>
+                    <li>Potential integration with external services</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <h2>Required Actions</h2>
+    <p>The migration process is designed to be transparent and require minimal action from users:</p>
+    
+    <h3>Before Migration</h3>
+    <ul>
+        <li>No action is required from users before the migration.</li>
+        <li>Continue using the platform as normal until the pre-migration freeze.</li>
+        <li>If you wish to make any significant NVCT transactions, we recommend completing them before the pre-migration freeze period.</li>
+    </ul>
+    
+    <h3>During Migration</h3>
+    <ul>
+        <li>During the migration window, NVCT token transactions will be temporarily unavailable.</li>
+        <li>You will still be able to access the platform and use other features that don't involve NVCT tokens.</li>
+        <li>Progress updates will be provided through the platform's notification system.</li>
+    </ul>
+    
+    <h3>After Migration</h3>
+    <ul>
+        <li>Once migration is complete, you can resume using NVCT tokens through the platform interface.</li>
+        <li>Your token balance will reflect the same amount you had before migration.</li>
+        <li>For external wallet interactions, you will need to update to the new contract address (to be provided post-migration).</li>
+    </ul>
+    
+    <div class="warning">
+        <strong>Caution:</strong> After migration, transactions on the Ethereum mainnet will require real ETH for gas fees. If you plan to transfer NVCT tokens to external wallets, ensure you have some ETH in your wallet to cover transaction costs.
+    </div>
+    
+    <h2>Technical Details</h2>
+    <p>
+        For users interested in the technical aspects of the migration, here are some key details:
+    </p>
+    
+    <h3>Token Standard</h3>
+    <p>
+        The NVCT token will remain an ERC-20 standard token on the Ethereum mainnet, ensuring compatibility with most wallets and exchanges.
+    </p>
+    
+    <h3>Smart Contract Improvements</h3>
+    <p>
+        The mainnet deployment includes enhanced security features:
+    </p>
+    <ul>
+        <li>Multi-signature wallet requirements for large transfers</li>
+        <li>Rate-limiting to prevent flash loan attacks</li>
+        <li>Improved access control mechanisms</li>
+        <li>Enhanced contract upgrade path for future improvements</li>
+    </ul>
+    
+    <h3>Interacting with Mainnet NVCT</h3>
+    <p>
+        After migration, you can interact with your NVCT tokens in several ways:
+    </p>
+    <ul>
+        <li>Through the NVC Banking Platform interface (recommended)</li>
+        <li>Via MetaMask or other Ethereum wallets by adding the new token contract</li>
+        <li>Through decentralized applications that support ERC-20 tokens</li>
+    </ul>
+    
+    <h2>Frequently Asked Questions</h2>
+    
+    <h3>Will I lose my tokens during migration?</h3>
+    <p>
+        No. Your token balance will be preserved during the migration. The platform will take a snapshot of all balances on the testnet and recreate them on the mainnet.
+    </p>
+    
+    <h3>Do I need to pay for the migration?</h3>
+    <p>
+        No. The migration costs will be covered by the NVC Banking Platform. You will not need to pay any fees for the migration itself.
+    </p>
+    
+    <h3>What happens to the testnet tokens after migration?</h3>
+    <p>
+        After migration, the testnet tokens will no longer have any functionality on the platform. All operations will use the new mainnet tokens.
+    </p>
+    
+    <h3>Can I still use my existing wallet?</h3>
+    <p>
+        Yes. If you currently access your NVCT tokens through the NVC Banking Platform, you will continue to use the same interface. If you use an external wallet like MetaMask, you'll need to update to the new token contract address (which will be provided after migration).
+    </p>
+    
+    <h3>What if I have a pending transaction during migration?</h3>
+    <p>
+        All pending transactions will be processed before the migration freeze. If for any reason a transaction cannot be completed before migration, it will be automatically canceled and you will be notified.
+    </p>
+    
+    <h2>Support and Assistance</h2>
+    <p>
+        If you have any questions or concerns about the migration process, our support team is ready to assist:
+    </p>
+    <ul>
+        <li>Email: support@nvcplatform.net</li>
+        <li>Support ticket: Available through your account dashboard</li>
+        <li>Live chat: Available during business hours on the platform</li>
+    </ul>
+    
+    <p>
+        We're committed to making this transition as smooth as possible and will provide regular updates throughout the migration process.
+    </p>
+    
+    <div class="note">
+        <strong>Stay Updated:</strong> This document will be updated as we approach the migration date with more specific timeline information and any additional instructions.
+    </div>
+</body>
+</html>
