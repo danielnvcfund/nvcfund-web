@@ -7,6 +7,7 @@ from web3 import Web3, HTTPProvider
 from web3 import middleware
 from eth_account import Account
 import cache_utils
+import contract_config
 
 logger = logging.getLogger(__name__)
 
@@ -451,15 +452,23 @@ def init_web3():
         # Still need to create a fresh connection
         eth_node_url = cached_connection.get("eth_node_url")
     else:
-        # Get Ethereum node URL from environment variable or use Sepolia testnet as default
-        # Note: Ropsten is deprecated, using Sepolia instead
+        # Get Ethereum network type (mainnet or testnet)
+        ethereum_network = os.environ.get("ETHEREUM_NETWORK", "testnet").lower()
+        
+        # Get Infura project ID
         infura_project_id = os.environ.get("INFURA_PROJECT_ID", "e1159d2eed8f4c4fafa3f2053b612f9b") # Updated project ID
         
         # Remove '0x' prefix if present in the project ID as Infura doesn't expect it
         if infura_project_id and infura_project_id.startswith('0x'):
             infura_project_id = infura_project_id[2:]
-            
-        eth_node_url = os.environ.get("ETHEREUM_NODE_URL", f"https://sepolia.infura.io/v3/{infura_project_id}")
+        
+        # Set appropriate network URL based on configuration
+        if ethereum_network == "mainnet":
+            eth_node_url = os.environ.get("ETHEREUM_NODE_URL", f"https://mainnet.infura.io/v3/{infura_project_id}")
+            logger.info("Using Ethereum MAINNET for NVCT - PRODUCTION MODE")
+        else:
+            eth_node_url = os.environ.get("ETHEREUM_NODE_URL", f"https://sepolia.infura.io/v3/{infura_project_id}")
+            logger.info("Using Ethereum Sepolia testnet for NVCT - TEST MODE")
     
     logger.info(f"Connecting to Ethereum node: {eth_node_url}")
     

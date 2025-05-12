@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVCT Mainnet Migration Guide</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/docs.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h1 class="h3 mb-0">NVCT Mainnet Migration Guide</h1>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <strong>Update (May 2025):</strong> NVC Banking Platform is migrating NVCT from Ethereum Sepolia testnet to Ethereum mainnet. Follow this guide to ensure a smooth transition.
+                        </div>
+
+                        <h2 class="h4 mt-4 border-bottom pb-2">1. Migration Overview</h2>
+                        <p>
+                            The NVC Token (NVCT) is transitioning from Ethereum Sepolia testnet to Ethereum mainnet, which represents a significant milestone in the platform's development. This migration allows:
+                        </p>
+                        <ul>
+                            <li>Real-world value transfer using NVCT on the public Ethereum network</li>
+                            <li>Integration with major decentralized exchanges and DeFi platforms</li>
+                            <li>Enhanced token security through Ethereum's robust mainnet infrastructure</li>
+                            <li>Expanded interoperability with other blockchain systems</li>
+                        </ul>
+
+                        <h2 class="h4 mt-4 border-bottom pb-2">2. Technical Changes</h2>
+                        <p>
+                            The migration involves deploying three smart contracts to Ethereum mainnet:
+                        </p>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Contract</th>
+                                        <th>Description</th>
+                                        <th>Function</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>NVCToken</td>
+                                        <td>ERC-20 token implementation</td>
+                                        <td>Core NVCT token functionality</td>
+                                    </tr>
+                                    <tr>
+                                        <td>SettlementContract</td>
+                                        <td>Payment settlement processor</td>
+                                        <td>Handles transfer settlements between parties</td>
+                                    </tr>
+                                    <tr>
+                                        <td>MultiSigWallet</td>
+                                        <td>Multi-signature authorization</td>
+                                        <td>Secures high-value transactions with multiple approvals</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h2 class="h4 mt-4 border-bottom pb-2">3. Migration Timeline</h2>
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <strong>Phase 1: Contract Deployment (Current)</strong><br>
+                                        Smart contracts being deployed to Ethereum mainnet
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>Phase 2: Dual Operation (1-2 weeks)</strong><br>
+                                        Both testnet and mainnet supported while systems are validated
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>Phase 3: Full Mainnet Transition (After validation)</strong><br>
+                                        Complete transition to mainnet-only operation
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h2 class="h4 mt-4 border-bottom pb-2">4. What You Need To Do</h2>
+                        <p>For platform administrators and operators:</p>
+                        <ol>
+                            <li>
+                                <strong>Environment Configuration:</strong> Set the following environment variables:
+                                <pre class="bg-light p-3 mt-2 border rounded"><code># Ethereum mainnet settings
+ETHEREUM_NETWORK=mainnet
+INFURA_PROJECT_ID=your_infura_project_id
+ADMIN_ETH_PRIVATE_KEY=your_private_key  # Only for contract deployment</code></pre>
+                            </li>
+                            <li>
+                                <strong>Contract Deployment:</strong> Use the provided migration tool to deploy contracts:
+                                <pre class="bg-light p-3 mt-2 border rounded"><code># Deploy each contract individually
+python mainnet_migration.py deploy --contract=settlement_contract
+python mainnet_migration.py deploy --contract=multisig_wallet
+python mainnet_migration.py deploy --contract=nvc_token
+
+# Verify deployment
+python mainnet_migration.py validate</code></pre>
+                            </li>
+                            <li>
+                                <strong>System Verification:</strong> Test system functionality after migration:
+                                <ul>
+                                    <li>Verify token transfer operations</li>
+                                    <li>Test payment settlement workflows</li>
+                                    <li>Confirm multi-signature transaction processes</li>
+                                </ul>
+                            </li>
+                        </ol>
+
+                        <p>For end users and API integrators:</p>
+                        <ul>
+                            <li>No immediate action is required</li>
+                            <li>Updated API documentation will be provided after the migration is complete</li>
+                            <li>Web interfaces will automatically use the mainnet implementation</li>
+                        </ul>
+
+                        <h2 class="h4 mt-4 border-bottom pb-2">5. Security Considerations</h2>
+                        <div class="alert alert-warning">
+                            <strong>Important:</strong> Ethereum mainnet transactions require ETH for gas fees. Ensure your deployment wallet has sufficient ETH balance before proceeding with migration.
+                        </div>
+                        <p>
+                            Additional security measures for mainnet operation:
+                        </p>
+                        <ul>
+                            <li>Keep private keys secure and never expose them in code or public repositories</li>
+                            <li>Follow multi-signature approval workflows for high-value transactions</li>
+                            <li>Monitor gas prices to optimize transaction costs</li>
+                            <li>Implement robust error handling for mainnet transactions</li>
+                            <li>Regularly audit smart contract interactions for security vulnerabilities</li>
+                        </ul>
+
+                        <h2 class="h4 mt-4 border-bottom pb-2">6. Support and Resources</h2>
+                        <p>
+                            If you need assistance with the NVCT mainnet migration, please reach out to our support team or consult these resources:
+                        </p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Technical Support</h5>
+                                        <p class="card-text">Contact our technical team for deployment assistance.</p>
+                                        <a href="mailto:tech@nvcbanking.com" class="btn btn-outline-primary">Email Support</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Documentation</h5>
+                                        <p class="card-text">Access technical documentation for the NVCT token system.</p>
+                                        <a href="/docs/technical" class="btn btn-outline-primary">View Documentation</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
