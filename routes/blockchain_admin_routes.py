@@ -246,13 +246,17 @@ def mainnet_readiness():
         # Calculate percentage
         readiness_score = int(sum(1 for item in score_items if item) / len(score_items) * 100)
         
+        # Get current network mode
+        current_network = os.environ.get('ETHEREUM_NETWORK', 'testnet')
+        
         return render_template(
             'admin/blockchain/mainnet_readiness.html',
             db_checks=db_checks,
             connectivity_checks=connectivity_checks,
             security_checks=security_checks,
             monitoring_checks=monitoring_checks,
-            readiness_score=readiness_score
+            readiness_score=readiness_score,
+            current_network=current_network
         )
     except Exception as e:
         logger.error(f"Error in mainnet readiness assessment: {str(e)}")
@@ -465,4 +469,48 @@ def validate_mainnet():
     except Exception as e:
         logger.error(f"Error in validate_mainnet: {str(e)}")
         flash(f"Error validating mainnet setup: {str(e)}", "danger")
+        return redirect(url_for('blockchain_admin.mainnet_readiness'))
+
+@blockchain_admin_bp.route('/switch-to-testnet')
+@login_required
+@blockchain_admin_required
+def switch_to_testnet():
+    """Switch back to Ethereum testnet (Sepolia) for NVCT operations"""
+    try:
+        # Run the toggle_network.py script to switch to testnet
+        try:
+            result = subprocess.run(
+                ["python", "toggle_network.py", "--testnet"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            # Log the output for debugging
+            logger.info(f"Switch to testnet output: {result.stdout}")
+            
+            # Check if it was successful
+            if "Switched to testnet network" in result.stdout:
+                flash("NVCT is now configured to use Ethereum testnet (Sepolia). All transactions will use test ETH.", "success")
+            else:
+                flash("Switched to testnet mode, but with some warnings. Please check the logs.", "warning")
+            
+            # Set the environment variable directly as well
+            os.environ['ETHEREUM_NETWORK'] = 'testnet'
+            # Update .env file
+            dotenv_path = os.path.join(os.getcwd(), '.env')
+            if os.path.exists(dotenv_path):
+                set_key(dotenv_path, 'ETHEREUM_NETWORK', 'testnet')
+                logger.info("Updated ETHEREUM_NETWORK=testnet in .env file")
+            
+            return redirect(url_for('blockchain_admin.mainnet_readiness'))
+            
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Error running toggle_network.py: {e}")
+            logger.error(f"Error output: {e.stderr}")
+            flash(f"Error switching to testnet mode: {e.stderr}", "danger")
+            return redirect(url_for('blockchain_admin.mainnet_readiness'))
+    
+    except Exception as e:
+        logger.error(f"Error in switch_to_testnet: {str(e)}")
+        flash(f"Error switching to testnet: {str(e)}", "danger")
         return redirect(url_for('blockchain_admin.mainnet_readiness'))

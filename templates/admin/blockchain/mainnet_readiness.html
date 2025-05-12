@@ -78,8 +78,13 @@
     <div class="row mb-4">
         <div class="col-md-8">
             <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Overall Readiness Score</h5>
+                    {% if current_network == 'mainnet' %}
+                    <span class="badge badge-ready">Mainnet Mode</span>
+                    {% else %}
+                    <span class="badge bg-info">Testnet Mode</span>
+                    {% endif %}
                 </div>
                 <div class="card-body">
                     <div class="progress" style="height: 30px;">
@@ -351,7 +356,25 @@
                     <div class="d-flex justify-content-between">
                         <a href="{{ url_for('blockchain_admin.index') }}" class="btn btn-secondary">Back to Dashboard</a>
                         
-                        {% if readiness_score >= 80 %}
+                        {% if current_network == 'mainnet' %}
+                        <div class="btn-group">
+                            <a href="{{ url_for('blockchain_admin.switch_to_testnet') }}" 
+                               class="btn btn-warning"
+                               onclick="return confirm('Switch back to Ethereum testnet (Sepolia) for testing? This will use test ETH for transactions.')">
+                                <i class="fas fa-undo"></i> Switch to Testnet
+                            </a>
+                            <button type="button" class="btn btn-warning dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="visually-hidden">Toggle Dropdown</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('blockchain_admin.deploy_contract', contract_type='settlement_contract') }}">Deploy Settlement Contract</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('blockchain_admin.deploy_contract', contract_type='multisig_wallet') }}">Deploy MultiSig Wallet</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('blockchain_admin.deploy_contract', contract_type='nvc_token') }}">Deploy NVC Token</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('blockchain_admin.validate_mainnet') }}">Validate Mainnet Setup</a></li>
+                            </ul>
+                        </div>
+                        {% elif readiness_score >= 80 %}
                         <div class="btn-group">
                             <a href="{{ url_for('blockchain_admin.enable_mainnet') }}" 
                                class="btn btn-primary"
