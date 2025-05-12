@@ -368,7 +368,7 @@ function viewMultisigTransaction(txId) {
                 let detailsHTML = `
                     <h4>MultiSig Transaction #${tx.id}</h4>
                     <p><strong>Destination:</strong> ${tx.destination}</p>
-                    <p><strong>Value:</strong> ${tx.value} ETH</p>
+                    <p><strong>Value:</strong> ${formatNumberInput(tx.value)} ETH</p>
                     <p><strong>Data:</strong> ${tx.data || '0x'}</p>
                     <p><strong>Confirmations:</strong> ${tx.confirmations} / ${data.required_confirmations}</p>
                     <p><strong>Executed:</strong> ${tx.executed ? 'Yes' : 'No'}</p>
