@@ -348,7 +348,7 @@
                         <p><strong>Status:</strong> <span class="badge bg-success">Deployed</span></p>
                         <p><strong>Token Name:</strong> {{ token_name|default('NVC Banking Token') }}</p>
                         <p><strong>Token Symbol:</strong> {{ token_symbol|default('NVC') }}</p>
-                        <p><strong>Total Supply:</strong> {{ token_total_supply|default('Loading...') }} {{ token_symbol|default('NVC') }}</p>
+                        <p><strong>Total Supply:</strong> {{ token_total_supply|format_number|default('Loading...') }} {{ token_symbol|default('NVC') }}</p>
                         
                         {% if user_eth_address %}
                         <div class="card mt-3">
