@@ -410,12 +410,13 @@ class BlockchainTransaction(db.Model):
         # Initialize with processed kwargs
         super(BlockchainTransaction, self).__init__(**kwargs)
     
+    # Removed recorded_by column as it doesn't exist in the database
+    
     def __repr__(self):
         """String representation of this model"""
         tx_str = self.tx_hash if self.tx_hash else "Unknown"
-        network_str = self.network.name if self.network else "Unknown Network"
-        return f"<BlockchainTransaction {tx_str} on {network_str}>"
-    recorded_by = db.Column(db.String(100))  # Username or system identifier
+        tx_type = self.transaction_type if self.transaction_type else "Unknown Type"
+        return f"<BlockchainTransaction {tx_str} - {tx_type}>"
     
     # Relationships
     contract_id = db.Column(db.Integer, db.ForeignKey('smart_contract.id'))
