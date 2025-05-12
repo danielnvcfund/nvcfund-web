@@ -13,8 +13,15 @@ def run_tx_hash_migration():
     try:
         time.sleep(5)  # Let the app start up first
         from db_operations import add_tx_hash_column
-        add_tx_hash_column()
-        logger.info("Blockchain transaction schema migration completed")
+        from app import app  # Import app for its context
+        
+        # Run the migration within the app context
+        with app.app_context():
+            result = add_tx_hash_column()
+            if result:
+                logger.info("Blockchain transaction schema migration completed successfully")
+            else:
+                logger.warning("Blockchain transaction schema migration did not complete")
     except Exception as e:
         logger.error(f"Error running blockchain transaction schema migration: {str(e)}")
 

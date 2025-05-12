@@ -143,6 +143,24 @@ def api_test_access(f):
     return decorated_function
 
 
+def blockchain_admin_required(f):
+    """Decorator to require blockchain admin role for route"""
+    @wraps(f)
+    @flask_login_required
+    def decorated_function(*args, **kwargs):
+        # User is already authenticated due to @flask_login_required
+        # Now check if they have admin role or are allowed blockchain admin access
+        if current_user.is_authenticated:
+            # Check if the user has admin role or should be allowed admin access
+            if (current_user.role == UserRole.ADMIN or 
+                current_user.username in ['admin', 'headadmin', 'blockchain_admin']):
+                return f(*args, **kwargs)
+        
+        # If we get here, user doesn't have permission
+        flash('You do not have permission to access the blockchain administration pages', 'danger')
+        return redirect(url_for('web.main.dashboard'))
+    return decorated_function
+
 # User authentication functions
 def authenticate_user(username, password):
     """Authenticate user with username and password"""
