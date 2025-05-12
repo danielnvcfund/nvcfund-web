@@ -74,7 +74,7 @@ def payment():
         if not os.environ.get('PAYPAL_CLIENT_ID') or not os.environ.get('PAYPAL_CLIENT_SECRET'):
             flash("PayPal API credentials not correctly configured. Please try using Stripe instead.", "warning")
             logger.error("PayPal API credentials missing when trying to create payment")
-            return redirect(url_for('stripe.checkout'))
+            return redirect(url_for('stripe.index'))
         
         # Create a unique transaction ID
         transaction_id = f"PAYPAL-{uuid.uuid4().hex[:10]}"
@@ -145,8 +145,8 @@ def payment():
             # More specific error message for API authentication failures
             flash("Could not create PayPal payment due to API authentication issues. You can try using Stripe instead.", "warning")
             logger.error("Failed to create PayPal payment - API returned no payment ID or approval URL")
-            # Suggest Stripe as an alternative
-            return redirect(url_for('stripe.checkout'))
+            # Suggest Stripe as an alternative - redirect to index page of Stripe routes
+            return redirect(url_for('stripe.index'))
     
     return render_template('paypal/payment_form.html', form=form)
 

@@ -126,16 +126,17 @@ class PayPalService:
                 else:
                     logger.error(f"Failed to create payment: {payment.error}")
                     return None, None
-                    
-            except paypalrestsdk.exceptions.ResourceNotFound as e:
-                logger.error(f"PayPal API error: Resource not found - {str(e)}")
-                return None, None
-            except paypalrestsdk.exceptions.UnauthorizedAccess as e:
-                logger.error(f"PayPal API authentication failed - {str(e)}")
-                logger.warning("Check that PayPal API credentials are valid and for the correct environment (live/sandbox)")
-                return None, None
-            except paypalrestsdk.exceptions.MissingConfig as e:
-                logger.error(f"PayPal SDK configuration missing - {str(e)}")
+            except Exception as e:
+                error_msg = str(e)
+                if "401" in error_msg or "Unauthorized" in error_msg:
+                    logger.error(f"PayPal API authentication failed - {error_msg}")
+                    logger.warning("Check that PayPal API credentials are valid and for the correct environment (live/sandbox)")
+                elif "404" in error_msg or "not found" in error_msg.lower():
+                    logger.error(f"PayPal API error: Resource not found - {error_msg}")
+                elif "configuration" in error_msg.lower():
+                    logger.error(f"PayPal SDK configuration missing - {error_msg}")
+                else:
+                    logger.error(f"PayPal API error: {error_msg}")
                 return None, None
                 
         except Exception as e:
