@@ -20,10 +20,12 @@ logger = logging.getLogger(__name__)
 # PayPal API Configuration
 PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID')
 PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET')
-PAYPAL_MODE = os.environ.get('PAYPAL_MODE', 'sandbox')  # sandbox or live
+PAYPAL_MODE = os.environ.get('PAYPAL_MODE', 'live')  # Changed default to 'live'
 
 if not PAYPAL_CLIENT_SECRET:
     logger.warning("PAYPAL_CLIENT_SECRET environment variable not set")
+    
+logger.info(f"PayPal configured in {PAYPAL_MODE.upper()} MODE - {'real payments will be processed' if PAYPAL_MODE == 'live' else 'test mode active'}")
 
 # Configure PayPal SDK
 paypalrestsdk.configure({

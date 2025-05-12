@@ -39,6 +39,10 @@ def get_paypal_gateway() -> Optional[PaymentGateway]:
 def register_paypal_blueprint(app):
     """Register the PayPal blueprint with the Flask app"""
     app.register_blueprint(paypal_bp)
+    
+    # Log the current mode (live or sandbox)
+    paypal_mode = os.environ.get('PAYPAL_MODE', 'live')  # Default to live mode
+    logger.info(f"PayPal configured in {paypal_mode.upper()} MODE - {'real payments will be processed' if paypal_mode == 'live' else 'test mode active'}")
     logger.info("PayPal routes registered successfully")
 
 @paypal_bp.route('/dashboard')

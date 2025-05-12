@@ -88,7 +88,7 @@ stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 # Set up PayPal SDK
 import paypalrestsdk
 paypalrestsdk.configure({
-    "mode": "sandbox",  # Change to "live" for production
+    "mode": "live",  # Changed to "live" for production
     "client_id": os.environ.get('PAYPAL_CLIENT_ID'),
     "client_secret": os.environ.get('PAYPAL_SECRET')
 })

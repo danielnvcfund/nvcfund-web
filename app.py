@@ -408,8 +408,15 @@ def create_app():
                         name="PayPal",
                         gateway_type=PaymentGatewayType.PAYPAL,
                         api_endpoint="https://api.paypal.com",
-                        is_active=True
+                        is_active=True,
+                        is_test_mode=False,  # Production mode
+                        description="PayPal payment gateway (Live mode)"
                     )
+                else:
+                    # Update existing gateway to live mode
+                    paypal_gateway.is_test_mode = False
+                    paypal_gateway.description = "PayPal payment gateway (Live mode)"
+                    logger.info("Updated PayPal gateway to live mode")
                     db.session.add(paypal_gateway)
                     db.session.commit()
                     logger.info("Created new PayPal payment gateway")
