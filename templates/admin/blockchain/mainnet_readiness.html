@@ -2,6 +2,17 @@
 
 {% block title %}Mainnet Readiness Assessment{% endblock %}
 
+{% block head %}
+{{ super() }}
+<style>
+    .bg-dark-green {
+        background-color: #006400 !important; /* Dark green */
+        color: white !important;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
 {% block admin_content %}
 <div class="container-fluid">
     <div class="row">
@@ -28,7 +39,7 @@
                 </div>
                 <div class="card-body">
                     <div class="progress" style="height: 30px;">
-                        <div class="progress-bar {% if readiness_score < 50 %}bg-danger{% elif readiness_score < 80 %}bg-warning text-dark{% else %}bg-success text-white{% endif %}" 
+                        <div class="progress-bar {% if readiness_score < 50 %}bg-danger{% elif readiness_score < 80 %}bg-warning text-dark{% else %}bg-dark-green{% endif %}" 
                              role="progressbar" 
                              style="width: {{ readiness_score }}%; font-weight: bold; font-size: 16px;" 
                              aria-valuenow="{{ readiness_score }}" 
@@ -92,7 +103,7 @@
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Database Readiness</h5>
-                    <span class="badge {% if db_checks.tx_hash_column and db_checks.smart_contracts_count > 0 and db_checks.transactions_count > 0 %}bg-success text-white{% else %}bg-warning text-dark{% endif %}">
+                    <span class="badge {% if db_checks.tx_hash_column and db_checks.smart_contracts_count > 0 and db_checks.transactions_count > 0 %}bg-dark-green{% else %}bg-warning text-dark{% endif %}">
                         {% if db_checks.tx_hash_column and db_checks.smart_contracts_count > 0 and db_checks.transactions_count > 0 %}Ready{% else %}Needs Attention{% endif %}
                     </span>
                 </div>
@@ -100,19 +111,19 @@
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Transaction Hash Tracking
-                            <span class="badge {% if db_checks.tx_hash_column %}bg-success text-white{% else %}bg-danger{% endif %}">
+                            <span class="badge {% if db_checks.tx_hash_column %}bg-dark-green{% else %}bg-danger{% endif %}">
                                 {{ 'Implemented' if db_checks.tx_hash_column else 'Missing' }}
                             </span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Smart Contracts Registered
-                            <span class="badge {% if db_checks.smart_contracts_count > 0 %}bg-success text-white{% else %}bg-warning text-dark{% endif %}">
+                            <span class="badge {% if db_checks.smart_contracts_count > 0 %}bg-dark-green{% else %}bg-warning text-dark{% endif %}">
                                 {{ db_checks.smart_contracts_count }}
                             </span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Transactions Recorded
-                            <span class="badge {% if db_checks.transactions_count > 0 %}bg-success text-white{% else %}bg-warning text-dark{% endif %}">
+                            <span class="badge {% if db_checks.transactions_count > 0 %}bg-dark-green{% else %}bg-warning text-dark{% endif %}">
                                 {{ db_checks.transactions_count }}
                             </span>
                         </li>
@@ -133,7 +144,7 @@
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Network Connectivity</h5>
-                    <span class="badge {% if connectivity_checks.mainnet_connected and connectivity_checks.testnet_connected and connectivity_checks.api_credentials %}bg-success text-white{% else %}bg-warning text-dark{% endif %}">
+                    <span class="badge {% if connectivity_checks.mainnet_connected and connectivity_checks.testnet_connected and connectivity_checks.api_credentials %}bg-dark-green{% else %}bg-warning text-dark{% endif %}">
                         {% if connectivity_checks.mainnet_connected and connectivity_checks.testnet_connected and connectivity_checks.api_credentials %}Ready{% else %}Needs Attention{% endif %}
                     </span>
                 </div>
@@ -141,19 +152,19 @@
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Mainnet Connection
-                            <span class="badge {% if connectivity_checks.mainnet_connected %}bg-success text-white{% else %}bg-danger{% endif %}">
+                            <span class="badge {% if connectivity_checks.mainnet_connected %}bg-dark-green{% else %}bg-danger{% endif %}">
                                 {{ 'Connected' if connectivity_checks.mainnet_connected else 'Disconnected' }}
                             </span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Testnet Connection
-                            <span class="badge {% if connectivity_checks.testnet_connected %}bg-success text-white{% else %}bg-danger{% endif %}">
+                            <span class="badge {% if connectivity_checks.testnet_connected %}bg-dark-green{% else %}bg-danger{% endif %}">
                                 {{ 'Connected' if connectivity_checks.testnet_connected else 'Disconnected' }}
                             </span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             API Credentials
-                            <span class="badge {% if connectivity_checks.api_credentials %}bg-success text-white{% else %}bg-danger{% endif %}">
+                            <span class="badge {% if connectivity_checks.api_credentials %}bg-dark-green{% else %}bg-danger{% endif %}">
                                 {{ 'Configured' if connectivity_checks.api_credentials else 'Missing' }}
                             </span>
                         </li>
@@ -174,7 +185,7 @@
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Security Readiness</h5>
-                    <span class="badge {% if security_checks.contract_verified and security_checks.audit_complete and security_checks.permission_controls %}bg-success text-white{% else %}bg-warning text-dark{% endif %}">
+                    <span class="badge {% if security_checks.contract_verified and security_checks.audit_complete and security_checks.permission_controls %}bg-dark-green{% else %}bg-warning text-dark{% endif %}">
                         {% if security_checks.contract_verified and security_checks.audit_complete and security_checks.permission_controls %}Ready{% else %}Needs Attention{% endif %}
                     </span>
                 </div>
@@ -182,19 +193,19 @@
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Smart Contract Verification
-                            <span class="badge {% if security_checks.contract_verified %}bg-success text-white{% else %}bg-danger{% endif %}">
+                            <span class="badge {% if security_checks.contract_verified %}bg-dark-green{% else %}bg-danger{% endif %}">
                                 {{ 'Verified' if security_checks.contract_verified else 'Unverified' }}
                             </span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Security Audit
-                            <span class="badge {% if security_checks.audit_complete %}bg-success text-white{% else %}bg-warning text-dark{% endif %}">
+                            <span class="badge {% if security_checks.audit_complete %}bg-dark-green{% else %}bg-warning text-dark{% endif %}">
                                 {{ 'Completed' if security_checks.audit_complete else 'Pending' }}
                             </span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Permission Controls
-                            <span class="badge {% if security_checks.permission_controls %}bg-success text-white{% else %}bg-warning text-dark{% endif %}">
+                            <span class="badge {% if security_checks.permission_controls %}bg-dark-green{% else %}bg-warning text-dark{% endif %}">
                                 {{ 'Implemented' if security_checks.permission_controls else 'Missing' }}
                             </span>
                         </li>
@@ -208,7 +219,7 @@
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Monitoring Readiness</h5>
-                    <span class="badge {% if monitoring_checks.tracking_system and monitoring_checks.gas_price_monitoring and monitoring_checks.alerts_configured %}bg-success text-white{% else %}bg-warning text-dark{% endif %}">
+                    <span class="badge {% if monitoring_checks.tracking_system and monitoring_checks.gas_price_monitoring and monitoring_checks.alerts_configured %}bg-dark-green{% else %}bg-warning text-dark{% endif %}">
                         {% if monitoring_checks.tracking_system and monitoring_checks.gas_price_monitoring and monitoring_checks.alerts_configured %}Ready{% else %}Needs Attention{% endif %}
                     </span>
                 </div>
@@ -216,19 +227,19 @@
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Transaction Tracking
-                            <span class="badge {% if monitoring_checks.tracking_system %}bg-success text-white{% else %}bg-danger{% endif %}">
+                            <span class="badge {% if monitoring_checks.tracking_system %}bg-dark-green{% else %}bg-danger{% endif %}">
                                 {{ 'Implemented' if monitoring_checks.tracking_system else 'Missing' }}
                             </span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Gas Price Monitoring
-                            <span class="badge {% if monitoring_checks.gas_price_monitoring %}bg-success text-white{% else %}bg-warning text-dark{% endif %}">
+                            <span class="badge {% if monitoring_checks.gas_price_monitoring %}bg-dark-green{% else %}bg-warning text-dark{% endif %}">
                                 {{ 'Configured' if monitoring_checks.gas_price_monitoring else 'Missing' }}
                             </span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Alert System
-                            <span class="badge {% if monitoring_checks.alerts_configured %}bg-success text-white{% else %}bg-warning text-dark{% endif %}">
+                            <span class="badge {% if monitoring_checks.alerts_configured %}bg-dark-green{% else %}bg-warning text-dark{% endif %}">
                                 {{ 'Configured' if monitoring_checks.alerts_configured else 'Missing' }}
                             </span>
                         </li>
