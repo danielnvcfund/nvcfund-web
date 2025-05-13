@@ -56,7 +56,7 @@
     <div class="col-lg-8">
       <div class="card shadow-sm">
         <div class="card-body">
-          <form method="POST" class="needs-validation" novalidate>
+          <form method="POST" class="needs-validation transaction-form" novalidate>
             {{ form.hidden_tag() }}
             
             <div class="row mb-3">
@@ -178,10 +178,12 @@
             </div>
             
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-              <a href="{{ url_for('treasury.transaction_list') }}" class="btn btn-outline-secondary btn-lg me-md-2">
+              <a href="{{ url_for('treasury.transaction_list') }}" class="btn btn-cancel btn-lg me-md-2">
                 <i class="fas fa-times me-1"></i> Cancel
               </a>
-              {{ form.submit(class="btn btn-primary btn-lg", id="submit-button") }}
+              <button type="submit" class="btn btn-create-transaction btn-lg" id="submit-button">
+                <i class="fas fa-check-circle me-1"></i> Create Transaction
+              </button>
             </div>
           </form>
         </div>
@@ -327,11 +329,28 @@
     function submitForm() {
       // Visual feedback - show processing state
       submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Processing...';
-      submitButton.disabled = true;
       submitButton.classList.add('btn-processing');
       
       // Basic validation before submission
       let valid = true;
+      
+      // Clear previous error messages
+      document.querySelectorAll('.custom-error-message').forEach(el => el.remove());
+      document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+      
+      // Validate required fields
+      [fromAccountSelect, toAccountSelect, transactionTypeSelect, amountInput].forEach(field => {
+        if (!field.value || field.value.trim() === '' || parseFloat(field.value) === 0) {
+          valid = false;
+          field.classList.add('is-invalid');
+          
+          // Add custom error message
+          let errorMsg = document.createElement('div');
+          errorMsg.className = 'invalid-feedback custom-error-message';
+          errorMsg.innerHTML = 'This field is required.';
+          field.parentNode.appendChild(errorMsg);
+        }
+      });
       
       // Validate account selection (can't both be external)
       if (fromAccountSelect.value === '0' && toAccountSelect.value === '0') {
@@ -339,27 +358,39 @@
         fromAccountSelect.classList.add('is-invalid');
         toAccountSelect.classList.add('is-invalid');
         
-        // Add custom error message if it doesn't exist
-        let errorMsg = document.getElementById('account-error-message');
-        if (!errorMsg) {
-          errorMsg = document.createElement('div');
-          errorMsg.id = 'account-error-message';
-          errorMsg.className = 'invalid-feedback d-block mt-2 alert alert-danger';
-          errorMsg.innerHTML = 'Both source and destination cannot be external accounts.';
-          fromAccountSelect.parentNode.appendChild(errorMsg);
-        }
+        // Add custom error message
+        let errorMsg = document.createElement('div');
+        errorMsg.id = 'account-error-message';
+        errorMsg.className = 'invalid-feedback d-block mt-2 alert alert-danger custom-error-message';
+        errorMsg.innerHTML = 'Both source and destination cannot be external accounts.';
+        fromAccountSelect.parentNode.appendChild(errorMsg);
+      }
+      
+      // Validate amount is positive
+      if (amountInput.value && parseFloat(amountInput.value) <= 0) {
+        valid = false;
+        amountInput.classList.add('is-invalid');
+        
+        let errorMsg = document.createElement('div');
+        errorMsg.className = 'invalid-feedback custom-error-message';
+        errorMsg.innerHTML = 'Amount must be greater than zero.';
+        amountInput.parentNode.appendChild(errorMsg);
       }
       
       // If valid, submit the form after a small delay to allow UI update
       if (valid) {
+        // Temporarily disable to prevent double submission
+        submitButton.disabled = true;
+        
         setTimeout(() => {
           form.submit();
         }, 100);
       } else {
         // Reset button state if validation fails
-        submitButton.innerHTML = 'Create Transaction';
-        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="fas fa-check-circle me-1"></i> Create Transaction';
         submitButton.classList.remove('btn-processing');
+        // Don't disable the button on validation failure
+        submitButton.disabled = false;
       }
     }
     
@@ -381,6 +412,10 @@
     document.getElementById('description').tabIndex = 6;
     document.querySelector('textarea[name="additional_notes"]').tabIndex = 7;
     submitButton.tabIndex = 8;
+    
+    // Initialize form to make Create Transaction button active
+    submitButton.disabled = false;
+    submitButton.innerHTML = '<i class="fas fa-check-circle me-1"></i> Create Transaction';
     
     // Add keyboard shortcut hints
     const shortcutsHint = document.createElement('div');
