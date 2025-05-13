@@ -804,11 +804,12 @@ class TreasuryAccountForm(FlaskForm):
     account_number = StringField('Account Number', validators=[DataRequired(), Length(max=50)])
     institution_id = SelectField('Financial Institution', validators=[DataRequired()], coerce=int)
     account_type = SelectField('Account Type', choices=[
-        ('operating', 'Operating Account'),
-        ('investment', 'Investment Account'),
-        ('reserve', 'Reserve Account'),
-        ('escrow', 'Escrow Account'),
-        ('settlement', 'Settlement Account')
+        ('OPERATING', 'Operating Account'),
+        ('INVESTMENT', 'Investment Account'),
+        ('RESERVE', 'Reserve Account'),
+        ('PAYROLL', 'Payroll Account'),
+        ('TAX', 'Tax Account'),
+        ('DEBT_SERVICE', 'Debt Service Account')
     ], validators=[DataRequired()])
     currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
     opening_balance = FloatField('Opening Balance', validators=[DataRequired(), NumberRange(min=0)])
