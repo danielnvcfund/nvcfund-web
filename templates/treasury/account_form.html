@@ -113,7 +113,7 @@
               <div class="col-md-6">
                 <div class="form-group">
                   {{ form.opening_balance.label(class="form-label") }}
-                  {{ form.opening_balance(class="form-control" + (" is-invalid" if form.opening_balance.errors else ""), type="number", step="0.01") }}
+                  {{ form.opening_balance(class="form-control" + (" is-invalid" if form.opening_balance.errors else "")) }}
                   {% if form.opening_balance.errors %}
                   <div class="invalid-feedback">
                     {% for error in form.opening_balance.errors %}
@@ -130,7 +130,7 @@
               <div class="col-md-4">
                 <div class="form-group">
                   {{ form.target_balance.label(class="form-label") }}
-                  {{ form.target_balance(class="form-control" + (" is-invalid" if form.target_balance.errors else ""), type="number", step="0.01") }}
+                  {{ form.target_balance(class="form-control" + (" is-invalid" if form.target_balance.errors else "")) }}
                   {% if form.target_balance.errors %}
                   <div class="invalid-feedback">
                     {% for error in form.target_balance.errors %}
@@ -144,7 +144,7 @@
               <div class="col-md-4">
                 <div class="form-group">
                   {{ form.minimum_balance.label(class="form-label") }}
-                  {{ form.minimum_balance(class="form-control" + (" is-invalid" if form.minimum_balance.errors else ""), type="number", step="0.01") }}
+                  {{ form.minimum_balance(class="form-control" + (" is-invalid" if form.minimum_balance.errors else "")) }}
                   {% if form.minimum_balance.errors %}
                   <div class="invalid-feedback">
                     {% for error in form.minimum_balance.errors %}
@@ -284,6 +284,86 @@
     const inlineFormElement = document.getElementById('inlineInstitutionForm');
     const nameInput = document.getElementById('institutionName');
     const typeSelect = document.getElementById('institutionType');
+    
+    // Format number inputs with commas for readability
+    function formatNumberInputs() {
+      // Get all the number input fields for balances
+      const numberInputs = [
+        document.getElementById('opening_balance'),
+        document.getElementById('target_balance'),
+        document.getElementById('minimum_balance'),
+        document.getElementById('maximum_balance')
+      ];
+      
+      numberInputs.forEach(input => {
+        if (!input) return;
+        
+        // Format function to add commas
+        function formatNumber(value) {
+          // Remove any non-digit characters except decimal point
+          let numberOnly = value.replace(/[^\d.]/g, '');
+          
+          // Ensure only one decimal point
+          const decimalParts = numberOnly.split('.');
+          if (decimalParts.length > 2) {
+              numberOnly = decimalParts[0] + '.' + decimalParts.slice(1).join('');
+          }
+          
+          // Split into whole and decimal parts
+          const parts = numberOnly.split('.');
+          let wholePart = parts[0];
+          const decimalPart = parts.length > 1 ? parts[1] : '';
+          
+          // Add commas to the whole part
+          wholePart = wholePart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+          
+          // Reconstruct the number with decimal part if exists
+          return decimalPart.length > 0 ? wholePart + '.' + decimalPart : wholePart;
+        }
+        
+        // Function to remove commas when submitting
+        function unformatNumber(formattedValue) {
+          return formattedValue.replace(/,/g, '');
+        }
+        
+        // Store the actual value for form submission
+        let actualValue = input.value;
+        
+        // Create a formatted display input
+        const displayInput = document.createElement('input');
+        displayInput.type = 'text';
+        displayInput.className = input.className;
+        displayInput.placeholder = input.placeholder;
+        displayInput.value = formatNumber(input.value);
+        
+        // Hide the original input
+        input.type = 'hidden';
+        
+        // Insert the display input after the original
+        input.parentNode.insertBefore(displayInput, input.nextSibling);
+        
+        // Update the actual input when the display changes
+        displayInput.addEventListener('input', function() {
+          const formatted = formatNumber(this.value);
+          const unformatted = unformatNumber(formatted);
+          
+          // Update display with properly formatted value
+          this.value = formatted;
+          
+          // Update the hidden input with the raw number value
+          input.value = unformatted;
+          actualValue = unformatted;
+        });
+        
+        // Ensure the form submission uses the actual value
+        input.form.addEventListener('submit', function() {
+          input.value = actualValue;
+        });
+      });
+    }
+    
+    // Call the format function when the page loads
+    formatNumberInputs();
     
     // Function to show the inline form
     function showInlineForm() {
