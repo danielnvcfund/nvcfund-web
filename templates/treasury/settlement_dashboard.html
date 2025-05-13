@@ -202,12 +202,12 @@
               <tbody>
                 {% for settlement in recent_settlements %}
                 <tr>
-                  <td>{{ settlement.transaction_date|datetime }}</td>
+                  <td>{{ settlement.created_at|datetime }}</td>
                   <td>{{ settlement.description }}</td>
                   <td>{{ settlement.amount|format_currency }}</td>
                   <td>{{ settlement.currency }}</td>
                   <td>{{ settlement.reference_number }}</td>
-                  <td>{{ settlement.treasury_account.name }}</td>
+                  <td>{{ settlement.to_account.name }}</td>
                 </tr>
                 {% else %}
                 <tr>

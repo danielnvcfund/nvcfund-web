@@ -821,6 +821,13 @@ class TreasuryAccountForm(FlaskForm):
         ('SFN', 'SFN Coin (SFN)'),
         ('NGN', 'Nigerian Naira (NGN)')
     ], validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
+    current_balance = FloatField('Current Balance', validators=[Optional()])
+    target_balance = FloatField('Target Balance', validators=[Optional(), NumberRange(min=0)])
+    minimum_balance = FloatField('Minimum Balance', validators=[Optional(), NumberRange(min=0)])
+    maximum_balance = FloatField('Maximum Balance', validators=[Optional(), NumberRange(min=0)])
+    is_active = BooleanField('Active', default=True)
+    submit = SubmitField('Save Account')
     
 class TreasurySettlementForm(FlaskForm):
     """Form for recording a manual settlement from a payment processor to a treasury account"""
@@ -836,12 +843,6 @@ class TreasurySettlementForm(FlaskForm):
     reference = StringField('External Reference', validators=[Optional(), Length(max=100)])
     description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
     submit = SubmitField('Record Settlement')
-    # Additional fields from the model
-    target_balance = FloatField('Target Balance', validators=[Optional(), NumberRange(min=0)])
-    minimum_balance = FloatField('Minimum Balance', validators=[Optional(), NumberRange(min=0)])
-    maximum_balance = FloatField('Maximum Balance', validators=[Optional(), NumberRange(min=0)])
-    is_active = BooleanField('Active', default=True)
-    submit = SubmitField('Save Account')
 
 class TreasuryTransactionForm(FlaskForm):
     """Form for creating a treasury transaction"""

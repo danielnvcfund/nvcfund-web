@@ -77,17 +77,16 @@ class SettlementBridge:
         # Create treasury transaction
         try:
             # Begin transaction
-            transaction = TreasuryTransaction(
-                treasury_account_id=self.stripe_account.id,
-                amount=total_amount,
-                currency="USD",  # Assuming USD for now
-                transaction_type=TransactionType.PAYMENT_SETTLEMENT,
-                transaction_date=datetime.utcnow(),
-                description=f"Stripe payment processor settlement - {len(payments)} payments",
-                reference_number=settlement_id,
-                notes=f"Automated settlement of {len(payments)} Stripe payments",
-                transaction_status="completed"
-            )
+            transaction = TreasuryTransaction()
+            transaction.transaction_id = settlement_id
+            transaction.to_account_id = self.stripe_account.id
+            transaction.amount = total_amount
+            transaction.currency = "USD"  # Assuming USD for now
+            transaction.transaction_type = TransactionType.PAYMENT_SETTLEMENT
+            transaction.description = f"Stripe payment processor settlement - {len(payments)} payments"
+            transaction.reference_number = settlement_id
+            transaction.memo = f"Automated settlement of {len(payments)} Stripe payments"
+            transaction.status = "COMPLETED"
             
             db.session.add(transaction)
             
