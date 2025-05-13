@@ -1,445 +1,542 @@
 """
-Treasury Payment Bridge - Integration between Treasury Accounts and Payment Processors
-"""
-import os
-import time
-import logging
-import stripe
-import paypalrestsdk
-from datetime import datetime, timedelta
-from flask import current_app
-from sqlalchemy import text, desc
+Treasury Payment Bridge
+-----------------------
 
-from models import db, TreasuryAccount, TreasuryTransaction, PaymentGateway
-from models import TransactionType, TransactionStatus, TreasuryAccountType
+This module provides the integration layer between payment processors 
+(Stripe, PayPal, POS) and treasury accounts.
+
+It enables:
+1. Settlement of payment processor funds to treasury accounts
+2. Tracking payment processor balances
+3. Reconciliation of payment records with treasury accounts
+"""
+
+import logging
+import datetime
+from typing import Optional, List, Dict, Any, Tuple
+from sqlalchemy import func
+from decimal import Decimal
+
+from flask import current_app
+from flask_sqlalchemy import SQLAlchemy
+
+from app import db
+from models import (
+    TreasuryAccount, 
+    TreasuryTransaction,
+    TransactionType,
+    TransactionStatus,
+    TreasuryAccountType
+)
+from payment_models import (
+    StripePayment,
+    PayPalPayment,
+    POSPayment,
+    Payment
+)
 
 logger = logging.getLogger(__name__)
 
-class TreasuryPaymentBridge:
+# Configuration - can be moved to environment variables later
+DEFAULT_SETTLEMENT_CURRENCY = "USD"
+SETTLEMENT_ACCOUNT_PREFIX = {
+    "stripe": "STRIPE-SETTLE-",
+    "paypal": "PAYPAL-SETTLE-",
+    "pos": "POS-SETTLE-"
+}
+
+def get_processor_linked_account(processor: str) -> Optional[TreasuryAccount]:
     """
-    Provides settlement functionality between payment processors and treasury accounts.
-    This bridge allows for automatic settlement of funds between payment processors
-    (Stripe, PayPal, POS) and dedicated treasury accounts.
+    Get the treasury account linked to a specific payment processor for settlements.
+    
+    Args:
+        processor: The payment processor type ('stripe', 'paypal', 'pos')
+        
+    Returns:
+        The linked TreasuryAccount or None if not found
     """
-    
-    def __init__(self):
-        self.stripe_api_key = os.environ.get('STRIPE_LIVE_SECRET_KEY') or os.environ.get('STRIPE_SECRET_KEY')
-        self.paypal_mode = "live" if os.environ.get('PAYPAL_CLIENT_ID', '').startswith('live') else "sandbox"
-        
-        # Configure PayPal SDK
-        paypalrestsdk.configure({
-            "mode": self.paypal_mode,
-            "client_id": os.environ.get('PAYPAL_CLIENT_ID'),
-            "client_secret": os.environ.get('PAYPAL_CLIENT_SECRET')
-        })
-        
-        # Configure Stripe
-        if self.stripe_api_key:
-            stripe.api_key = self.stripe_api_key
-    
-    def get_processor_linked_account(self, processor_type):
-        """
-        Gets the treasury account linked to a specific payment processor.
-        If no account is explicitly linked, it will look for a suitable OPERATING account.
-        
-        Args:
-            processor_type (str): The type of processor ('stripe', 'paypal', 'pos')
-            
-        Returns:
-            TreasuryAccount: The linked treasury account or None if not found
-        """
-        # First, check for an account with the processor type in the name (case insensitive)
-        processor_account = TreasuryAccount.query.filter(
-            TreasuryAccount.is_active == True,
-            TreasuryAccount.account_type == TreasuryAccountType.OPERATING,
-            db.func.lower(TreasuryAccount.name).contains(processor_type.lower())
-        ).first()
-        
-        if processor_account:
-            logger.info(f"Found dedicated {processor_type} treasury account: {processor_account.name}")
-            return processor_account
-        
-        # If no specific account found, look for a general operating account
-        logger.warning(f"No dedicated {processor_type} treasury account found, looking for general operating account")
-        general_account = TreasuryAccount.query.filter(
-            TreasuryAccount.is_active == True,
-            TreasuryAccount.account_type == TreasuryAccountType.OPERATING
-        ).order_by(desc(TreasuryAccount.current_balance)).first()
-        
-        if general_account:
-            logger.info(f"Using general operating treasury account: {general_account.name}")
-            return general_account
-        
-        logger.error(f"No suitable treasury account found for {processor_type} integration")
+    if processor not in SETTLEMENT_ACCOUNT_PREFIX:
+        logger.error(f"Invalid processor type: {processor}")
         return None
     
-    def create_processor_linked_account(self, processor_type, initial_balance=0.0, 
-                                       currency="USD", institution_id=None):
-        """
-        Creates a dedicated treasury account for a specific payment processor.
+    # Look for an account with the appropriate name pattern
+    prefix = SETTLEMENT_ACCOUNT_PREFIX[processor]
+    account = TreasuryAccount.query.filter(
+        TreasuryAccount.name.like(f"{prefix}%"),
+        TreasuryAccount.is_active == True
+    ).first()
+    
+    return account
+
+def create_settlement_account(processor: str, currency: str = DEFAULT_SETTLEMENT_CURRENCY) -> Optional[TreasuryAccount]:
+    """
+    Create a new treasury account for a payment processor settlement.
+    
+    Args:
+        processor: The payment processor type ('stripe', 'paypal', 'pos')
+        currency: The currency for the account
         
-        Args:
-            processor_type (str): The type of processor ('stripe', 'paypal', 'pos')
-            initial_balance (float): Initial balance to set for the account
-            currency (str): Currency code for the account
-            institution_id (int): ID of the financial institution
-            
-        Returns:
-            TreasuryAccount: The newly created treasury account
-        """
-        # Format the processor type name for readability
-        processor_name = processor_type.title()
-        
-        # Create a new operating account for this processor
+    Returns:
+        The newly created TreasuryAccount or None if failed
+    """
+    if processor not in SETTLEMENT_ACCOUNT_PREFIX:
+        logger.error(f"Invalid processor type: {processor}")
+        return None
+    
+    # Check if account already exists
+    existing = get_processor_linked_account(processor)
+    if existing:
+        logger.info(f"Settlement account for {processor} already exists: {existing.name}")
+        return existing
+    
+    # Generate a unique account name and number
+    prefix = SETTLEMENT_ACCOUNT_PREFIX[processor]
+    timestamp = datetime.datetime.now().strftime("%Y%m%d")
+    account_name = f"{prefix}{timestamp}"
+    account_number = f"{prefix}{timestamp}-{processor.upper()}"
+    
+    try:
+        # Create new treasury account
         account = TreasuryAccount(
-            name=f"{processor_name} Settlement Account",
-            description=f"Dedicated treasury account for {processor_name} payment processing",
+            name=account_name,
+            account_number=account_number,
             account_type=TreasuryAccountType.OPERATING,
-            institution_id=institution_id,
-            account_number=f"{processor_type.upper()}-SETTLEMENT-{int(time.time())}",
+            financial_institution="NVC Banking Platform",
+            description=f"Settlement account for {processor} payments",
+            current_balance=0.0,
             currency=currency,
-            current_balance=initial_balance,
-            available_balance=initial_balance,
             is_active=True,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            created_at=datetime.datetime.utcnow(),
+            updated_at=datetime.datetime.utcnow()
         )
         
         db.session.add(account)
         db.session.commit()
         
-        logger.info(f"Created new {processor_name} settlement treasury account: {account.name}")
+        logger.info(f"Created new settlement account for {processor}: {account_name}")
         return account
     
-    def record_settlement_transaction(self, account_id, amount, processor_type, 
-                                     external_reference=None, description=None):
-        """
-        Records a settlement transaction between a payment processor and treasury account.
+    except Exception as e:
+        logger.error(f"Error creating settlement account for {processor}: {str(e)}")
+        db.session.rollback()
+        return None
+
+def record_settlement_transaction(
+    to_account: TreasuryAccount,
+    amount: float,
+    processor_type: str,
+    currency: str = None,
+    reference: str = None,
+    description: str = None
+) -> Optional[TreasuryTransaction]:
+    """
+    Record a settlement transaction from a payment processor to a treasury account.
+    
+    Args:
+        to_account: The treasury account to settle funds to
+        amount: The amount to settle
+        processor_type: The payment processor type ('stripe', 'paypal', 'pos')
+        currency: The currency of the settlement (defaults to account currency)
+        reference: External reference number
+        description: Optional description
         
-        Args:
-            account_id (int): ID of the treasury account
-            amount (float): Transaction amount
-            processor_type (str): The type of processor ('stripe', 'paypal', 'pos')
-            external_reference (str): External reference ID from the processor
-            description (str): Transaction description
-            
-        Returns:
-            TreasuryTransaction: The newly created transaction record
-        """
-        # Generate a descriptive transaction message if none provided
-        if not description:
-            description = f"Settlement from {processor_type.title()} payment processor"
-            if external_reference:
-                description += f" (Ref: {external_reference})"
-        
-        # Create the transaction record
+    Returns:
+        The created TreasuryTransaction or None if failed
+    """
+    if not to_account:
+        logger.error("Cannot record settlement: No target account provided")
+        return None
+    
+    if amount <= 0:
+        logger.error(f"Invalid settlement amount: {amount}")
+        return None
+    
+    # Use account currency if not specified
+    if not currency:
+        currency = to_account.currency
+    
+    # Generate a descriptive transaction description if not provided
+    if not description:
+        description = f"Settlement from {processor_type.upper()} payment processor"
+    
+    try:
+        # Create the transaction
         transaction = TreasuryTransaction(
-            from_account_id=None,  # External source
-            to_account_id=account_id,
+            to_account_id=to_account.id,
             amount=amount,
-            currency=TreasuryAccount.query.get(account_id).currency,
+            currency=currency,
             transaction_type=TransactionType.PAYMENT_SETTLEMENT,
-            status=TransactionStatus.COMPLETED,
             description=description,
-            external_reference=external_reference,
-            transaction_date=datetime.utcnow(),
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            external_reference=reference,
+            status=TransactionStatus.COMPLETED,
+            created_at=datetime.datetime.utcnow(),
+            updated_at=datetime.datetime.utcnow()
         )
         
+        # Update the account balance
+        to_account.current_balance += amount
+        to_account.updated_at = datetime.datetime.utcnow()
+        
+        # Save changes
         db.session.add(transaction)
-        
-        # Update the treasury account balance
-        account = TreasuryAccount.query.get(account_id)
-        if account:
-            account.current_balance += amount
-            account.available_balance += amount
-            account.updated_at = datetime.utcnow()
-        
+        db.session.add(to_account)
         db.session.commit()
         
-        logger.info(f"Recorded settlement transaction of {amount} from {processor_type} to treasury account {account_id}")
+        logger.info(f"Recorded settlement from {processor_type} to account {to_account.name}: {amount} {currency}")
         return transaction
     
-    def process_stripe_settlement(self, days_back=1):
-        """
-        Processes settlement from Stripe to the linked treasury account.
-        Looks for successful charges within the specified timeframe.
-        
-        Args:
-            days_back (int): Number of days back to look for charges
-            
-        Returns:
-            dict: Summary of the settlement process
-        """
-        if not self.stripe_api_key:
-            logger.error("Cannot process Stripe settlement: No API key configured")
-            return {"success": False, "error": "No Stripe API key configured"}
-        
-        # Find the linked treasury account
-        account = self.get_processor_linked_account('stripe')
-        if not account:
-            logger.error("Cannot process Stripe settlement: No linked treasury account found")
-            return {"success": False, "error": "No linked treasury account found"}
-        
-        # Calculate the time window
-        end_time = int(time.time())
-        start_time = int((datetime.utcnow() - timedelta(days=days_back)).timestamp())
-        
-        try:
-            # Retrieve successful charges within the time window
-            charges = stripe.Charge.list(
-                created={"gte": start_time, "lte": end_time},
-                status="succeeded",
-                limit=100
-            )
-            
-            # Process the charges
-            total_amount = 0
-            count = 0
-            
-            for charge in charges.auto_paging_iter():
-                # Skip charges that have already been settled
-                if TreasuryTransaction.query.filter_by(
-                    external_reference=charge.id,
-                    transaction_type=TransactionType.PAYMENT_SETTLEMENT
-                ).first():
-                    logger.debug(f"Skipping already settled Stripe charge: {charge.id}")
-                    continue
-                
-                # Convert amount from cents to dollars
-                amount = charge.amount / 100.0
-                
-                # Record the settlement
-                self.record_settlement_transaction(
-                    account_id=account.id,
-                    amount=amount,
-                    processor_type='stripe',
-                    external_reference=charge.id,
-                    description=f"Stripe payment settlement: {charge.description or charge.id}"
-                )
-                
-                total_amount += amount
-                count += 1
-            
-            logger.info(f"Processed {count} Stripe charges for settlement, total: {total_amount}")
-            return {
-                "success": True,
-                "processor": "stripe",
-                "count": count,
-                "total_amount": total_amount,
-                "currency": account.currency,
-                "account_id": account.id,
-                "account_name": account.name
-            }
-            
-        except Exception as e:
-            logger.error(f"Error processing Stripe settlement: {str(e)}")
-            return {"success": False, "error": str(e)}
-    
-    def process_paypal_settlement(self, days_back=1):
-        """
-        Processes settlement from PayPal to the linked treasury account.
-        Looks for successful payments within the specified timeframe.
-        
-        Args:
-            days_back (int): Number of days back to look for payments
-            
-        Returns:
-            dict: Summary of the settlement process
-        """
-        if not os.environ.get('PAYPAL_CLIENT_ID') or not os.environ.get('PAYPAL_CLIENT_SECRET'):
-            logger.error("Cannot process PayPal settlement: No API credentials configured")
-            return {"success": False, "error": "No PayPal API credentials configured"}
-        
-        # Find the linked treasury account
-        account = self.get_processor_linked_account('paypal')
-        if not account:
-            logger.error("Cannot process PayPal settlement: No linked treasury account found")
-            return {"success": False, "error": "No linked treasury account found"}
-        
-        # Calculate the time window
-        end_date = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-        start_date = (datetime.utcnow() - timedelta(days=days_back)).strftime('%Y-%m-%dT%H:%M:%SZ')
-        
-        try:
-            # Retrieve successful payments within the time window
-            payment_history = paypalrestsdk.Payment.all({
-                "start_time": start_date,
-                "end_time": end_date,
-                "sort_by": "create_time",
-                "sort_order": "desc",
-                "count": 100,
-                "state": "approved"
-            })
-            
-            # Process the payments
-            total_amount = 0
-            count = 0
-            
-            for payment in payment_history.payments:
-                # Skip payments that have already been settled
-                if TreasuryTransaction.query.filter_by(
-                    external_reference=payment.id,
-                    transaction_type=TransactionType.PAYMENT_SETTLEMENT
-                ).first():
-                    logger.debug(f"Skipping already settled PayPal payment: {payment.id}")
-                    continue
-                
-                # Extract transaction data - handle both single and multiple transactions
-                transactions = payment.get('transactions', [])
-                if not transactions:
-                    continue
-                
-                # For simplicity, we'll process the first transaction in each payment
-                transaction = transactions[0]
-                amount_data = transaction.get('amount', {})
-                amount = float(amount_data.get('total', 0))
-                currency = amount_data.get('currency', 'USD')
-                
-                # Record the settlement
-                self.record_settlement_transaction(
-                    account_id=account.id,
-                    amount=amount,
-                    processor_type='paypal',
-                    external_reference=payment.id,
-                    description=f"PayPal payment settlement: {transaction.get('description', payment.id)}"
-                )
-                
-                total_amount += amount
-                count += 1
-            
-            logger.info(f"Processed {count} PayPal payments for settlement, total: {total_amount}")
-            return {
-                "success": True,
-                "processor": "paypal",
-                "count": count,
-                "total_amount": total_amount,
-                "currency": account.currency,
-                "account_id": account.id,
-                "account_name": account.name
-            }
-            
-        except Exception as e:
-            logger.error(f"Error processing PayPal settlement: {str(e)}")
-            return {"success": False, "error": str(e)}
-    
-    def process_pos_settlement(self, days_back=1):
-        """
-        Processes settlement from the internal POS system to the linked treasury account.
-        Looks for successful POS transactions within the specified timeframe.
-        
-        Args:
-            days_back (int): Number of days back to look for transactions
-            
-        Returns:
-            dict: Summary of the settlement process
-        """
-        # Find the linked treasury account
-        account = self.get_processor_linked_account('pos')
-        if not account:
-            logger.error("Cannot process POS settlement: No linked treasury account found")
-            return {"success": False, "error": "No linked treasury account found"}
-        
-        try:
-            # Calculate the time window
-            end_date = datetime.utcnow()
-            start_date = datetime.utcnow() - timedelta(days=days_back)
-            
-            # Retrieve successful POS transactions that haven't been settled
-            # This query finds transactions processed through the POS system
-            pos_transactions = db.session.execute(
-                text("""
-                SELECT t.id, t.amount, t.currency, t.external_reference, t.description 
-                FROM transaction t
-                JOIN payment_gateway pg ON t.gateway_id = pg.id
-                WHERE t.status = 'COMPLETED'
-                AND t.transaction_type = 'POS_PAYMENT'
-                AND t.created_at BETWEEN :start_date AND :end_date
-                AND NOT EXISTS (
-                    SELECT 1 FROM treasury_transaction tt
-                    WHERE tt.external_reference = t.external_reference
-                    AND tt.transaction_type = 'PAYMENT_SETTLEMENT'
-                )
-                LIMIT 100
-                """),
-                {
-                    "start_date": start_date,
-                    "end_date": end_date
-                }
-            ).fetchall()
-            
-            # Process the POS transactions
-            total_amount = 0
-            count = 0
-            
-            for tx in pos_transactions:
-                # Record the settlement
-                self.record_settlement_transaction(
-                    account_id=account.id,
-                    amount=tx.amount,
-                    processor_type='pos',
-                    external_reference=str(tx.id),
-                    description=f"POS payment settlement: {tx.description or 'Transaction #' + str(tx.id)}"
-                )
-                
-                total_amount += tx.amount
-                count += 1
-            
-            logger.info(f"Processed {count} POS transactions for settlement, total: {total_amount}")
-            return {
-                "success": True,
-                "processor": "pos",
-                "count": count,
-                "total_amount": total_amount,
-                "currency": account.currency,
-                "account_id": account.id,
-                "account_name": account.name
-            }
-            
-        except Exception as e:
-            logger.error(f"Error processing POS settlement: {str(e)}")
-            return {"success": False, "error": str(e)}
-    
-    def process_all_settlements(self, days_back=1):
-        """
-        Processes settlement for all payment processors.
-        
-        Args:
-            days_back (int): Number of days back to look for transactions
-            
-        Returns:
-            dict: Summary of all settlement processes
-        """
-        results = {
-            "timestamp": datetime.utcnow().isoformat(),
-            "days_processed": days_back,
-            "processors": []
-        }
-        
-        # Process Stripe settlements
-        stripe_result = self.process_stripe_settlement(days_back)
-        results["processors"].append(stripe_result)
-        
-        # Process PayPal settlements
-        paypal_result = self.process_paypal_settlement(days_back)
-        results["processors"].append(paypal_result)
-        
-        # Process POS settlements
-        pos_result = self.process_pos_settlement(days_back)
-        results["processors"].append(pos_result)
-        
-        # Calculate success metrics
-        successful_count = sum(1 for p in results["processors"] if p.get("success", False))
-        results["overall_success"] = successful_count == len(results["processors"])
-        results["success_rate"] = f"{successful_count}/{len(results['processors'])}"
-        
-        # Calculate total processed amount
-        total_processed = sum(p.get("total_amount", 0) for p in results["processors"] if p.get("success", False))
-        results["total_amount_processed"] = total_processed
-        
-        return results
+    except Exception as e:
+        logger.error(f"Error recording settlement transaction: {str(e)}")
+        db.session.rollback()
+        return None
 
+def process_stripe_settlements(days_back: int = 1) -> Tuple[int, float]:
+    """
+    Process unsettled Stripe payments from the past N days.
+    
+    Args:
+        days_back: Number of days to look back for unsettled payments
+        
+    Returns:
+        Tuple of (number of settlements processed, total amount settled)
+    """
+    # Get the settlement account
+    settlement_account = get_processor_linked_account('stripe')
+    if not settlement_account:
+        logger.error("No Stripe settlement account found. Please create one first.")
+        return (0, 0.0)
+    
+    # Calculate the cutoff date
+    cutoff_date = datetime.datetime.utcnow() - datetime.timedelta(days=days_back)
+    
+    # Find all successful Stripe payments from the past N days that haven't been marked as settled
+    unsettled_payments = StripePayment.query.filter(
+        StripePayment.created_at >= cutoff_date,
+        StripePayment.status == 'succeeded',
+        StripePayment.is_settled == False
+    ).all()
+    
+    if not unsettled_payments:
+        logger.info(f"No unsettled Stripe payments found in the past {days_back} days")
+        return (0, 0.0)
+    
+    # Process each payment
+    settlement_count = 0
+    total_settled = 0.0
+    
+    for payment in unsettled_payments:
+        # Record the settlement
+        transaction = record_settlement_transaction(
+            to_account=settlement_account,
+            amount=payment.amount,
+            processor_type='stripe',
+            currency=payment.currency,
+            reference=payment.stripe_payment_id,
+            description=f"Stripe payment settlement: {payment.stripe_payment_id}"
+        )
+        
+        if transaction:
+            # Mark the payment as settled
+            payment.is_settled = True
+            payment.settlement_date = datetime.datetime.utcnow()
+            payment.settlement_reference = str(transaction.id)
+            db.session.add(payment)
+            
+            settlement_count += 1
+            total_settled += payment.amount
+    
+    # Commit all changes
+    try:
+        db.session.commit()
+        logger.info(f"Processed {settlement_count} Stripe settlements totaling {total_settled} {settlement_account.currency}")
+    except Exception as e:
+        logger.error(f"Error finalizing Stripe settlements: {str(e)}")
+        db.session.rollback()
+        return (0, 0.0)
+    
+    return (settlement_count, total_settled)
 
-# Create a bridge singleton
-treasury_payment_bridge = TreasuryPaymentBridge()
+def process_paypal_settlements(days_back: int = 1) -> Tuple[int, float]:
+    """
+    Process unsettled PayPal payments from the past N days.
+    
+    Args:
+        days_back: Number of days to look back for unsettled payments
+        
+    Returns:
+        Tuple of (number of settlements processed, total amount settled)
+    """
+    # Get the settlement account
+    settlement_account = get_processor_linked_account('paypal')
+    if not settlement_account:
+        logger.error("No PayPal settlement account found. Please create one first.")
+        return (0, 0.0)
+    
+    # Calculate the cutoff date
+    cutoff_date = datetime.datetime.utcnow() - datetime.timedelta(days=days_back)
+    
+    # Find all completed PayPal payments from the past N days that haven't been marked as settled
+    unsettled_payments = PayPalPayment.query.filter(
+        PayPalPayment.created_at >= cutoff_date,
+        PayPalPayment.status == 'COMPLETED',
+        PayPalPayment.is_settled == False
+    ).all()
+    
+    if not unsettled_payments:
+        logger.info(f"No unsettled PayPal payments found in the past {days_back} days")
+        return (0, 0.0)
+    
+    # Process each payment
+    settlement_count = 0
+    total_settled = 0.0
+    
+    for payment in unsettled_payments:
+        # Record the settlement
+        transaction = record_settlement_transaction(
+            to_account=settlement_account,
+            amount=payment.amount,
+            processor_type='paypal',
+            currency=payment.currency,
+            reference=payment.paypal_id,
+            description=f"PayPal payment settlement: {payment.paypal_id}"
+        )
+        
+        if transaction:
+            # Mark the payment as settled
+            payment.is_settled = True
+            payment.settlement_date = datetime.datetime.utcnow()
+            payment.settlement_reference = str(transaction.id)
+            db.session.add(payment)
+            
+            settlement_count += 1
+            total_settled += payment.amount
+    
+    # Commit all changes
+    try:
+        db.session.commit()
+        logger.info(f"Processed {settlement_count} PayPal settlements totaling {total_settled} {settlement_account.currency}")
+    except Exception as e:
+        logger.error(f"Error finalizing PayPal settlements: {str(e)}")
+        db.session.rollback()
+        return (0, 0.0)
+    
+    return (settlement_count, total_settled)
+
+def process_pos_settlements(days_back: int = 1) -> Tuple[int, float]:
+    """
+    Process unsettled POS payments from the past N days.
+    
+    Args:
+        days_back: Number of days to look back for unsettled payments
+        
+    Returns:
+        Tuple of (number of settlements processed, total amount settled)
+    """
+    # Get the settlement account
+    settlement_account = get_processor_linked_account('pos')
+    if not settlement_account:
+        logger.error("No POS settlement account found. Please create one first.")
+        return (0, 0.0)
+    
+    # Calculate the cutoff date
+    cutoff_date = datetime.datetime.utcnow() - datetime.timedelta(days=days_back)
+    
+    # Find all completed POS payments from the past N days that haven't been marked as settled
+    unsettled_payments = POSPayment.query.filter(
+        POSPayment.created_at >= cutoff_date,
+        POSPayment.status == 'completed',
+        POSPayment.is_settled == False
+    ).all()
+    
+    if not unsettled_payments:
+        logger.info(f"No unsettled POS payments found in the past {days_back} days")
+        return (0, 0.0)
+    
+    # Process each payment
+    settlement_count = 0
+    total_settled = 0.0
+    
+    for payment in unsettled_payments:
+        # Record the settlement
+        transaction = record_settlement_transaction(
+            to_account=settlement_account,
+            amount=payment.amount,
+            processor_type='pos',
+            currency=payment.currency,
+            reference=payment.transaction_id,
+            description=f"POS payment settlement: {payment.transaction_id}"
+        )
+        
+        if transaction:
+            # Mark the payment as settled
+            payment.is_settled = True
+            payment.settlement_date = datetime.datetime.utcnow()
+            payment.settlement_reference = str(transaction.id)
+            db.session.add(payment)
+            
+            settlement_count += 1
+            total_settled += payment.amount
+    
+    # Commit all changes
+    try:
+        db.session.commit()
+        logger.info(f"Processed {settlement_count} POS settlements totaling {total_settled} {settlement_account.currency}")
+    except Exception as e:
+        logger.error(f"Error finalizing POS settlements: {str(e)}")
+        db.session.rollback()
+        return (0, 0.0)
+    
+    return (settlement_count, total_settled)
+
+def process_all_settlements(days_back: int = 1) -> Dict[str, Tuple[int, float]]:
+    """
+    Process settlements for all payment processors.
+    
+    Args:
+        days_back: Number of days to look back for unsettled payments
+        
+    Returns:
+        Dictionary of processor: (settlement_count, total_amount) pairs
+    """
+    results = {}
+    
+    # Process each payment processor
+    results['stripe'] = process_stripe_settlements(days_back)
+    results['paypal'] = process_paypal_settlements(days_back)
+    results['pos'] = process_pos_settlements(days_back)
+    
+    # Calculate totals
+    total_count = sum(count for count, _ in results.values())
+    total_amount = sum(amount for _, amount in results.values())
+    
+    logger.info(f"Processed {total_count} total settlements across all processors, totaling approximately {total_amount} USD")
+    
+    return results
+
+def get_settlement_statistics() -> Dict[str, Any]:
+    """
+    Get statistics about payment settlements.
+    
+    Returns:
+        Dictionary containing settlement statistics
+    """
+    stats = {}
+    
+    # Get today and 30 days ago for calculations
+    today = datetime.datetime.utcnow()
+    thirty_days_ago = today - datetime.timedelta(days=30)
+    
+    # Get total settlements by processor in the last 30 days
+    processor_totals = {}
+    for processor in ['stripe', 'paypal', 'pos']:
+        account = get_processor_linked_account(processor)
+        
+        if account:
+            # Get total settlement amount in last 30 days
+            total = db.session.query(
+                func.sum(TreasuryTransaction.amount)
+            ).filter(
+                TreasuryTransaction.to_account_id == account.id,
+                TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT,
+                TreasuryTransaction.created_at >= thirty_days_ago
+            ).scalar() or 0.0
+            
+            # Get count of settlements in last 30 days
+            count = db.session.query(
+                func.count(TreasuryTransaction.id)
+            ).filter(
+                TreasuryTransaction.to_account_id == account.id,
+                TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT,
+                TreasuryTransaction.created_at >= thirty_days_ago
+            ).scalar() or 0
+            
+            processor_totals[processor] = {
+                'account': account,
+                'total_30d': float(total),
+                'count_30d': count,
+                'currency': account.currency
+            }
+        else:
+            processor_totals[processor] = {
+                'account': None,
+                'total_30d': 0.0,
+                'count_30d': 0,
+                'currency': DEFAULT_SETTLEMENT_CURRENCY
+            }
+    
+    stats['processor_totals'] = processor_totals
+    
+    # Get total settled amount across all processors
+    total_settled = sum(details['total_30d'] for details in processor_totals.values())
+    stats['total_settled_30d'] = total_settled
+    
+    # Get the most recent settlement for each processor
+    most_recent = {}
+    for processor in ['stripe', 'paypal', 'pos']:
+        account = get_processor_linked_account(processor)
+        
+        if account:
+            recent = TreasuryTransaction.query.filter(
+                TreasuryTransaction.to_account_id == account.id,
+                TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT
+            ).order_by(
+                TreasuryTransaction.created_at.desc()
+            ).first()
+            
+            most_recent[processor] = recent
+        else:
+            most_recent[processor] = None
+    
+    stats['most_recent'] = most_recent
+    
+    return stats
+
+def manual_settlement(
+    account_id: int,
+    processor_type: str,
+    amount: float,
+    currency: str,
+    reference: str = None,
+    description: str = None
+) -> Optional[TreasuryTransaction]:
+    """
+    Record a manual settlement from a payment processor to a treasury account.
+    
+    Args:
+        account_id: ID of the treasury account to settle funds to
+        processor_type: The payment processor type ('stripe', 'paypal', 'pos', 'other')
+        amount: The amount to settle
+        currency: The currency of the settlement
+        reference: External reference number
+        description: Optional description
+        
+    Returns:
+        The created TreasuryTransaction or None if failed
+    """
+    try:
+        # Get the account
+        account = TreasuryAccount.query.get(account_id)
+        if not account:
+            logger.error(f"Account with ID {account_id} not found")
+            return None
+        
+        # Generate a descriptive transaction description if not provided
+        if not description:
+            description = f"Manual settlement from {processor_type.upper()} payment processor"
+        
+        # Record the settlement
+        transaction = record_settlement_transaction(
+            to_account=account,
+            amount=amount,
+            processor_type=processor_type,
+            currency=currency,
+            reference=reference,
+            description=description
+        )
+        
+        return transaction
+        
+    except Exception as e:
+        logger.error(f"Error recording manual settlement: {str(e)}")
+        db.session.rollback()
+        return None
