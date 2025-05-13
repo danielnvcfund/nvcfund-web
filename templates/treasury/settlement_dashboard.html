@@ -29,6 +29,28 @@
     </div>
   </div>
 
+  <!-- Summary Statistics -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-left-dark shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-dark text-uppercase mb-1">Total Settlement Volume (30 Days)</div>
+              <div class="h4 mb-0 font-weight-bold text-gray-800" id="total-settled-30d">$0.00 USD</div>
+              <div class="mt-2 text-muted">
+                <small>Settlements bridge payment processors with treasury accounts, providing immediate liquidity and maintaining accurate financial records.</small>
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-exchange-alt fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Status Cards -->
   <div class="row">
     <!-- Stripe Account Status -->
@@ -129,6 +151,10 @@
                 <div class="mt-2">
                   <span class="fw-bold">Balance:</span> 
                   {{ pos_account.current_balance|format_currency }} {{ pos_account.currency }}
+                </div>
+                <div class="mt-2 text-muted">
+                  <small>Recent settlements: <span id="pos-count-30d">-</span></small><br>
+                  <small>30-day total: <span id="pos-total-30d">-</span></small>
                 </div>
               {% else %}
                 <div class="h5 mb-0 font-weight-bold text-gray-800">Not Configured</div>

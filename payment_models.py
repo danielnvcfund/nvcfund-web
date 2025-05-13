@@ -34,8 +34,6 @@ class Payment(db.Model):
     is_settled = db.Column(db.Boolean, default=False)
     settlement_date = db.Column(db.DateTime)
     settlement_reference = db.Column(db.String(100))  # Reference to the treasury transaction ID
-    
-    user = db.relationship('User', backref=db.backref('payments', lazy=True))
 
 class StripePayment(Payment):
     """Stripe payment model"""
@@ -47,6 +45,9 @@ class StripePayment(Payment):
     status = db.Column(db.String(50), default='pending')
     receipt_url = db.Column(db.String(256))
     metadata_json = db.Column(db.Text)
+    
+    # Add user relationship explicitly
+    user = db.relationship('User', backref=db.backref('stripe_payments', lazy=True))
     
     def __repr__(self):
         return f"<StripePayment {self.id}: {self.amount} {self.currency}>"
@@ -63,6 +64,9 @@ class PayPalPayment(Payment):
     payment_source = db.Column(db.String(50))  # paypal, card, bank, etc.
     metadata_json = db.Column(db.Text)
     
+    # Add user relationship explicitly
+    user = db.relationship('User', backref=db.backref('paypal_payments', lazy=True))
+    
     def __repr__(self):
         return f"<PayPalPayment {self.id}: {self.amount} {self.currency}>"
 
@@ -78,6 +82,9 @@ class POSPayment(Payment):
     receipt_number = db.Column(db.String(100))
     status = db.Column(db.String(50), default='pending')
     metadata_json = db.Column(db.Text)
+    
+    # Add user relationship explicitly
+    user = db.relationship('User', backref=db.backref('pos_payments', lazy=True))
     
     def __repr__(self):
         return f"<POSPayment {self.id}: {self.amount} {self.currency}>"
