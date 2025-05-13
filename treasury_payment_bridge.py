@@ -82,7 +82,7 @@ class SettlementBridge:
             transaction.to_account_id = self.stripe_account.id
             transaction.amount = total_amount
             transaction.currency = "USD"  # Assuming USD for now
-            transaction.transaction_type = TransactionType.PAYMENT_SETTLEMENT
+            transaction.transaction_type = TreasuryTransactionType.EXTERNAL_TRANSFER
             transaction.description = f"Stripe payment processor settlement - {len(payments)} payments"
             transaction.reference_number = settlement_id
             transaction.memo = f"Automated settlement of {len(payments)} Stripe payments"
@@ -146,7 +146,7 @@ class SettlementBridge:
             transaction.to_account_id = self.paypal_account.id
             transaction.amount = total_amount
             transaction.currency = "USD"  # Assuming USD for now
-            transaction.transaction_type = TransactionType.PAYMENT_SETTLEMENT
+            transaction.transaction_type = TreasuryTransactionType.EXTERNAL_TRANSFER
             transaction.description = f"PayPal payment processor settlement - {len(payments)} payments"
             transaction.reference_number = settlement_id
             transaction.memo = f"Automated settlement of {len(payments)} PayPal payments"
@@ -210,7 +210,7 @@ class SettlementBridge:
             transaction.to_account_id = self.pos_account.id
             transaction.amount = total_amount
             transaction.currency = "USD"  # Assuming USD for now
-            transaction.transaction_type = TransactionType.PAYMENT_SETTLEMENT
+            transaction.transaction_type = TreasuryTransactionType.EXTERNAL_TRANSFER
             transaction.description = f"POS payment processor settlement - {len(payments)} payments"
             transaction.reference_number = settlement_id
             transaction.memo = f"Automated settlement of {len(payments)} POS payments"
