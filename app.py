@@ -63,6 +63,16 @@ def create_app():
         "pool_size": 15,         # Increased pool size for better concurrency
         "max_overflow": 20,      # Allow additional connections when pool is full
         "pool_timeout": 60,      # Longer timeout to prevent connection errors
+        "connect_args": {
+            "connect_timeout": 10,  # Connection timeout in seconds
+            "keepalives": 1,        # Enable TCP keepalives
+            "keepalives_idle": 30,  # Time between keepalive probes in seconds
+            "keepalives_interval": 10,  # Time between successive keepalive probes
+            "keepalives_count": 5   # Number of failed probes before disconnection
+        },
+        "execution_options": {
+            "isolation_level": "READ COMMITTED"  # Standard isolation level
+        }
     }
     
     # Disable SQLAlchemy modification tracking for better performance
@@ -85,6 +95,28 @@ def create_app():
             return "{:,}".format(int(value))
         except (ValueError, TypeError):
             return value
+            
+    # Add datetime filter for formatting timestamps
+    @app.template_filter('datetime')
+    def format_datetime(value):
+        """Format a datetime object to a readable string"""
+        if value is None:
+            return ""
+        try:
+            return value.strftime("%Y-%m-%d %H:%M:%S")
+        except (ValueError, TypeError, AttributeError):
+            return str(value)
+            
+    # Add format_currency filter for formatting currency values
+    @app.template_filter('format_currency')
+    def format_currency(value):
+        """Format a currency value with 2 decimal places"""
+        if value is None:
+            return "0.00"
+        try:
+            return "{:.2f}".format(float(value))
+        except (ValueError, TypeError):
+            return str(value)
     
     # Allow embedding in iframes for Replit
     @app.after_request
