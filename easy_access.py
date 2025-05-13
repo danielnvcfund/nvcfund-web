@@ -24,14 +24,20 @@ def generate_links():
     
     # Generate links for admin pages
     admin_links = {
-        'Blockchain Features Guide (Start Here)': f'{base_url}/blockchain/guide',
-        'Blockchain Status Page': f'{base_url}/blockchain/status',
-        'Blockchain Admin Dashboard': f'{base_url}/admin/blockchain',
-        'Mainnet Readiness': f'{base_url}/admin/blockchain/mainnet_readiness',
-        'Gas Estimator': f'{base_url}/admin/blockchain/gas_estimator',
-        'Login Page': f'{base_url}/login',
-        'Admin Page': f'{base_url}/admin',
-        'Main Dashboard': f'{base_url}/'
+        '✨ RECOMMENDED: Blockchain Features Guide': f'{base_url}/blockchain/guide',
+        '📊 Blockchain Status Page': f'{base_url}/blockchain/status',
+        '🔧 Blockchain Admin Dashboard': f'{base_url}/admin/blockchain',
+        '✅ Mainnet Readiness': f'{base_url}/admin/blockchain/mainnet_readiness',
+        '⛽ Gas Estimator': f'{base_url}/admin/blockchain/gas_estimator',
+        '🔑 Login Page': f'{base_url}/login',
+        '🛡️ Admin Page': f'{base_url}/admin',
+        '🏠 Main Dashboard': f'{base_url}/'
+    }
+    
+    # Alternative URLs that also work (redirects)
+    alt_links = {
+        'Alternate URL: /main/blockchain': f'{base_url}/main/blockchain',
+        'Alternate URL: /blockchain': f'{base_url}/blockchain'
     }
     
     # Print the links
@@ -41,7 +47,13 @@ def generate_links():
     for name, url in admin_links.items():
         print(f"{name}:\n{url}\n")
     
-    print("==============================")
+    print("----- ALTERNATIVE URLS -----")
+    print("These URLs also work as redirects to the blockchain pages\n")
+    
+    for name, url in alt_links.items():
+        print(f"{name}:\n{url}\n")
+    
+    print("===============================")
 
 if __name__ == "__main__":
     generate_links()

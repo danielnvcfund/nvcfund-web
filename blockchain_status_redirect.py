@@ -17,6 +17,11 @@ blockchain_redirect_bp = Blueprint('blockchain_redirect', __name__)
 def redirect_to_blockchain():
     """Redirect to the blockchain status page"""
     return redirect(url_for('blockchain.index'))
+    
+@blockchain_redirect_bp.route('/main/blockchain', strict_slashes=False)
+def redirect_from_main_to_blockchain():
+    """Redirect from /main/blockchain to the blockchain status page"""
+    return redirect(url_for('blockchain.index'))
 
 @blockchain_redirect_bp.route('/blockchain/status', strict_slashes=False)
 def redirect_to_blockchain_status():
