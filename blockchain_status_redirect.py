@@ -23,6 +23,20 @@ def redirect_to_blockchain_status():
     """Redirect to the blockchain status page"""
     return redirect(url_for('blockchain.index'))
 
+@blockchain_redirect_bp.route('/blockchain/guide', strict_slashes=False)
+def blockchain_guide():
+    """Display the blockchain guide page with all features"""
+    from flask import render_template
+    import os
+    
+    # Get current network from environment
+    current_network = os.environ.get('ETHEREUM_NETWORK', 'testnet')
+    
+    return render_template(
+        'blockchain_guide.html',
+        current_network=current_network
+    )
+
 def register_blockchain_redirect(app):
     """Register the blockchain redirect blueprint"""
     app.register_blueprint(blockchain_redirect_bp)

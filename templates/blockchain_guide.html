@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVC Banking Platform - Blockchain Features Guide</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px;
+        }
+        header img {
+            max-height: 100px;
+            margin-bottom: 15px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .network-info {
+            background-color: #e9f7fe;
+            border-left: 5px solid #3498db;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+        }
+        .network-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        .testnet {
+            background-color: #ffe6b3;
+            color: #996600;
+        }
+        .mainnet {
+            background-color: #c6e6c6;
+            color: #2d6a2d;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        .card h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .card p {
+            color: #555;
+            line-height: 1.6;
+        }
+        .feature-icon {
+            font-size: 24px;
+            margin-right: 10px;
+            color: #3498db;
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section-title {
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .terminal {
+            background-color: #333;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        .cmd {
+            color: #a6e22e;
+        }
+        .path {
+            color: #66d9ef;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="{{ url_for('static', filename='images/nvc_logo.png') }}" alt="NVC Banking Platform Logo">
+            <h1>Blockchain Features Guide</h1>
+            <p>Comprehensive overview of blockchain functionality in the NVC Banking Platform</p>
+        </header>
+
+        <div class="network-info">
+            <h2>Current Network: 
+                <span class="network-badge {{ 'mainnet' if current_network == 'mainnet' else 'testnet' }}">
+                    {{ current_network|upper }}
+                </span>
+            </h2>
+            <p>This guide provides an overview of all blockchain-related features available in the NVC Banking Platform, including direct links for easy access in both the Replit editor and external browser tabs.</p>
+        </div>
+
+        <section class="section">
+            <h2 class="section-title">👁️ Blockchain Dashboards</h2>
+            
+            <div class="cards">
+                <div class="card">
+                    <h2>Blockchain Status</h2>
+                    <p>Monitor network connections, smart contract status, and transaction history. View your current Ethereum network connection and interact with deployed contracts.</p>
+                    <div class="button-container">
+                        <a href="/blockchain/status" class="button">Open Status Dashboard</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Blockchain Admin Panel</h2>
+                    <p>Advanced administrative controls for blockchain operations, including network switching, contract deployment, and system configuration.</p>
+                    <div class="button-container">
+                        <a href="/admin/blockchain" class="button">Open Admin Dashboard</a>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2>Mainnet Readiness</h2>
+                    <p>Assess platform readiness for migrating NVCT tokens to Ethereum mainnet, with comprehensive checks and deployment preparation tools.</p>
+                    <div class="button-container">
+                        <a href="/admin/blockchain/mainnet_readiness" class="button">View Readiness Assessment</a>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2>Gas Estimator</h2>
+                    <p>Calculate gas costs for contract deployments and transactions on Ethereum mainnet, helping you plan for resource requirements.</p>
+                    <div class="button-container">
+                        <a href="/admin/blockchain/gas_estimator" class="button">Estimate Gas Costs</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">⚙️ CLI Tools</h2>
+            
+            <p>The following command line tools are available to help manage blockchain operations:</p>
+            
+            <div class="terminal">
+                <div><span class="cmd">$</span> <span class="path">python gas_estimate_cli.py</span></div>
+                <div>Estimate gas costs for contract deployments and transactions</div>
+                <br>
+                <div><span class="cmd">$</span> <span class="path">python toggle_network.py</span> [testnet|mainnet]</div>
+                <div>Switch between testnet and mainnet environments</div>
+                <br>
+                <div><span class="cmd">$</span> <span class="path">python easy_access.py</span></div>
+                <div>Generate direct access links for different blockchain pages</div>
+            </div>
+            
+            <p>These tools can be executed from the terminal to perform operations without using the web interface.</p>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">🔄 Network Switching</h2>
+            
+            <p>The NVC Banking Platform supports bidirectional network switching between Ethereum Sepolia testnet and Ethereum mainnet.</p>
+            
+            <div class="cards">
+                <div class="card">
+                    <h2>Current Configuration</h2>
+                    <p><strong>Network:</strong> {{ current_network|upper }}</p>
+                    <p><strong>Block Explorer:</strong> <a href="{{ 'https://etherscan.io' if current_network == 'mainnet' else 'https://sepolia.etherscan.io' }}" target="_blank">{{ current_network|capitalize }} Etherscan</a></p>
+                    <p><strong>Web3 Provider:</strong> Infura</p>
+                </div>
+                
+                <div class="card">
+                    <h2>Toggle Network</h2>
+                    <p>Use the Mainnet Readiness page to toggle between networks via the web interface, or use the CLI tool for command-line switching.</p>
+                    <div class="button-container">
+                        <a href="/admin/blockchain/mainnet_readiness" class="button">Change Network</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">💰 Smart Contracts</h2>
+            
+            <p>The following smart contracts are deployed and integrated with the platform:</p>
+            
+            <div class="cards">
+                <div class="card">
+                    <h2>NVC Token (ERC-20)</h2>
+                    <p>The primary utility token for the NVC Banking Platform, used for transactions, custody services, and correspondent banking.</p>
+                </div>
+                
+                <div class="card">
+                    <h2>Settlement Contract</h2>
+                    <p>Manages the settlement of transactions between different parties, with built-in fee handling and verification.</p>
+                </div>
+                
+                <div class="card">
+                    <h2>Multisig Wallet</h2>
+                    <p>Provides secure multi-signature control over critical operations, requiring multiple approvals for high-value transactions.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="footer">
+            <p>NVC Banking Platform &copy; 2025 - Blockchain Administration Guide</p>
+        </div>
+    </div>
+</body>
+</html>
