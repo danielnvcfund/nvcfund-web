@@ -41,8 +41,8 @@ def settlement_dashboard():
     
     settlement_transactions = TreasuryTransaction.query.filter(
         TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT,
-        TreasuryTransaction.transaction_date >= thirty_days_ago
-    ).order_by(desc(TreasuryTransaction.transaction_date)).limit(10).all()
+        TreasuryTransaction.created_at >= thirty_days_ago
+    ).order_by(desc(TreasuryTransaction.created_at)).limit(10).all()
     
     return render_template('treasury/settlement_dashboard.html', 
                           stripe_account=stripe_account,
@@ -61,7 +61,7 @@ def settlement_stats():
     stripe_settlements = TreasuryTransaction.query.filter(
         TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT,
         TreasuryTransaction.description.like('%Stripe%'),
-        TreasuryTransaction.transaction_date >= thirty_days_ago
+        TreasuryTransaction.created_at >= thirty_days_ago
     ).all()
     
     stripe_count = len(stripe_settlements)
@@ -71,7 +71,7 @@ def settlement_stats():
     paypal_settlements = TreasuryTransaction.query.filter(
         TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT,
         TreasuryTransaction.description.like('%PayPal%'),
-        TreasuryTransaction.transaction_date >= thirty_days_ago
+        TreasuryTransaction.created_at >= thirty_days_ago
     ).all()
     
     paypal_count = len(paypal_settlements)
@@ -81,7 +81,7 @@ def settlement_stats():
     pos_settlements = TreasuryTransaction.query.filter(
         TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT,
         TreasuryTransaction.description.like('%POS%'),
-        TreasuryTransaction.transaction_date >= thirty_days_ago
+        TreasuryTransaction.created_at >= thirty_days_ago
     ).all()
     
     pos_count = len(pos_settlements)

@@ -811,6 +811,16 @@ class TreasuryAccountForm(FlaskForm):
         ('TAX', 'Tax Account'),
         ('DEBT_SERVICE', 'Debt Service Account')
     ], validators=[DataRequired()])
+    currency = SelectField('Currency', choices=[
+        ('USD', 'US Dollar (USD)'),
+        ('EUR', 'Euro (EUR)'),
+        ('GBP', 'British Pound (GBP)'),
+        ('NVCT', 'NVC Token (NVCT)'),
+        ('AFD1', 'American Federation Dollar (AFD1)'),
+        ('AKLUMI', 'AK Lumi (AKLUMI)'),
+        ('SFN', 'SFN Coin (SFN)'),
+        ('NGN', 'Nigerian Naira (NGN)')
+    ], validators=[DataRequired()])
     
 class TreasurySettlementForm(FlaskForm):
     """Form for recording a manual settlement from a payment processor to a treasury account"""
