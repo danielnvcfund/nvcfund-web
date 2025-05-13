@@ -12,6 +12,7 @@ import logging
 import os
 import subprocess
 import json
+from decimal import Decimal
 from datetime import datetime
 from blockchain import connect_to_ethereum, get_contract_instance, get_token_supply, get_gas_price
 from dotenv import load_dotenv, set_key
@@ -516,7 +517,7 @@ def switch_to_testnet():
         flash(f"Error switching to testnet: {str(e)}", "danger")
         return redirect(url_for('blockchain_admin.mainnet_readiness'))
 
-@blockchain_admin_bp.route('/gas_estimator')
+@blockchain_admin_bp.route('/gas-estimator')
 @login_required
 @blockchain_admin_required
 def gas_estimator_view():
@@ -528,18 +529,37 @@ def gas_estimator_view():
         # Get price data
         eth_price = gas_estimator.get_eth_price_usd()
         
-        # Get gas price data
+        # Get gas price data - this might be None if connection fails
         gas_price_data = gas_estimator.get_current_gas_price(current_network)
         
-        # Get admin balance
+        # If we couldn't get gas price data, provide a fallback for user experience
+        if gas_price_data is None:
+            gas_price_data = {'legacy': 50000000000}  # 50 Gwei fallback
+            flash(f"Could not retrieve current gas prices from {current_network}. Using fallback values.", "warning")
+        
+        # Get admin balance - this might be None if connection fails
         balance_data = gas_estimator.get_admin_eth_balance(current_network)
+        if balance_data is None:
+            # Simple fallback for balance data
+            balance_data = {
+                'address': os.environ.get('ADMIN_ETH_ADDRESS', '0x0000000000000000000000000000000000000000'),
+                'balance_eth': Decimal('0.0'),
+                'balance_usd': Decimal('0.0')
+            }
+            flash(f"Could not retrieve current ETH balance from {current_network}.", "warning")
         
         # Calculate deployment cost estimates
         deployment_costs = {}
+        all_estimates_failed = True
+        
         for contract_type in ['nvc_token', 'multisig_wallet', 'settlement_contract']:
             slow_estimate = gas_estimator.estimate_deployment_cost(contract_type, current_network, 'slow')
             medium_estimate = gas_estimator.estimate_deployment_cost(contract_type, current_network, 'medium')
             fast_estimate = gas_estimator.estimate_deployment_cost(contract_type, current_network, 'fast')
+            
+            # Check if at least one estimate worked
+            if slow_estimate or medium_estimate or fast_estimate:
+                all_estimates_failed = False
             
             deployment_costs[contract_type] = {
                 'slow': slow_estimate,
@@ -553,8 +573,16 @@ def gas_estimator_view():
             estimate = gas_estimator.estimate_contract_interaction_cost(interaction_type, current_network, 'medium')
             interaction_costs[interaction_type] = estimate
         
-        # Get total deployment cost
-        total_costs = gas_estimator.estimate_all_deployment_costs(current_network)['total']
+        # Get total deployment cost - handle potential None values
+        try:
+            all_costs = gas_estimator.estimate_all_deployment_costs(current_network)
+            total_costs = all_costs.get('total') if all_costs else None
+        except Exception as inner_e:
+            logger.error(f"Error calculating total costs: {str(inner_e)}")
+            total_costs = None
+        
+        if all_estimates_failed:
+            flash(f"Could not calculate gas estimates for {current_network}. Please check your Ethereum node connection.", "danger")
         
         return render_template(
             'admin/blockchain/gas_estimator.html',
