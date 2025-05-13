@@ -313,3 +313,32 @@
     border-left-width: 4px;
     border-left-color: #4e73df;
 }
+
+/* Fix for dropdown menus being hidden */
+.dropdown-menu {
+    z-index: 1030 !important; /* Higher z-index to ensure visibility */
+    position: absolute !important;
+}
+
+/* Ensure proper visibility of action buttons and dropdown menus */
+.btn-group {
+    position: relative;
+}
+
+.dropdown-menu-end {
+    right: 0;
+    left: auto !important;
+}
+
+/* Improve action buttons visibility */
+.actions-dropdown .dropdown-menu {
+    min-width: 200px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background-color: #1e2630;
+}
+
+.actions-dropdown .dropdown-item {
+    color: #fff;
+    padding: 0.5rem 1rem;
+}
