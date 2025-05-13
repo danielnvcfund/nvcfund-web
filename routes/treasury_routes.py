@@ -217,13 +217,13 @@ def new_account():
     
     if form.validate_on_submit():
         account = TreasuryAccount(
-            name=form.name.data,
+            name=form.account_name.data,
             account_type=form.account_type.data,
             description=form.description.data,
             account_number=form.account_number.data,
             currency=form.currency.data,
-            current_balance=form.initial_balance.data,
-            available_balance=form.initial_balance.data,
+            current_balance=form.opening_balance.data,
+            available_balance=form.opening_balance.data,
             target_balance=form.target_balance.data,
             minimum_balance=form.minimum_balance.data,
             maximum_balance=form.maximum_balance.data,
@@ -290,7 +290,7 @@ def edit_account(account_id):
     if form.validate_on_submit():
         # Don't update current or available balance directly through this form
         # as these should be managed by transactions
-        account.name = form.name.data
+        account.name = form.account_name.data
         account.account_type = form.account_type.data
         account.description = form.description.data
         account.account_number = form.account_number.data
