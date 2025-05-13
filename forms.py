@@ -811,10 +811,21 @@ class TreasuryAccountForm(FlaskForm):
         ('TAX', 'Tax Account'),
         ('DEBT_SERVICE', 'Debt Service Account')
     ], validators=[DataRequired()])
+    
+class TreasurySettlementForm(FlaskForm):
+    """Form for recording a manual settlement from a payment processor to a treasury account"""
+    account_id = SelectField('Treasury Account', validators=[DataRequired()], coerce=int)
+    processor_type = SelectField('Payment Processor', choices=[
+        ('stripe', 'Stripe'),
+        ('paypal', 'PayPal'),
+        ('pos', 'Point of Sale (POS)'),
+        ('other', 'Other')
+    ], validators=[DataRequired()])
+    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
     currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
-    opening_balance = FloatField('Opening Balance', validators=[DataRequired(), NumberRange(min=0)])
-    interest_rate = FloatField('Interest Rate (%)', validators=[Optional(), NumberRange(min=0, max=100)])
+    reference = StringField('External Reference', validators=[Optional(), Length(max=100)])
     description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
+    submit = SubmitField('Record Settlement')
     # Additional fields from the model
     target_balance = FloatField('Target Balance', validators=[Optional(), NumberRange(min=0)])
     minimum_balance = FloatField('Minimum Balance', validators=[Optional(), NumberRange(min=0)])
