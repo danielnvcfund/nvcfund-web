@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block title %}Treasury Payment Settlement Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+  <div class="row">
+    <div class="col-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('treasury.index') }}">Treasury</a></li>
+          <li class="breadcrumb-item active">Payment Settlement</li>
+        </ol>
+      </nav>
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Payment Processor Settlement</h1>
+        <div>
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#manualSettlementModal">
+            <i class="fas fa-plus me-1"></i> Manual Settlement
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Cards -->
+  <div class="row">
+    <!-- Stripe Account Status -->
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card border-left-primary h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Stripe Settlement Account</div>
+              {% if stripe_account %}
+                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stripe_account.name }}</div>
+                <div class="mt-2">
+                  <span class="badge bg-success">Linked</span>
+                  <span class="text-muted">{{ stripe_account.account_number }}</span>
+                </div>
+                <div class="mt-2">
+                  <span class="fw-bold">Balance:</span> 
+                  {{ stripe_account.current_balance|format_currency }} {{ stripe_account.currency }}
+                </div>
+              {% else %}
+                <div class="h5 mb-0 font-weight-bold text-gray-800">Not Configured</div>
+                <div class="mt-2">
+                  <span class="badge bg-warning text-dark">Not Linked</span>
+                </div>
+                <form action="{{ url_for('treasury_settlement.create_settlement_accounts') }}" method="POST" class="mt-2">
+                  <input type="hidden" name="processor_type" value="stripe">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-sm btn-outline-primary">Create Stripe Account</button>
+                </form>
+              {% endif %}
+            </div>
+            <div class="col-auto">
+              <i class="fab fa-stripe fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PayPal Account Status -->
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card border-left-info h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-info text-uppercase mb-1">PayPal Settlement Account</div>
+              {% if paypal_account %}
+                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ paypal_account.name }}</div>
+                <div class="mt-2">
+                  <span class="badge bg-success">Linked</span>
+                  <span class="text-muted">{{ paypal_account.account_number }}</span>
+                </div>
+                <div class="mt-2">
+                  <span class="fw-bold">Balance:</span> 
+                  {{ paypal_account.current_balance|format_currency }} {{ paypal_account.currency }}
+                </div>
+              {% else %}
+                <div class="h5 mb-0 font-weight-bold text-gray-800">Not Configured</div>
+                <div class="mt-2">
+                  <span class="badge bg-warning text-dark">Not Linked</span>
+                </div>
+                <form action="{{ url_for('treasury_settlement.create_settlement_accounts') }}" method="POST" class="mt-2">
+                  <input type="hidden" name="processor_type" value="paypal">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-sm btn-outline-info">Create PayPal Account</button>
+                </form>
+              {% endif %}
+            </div>
+            <div class="col-auto">
+              <i class="fab fa-paypal fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POS Account Status -->
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card border-left-success h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-success text-uppercase mb-1">POS Settlement Account</div>
+              {% if pos_account %}
+                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pos_account.name }}</div>
+                <div class="mt-2">
+                  <span class="badge bg-success">Linked</span>
+                  <span class="text-muted">{{ pos_account.account_number }}</span>
+                </div>
+                <div class="mt-2">
+                  <span class="fw-bold">Balance:</span> 
+                  {{ pos_account.current_balance|format_currency }} {{ pos_account.currency }}
+                </div>
+              {% else %}
+                <div class="h5 mb-0 font-weight-bold text-gray-800">Not Configured</div>
+                <div class="mt-2">
+                  <span class="badge bg-warning text-dark">Not Linked</span>
+                </div>
+                <form action="{{ url_for('treasury_settlement.create_settlement_accounts') }}" method="POST" class="mt-2">
+                  <input type="hidden" name="processor_type" value="pos">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-sm btn-outline-success">Create POS Account</button>
+                </form>
+              {% endif %}
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-cash-register fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settlement Actions -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Process Settlements</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Process All Settlements</h5>
+                  <p class="card-text">Automatically process settlements for all payment processors.</p>
+                  <form action="{{ url_for('treasury_settlement.process_settlements') }}" method="POST">
+                    <input type="hidden" name="processor" value="all">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                      <label for="days_back_all" class="form-label">Days to Process</label>
+                      <select class="form-select" id="days_back_all" name="days_back">
+                        <option value="1">1 day</option>
+                        <option value="3">3 days</option>
+                        <option value="7">7 days</option>
+                        <option value="30">30 days</option>
+                      </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Process All Settlements</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Process Individual Gateway</h5>
+                  <p class="card-text">Select a specific payment processor to settle.</p>
+                  <form action="{{ url_for('treasury_settlement.process_settlements') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                      <label for="processor" class="form-label">Payment Processor</label>
+                      <select class="form-select" id="processor" name="processor">
+                        <option value="stripe">Stripe</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="pos">POS System</option>
+                      </select>
+                    </div>
+                    <div class="mb-3">
+                      <label for="days_back" class="form-label">Days to Process</label>
+                      <select class="form-select" id="days_back" name="days_back">
+                        <option value="1">1 day</option>
+                        <option value="3">3 days</option>
+                        <option value="7">7 days</option>
+                        <option value="30">30 days</option>
+                      </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Process Settlement</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Settlements Table -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header">
+          <i class="fas fa-table me-1"></i>
+          Recent Settlements
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Processor</th>
+                  <th>Account</th>
+                  <th>Amount</th>
+                  <th>Reference</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for settlement in settlements %}
+                <tr>
+                  <td>{{ settlement.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                  <td>
+                    {% if 'stripe' in settlement.description|lower %}
+                      <span class="badge bg-primary">Stripe</span>
+                    {% elif 'paypal' in settlement.description|lower %}
+                      <span class="badge bg-info">PayPal</span>
+                    {% elif 'pos' in settlement.description|lower %}
+                      <span class="badge bg-success">POS</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Other</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if settlement.to_account %}
+                      {{ settlement.to_account.name }}
+                    {% else %}
+                      Unknown
+                    {% endif %}
+                  </td>
+                  <td>{{ settlement.amount|format_currency }} {{ settlement.currency }}</td>
+                  <td>{{ settlement.external_reference or 'N/A' }}</td>
+                  <td>{{ settlement.description }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="6" class="text-center">No settlement transactions found</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Manual Settlement Modal -->
+<div class="modal fade" id="manualSettlementModal" tabindex="-1" aria-labelledby="manualSettlementModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="manualSettlementModalLabel">Record Manual Settlement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{{ url_for('treasury_settlement.manual_settlement') }}" method="POST">
+          {{ form.csrf_token }}
+          
+          <div class="mb-3">
+            {{ form.account_id.label(class="form-label") }}
+            {{ form.account_id(class="form-select") }}
+          </div>
+          
+          <div class="mb-3">
+            {{ form.processor_type.label(class="form-label") }}
+            {{ form.processor_type(class="form-select") }}
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                {{ form.amount.label(class="form-label") }}
+                {{ form.amount(class="form-control", placeholder="0.00") }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                {{ form.currency.label(class="form-label") }}
+                {{ form.currency(class="form-select") }}
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            {{ form.reference.label(class="form-label") }}
+            {{ form.reference(class="form-control", placeholder="Optional external reference ID") }}
+          </div>
+          
+          <div class="mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control", rows="3", placeholder="Optional description of this settlement") }}
+          </div>
+          
+          <div class="d-grid">
+            {{ form.submit(class="btn btn-primary") }}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -90,6 +90,7 @@ class TransactionType(enum.Enum):
     PAYMENT = "PAYMENT"
     PAYOUT = "PAYOUT"                                 # For PayPal payout transactions
     SETTLEMENT = "SETTLEMENT"
+    PAYMENT_SETTLEMENT = "PAYMENT_SETTLEMENT"          # For settlements from payment processors to treasury accounts
     SWIFT_LETTER_OF_CREDIT = "SWIFT_LETTER_OF_CREDIT"  # For SWIFT MT760 Letters of Credit
     SWIFT_FUND_TRANSFER = "SWIFT_FUND_TRANSFER"        # For SWIFT MT103 customer fund transfers
     SWIFT_INSTITUTION_TRANSFER = "SWIFT_INSTITUTION_TRANSFER"  # For SWIFT MT202 financial institution transfers
@@ -103,6 +104,7 @@ class TransactionType(enum.Enum):
     OFF_LEDGER_TRANSFER = "OFF_LEDGER_TRANSFER"        # For general off-ledger transfers
     TOKEN_EXCHANGE = "TOKEN_EXCHANGE"                  # For AFD1-NVCT token exchange transactions
     EDI_PAYMENT = "EDI_PAYMENT"                        # For Electronic Data Interchange payments
+    POS_PAYMENT = "POS_PAYMENT"                        # For Point of Sale payment transactions
     EDI_ACH_TRANSFER = "EDI_ACH_TRANSFER"              # For ACH transfers via EDI
     EDI_WIRE_TRANSFER = "EDI_WIRE_TRANSFER"            # For wire transfers via EDI
     TREASURY_TRANSFER = "TREASURY_TRANSFER"            # For treasury management transfers
