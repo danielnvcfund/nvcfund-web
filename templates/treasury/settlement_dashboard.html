@@ -1,31 +1,24 @@
-{% extends "base.html" %}
+{% extends 'layout.html' %}
 
-{% block title %}Treasury Payment Settlement Dashboard{% endblock %}
-
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/treasury-settlement.js') }}"></script>
-{% endblock %}
+{% block title %}Settlement Dashboard{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4 mt-4 settlement-dashboard">
-  <div class="row">
-    <div class="col-12">
-      <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
-          <li class="breadcrumb-item"><a href="{{ url_for('treasury.index') }}">Treasury</a></li>
-          <li class="breadcrumb-item active">Payment Settlement</li>
-        </ol>
-      </nav>
+<div class="container-fluid">
+  <h1 class="h3 mb-2 text-gray-800">Treasury Settlement Dashboard</h1>
+  <p class="mb-4">
+    Monitor and manage settlements between payment processors and treasury accounts.
+  </p>
 
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Payment Processor Settlement</h1>
-        <div>
-          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#manualSettlementModal">
-            <i class="fas fa-plus me-1"></i> Manual Settlement
-          </button>
-        </div>
-      </div>
+  <!-- Page Header with Action Buttons -->
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h5 mb-0 text-gray-800">Settlement Operations</h1>
+    <div>
+      <a href="{{ url_for('treasury_settlement.unsettled_payments') }}" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm mr-2">
+        <i class="fas fa-list fa-sm text-white-50"></i> View Unsettled Payments
+      </a>
+      <a href="{{ url_for('treasury.dashboard') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+        <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Treasury
+      </a>
     </div>
   </div>
 
@@ -59,7 +52,9 @@
         <div class="card-body">
           <div class="row no-gutters align-items-center">
             <div class="col mr-2">
-              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Stripe Settlement Account</div>
+              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                Stripe Settlement Account
+              </div>
               {% if stripe_account %}
                 <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stripe_account.name }}</div>
                 <div class="mt-2">
@@ -79,16 +74,17 @@
                 <div class="mt-2">
                   <span class="badge bg-warning text-dark">Not Linked</span>
                 </div>
-                <form action="{{ url_for('treasury_settlement.create_settlement_accounts') }}" method="POST" class="mt-2">
-                  <input type="hidden" name="processor_type" value="stripe">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <button type="submit" class="btn btn-sm btn-outline-primary">Create Stripe Account</button>
-                </form>
+                <div class="mt-2 text-muted">
+                  <small>Create a treasury account with description "Stripe Settlement Account"</small>
+                </div>
               {% endif %}
             </div>
             <div class="col-auto">
-              <i class="fab fa-stripe fa-2x text-gray-300"></i>
+              <i class="fab fa-stripe-s fa-2x text-gray-300"></i>
             </div>
+          </div>
+          <div class="mt-3">
+            <a href="{{ url_for('treasury_settlement.manual_settlement', processor='stripe') }}" class="btn btn-primary btn-sm">Settle Stripe Payments</a>
           </div>
         </div>
       </div>
@@ -100,7 +96,9 @@
         <div class="card-body">
           <div class="row no-gutters align-items-center">
             <div class="col mr-2">
-              <div class="text-xs font-weight-bold text-info text-uppercase mb-1">PayPal Settlement Account</div>
+              <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                PayPal Settlement Account
+              </div>
               {% if paypal_account %}
                 <div class="h5 mb-0 font-weight-bold text-gray-800">{{ paypal_account.name }}</div>
                 <div class="mt-2">
@@ -120,16 +118,17 @@
                 <div class="mt-2">
                   <span class="badge bg-warning text-dark">Not Linked</span>
                 </div>
-                <form action="{{ url_for('treasury_settlement.create_settlement_accounts') }}" method="POST" class="mt-2">
-                  <input type="hidden" name="processor_type" value="paypal">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <button type="submit" class="btn btn-sm btn-outline-info">Create PayPal Account</button>
-                </form>
+                <div class="mt-2 text-muted">
+                  <small>Create a treasury account with description "PayPal Settlement Account"</small>
+                </div>
               {% endif %}
             </div>
             <div class="col-auto">
               <i class="fab fa-paypal fa-2x text-gray-300"></i>
             </div>
+          </div>
+          <div class="mt-3">
+            <a href="{{ url_for('treasury_settlement.manual_settlement', processor='paypal') }}" class="btn btn-info btn-sm">Settle PayPal Payments</a>
           </div>
         </div>
       </div>
@@ -141,7 +140,9 @@
         <div class="card-body">
           <div class="row no-gutters align-items-center">
             <div class="col mr-2">
-              <div class="text-xs font-weight-bold text-success text-uppercase mb-1">POS Settlement Account</div>
+              <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                POS Settlement Account
+              </div>
               {% if pos_account %}
                 <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pos_account.name }}</div>
                 <div class="mt-2">
@@ -161,138 +162,56 @@
                 <div class="mt-2">
                   <span class="badge bg-warning text-dark">Not Linked</span>
                 </div>
-                <form action="{{ url_for('treasury_settlement.create_settlement_accounts') }}" method="POST" class="mt-2">
-                  <input type="hidden" name="processor_type" value="pos">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <button type="submit" class="btn btn-sm btn-outline-success">Create POS Account</button>
-                </form>
+                <div class="mt-2 text-muted">
+                  <small>Create a treasury account with description "POS Settlement Account"</small>
+                </div>
               {% endif %}
             </div>
             <div class="col-auto">
               <i class="fas fa-cash-register fa-2x text-gray-300"></i>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Settlement Actions -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="card">
-        <div class="card-header bg-primary text-white">
-          <h5 class="mb-0">Process Settlements</h5>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-6">
-              <div class="card">
-                <div class="card-body">
-                  <h5 class="card-title">Process All Settlements</h5>
-                  <p class="card-text">Automatically process settlements for all payment processors.</p>
-                  <form action="{{ url_for('treasury_settlement.process_settlements') }}" method="POST">
-                    <input type="hidden" name="processor" value="all">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="mb-3">
-                      <label for="days_back_all" class="form-label">Days to Process</label>
-                      <select class="form-select" id="days_back_all" name="days_back">
-                        <option value="1">1 day</option>
-                        <option value="3">3 days</option>
-                        <option value="7">7 days</option>
-                        <option value="30">30 days</option>
-                      </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Process All Settlements</button>
-                  </form>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="card">
-                <div class="card-body">
-                  <h5 class="card-title">Process Individual Gateway</h5>
-                  <p class="card-text">Select a specific payment processor to settle.</p>
-                  <form action="{{ url_for('treasury_settlement.process_settlements') }}" method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="mb-3">
-                      <label for="processor" class="form-label">Payment Processor</label>
-                      <select class="form-select" id="processor" name="processor">
-                        <option value="stripe">Stripe</option>
-                        <option value="paypal">PayPal</option>
-                        <option value="pos">POS System</option>
-                      </select>
-                    </div>
-                    <div class="mb-3">
-                      <label for="days_back" class="form-label">Days to Process</label>
-                      <select class="form-select" id="days_back" name="days_back">
-                        <option value="1">1 day</option>
-                        <option value="3">3 days</option>
-                        <option value="7">7 days</option>
-                        <option value="30">30 days</option>
-                      </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Process Settlement</button>
-                  </form>
-                </div>
-              </div>
-            </div>
+          <div class="mt-3">
+            <a href="{{ url_for('treasury_settlement.manual_settlement', processor='pos') }}" class="btn btn-success btn-sm">Settle POS Payments</a>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Recent Settlements Table -->
+  <!-- Recent Settlements -->
   <div class="row">
     <div class="col-12">
-      <div class="card mb-4">
-        <div class="card-header">
-          <i class="fas fa-table me-1"></i>
-          Recent Settlements
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Recent Settlement Transactions</h6>
         </div>
         <div class="card-body">
           <div class="table-responsive">
-            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+            <table class="table table-bordered" id="settlements-table" width="100%" cellspacing="0">
               <thead>
                 <tr>
                   <th>Date</th>
-                  <th>Processor</th>
-                  <th>Account</th>
+                  <th>Source</th>
                   <th>Amount</th>
+                  <th>Currency</th>
                   <th>Reference</th>
-                  <th>Description</th>
+                  <th>Treasury Account</th>
                 </tr>
               </thead>
               <tbody>
-                {% for settlement in settlements %}
+                {% for settlement in recent_settlements %}
                 <tr>
-                  <td>{{ settlement.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                  <td>
-                    {% if 'stripe' in settlement.description|lower %}
-                      <span class="badge bg-primary">Stripe</span>
-                    {% elif 'paypal' in settlement.description|lower %}
-                      <span class="badge bg-info">PayPal</span>
-                    {% elif 'pos' in settlement.description|lower %}
-                      <span class="badge bg-success">POS</span>
-                    {% else %}
-                      <span class="badge bg-secondary">Other</span>
-                    {% endif %}
-                  </td>
-                  <td>
-                    {% if settlement.to_account %}
-                      {{ settlement.to_account.name }}
-                    {% else %}
-                      Unknown
-                    {% endif %}
-                  </td>
-                  <td>{{ settlement.amount|format_currency }} {{ settlement.currency }}</td>
-                  <td>{{ settlement.external_reference or 'N/A' }}</td>
+                  <td>{{ settlement.transaction_date|datetime }}</td>
                   <td>{{ settlement.description }}</td>
+                  <td>{{ settlement.amount|format_currency }}</td>
+                  <td>{{ settlement.currency }}</td>
+                  <td>{{ settlement.reference_number }}</td>
+                  <td>{{ settlement.treasury_account.name }}</td>
                 </tr>
                 {% else %}
                 <tr>
-                  <td colspan="6" class="text-center">No settlement transactions found</td>
+                  <td colspan="6" class="text-center">No recent settlement transactions found.</td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -303,60 +222,36 @@
     </div>
   </div>
 </div>
+{% endblock %}
 
-<!-- Manual Settlement Modal -->
-<div class="modal fade" id="manualSettlementModal" tabindex="-1" aria-labelledby="manualSettlementModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="manualSettlementModalLabel">Record Manual Settlement</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form action="{{ url_for('treasury_settlement.manual_settlement') }}" method="POST">
-          {{ form.csrf_token }}
-          
-          <div class="mb-3">
-            {{ form.account_id.label(class="form-label") }}
-            {{ form.account_id(class="form-select") }}
-          </div>
-          
-          <div class="mb-3">
-            {{ form.processor_type.label(class="form-label") }}
-            {{ form.processor_type(class="form-select") }}
-          </div>
-          
-          <div class="row">
-            <div class="col-md-6">
-              <div class="mb-3">
-                {{ form.amount.label(class="form-label") }}
-                {{ form.amount(class="form-control", placeholder="0.00") }}
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="mb-3">
-                {{ form.currency.label(class="form-label") }}
-                {{ form.currency(class="form-select") }}
-              </div>
-            </div>
-          </div>
-          
-          <div class="mb-3">
-            {{ form.reference.label(class="form-label") }}
-            {{ form.reference(class="form-control", placeholder="Optional external reference ID") }}
-          </div>
-          
-          <div class="mb-3">
-            {{ form.description.label(class="form-label") }}
-            {{ form.description(class="form-control", rows="3", placeholder="Optional description of this settlement") }}
-          </div>
-          
-          <div class="d-grid">
-            {{ form.submit(class="btn btn-primary") }}
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
+{% block extra_js %}
+<script>
+  $(document).ready(function() {
+    // Fetch settlement statistics
+    $.ajax({
+      url: "{{ url_for('treasury_settlement.settlement_stats') }}",
+      method: "GET",
+      dataType: "json",
+      success: function(data) {
+        // Update Stripe stats
+        $("#stripe-count-30d").text(data.stripe.count);
+        $("#stripe-total-30d").text("$" + data.stripe.total.toFixed(2) + " USD");
+        
+        // Update PayPal stats
+        $("#paypal-count-30d").text(data.paypal.count);
+        $("#paypal-total-30d").text("$" + data.paypal.total.toFixed(2) + " USD");
+        
+        // Update POS stats
+        $("#pos-count-30d").text(data.pos.count);
+        $("#pos-total-30d").text("$" + data.pos.total.toFixed(2) + " USD");
+        
+        // Update total settlement volume
+        $("#total-settled-30d").text("$" + data.total_settled.toFixed(2) + " USD");
+      },
+      error: function(xhr, status, error) {
+        console.error("Error fetching settlement statistics:", error);
+      }
+    });
+  });
+</script>
 {% endblock %}

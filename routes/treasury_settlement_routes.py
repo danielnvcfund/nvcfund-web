@@ -1,190 +1,150 @@
 """
 Treasury Settlement Routes
--------------------------
 
-Routes for handling treasury settlement operations between payment processors
-and treasury accounts.
+This module handles routes for treasury settlement operations between 
+payment processors and treasury accounts.
 """
 
 import logging
 from datetime import datetime, timedelta
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from flask_login import login_required, current_user
-from sqlalchemy import desc, func
+
+from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
+from sqlalchemy import func, desc
 
 from app import db
-from models import (
-    TreasuryAccount, 
-    TreasuryTransaction,
-    TransactionType,
-    TransactionStatus
-)
-from forms import TreasurySettlementForm
-import treasury_payment_bridge
+from models import User, TransactionType, TreasuryAccount, TreasuryTransaction
+from payment_models import StripePayment, PayPalPayment, POSPayment
 from auth import admin_required
 
 logger = logging.getLogger(__name__)
 
-# Create Blueprint
+# Create blueprint
 treasury_settlement_bp = Blueprint('treasury_settlement', __name__, url_prefix='/treasury/settlement')
 
-@treasury_settlement_bp.route('/')
-@login_required
+@bp.route('/dashboard')
+@admin_required
 def settlement_dashboard():
-    """Show treasury settlement dashboard"""
+    """Settlement dashboard showing status of payment bridges"""
     
-    # Get linked accounts for each processor
-    stripe_account = treasury_payment_bridge.get_processor_linked_account('stripe')
-    paypal_account = treasury_payment_bridge.get_processor_linked_account('paypal')
-    pos_account = treasury_payment_bridge.get_processor_linked_account('pos')
+    # Get treasury accounts for each payment processor
+    stripe_account = TreasuryAccount.query.filter_by(account_type='OPERATING', 
+                                                   description='Stripe Settlement Account').first()
     
-    # Get recent settlement transactions
-    settlements = TreasuryTransaction.query.filter(
-        TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT
-    ).order_by(
-        TreasuryTransaction.created_at.desc()
-    ).limit(20).all()
+    paypal_account = TreasuryAccount.query.filter_by(account_type='OPERATING', 
+                                                   description='PayPal Settlement Account').first()
     
-    # Create form for manual settlements
-    form = TreasurySettlementForm()
-    form.account_id.choices = [(a.id, f"{a.name} ({a.currency})") for a in 
-                               TreasuryAccount.query.filter_by(is_active=True).all()]
+    pos_account = TreasuryAccount.query.filter_by(account_type='OPERATING', 
+                                                description='POS Settlement Account').first()
     
-    return render_template(
-        'treasury/settlement_dashboard.html',
-        stripe_account=stripe_account,
-        paypal_account=paypal_account,
-        pos_account=pos_account,
-        settlements=settlements,
-        form=form
-    )
+    # Get settlement transactions for the last 30 days
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    
+    settlement_transactions = TreasuryTransaction.query.filter(
+        TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT,
+        TreasuryTransaction.transaction_date >= thirty_days_ago
+    ).order_by(desc(TreasuryTransaction.transaction_date)).limit(10).all()
+    
+    return render_template('treasury/settlement_dashboard.html', 
+                          stripe_account=stripe_account,
+                          paypal_account=paypal_account,
+                          pos_account=pos_account,
+                          recent_settlements=settlement_transactions)
 
-@treasury_settlement_bp.route('/process', methods=['POST'])
-@login_required
+
+@bp.route('/stats')
 @admin_required
-def process_settlements():
-    """Process settlements for payment processors"""
-    processor = request.form.get('processor', 'all')
-    days_back = int(request.form.get('days_back', 1))
-    
-    results = {}
-    
-    if processor == 'all':
-        # Process all payment processors
-        results = treasury_payment_bridge.process_all_settlements(days_back)
-        
-        # Calculate totals
-        total_count = sum(count for count, _ in results.values())
-        total_amount = sum(amount for _, amount in results.values())
-        
-        flash(f"Processed {total_count} settlements across all payment processors, totaling approximately {total_amount:.2f} USD", "success")
-    else:
-        # Process a specific payment processor
-        if processor == 'stripe':
-            count, amount = treasury_payment_bridge.process_stripe_settlements(days_back)
-            results[processor] = (count, amount)
-            flash(f"Processed {count} Stripe settlements totaling {amount:.2f} USD", "success")
-        
-        elif processor == 'paypal':
-            count, amount = treasury_payment_bridge.process_paypal_settlements(days_back)
-            results[processor] = (count, amount)
-            flash(f"Processed {count} PayPal settlements totaling {amount:.2f} USD", "success")
-        
-        elif processor == 'pos':
-            count, amount = treasury_payment_bridge.process_pos_settlements(days_back)
-            results[processor] = (count, amount)
-            flash(f"Processed {count} POS settlements totaling {amount:.2f} USD", "success")
-        
-        else:
-            flash(f"Invalid processor type: {processor}", "error")
-    
-    return redirect(url_for('treasury_settlement.settlement_dashboard'))
-
-@treasury_settlement_bp.route('/create_accounts', methods=['POST'])
-@login_required
-@admin_required
-def create_settlement_accounts():
-    """Create settlement accounts for payment processors"""
-    processor_type = request.form.get('processor_type')
-    
-    if not processor_type:
-        flash("No processor type specified", "error")
-        return redirect(url_for('treasury_settlement.settlement_dashboard'))
-    
-    # Create the settlement account
-    account = treasury_payment_bridge.create_settlement_account(processor_type)
-    
-    if account:
-        flash(f"Created {processor_type} settlement account: {account.name}", "success")
-    else:
-        flash(f"Failed to create {processor_type} settlement account", "error")
-    
-    return redirect(url_for('treasury_settlement.settlement_dashboard'))
-
-@treasury_settlement_bp.route('/manual', methods=['POST'])
-@login_required
-@admin_required
-def manual_settlement():
-    """Record a manual settlement from a payment processor to a treasury account"""
-    form = TreasurySettlementForm()
-    form.account_id.choices = [(a.id, f"{a.name} ({a.currency})") for a in 
-                               TreasuryAccount.query.filter_by(is_active=True).all()]
-    
-    if form.validate_on_submit():
-        transaction = treasury_payment_bridge.manual_settlement(
-            account_id=form.account_id.data,
-            processor_type=form.processor_type.data,
-            amount=form.amount.data,
-            currency=form.currency.data,
-            reference=form.reference.data,
-            description=form.description.data
-        )
-        
-        if transaction:
-            flash(f"Recorded manual settlement of {form.amount.data} {form.currency.data} to account {transaction.to_account.name}", "success")
-        else:
-            flash("Failed to record manual settlement", "error")
-    else:
-        for field, errors in form.errors.items():
-            for error in errors:
-                flash(f"Error in {getattr(form, field).label.text}: {error}", "error")
-    
-    return redirect(url_for('treasury_settlement.settlement_dashboard'))
-
-@treasury_settlement_bp.route('/stats')
-@login_required
 def settlement_stats():
-    """Get settlement statistics in JSON format"""
-    stats = treasury_payment_bridge.get_settlement_statistics()
+    """Get settlement statistics for the dashboard"""
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
     
-    # Convert to JSON-serializable format
-    result = {
-        'total_settled_30d': stats.get('total_settled_30d', 0),
-        'processors': {}
-    }
+    # Get Stripe settlement stats
+    stripe_settlements = TreasuryTransaction.query.filter(
+        TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT,
+        TreasuryTransaction.description.like('%Stripe%'),
+        TreasuryTransaction.transaction_date >= thirty_days_ago
+    ).all()
     
-    for processor, details in stats.get('processor_totals', {}).items():
-        result['processors'][processor] = {
-            'total_30d': details.get('total_30d', 0),
-            'count_30d': details.get('count_30d', 0),
-            'currency': details.get('currency', 'USD'),
-            'has_account': details.get('account') is not None
-        }
-        
-        if details.get('account'):
-            result['processors'][processor]['account_name'] = details['account'].name
-            result['processors'][processor]['account_balance'] = details['account'].current_balance
+    stripe_count = len(stripe_settlements)
+    stripe_total = sum(t.amount for t in stripe_settlements)
     
-    # Most recent settlements
-    result['most_recent'] = {}
-    for processor, tx in stats.get('most_recent', {}).items():
-        if tx:
-            result['most_recent'][processor] = {
-                'date': tx.created_at.isoformat(),
-                'amount': tx.amount,
-                'currency': tx.currency
-            }
-        else:
-            result['most_recent'][processor] = None
+    # Get PayPal settlement stats
+    paypal_settlements = TreasuryTransaction.query.filter(
+        TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT,
+        TreasuryTransaction.description.like('%PayPal%'),
+        TreasuryTransaction.transaction_date >= thirty_days_ago
+    ).all()
     
-    return jsonify(result)
+    paypal_count = len(paypal_settlements)
+    paypal_total = sum(t.amount for t in paypal_settlements)
+    
+    # Get POS settlement stats
+    pos_settlements = TreasuryTransaction.query.filter(
+        TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT,
+        TreasuryTransaction.description.like('%POS%'),
+        TreasuryTransaction.transaction_date >= thirty_days_ago
+    ).all()
+    
+    pos_count = len(pos_settlements)
+    pos_total = sum(t.amount for t in pos_settlements)
+    
+    # Get total settlement amount
+    total_settled = stripe_total + paypal_total + pos_total
+    
+    return jsonify({
+        'stripe': {
+            'count': stripe_count,
+            'total': stripe_total
+        },
+        'paypal': {
+            'count': paypal_count,
+            'total': paypal_total
+        },
+        'pos': {
+            'count': pos_count,
+            'total': pos_total
+        },
+        'total_settled': total_settled
+    })
+
+
+@bp.route('/settle/<processor>')
+@admin_required
+def manual_settlement(processor):
+    """Manually trigger settlement for a payment processor"""
+    from treasury_payment_bridge import SettlementBridge
+    
+    # Initialize the settlement bridge
+    bridge = SettlementBridge()
+    
+    if processor == 'stripe':
+        settlement_id, amount = bridge.settle_stripe_payments()
+        flash(f'Stripe settlement complete. Settled {amount} USD.', 'success')
+    
+    elif processor == 'paypal':
+        settlement_id, amount = bridge.settle_paypal_payments()
+        flash(f'PayPal settlement complete. Settled {amount} USD.', 'success')
+    
+    elif processor == 'pos':
+        settlement_id, amount = bridge.settle_pos_payments()
+        flash(f'POS settlement complete. Settled {amount} USD.', 'success')
+    
+    else:
+        flash(f'Unknown payment processor: {processor}', 'danger')
+    
+    return redirect(url_for('treasury_settlement.settlement_dashboard'))
+
+
+@bp.route('/unsettled-payments')
+@admin_required
+def unsettled_payments():
+    """View unsettled payments for all processors"""
+    
+    # Get unsettled payments for each processor
+    stripe_payments = StripePayment.query.filter_by(is_settled=False, status='succeeded').all()
+    paypal_payments = PayPalPayment.query.filter_by(is_settled=False, status='COMPLETED').all()
+    pos_payments = POSPayment.query.filter_by(is_settled=False, status='completed').all()
+    
+    return render_template('treasury/unsettled_payments.html',
+                          stripe_payments=stripe_payments,
+                          paypal_payments=paypal_payments,
+                          pos_payments=pos_payments)
