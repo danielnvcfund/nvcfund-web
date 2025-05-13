@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVC Banking Platform - Blockchain Admin</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+        }
+        .logo {
+            margin-bottom: 20px;
+        }
+        .logo img {
+            max-width: 150px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .card {
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+        .button {
+            display: inline-block;
+            background-color: #4a6fa5;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: background-color 0.2s;
+        }
+        .button:hover {
+            background-color: #3a5982;
+        }
+        .primary {
+            background-color: #4a6fa5;
+        }
+        .secondary {
+            background-color: #6c757d;
+        }
+        .warning {
+            background-color: #dc3545;
+        }
+        .success {
+            background-color: #28a745;
+        }
+        .info {
+            background-color: #17a2b8;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+        }
+        .network-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .network-testnet {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .network-mainnet {
+            background-color: #28a745;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='images/nvc_logo.png') }}" alt="NVC Banking Platform Logo">
+        </div>
+        
+        <h1>Blockchain Administration</h1>
+        
+        <div class="card">
+            <h2>Current Network: 
+                <span class="network-badge network-{{ 'mainnet' if current_network == 'mainnet' else 'testnet' }}">
+                    {{ current_network.upper() }}
+                </span>
+            </h2>
+            <p>Access the complete blockchain administration dashboard with advanced tools for network management and token operations.</p>
+            <a href="{{ url_for('blockchain_admin.index') }}" class="button primary">Open Admin Dashboard</a>
+        </div>
+        
+        <div class="card">
+            <h2>Gas Estimator</h2>
+            <p>Estimate gas costs for contract deployments and transactions on Ethereum mainnet.</p>
+            <a href="{{ url_for('blockchain_admin.gas_estimator_view') }}" class="button info">Gas Cost Calculator</a>
+        </div>
+        
+        <div class="card">
+            <h2>Mainnet Readiness</h2>
+            <p>Check the platform's readiness for migrating NVCT tokens to Ethereum mainnet.</p>
+            <a href="{{ url_for('blockchain_admin.mainnet_readiness') }}" class="button success">Readiness Assessment</a>
+        </div>
+        
+        <div class="card">
+            <h2>Quick Navigation</h2>
+            <p>Access other important sections of the platform.</p>
+            <a href="{{ url_for('main.index') }}" class="button secondary">Main Dashboard</a>
+            <a href="{{ url_for('admin.index') }}" class="button secondary">Admin Panel</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -7,6 +7,14 @@ import time
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Register blockchain redirect routes
+try:
+    from blockchain_status_redirect import register_blockchain_redirect
+    register_blockchain_redirect(app)
+    logger.info("Blockchain status direct access routes registered successfully")
+except Exception as e:
+    logger.error(f"Error registering blockchain redirect routes: {str(e)}")
+
 # Database migration for tx_hash column
 def run_tx_hash_migration():
     """Run tx_hash migration in background to avoid blocking startup"""

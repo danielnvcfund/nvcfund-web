@@ -116,7 +116,7 @@
                 <div class="card-body">
                     <p>Important administrative actions for blockchain operations.</p>
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="card mb-3">
                                 <div class="card-body">
                                     <h5 class="card-title">Database Schema</h5>
@@ -125,12 +125,21 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="card mb-3">
                                 <div class="card-body">
                                     <h5 class="card-title">Run Assessment</h5>
                                     <p class="card-text">Perform a full mainnet readiness assessment.</p>
                                     <a href="{{ url_for('blockchain_admin.mainnet_readiness') }}?refresh=true" class="btn btn-primary">Run Assessment</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Gas Cost Estimator</h5>
+                                    <p class="card-text">Estimate gas costs for mainnet transactions.</p>
+                                    <a href="{{ url_for('blockchain_admin.gas_estimator_view') }}" class="btn btn-primary">View Costs</a>
                                 </div>
                             </div>
                         </div>
