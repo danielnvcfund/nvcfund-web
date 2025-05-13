@@ -4,7 +4,7 @@ Database connection retry mechanism for increased resilience
 import time
 import logging
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
-from flask import g
+from flask import g, request, render_template
 
 logger = logging.getLogger(__name__)
 

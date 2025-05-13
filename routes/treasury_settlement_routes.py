@@ -12,7 +12,7 @@ from flask import Blueprint, render_template, request, jsonify, flash, redirect,
 from sqlalchemy import func, desc
 
 from app import db
-from models import User, TransactionType, TreasuryTransactionType, TreasuryAccount, TreasuryTransaction
+from models import User, TreasuryAccount, TreasuryTransaction, TreasuryTransactionType
 from payment_models import StripePayment, PayPalPayment, POSPayment
 from auth import admin_required
 

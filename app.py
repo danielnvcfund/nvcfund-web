@@ -151,6 +151,14 @@ def create_app():
     # Initialize extensions with app
     db.init_app(app)
     
+    # Add database connection retry mechanism
+    try:
+        from db_retry import setup_db_retry_handlers
+        setup_db_retry_handlers(app, db)
+        logger.info("Database retry mechanism initialized")
+    except Exception as e:
+        logger.error(f"Failed to initialize database retry mechanism: {str(e)}")
+    
     # Disable CSRF protection completely for API testing
     app.config['WTF_CSRF_ENABLED'] = False
     
