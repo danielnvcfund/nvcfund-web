@@ -76,7 +76,7 @@
       <div class="card h-100 shadow-sm">
         <div class="card-body">
           <h6 class="text-muted mb-1">Total Balance ({{ currency }})</h6>
-          <h3 class="mb-0">{{ "%.2f"|format(balance) }}</h3>
+          <h3 class="mb-0">{{ balance|format_number }}</h3>
           <small class="text-muted">Across {{ accounts|selectattr('currency', 'equalto', currency)|list|length }} accounts</small>
         </div>
       </div>
@@ -156,7 +156,7 @@
                   <h6 class="mb-1">{{ account.name }}</h6>
                   <small class="text-muted">{{ account.account_type.value|title }}</small>
                 </div>
-                <h6 class="mb-0">{{ account.currency }} {{ "%.2f"|format(account.current_balance) }}</h6>
+                <h6 class="mb-0">{{ account.currency }} {{ account.current_balance|format_number }}</h6>
               </div>
               
               <div class="mt-2">
