@@ -2,8 +2,12 @@
 
 {% block title %}Treasury Payment Settlement Dashboard{% endblock %}
 
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/treasury-settlement.js') }}"></script>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid px-4 mt-4">
+<div class="container-fluid px-4 mt-4 settlement-dashboard">
   <div class="row">
     <div class="col-12">
       <nav aria-label="breadcrumb">
@@ -44,6 +48,10 @@
                   <span class="fw-bold">Balance:</span> 
                   {{ stripe_account.current_balance|format_currency }} {{ stripe_account.currency }}
                 </div>
+                <div class="mt-2 text-muted">
+                  <small>Recent settlements: <span id="stripe-count-30d">-</span></small><br>
+                  <small>30-day total: <span id="stripe-total-30d">-</span></small>
+                </div>
               {% else %}
                 <div class="h5 mb-0 font-weight-bold text-gray-800">Not Configured</div>
                 <div class="mt-2">
@@ -80,6 +88,10 @@
                 <div class="mt-2">
                   <span class="fw-bold">Balance:</span> 
                   {{ paypal_account.current_balance|format_currency }} {{ paypal_account.currency }}
+                </div>
+                <div class="mt-2 text-muted">
+                  <small>Recent settlements: <span id="paypal-count-30d">-</span></small><br>
+                  <small>30-day total: <span id="paypal-total-30d">-</span></small>
                 </div>
               {% else %}
                 <div class="h5 mb-0 font-weight-bold text-gray-800">Not Configured</div>

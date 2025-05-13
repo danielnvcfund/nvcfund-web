@@ -264,6 +264,14 @@ def create_app():
         except Exception as e:
             logger.error(f"Error importing trust portfolio models: {str(e)}")
             logger.warning("Application will run without trust portfolio functionality")
+            
+        # Import payment models
+        try:
+            import payment_models  # noqa: F401
+            logger.info("Payment models imported successfully")
+        except Exception as e:
+            logger.error(f"Error importing payment models: {str(e)}")
+            logger.warning("Application will run without payment settlement functionality")
         
         # Create database tables
         db.create_all()
