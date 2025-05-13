@@ -823,6 +823,7 @@ class TreasuryAccountForm(FlaskForm):
     ], validators=[DataRequired()])
     description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
     current_balance = FloatField('Current Balance', validators=[Optional()])
+    opening_balance = FloatField('Opening Balance', validators=[Optional()])
     target_balance = FloatField('Target Balance', validators=[Optional(), NumberRange(min=0)])
     minimum_balance = FloatField('Minimum Balance', validators=[Optional(), NumberRange(min=0)])
     maximum_balance = FloatField('Maximum Balance', validators=[Optional(), NumberRange(min=0)])
