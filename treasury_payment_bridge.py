@@ -7,7 +7,7 @@ to treasury accounts and creating appropriate transaction records.
 
 import logging
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Tuple, Optional, List
 
 from sqlalchemy import or_, func, desc
@@ -259,7 +259,7 @@ class SettlementBridge:
         }
         
         # Calculate cutoff date
-        cutoff_date = datetime.utcnow() - datetime.timedelta(days=days)
+        cutoff_date = datetime.utcnow() - timedelta(days=days)
         
         # Get Stripe settlement statistics
         stripe_payments = StripePayment.query.filter(

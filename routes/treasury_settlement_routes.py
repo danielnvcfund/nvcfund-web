@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 # Create blueprint
 treasury_settlement_bp = Blueprint('treasury_settlement', __name__, url_prefix='/treasury/settlement')
 
-@bp.route('/dashboard')
+@treasury_settlement_bp.route('/dashboard')
 @admin_required
 def settlement_dashboard():
     """Settlement dashboard showing status of payment bridges"""
@@ -51,7 +51,7 @@ def settlement_dashboard():
                           recent_settlements=settlement_transactions)
 
 
-@bp.route('/stats')
+@treasury_settlement_bp.route('/stats')
 @admin_required
 def settlement_stats():
     """Get settlement statistics for the dashboard"""
@@ -107,7 +107,7 @@ def settlement_stats():
     })
 
 
-@bp.route('/settle/<processor>')
+@treasury_settlement_bp.route('/settle/<processor>')
 @admin_required
 def manual_settlement(processor):
     """Manually trigger settlement for a payment processor"""
@@ -134,7 +134,7 @@ def manual_settlement(processor):
     return redirect(url_for('treasury_settlement.settlement_dashboard'))
 
 
-@bp.route('/unsettled-payments')
+@treasury_settlement_bp.route('/unsettled-payments')
 @admin_required
 def unsettled_payments():
     """View unsettled payments for all processors"""
