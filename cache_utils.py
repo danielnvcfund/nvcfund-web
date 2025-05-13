@@ -135,3 +135,6 @@ def cached(expire_seconds=3600, key_prefix=''):
             return result
         return wrapper
     return decorator
+
+# Blockchain connection cache expiry (5 minutes)
+WEB3_CACHE_EXPIRY = 300  # seconds
