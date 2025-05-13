@@ -14,7 +14,7 @@ from sqlalchemy import or_, func, desc
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
-from models import TransactionType, TransactionStatus, TreasuryAccount, TreasuryTransaction
+from models import TransactionStatus, TreasuryAccount, TreasuryTransaction, TreasuryTransactionType
 from payment_models import StripePayment, PayPalPayment, POSPayment
 
 logger = logging.getLogger(__name__)

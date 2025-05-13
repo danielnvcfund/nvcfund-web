@@ -12,7 +12,7 @@ from flask import Blueprint, render_template, request, jsonify, flash, redirect,
 from sqlalchemy import func, desc
 
 from app import db
-from models import User, TransactionType, TreasuryAccount, TreasuryTransaction
+from models import User, TransactionType, TreasuryTransactionType, TreasuryAccount, TreasuryTransaction
 from payment_models import StripePayment, PayPalPayment, POSPayment
 from auth import admin_required
 
@@ -40,7 +40,7 @@ def settlement_dashboard():
     thirty_days_ago = datetime.utcnow() - timedelta(days=30)
     
     settlement_transactions = TreasuryTransaction.query.filter(
-        TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT,
+        TreasuryTransaction.transaction_type == TreasuryTransactionType.EXTERNAL_TRANSFER,
         TreasuryTransaction.created_at >= thirty_days_ago
     ).order_by(desc(TreasuryTransaction.created_at)).limit(10).all()
     
@@ -59,7 +59,7 @@ def settlement_stats():
     
     # Get Stripe settlement stats
     stripe_settlements = TreasuryTransaction.query.filter(
-        TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT,
+        TreasuryTransaction.transaction_type == TreasuryTransactionType.EXTERNAL_TRANSFER,
         TreasuryTransaction.description.like('%Stripe%'),
         TreasuryTransaction.created_at >= thirty_days_ago
     ).all()
@@ -69,7 +69,7 @@ def settlement_stats():
     
     # Get PayPal settlement stats
     paypal_settlements = TreasuryTransaction.query.filter(
-        TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT,
+        TreasuryTransaction.transaction_type == TreasuryTransactionType.EXTERNAL_TRANSFER,
         TreasuryTransaction.description.like('%PayPal%'),
         TreasuryTransaction.created_at >= thirty_days_ago
     ).all()
@@ -79,7 +79,7 @@ def settlement_stats():
     
     # Get POS settlement stats
     pos_settlements = TreasuryTransaction.query.filter(
-        TreasuryTransaction.transaction_type == TransactionType.PAYMENT_SETTLEMENT,
+        TreasuryTransaction.transaction_type == TreasuryTransactionType.EXTERNAL_TRANSFER,
         TreasuryTransaction.description.like('%POS%'),
         TreasuryTransaction.created_at >= thirty_days_ago
     ).all()
