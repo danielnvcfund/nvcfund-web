@@ -158,7 +158,7 @@
               <div class="col-md-4">
                 <div class="form-group">
                   {{ form.maximum_balance.label(class="form-label") }}
-                  {{ form.maximum_balance(class="form-control" + (" is-invalid" if form.maximum_balance.errors else ""), type="number", step="0.01") }}
+                  {{ form.maximum_balance(class="form-control" + (" is-invalid" if form.maximum_balance.errors else "")) }}
                   {% if form.maximum_balance.errors %}
                   <div class="invalid-feedback">
                     {% for error in form.maximum_balance.errors %}
@@ -292,7 +292,8 @@
         document.getElementById('opening_balance'),
         document.getElementById('target_balance'),
         document.getElementById('minimum_balance'),
-        document.getElementById('maximum_balance')
+        document.getElementById('maximum_balance'),
+        document.getElementById('interest_rate')  // Also format interest rate field
       ];
       
       numberInputs.forEach(input => {
