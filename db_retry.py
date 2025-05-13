@@ -4,6 +4,7 @@ Database connection retry mechanism for increased resilience
 import time
 import logging
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
+from sqlalchemy import text
 from flask import g, request, render_template
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ def setup_db_retry_handlers(app, db):
         while retry_count < max_retries:
             try:
                 # Test connection with a simple query
-                db.session.execute("SELECT 1")
+                db.session.execute(text("SELECT 1"))
                 # Connection is good, return None to continue request processing
                 return None
             except (OperationalError, SQLAlchemyError) as e:
@@ -63,7 +64,9 @@ def initialize_database_with_retry(app, db):
         try:
             with app.app_context():
                 # Test database connection before initializing
-                db.engine.connect().close()
+                conn = db.engine.connect()
+                conn.execute(text("SELECT 1"))
+                conn.close()
                 logger.info("Database connection established")
                 
                 # Import models to ensure they're registered
