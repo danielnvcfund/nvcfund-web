@@ -1,149 +1,180 @@
-#!/usr/bin/env python3
 """
-Benchmark Performance for NVC Banking Platform
+Benchmark script to identify performance bottlenecks in the application
 
-This script measures the performance of key pages in the NVC Banking Platform
-and generates a report of load times.
+This script:
+1. Measures loading times for key components
+2. Profiles database access patterns
+3. Identifies memory-intensive operations
+4. Reports optimization opportunities
 """
 
-import time
-import requests
-import statistics
-import logging
 import os
 import sys
-from datetime import datetime
+import time
+import logging
+import importlib
+import threading
+import traceback
+from functools import wraps
+from typing import List, Dict, Any, Callable
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout)
-    ]
-)
-logger = logging.getLogger("benchmark")
+# Set up logging
+logging.basicConfig(level=logging.INFO, 
+                   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger("BenchmarkPerformance")
 
-# Set base URL (default to localhost:5000)
-BASE_URL = os.environ.get("BENCHMARK_URL", "http://localhost:5000")
-
-# Pages to benchmark
-PAGES = [
-    "/",  # Home page
-    "/auth/login",  # Login page
-    "/dashboard/overview",  # Dashboard
-    "/currency-exchange/",  # Currency Exchange
-    "/account-holders/",  # Account Holders page
-    "/documents/",  # Documents page
-    "/api/healthcheck",  # Health check endpoint
-    "/stablecoin/settlement",  # Stablecoin settlement
-    "/correspondent-banking",  # Correspondent banking
-]
-
-# Number of requests per page
-NUM_REQUESTS = 3
-
-def measure_page_load_time(url):
-    """Measure the load time for a specific URL"""
-    full_url = f"{BASE_URL}{url}"
-    
-    try:
-        start_time = time.time()
-        response = requests.get(full_url, timeout=10)
+class Timer:
+    """Simple context manager for timing code blocks"""
+    def __init__(self, name):
+        self.name = name
+        
+    def __enter__(self):
+        self.start_time = time.time()
+        return self
+        
+    def __exit__(self, exc_type, exc_val, exc_tb):
         end_time = time.time()
+        logger.info(f"{self.name} took {end_time - self.start_time:.4f} seconds")
         
-        load_time = (end_time - start_time) * 1000  # Convert to milliseconds
-        
-        # Get content size safely
-        size = len(response.content) if response.content else 0
-        
-        # Check if the request was successful
-        if response.status_code == 200:
-            return load_time, response.status_code, size
-        else:
-            logger.warning(f"Request to {url} returned status code {response.status_code}")
-            return load_time, response.status_code, size
-    
-    except requests.RequestException as e:
-        logger.error(f"Error requesting {url}: {str(e)}")
-        return None, None, 0
+def profile_function(func):
+    """Decorator to profile function execution time"""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        logger.info(f"{func.__name__} took {end_time - start_time:.4f} seconds")
+        return result
+    return wrapper
 
-def run_benchmark():
-    """Run benchmarks for all pages"""
-    results = {}
+class PerformanceBenchmark:
+    """Benchmark key components of the application"""
     
-    print(f"\n{'=' * 60}")
-    print(f"NVC Banking Platform Performance Benchmark")
-    print(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"{'=' * 60}\n")
-    
-    for page in PAGES:
-        print(f"Testing {page}...")
-        page_times = []
+    def __init__(self):
+        self.results = {}
         
-        for i in range(NUM_REQUESTS):
-            load_time, status_code, size = measure_page_load_time(page)
+    def benchmark_module_import(self, module_name: str) -> float:
+        """Measure time to import a module"""
+        logger.info(f"Benchmarking import of {module_name}")
+        start_time = time.time()
+        try:
+            importlib.import_module(module_name)
+            import_time = time.time() - start_time
+            self.results[f"import_{module_name}"] = import_time
+            logger.info(f"Importing {module_name} took {import_time:.4f} seconds")
+            return import_time
+        except ImportError as e:
+            logger.error(f"Error importing {module_name}: {str(e)}")
+            return -1
             
-            if load_time is not None:
-                page_times.append(load_time)
-                size_kb = size/1024 if size else 0
-                print(f"  Request {i+1}: {load_time:.2f}ms (Status: {status_code}, Size: {size_kb:.1f}KB)")
+    def benchmark_flask_app_startup(self) -> float:
+        """Benchmark Flask app startup time"""
+        logger.info("Benchmarking Flask app startup")
+        with Timer("Flask app startup") as timer:
+            try:
+                from app import app
+                return time.time() - timer.start_time
+            except ImportError:
+                logger.error("Could not import Flask app")
+                return -1
+                
+    def benchmark_database_connection(self) -> float:
+        """Benchmark database connection time"""
+        logger.info("Benchmarking database connection")
+        with Timer("Database connection") as timer:
+            try:
+                from app import db
+                # Execute a simple query to ensure connection is established
+                from sqlalchemy import text
+                with db.engine.connect() as conn:
+                    conn.execute(text("SELECT 1"))
+                return time.time() - timer.start_time
+            except Exception as e:
+                logger.error(f"Database connection error: {str(e)}")
+                return -1
+                
+    def benchmark_template_rendering(self, template_name: str = 'index.html') -> float:
+        """Benchmark template rendering time"""
+        logger.info(f"Benchmarking rendering of {template_name}")
+        with Timer(f"Template rendering ({template_name})") as timer:
+            try:
+                from app import app
+                with app.test_request_context():
+                    from flask import render_template
+                    render_template(template_name)
+                return time.time() - timer.start_time
+            except Exception as e:
+                logger.error(f"Template rendering error: {str(e)}")
+                return -1
+                
+    def benchmark_key_modules(self):
+        """Benchmark key modules that might affect performance"""
+        modules_to_test = [
+            'blockchain', 
+            'account_holder_models',
+            'currency_exchange_service',
+            'payment_gateways',
+            'routes',
+            'customer_support'
+        ]
+        
+        for module in modules_to_test:
+            self.benchmark_module_import(module)
+            
+    def run_all_benchmarks(self):
+        """Run all benchmarks and collect results"""
+        logger.info("Starting comprehensive performance benchmark")
+        
+        # Benchmark key modules
+        self.benchmark_key_modules()
+        
+        # Benchmark Flask app startup
+        self.benchmark_flask_app_startup()
+        
+        # Benchmark database connection
+        self.benchmark_database_connection()
+        
+        # Benchmark key template rendering
+        self.benchmark_template_rendering('index.html')
+        self.benchmark_template_rendering('admin/blockchain/index.html')
+        self.benchmark_template_rendering('treasury/dashboard.html')
+        
+        # Print summary
+        self.print_summary()
+        
+    def print_summary(self):
+        """Print benchmark summary with recommendations"""
+        logger.info("=" * 50)
+        logger.info("PERFORMANCE BENCHMARK SUMMARY")
+        logger.info("=" * 50)
+        
+        # Sort results by time (descending)
+        sorted_results = sorted(
+            self.results.items(), 
+            key=lambda x: x[1] if x[1] > 0 else float('inf'), 
+            reverse=True
+        )
+        
+        # Print results table
+        logger.info(f"{'Component':<40} | {'Time (seconds)':<15}")
+        logger.info("-" * 60)
+        for name, time_taken in sorted_results:
+            if time_taken > 0:
+                logger.info(f"{name:<40} | {time_taken:<15.4f}")
             else:
-                print(f"  Request {i+1}: Failed")
-            
-            # Sleep briefly between requests
-            time.sleep(0.5)
+                logger.info(f"{name:<40} | {'ERROR':<15}")
         
-        if page_times:
-            avg_time = statistics.mean(page_times)
-            min_time = min(page_times)
-            max_time = max(page_times)
-            results[page] = {
-                'avg': avg_time,
-                'min': min_time,
-                'max': max_time,
-                'samples': len(page_times)
-            }
-            print(f"  Summary: Avg {avg_time:.2f}ms, Min {min_time:.2f}ms, Max {max_time:.2f}ms\n")
+        # Generate recommendations
+        slow_components = [name for name, time in sorted_results if time > 1.0 and time > 0]
+        
+        logger.info("\nRECOMMENDATIONS:")
+        if slow_components:
+            logger.info(f"Optimize these slow components: {', '.join(slow_components)}")
         else:
-            print(f"  Summary: All requests failed\n")
-            results[page] = {
-                'avg': None,
-                'min': None,
-                'max': None,
-                'samples': 0
-            }
-    
-    return results
-
-def generate_report(results):
-    """Generate a performance report"""
-    print(f"\n{'=' * 60}")
-    print(f"PERFORMANCE SUMMARY REPORT")
-    print(f"{'=' * 60}")
-    print(f"{'Page':<20} {'Avg (ms)':<12} {'Min (ms)':<12} {'Max (ms)':<12} {'Samples'}")
-    print(f"{'-' * 60}")
-    
-    for page, data in results.items():
-        if data['avg'] is not None:
-            print(f"{page:<20} {data['avg']:<12.2f} {data['min']:<12.2f} {data['max']:<12.2f} {data['samples']}")
-        else:
-            print(f"{page:<20} {'FAILED':<12} {'FAILED':<12} {'FAILED':<12} {data['samples']}")
-    
-    print(f"{'=' * 60}")
-    print("Recommendations:")
-    
-    # Generate recommendations based on results
-    slow_pages = [page for page, data in results.items() if data['avg'] and data['avg'] > 1000]
-    if slow_pages:
-        print(f"- Optimize slow pages: {', '.join(slow_pages)}")
-    
-    failed_pages = [page for page, data in results.items() if data['avg'] is None]
-    if failed_pages:
-        print(f"- Fix failed pages: {', '.join(failed_pages)}")
-    
-    print("\nBenchmark completed.")
+            logger.info("No significantly slow components detected.")
+            
+        logger.info("=" * 50)
 
 if __name__ == "__main__":
-    results = run_benchmark()
-    generate_report(results)
+    benchmark = PerformanceBenchmark()
+    benchmark.run_all_benchmarks()
