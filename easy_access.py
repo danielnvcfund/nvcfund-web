@@ -24,9 +24,9 @@ def generate_links():
     
     # Generate links for admin pages
     admin_links = {
-        '✨ RECOMMENDED: Blockchain Features Guide': f'{base_url}/blockchain/guide',
+        '🔧 MAIN BLOCKCHAIN DASHBOARD (WHAT YOU\'RE LOOKING FOR)': f'{base_url}/admin/blockchain',
+        '✨ Blockchain Features Guide': f'{base_url}/blockchain/guide',
         '📊 Blockchain Status Page': f'{base_url}/blockchain/status',
-        '🔧 Blockchain Admin Dashboard': f'{base_url}/admin/blockchain',
         '✅ Mainnet Readiness': f'{base_url}/admin/blockchain/mainnet_readiness',
         '⛽ Gas Estimator': f'{base_url}/admin/blockchain/gas_estimator',
         '🔑 Login Page': f'{base_url}/login',

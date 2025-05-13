@@ -18,10 +18,16 @@ def redirect_to_blockchain():
     """Redirect to the blockchain status page"""
     return redirect(url_for('blockchain.index'))
     
+@blockchain_redirect_bp.route('/blockchain/dashboard', strict_slashes=False)
+def redirect_to_blockchain_dashboard():
+    """Redirect to the blockchain admin dashboard"""
+    return redirect(url_for('blockchain_admin.index'))
+    
 @blockchain_redirect_bp.route('/main/blockchain', strict_slashes=False)
 def redirect_from_main_to_blockchain():
     """Redirect from /main/blockchain to the blockchain status page"""
-    return redirect(url_for('blockchain.index'))
+    # This redirects to the admin blockchain dashboard, which is what the user is looking for
+    return redirect(url_for('blockchain_admin.index'))
 
 @blockchain_redirect_bp.route('/blockchain/status', strict_slashes=False)
 def redirect_to_blockchain_status():
