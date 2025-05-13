@@ -14,7 +14,7 @@ from sqlalchemy import or_, func, desc
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
-from models import TransactionType, TreasuryAccount, TreasuryTransaction
+from models import TransactionType, TransactionStatus, TreasuryAccount, TreasuryTransaction
 from payment_models import StripePayment, PayPalPayment, POSPayment
 
 logger = logging.getLogger(__name__)
@@ -86,7 +86,7 @@ class SettlementBridge:
             transaction.description = f"Stripe payment processor settlement - {len(payments)} payments"
             transaction.reference_number = settlement_id
             transaction.memo = f"Automated settlement of {len(payments)} Stripe payments"
-            transaction.status = "COMPLETED"
+            transaction.status = TransactionStatus.COMPLETED
             
             db.session.add(transaction)
             
@@ -141,17 +141,16 @@ class SettlementBridge:
         # Create treasury transaction
         try:
             # Begin transaction
-            transaction = TreasuryTransaction(
-                treasury_account_id=self.paypal_account.id,
-                amount=total_amount,
-                currency="USD",  # Assuming USD for now
-                transaction_type=TransactionType.PAYMENT_SETTLEMENT,
-                transaction_date=datetime.utcnow(),
-                description=f"PayPal payment processor settlement - {len(payments)} payments",
-                reference_number=settlement_id,
-                notes=f"Automated settlement of {len(payments)} PayPal payments",
-                transaction_status="completed"
-            )
+            transaction = TreasuryTransaction()
+            transaction.transaction_id = settlement_id
+            transaction.to_account_id = self.paypal_account.id
+            transaction.amount = total_amount
+            transaction.currency = "USD"  # Assuming USD for now
+            transaction.transaction_type = TransactionType.PAYMENT_SETTLEMENT
+            transaction.description = f"PayPal payment processor settlement - {len(payments)} payments"
+            transaction.reference_number = settlement_id
+            transaction.memo = f"Automated settlement of {len(payments)} PayPal payments"
+            transaction.status = TransactionStatus.COMPLETED
             
             db.session.add(transaction)
             
@@ -206,17 +205,16 @@ class SettlementBridge:
         # Create treasury transaction
         try:
             # Begin transaction
-            transaction = TreasuryTransaction(
-                treasury_account_id=self.pos_account.id,
-                amount=total_amount,
-                currency="USD",  # Assuming USD for now
-                transaction_type=TransactionType.PAYMENT_SETTLEMENT,
-                transaction_date=datetime.utcnow(),
-                description=f"POS payment processor settlement - {len(payments)} payments",
-                reference_number=settlement_id,
-                notes=f"Automated settlement of {len(payments)} POS payments",
-                transaction_status="completed"
-            )
+            transaction = TreasuryTransaction()
+            transaction.transaction_id = settlement_id
+            transaction.to_account_id = self.pos_account.id
+            transaction.amount = total_amount
+            transaction.currency = "USD"  # Assuming USD for now
+            transaction.transaction_type = TransactionType.PAYMENT_SETTLEMENT
+            transaction.description = f"POS payment processor settlement - {len(payments)} payments"
+            transaction.reference_number = settlement_id
+            transaction.memo = f"Automated settlement of {len(payments)} POS payments"
+            transaction.status = TransactionStatus.COMPLETED
             
             db.session.add(transaction)
             
