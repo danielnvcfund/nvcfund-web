@@ -66,7 +66,7 @@
                   {{ form.institution_id.label(class="form-label") }}
                   <div class="d-flex">
                     {{ form.institution_id(class="form-select" + (" is-invalid" if form.institution_id.errors else "")) }}
-                    <button type="button" id="btn-add-institution" class="btn btn-primary ms-2" style="min-width: 44px; height: 38px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 5;">
+                    <button type="button" id="btn-add-institution" class="btn btn-treasury-primary ms-2" style="min-width: 44px; height: 38px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 5;">
                       <i class="fas fa-plus"></i>
                     </button>
                   </div>
@@ -204,18 +204,18 @@
               </div>
               
               <div class="d-flex justify-content-end">
-                <button type="button" class="btn btn-outline-secondary btn-lg me-2" id="cancelInstitutionBtn">
+                <button type="button" class="btn btn-cancel btn-lg me-2" id="cancelInstitutionBtn">
                   <i class="fas fa-times me-1"></i>Cancel
                 </button>
-                <button type="button" class="btn btn-primary btn-lg" id="saveInstitutionBtn">
+                <button type="button" class="btn btn-save-institution btn-lg" id="saveInstitutionBtn">
                   <i class="fas fa-save me-1"></i>Save Institution
                 </button>
               </div>
             </div>
 
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-              <a href="{{ url_for('treasury.account_list') }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
-              {{ form.submit(class="btn btn-primary") }}
+              <a href="{{ url_for('treasury.account_list') }}" class="btn btn-cancel me-md-2">Cancel</a>
+              {{ form.submit(class="btn btn-treasury btn-treasury-primary") }}
             </div>
           </form>
         </div>
