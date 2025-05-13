@@ -215,7 +215,7 @@
                   {% endif %}
                 </small>
                 <span class="badge {% if transaction.status.name == 'COMPLETED' %}bg-success{% elif transaction.status.name == 'PENDING' %}bg-warning{% else %}bg-secondary{% endif %}">
-                  {{ transaction.currency }} {{ "%.2f"|format(transaction.amount) }}
+                  {{ transaction.currency }} {{ transaction.amount|format_number }}
                 </span>
               </div>
             </a>
@@ -246,7 +246,7 @@
                 <div><small>Due: {{ loan.next_payment_date.strftime('%Y-%m-%d') }}</small></div>
               </div>
               <div class="text-end">
-                <strong>{{ loan.currency }} {{ "%.2f"|format(loan.next_payment_amount) }}</strong>
+                <strong>{{ loan.currency }} {{ loan.next_payment_amount|format_number }}</strong>
                 <div>
                   <a href="{{ url_for('treasury.make_loan_payment', loan_id=loan.id) }}" class="btn btn-sm btn-outline-primary">Pay Now</a>
                 </div>
@@ -268,8 +268,8 @@
                 <div><small>Matures: {{ investment.maturity_date.strftime('%Y-%m-%d') }}</small></div>
               </div>
               <div class="text-end">
-                <strong>{{ investment.currency }} {{ "%.2f"|format(investment.calculate_maturity_value()) }}</strong>
-                <div><small>Initial: {{ investment.currency }} {{ "%.2f"|format(investment.amount) }}</small></div>
+                <strong>{{ investment.currency }} {{ investment.calculate_maturity_value()|format_number }}</strong>
+                <div><small>Initial: {{ investment.currency }} {{ investment.amount|format_number }}</small></div>
               </div>
             </div>
           </div>
