@@ -138,14 +138,14 @@ def dashboard():
     
     # Get upcoming cash flows
     upcoming_cash_flows = CashFlowForecast.query.filter(
-        CashFlowForecast.transaction_date >= datetime.date.today(),
-        CashFlowForecast.transaction_date <= datetime.date.today() + datetime.timedelta(days=30)
+        CashFlowForecast.transaction_date >= date.today(),
+        CashFlowForecast.transaction_date <= date.today() + timedelta(days=30)
     ).order_by(CashFlowForecast.transaction_date).all()
     
     # Get upcoming loan payments
     upcoming_loan_payments = TreasuryLoan.query.filter(
         TreasuryLoan.next_payment_date.isnot(None),
-        TreasuryLoan.next_payment_date <= datetime.date.today() + datetime.timedelta(days=30),
+        TreasuryLoan.next_payment_date <= date.today() + timedelta(days=30),
         TreasuryLoan.status == 'active'
     ).order_by(TreasuryLoan.next_payment_date).all()
     
@@ -501,7 +501,7 @@ def approve_transaction(transaction_id):
         
         # Update transaction status
         transaction.status = TransactionStatus.COMPLETED
-        transaction.approved_at = datetime.datetime.utcnow()
+        transaction.approved_at = datetime.utcnow()
         transaction.approved_by_id = current_user.id
         
         db.session.commit()
@@ -524,7 +524,7 @@ def reject_transaction(transaction_id):
         flash('This transaction cannot be rejected because it is not in a pending state.', 'warning')
     else:
         transaction.status = TransactionStatus.REJECTED
-        transaction.approved_at = datetime.datetime.utcnow()
+        transaction.approved_at = datetime.utcnow()
         transaction.approved_by_id = current_user.id
         db.session.commit()
         flash('Transaction has been rejected.', 'success')
@@ -736,11 +736,11 @@ def approve_investment(investment_id):
             
             # Update transaction and investment status
             transaction.status = TransactionStatus.COMPLETED
-            transaction.approved_at = datetime.datetime.utcnow()
+            transaction.approved_at = datetime.utcnow()
             transaction.approved_by_id = current_user.id
             
             investment.status = InvestmentStatus.ACTIVE
-            investment.approved_at = datetime.datetime.utcnow()
+            investment.approved_at = datetime.utcnow()
             investment.approved_by_id = current_user.id
             
             db.session.commit()
@@ -781,9 +781,9 @@ def mature_investment(investment_id):
             reference_number=investment.investment_id,
             status=TransactionStatus.COMPLETED,
             created_by=current_user.id,
-            execution_date=datetime.datetime.utcnow(),
+            execution_date=datetime.utcnow(),
             approval_user_id=current_user.id,
-            approval_date=datetime.datetime.utcnow()
+            approval_date=datetime.utcnow()
         )
         
         # Update account balance
@@ -793,7 +793,7 @@ def mature_investment(investment_id):
         
         # Update investment status
         investment.status = InvestmentStatus.COMPLETED
-        investment.actual_maturity_date = datetime.date.today()
+        investment.actual_maturity_date = date.today()
         investment.return_amount = maturity_value
         
         db.session.add(transaction)
@@ -947,7 +947,7 @@ def disburse_loan(loan_id):
         
         # Update transaction status
         transaction.status = TransactionStatus.COMPLETED
-        transaction.approved_at = datetime.datetime.utcnow()
+        transaction.approved_at = datetime.utcnow()
         transaction.approved_by_id = current_user.id
         
         db.session.commit()
@@ -1057,17 +1057,17 @@ def approve_loan_payment(loan_id, transaction_id):
         else:
             # Calculate next payment date and amount
             if loan.payment_frequency == 'monthly':
-                loan.next_payment_date = (loan.next_payment_date or datetime.date.today()) + datetime.timedelta(days=30)
+                loan.next_payment_date = (loan.next_payment_date or date.today()) + timedelta(days=30)
             elif loan.payment_frequency == 'quarterly':
-                loan.next_payment_date = (loan.next_payment_date or datetime.date.today()) + datetime.timedelta(days=90)
+                loan.next_payment_date = (loan.next_payment_date or date.today()) + timedelta(days=90)
             elif loan.payment_frequency == 'semi_annual':
-                loan.next_payment_date = (loan.next_payment_date or datetime.date.today()) + datetime.timedelta(days=182)
+                loan.next_payment_date = (loan.next_payment_date or date.today()) + timedelta(days=182)
             elif loan.payment_frequency == 'annual':
-                loan.next_payment_date = (loan.next_payment_date or datetime.date.today()) + datetime.timedelta(days=365)
+                loan.next_payment_date = (loan.next_payment_date or date.today()) + timedelta(days=365)
         
         # Update transaction status
         transaction.status = TransactionStatus.COMPLETED
-        transaction.approved_at = datetime.datetime.utcnow()
+        transaction.approved_at = datetime.utcnow()
         transaction.approved_by_id = current_user.id
         
         db.session.commit()
@@ -1145,18 +1145,18 @@ def new_cash_flow():
             current_date = start_date
             
             if form.recurrence_type.data == 'daily':
-                delta = datetime.timedelta(days=1)
+                delta = timedelta(days=1)
             elif form.recurrence_type.data == 'weekly':
-                delta = datetime.timedelta(weeks=1)
+                delta = timedelta(weeks=1)
             elif form.recurrence_type.data == 'monthly':
                 # Use the same day of next month
-                delta = datetime.timedelta(days=30)  # Approximate for simplicity
+                delta = timedelta(days=30)  # Approximate for simplicity
             elif form.recurrence_type.data == 'quarterly':
-                delta = datetime.timedelta(days=90)  # Approximate for simplicity
+                delta = timedelta(days=90)  # Approximate for simplicity
             elif form.recurrence_type.data == 'annual':
-                delta = datetime.timedelta(days=365)  # Approximate for simplicity
+                delta = timedelta(days=365)  # Approximate for simplicity
             else:
-                delta = datetime.timedelta(days=0)  # No recurrence
+                delta = timedelta(days=0)  # No recurrence
             
             if delta.days > 0:  # Only proceed if we have a valid recurrence
                 current_date += delta
