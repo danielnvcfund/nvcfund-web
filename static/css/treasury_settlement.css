@@ -341,8 +341,19 @@
 }
 
 .actions-dropdown {
-    position: relative;
+    position: static !important;
     z-index: 1030;
+}
+
+.actions-dropdown .dropdown-menu {
+    min-width: 200px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background-color: #1e2630;
+    z-index: 9999;
+    position: absolute;
+    overflow: visible;
+    transform: none !important;
 }
 
 .actions-dropdown .dropdown-item {

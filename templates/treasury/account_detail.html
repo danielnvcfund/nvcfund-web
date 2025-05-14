@@ -92,33 +92,25 @@
                 <a href="{{ url_for('treasury.edit_account', account_id=account.id) }}" class="btn btn-outline-primary me-2">
                   <i class="fas fa-edit me-1"></i> Edit
                 </a>
-                <div class="btn-group actions-dropdown">
+                <div class="dropdown actions-dropdown">
                   <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fas fa-plus me-1"></i> Actions
                   </button>
-                  <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                      <a class="dropdown-item" href="{{ url_for('treasury.new_transaction') }}?from_account_id={{ account.id }}">
-                        <i class="fas fa-exchange-alt me-1"></i> New Transaction
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="{{ url_for('treasury.new_investment') }}?account_id={{ account.id }}">
-                        <i class="fas fa-chart-line me-1"></i> New Investment
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="{{ url_for('treasury.new_cash_flow') }}?account_id={{ account.id }}">
-                        <i class="fas fa-calendar-alt me-1"></i> Add Cash Flow
-                      </a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                      <a class="dropdown-item text-info" href="{{ url_for('treasury.new_loan') }}?account_id={{ account.id }}">
-                        <i class="fas fa-money-bill-wave me-1"></i> New Loan
-                      </a>
-                    </li>
-                  </ul>
+                  <div class="dropdown-menu dropdown-menu-end">
+                    <a class="dropdown-item" href="{{ url_for('treasury.new_transaction') }}?from_account_id={{ account.id }}">
+                      <i class="fas fa-exchange-alt me-1"></i> New Transaction
+                    </a>
+                    <a class="dropdown-item" href="{{ url_for('treasury.new_investment') }}?account_id={{ account.id }}">
+                      <i class="fas fa-chart-line me-1"></i> New Investment
+                    </a>
+                    <a class="dropdown-item" href="{{ url_for('treasury.new_cash_flow') }}?account_id={{ account.id }}">
+                      <i class="fas fa-calendar-alt me-1"></i> Add Cash Flow
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item text-info" href="{{ url_for('treasury.new_loan') }}?account_id={{ account.id }}">
+                      <i class="fas fa-money-bill-wave me-1"></i> New Loan
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
