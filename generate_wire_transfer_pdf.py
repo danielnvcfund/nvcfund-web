@@ -48,12 +48,16 @@ def generate_wire_transfer_pdf(wire_transfer_id):
         elif "FAILED" in status_value:
             status_class = "badge-danger"
         
+        # Format currency amount with commas
+        formatted_amount = "{:,.2f}".format(wire_transfer.amount)
+        
         # Render template with wire_transfer data
         html_content = render_template(
             'pdf/wire_transfer_receipt.html',
             wire_transfer=wire_transfer,
             formatted_date=formatted_date,
             status_class=status_class,
+            formatted_amount=formatted_amount,
             generation_date=datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')
         )
         
