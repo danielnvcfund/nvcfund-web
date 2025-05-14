@@ -72,6 +72,13 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+        
+    @property
+    def full_name(self):
+        """Return the user's full name or username if not available"""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        return self.username
 
 class TransactionStatus(enum.Enum):
     PENDING = "PENDING"
