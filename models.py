@@ -621,6 +621,22 @@ class WireTransferStatus(enum.Enum):
     REJECTED = "rejected"
     FAILED = "failed"
     CANCELLED = "cancelled"
+
+class WireTransferStatusHistory(db.Model):
+    """History of status changes for wire transfers"""
+    id = db.Column(db.Integer, primary_key=True)
+    wire_transfer_id = db.Column(db.Integer, db.ForeignKey('wire_transfer.id'), nullable=False)
+    status = db.Column(db.Enum(WireTransferStatus), nullable=False)
+    description = db.Column(db.String(256))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
+    # Relationships
+    wire_transfer = db.relationship('WireTransfer', backref=db.backref('status_history', lazy=True, order_by='WireTransferStatusHistory.timestamp'))
+    user = db.relationship('User')
+    
+    def __repr__(self):
+        return f"<WireTransferStatusHistory {self.status.value} at {self.timestamp}>"
     
 # Wire Transfer model moved to line ~1693
     

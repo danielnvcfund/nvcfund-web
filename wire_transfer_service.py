@@ -5,13 +5,14 @@ This module provides functionality for processing wire transfers through corresp
 import json
 import logging
 import uuid
-from datetime import datetime
-
+from datetime import datetime, timedelta
+from flask_login import current_user
 from sqlalchemy.exc import SQLAlchemyError
 
 from models import (
-    db, Transaction, WireTransfer, WireTransferStatus, TransactionType, TransactionStatus,
-    CorrespondentBank, User, FinancialInstitution, TreasuryTransaction
+    db, Transaction, WireTransfer, WireTransferStatus, WireTransferStatusHistory, 
+    TransactionType, TransactionStatus, CorrespondentBank, User, FinancialInstitution, 
+    TreasuryTransaction
 )
 from transaction_service import record_transaction
 
@@ -225,9 +226,18 @@ def process_wire_transfer(wire_transfer_id):
             return False, f"Wire transfer has already been processed (status: {wire_transfer.status.value})"
         
         # Update the status to processing
-        wire_transfer.status = WireTransferStatus.PROCESSING
         wire_transfer.initiated_at = datetime.utcnow()
-        db.session.commit()
+        
+        # Record the status change in history
+        success, error = record_status_change(
+            wire_transfer_id=wire_transfer_id,
+            status=WireTransferStatus.PROCESSING,
+            description="Wire transfer is being processed by bank system",
+            user_id=current_user.id if current_user and current_user.is_authenticated else None
+        )
+        
+        if not success:
+            logger.error(f"Failed to record status change: {error}")
         
         # Get the associated transaction and update its status
         transaction = Transaction.query.get(wire_transfer.transaction_id) if wire_transfer.transaction_id else None
@@ -308,10 +318,16 @@ def confirm_wire_transfer(wire_transfer_id, reference_number=None, confirmation_
         if confirmation_number:
             wire_transfer.confirmation_receipt = confirmation_number
         
-        # Update the status to confirmed/completed
-        wire_transfer.status = WireTransferStatus.COMPLETED
-        wire_transfer.completed_at = datetime.utcnow()
-        db.session.commit()
+        # Record the status change in history to COMPLETED
+        success, error = record_status_change(
+            wire_transfer_id=wire_transfer_id,
+            status=WireTransferStatus.COMPLETED,
+            description=f"Wire transfer completed with confirmation {confirmation_number}" if confirmation_number else "Wire transfer completed",
+            user_id=current_user.id if current_user and current_user.is_authenticated else None
+        )
+        
+        if not success:
+            logger.error(f"Failed to record status change to COMPLETED: {error}")
         
         # Get the associated transaction and update its status
         transaction = Transaction.query.get(wire_transfer.transaction_id) if wire_transfer.transaction_id else None
@@ -493,3 +509,252 @@ def get_wire_transfers_by_treasury_transaction(treasury_transaction_id):
     except Exception as e:
         logger.error(f"Error getting wire transfers for treasury transaction: {str(e)}")
         return []
+        
+def record_status_change(wire_transfer_id, status, description=None, user_id=None):
+    """
+    Record a status change in the wire transfer status history
+    
+    Args:
+        wire_transfer_id (int): The ID of the wire transfer
+        status (WireTransferStatus): The new status
+        description (str, optional): Description of the status change
+        user_id (int, optional): ID of the user who made the change
+        
+    Returns:
+        tuple: (success, error)
+            success (bool): Whether the status change was recorded successfully
+            error (str): Error message if any
+    """
+    try:
+        # Check if the wire transfer exists
+        wire_transfer = WireTransfer.query.get(wire_transfer_id)
+        if not wire_transfer:
+            return False, "Wire transfer not found"
+        
+        # Create a new status history entry
+        status_history = WireTransferStatusHistory(
+            wire_transfer_id=wire_transfer_id,
+            status=status,
+            description=description,
+            user_id=user_id
+        )
+        
+        # Update the wire transfer status
+        wire_transfer.status = status
+        if description:
+            wire_transfer.status_description = description
+            
+        # Update timestamps based on status
+        current_time = datetime.utcnow()
+        if status == WireTransferStatus.PROCESSING:
+            wire_transfer.processed_at = current_time
+        elif status == WireTransferStatus.COMPLETED:
+            wire_transfer.completed_at = current_time
+        
+        # Save to database
+        db.session.add(status_history)
+        db.session.commit()
+        
+        logger.info(f"Wire transfer {wire_transfer_id} status changed to {status.value}")
+        return True, None
+        
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logger.error(f"Database error recording status change: {str(e)}")
+        return False, f"Database error: {str(e)}"
+    
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error recording status change: {str(e)}")
+        return False, f"Error: {str(e)}"
+        
+def get_status_history(wire_transfer_id):
+    """
+    Get the complete status history for a wire transfer
+    
+    Args:
+        wire_transfer_id (int): The ID of the wire transfer
+    
+    Returns:
+        list: List of status history entries, or empty list if error
+    """
+    try:
+        history = WireTransferStatusHistory.query.filter_by(wire_transfer_id=wire_transfer_id).order_by(WireTransferStatusHistory.timestamp).all()
+        return history
+    except Exception as e:
+        logger.error(f"Error fetching status history: {str(e)}")
+        return []
+        
+def get_status_timestamps(wire_transfer_id):
+    """
+    Get timestamps for each status change
+    
+    Args:
+        wire_transfer_id (int): The ID of the wire transfer
+    
+    Returns:
+        dict: Dictionary with status values as keys and timestamps as values
+    """
+    try:
+        history = get_status_history(wire_transfer_id)
+        timestamps = {}
+        
+        # Create a dictionary with the latest timestamp for each status
+        for entry in history:
+            timestamps[entry.status.value] = entry.timestamp
+            
+        return timestamps
+    except Exception as e:
+        logger.error(f"Error getting status timestamps: {str(e)}")
+        return {}
+        
+def get_timeline_progress(wire_transfer):
+    """
+    Calculate the progress of a wire transfer through the standard timeline
+    
+    Args:
+        wire_transfer (WireTransfer): The wire transfer object
+    
+    Returns:
+        int: Progress value (0-5) through the timeline stages:
+             0=Not started, 1=Pending, 2=Processing, 3=Sent, 4=Confirmed, 5=Completed
+    """
+    try:
+        status_mapping = {
+            WireTransferStatus.PENDING: 1,
+            WireTransferStatus.PROCESSING: 2,
+            WireTransferStatus.SENT: 3,
+            WireTransferStatus.CONFIRMED: 4,
+            WireTransferStatus.COMPLETED: 5
+        }
+        
+        # Return the numeric progress value for the current status
+        # If the status isn't in our mapping (e.g., FAILED), return 0
+        return status_mapping.get(wire_transfer.status, 0)
+    except Exception as e:
+        logger.error(f"Error calculating timeline progress: {str(e)}")
+        return 0
+        
+def estimate_completion_time(wire_transfer):
+    """
+    Estimate the completion time for a wire transfer based on its current status
+    
+    Args:
+        wire_transfer (WireTransfer): The wire transfer object
+    
+    Returns:
+        datetime: Estimated completion time, or None if not estimable
+    """
+    try:
+        # If the transfer is already complete, failed, or cancelled, no need for estimate
+        if wire_transfer.status in [
+            WireTransferStatus.COMPLETED, WireTransferStatus.FAILED, 
+            WireTransferStatus.CANCELLED, WireTransferStatus.REJECTED
+        ]:
+            return None
+        
+        # Get the creation time
+        creation_time = wire_transfer.created_at
+        
+        # Standard processing times (in hours) from creation to completion
+        # based on current status
+        processing_times = {
+            WireTransferStatus.PENDING: 24,      # 24 hours total if still pending
+            WireTransferStatus.PROCESSING: 20,   # 20 hours total if processing
+            WireTransferStatus.SENT: 8,          # 8 hours total if already sent
+            WireTransferStatus.CONFIRMED: 2      # 2 hours total if confirmed
+        }
+        
+        # Calculate estimated completion time
+        hours_to_add = processing_times.get(wire_transfer.status, 24)
+        return creation_time + timedelta(hours=hours_to_add)
+        
+    except Exception as e:
+        logger.error(f"Error calculating estimated completion time: {str(e)}")
+        return None
+        
+def get_wire_transfer_with_tracking_data(wire_transfer_id):
+    """
+    Get a wire transfer with all tracking data needed for the tracking dashboard
+    
+    Args:
+        wire_transfer_id (int): The ID of the wire transfer
+    
+    Returns:
+        tuple: (wire_transfer, tracking_data, error)
+            wire_transfer (WireTransfer): The wire transfer object or None if error
+            tracking_data (dict): Dictionary with tracking data or empty dict if error 
+            error (str): Error message if any
+    """
+    try:
+        # Get the wire transfer
+        wire_transfer = WireTransfer.query.get(wire_transfer_id)
+        if not wire_transfer:
+            return None, {}, "Wire transfer not found"
+        
+        # Get status history
+        status_history = get_status_history(wire_transfer_id)
+        
+        # Process history entries for UI display
+        processed_history = []
+        for entry in status_history:
+            badge_class = "badge-warning"
+            if entry.status == WireTransferStatus.COMPLETED:
+                badge_class = "badge-success"
+            elif entry.status == WireTransferStatus.REJECTED:
+                badge_class = "badge-danger"
+            elif entry.status == WireTransferStatus.CANCELLED:
+                badge_class = "badge-secondary"
+            elif entry.status == WireTransferStatus.FAILED:
+                badge_class = "badge-danger"
+            elif entry.status == WireTransferStatus.SENT:
+                badge_class = "badge-info"
+            elif entry.status == WireTransferStatus.CONFIRMED:
+                badge_class = "badge-info"
+            elif entry.status == WireTransferStatus.PROCESSING:
+                badge_class = "badge-primary"
+                
+            processed_history.append({
+                'status': entry.status.value,
+                'timestamp': entry.timestamp,
+                'description': entry.description,
+                'badge_class': badge_class,
+                'user': entry.user.username if entry.user else "System"
+            })
+        
+        # Get status timestamps
+        status_timestamps = get_status_timestamps(wire_transfer_id)
+        
+        # Calculate timeline progress
+        timeline_progress = get_timeline_progress(wire_transfer)
+        
+        # Estimate completion time if not already completed
+        estimated_completion = estimate_completion_time(wire_transfer)
+        
+        # Determine status badge class for display
+        status_class = "warning"
+        if wire_transfer.status == WireTransferStatus.COMPLETED:
+            status_class = "success"
+        elif wire_transfer.status in [WireTransferStatus.FAILED, WireTransferStatus.REJECTED]:
+            status_class = "danger"
+        elif wire_transfer.status == WireTransferStatus.CANCELLED:
+            status_class = "secondary"
+        elif wire_transfer.status == WireTransferStatus.PROCESSING:
+            status_class = "primary"
+        elif wire_transfer.status in [WireTransferStatus.SENT, WireTransferStatus.CONFIRMED]:
+            status_class = "info"
+        
+        # Compile tracking data
+        tracking_data = {
+            'status_history': processed_history,
+            'status_timestamps': status_timestamps,
+            'timeline_progress': timeline_progress,
+            'estimated_completion': estimated_completion,
+            'status_class': status_class
+        }
+        
+        return wire_transfer, tracking_data, None
+        
+    except Exception as e:
+        logger.error(f"Error getting wire transfer tracking data: {str(e)}")
+        return None, {}, f"Error: {str(e)}"

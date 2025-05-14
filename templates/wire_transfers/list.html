@@ -52,9 +52,14 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="{{ url_for('wire_transfer.view_wire_transfer', wire_transfer_id=transfer.id) }}" class="btn btn-sm btn-info">
-                                        <i class="fas fa-eye"></i> View
-                                    </a>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('wire_transfer.view_wire_transfer', wire_transfer_id=transfer.id) }}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        <a href="{{ url_for('wire_transfer.track_wire_transfer', wire_transfer_id=transfer.id) }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-map-marker-alt"></i> Track
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}

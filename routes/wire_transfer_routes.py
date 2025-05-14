@@ -19,7 +19,8 @@ from forms import WireTransferForm
 from wire_transfer_service import (
     create_wire_transfer, process_wire_transfer, confirm_wire_transfer, 
     cancel_wire_transfer, reject_wire_transfer, get_wire_transfer,
-    get_user_wire_transfers, get_active_correspondent_banks
+    get_user_wire_transfers, get_active_correspondent_banks, 
+    get_wire_transfer_with_tracking_data, get_status_history
 )
 import decorators  # Import the decorators module
 from decorators import roles_required
@@ -223,6 +224,35 @@ def view_wire_transfer(wire_transfer_id):
         wire_transfer=wire_transfer,
         title=f"Wire Transfer {wire_transfer.reference_number}"
     )
+    
+@wire_transfer_bp.route('/<int:wire_transfer_id>/tracking', methods=['GET'])
+@login_required
+def track_wire_transfer(wire_transfer_id):
+    """Display the tracking dashboard for a wire transfer"""
+    try:
+        # Get the wire transfer with tracking data
+        wire_transfer, tracking_data, error = get_wire_transfer_with_tracking_data(wire_transfer_id)
+        
+        if error:
+            flash(f"Error retrieving wire transfer: {error}", "danger")
+            return redirect(url_for('wire_transfer.list_wire_transfers'))
+        
+        # Check if the user is authorized to view this wire transfer
+        if current_user.role.name != 'ADMIN' and wire_transfer.user_id != current_user.id:
+            flash("You are not authorized to view this wire transfer", "danger")
+            return redirect(url_for('wire_transfer.list_wire_transfers'))
+        
+        return render_template(
+            'wire_transfers/tracking.html',
+            wire_transfer=wire_transfer,
+            tracking_data=tracking_data,
+            title=f"Track Wire Transfer {wire_transfer.reference_number or wire_transfer.transfer_id}"
+        )
+        
+    except Exception as e:
+        current_app.logger.error(f"Error tracking wire transfer: {str(e)}")
+        flash(f"Error tracking wire transfer: {str(e)}", "danger")
+        return redirect(url_for('wire_transfer.list_wire_transfers'))
 
 
 @wire_transfer_bp.route('/<int:wire_transfer_id>/process', methods=['POST'])
