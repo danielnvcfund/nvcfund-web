@@ -10,7 +10,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from sqlalchemy.exc import SQLAlchemyError
 
-from models import db, User, WireTransfer, CorrespondentBank, Transaction, TreasuryAccount, TreasuryTransaction
+from models import db, User, WireTransfer, CorrespondentBank, Transaction, TreasuryAccount, TreasuryTransaction, TreasuryTransactionType, TransactionStatus
+from utils import generate_transaction_id, generate_unique_id
 from forms import WireTransferForm
 from wire_transfer_service import (
     create_wire_transfer, process_wire_transfer, confirm_wire_transfer, 
@@ -86,15 +87,21 @@ def new_wire_transfer():
                 flash("Insufficient funds in the selected treasury account", "danger")
                 return redirect(url_for('wire_transfer.new_wire_transfer'))
             
+            # Generate unique transaction ID and reference number for the wire transfer
+            transaction_id = generate_transaction_id()
+            reference_number = f"WIRE-{generate_unique_id()}"
+            
             # Create treasury transaction for the wire transfer
             treasury_tx = TreasuryTransaction(
-                account_id=treasury_account.id,
-                transaction_type="wire_transfer",
+                transaction_id=transaction_id,
+                from_account_id=treasury_account.id,
+                transaction_type=TreasuryTransactionType.EXTERNAL_TRANSFER,
                 amount=form.amount.data,
                 currency=treasury_account.currency,
                 description=f"Wire transfer to {form.beneficiary_name.data} via {form.beneficiary_bank_name.data}",
-                status="pending",
-                created_by_id=current_user.id
+                status=TransactionStatus.PENDING,
+                reference_number=reference_number,
+                created_by=current_user.id
             )
             db.session.add(treasury_tx)
             db.session.commit()
