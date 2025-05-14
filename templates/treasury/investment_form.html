@@ -103,7 +103,7 @@
               <div class="col-md-4">
                 <div class="form-group">
                   {{ form.principal_amount.label(class="form-label") }}
-                  {{ form.principal_amount(class="form-control") }}
+                  {{ form.principal_amount(class="form-control", id="principal_amount") }}
                   {% if form.principal_amount.errors %}
                   <div class="text-danger">
                     {% for error in form.principal_amount.errors %}
@@ -117,7 +117,36 @@
               <div class="col-md-4">
                 <div class="form-group">
                   {{ form.currency.label(class="form-label") }}
-                  {{ form.currency(class="form-select") }}
+                  <select class="form-select" id="currency" name="currency">
+                    <optgroup label="Primary NVC Currencies">
+                      {% for option in form.currency.choices %}
+                        {% if option[0] in ['NVCT', 'SPU', 'TU', 'AFD1', 'SFN', 'AKLUMI'] %}
+                          <option value="{{ option[0] }}" {% if option[0] == form.currency.data %}selected{% endif %}>{{ option[0] }}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </optgroup>
+                    <optgroup label="Major Currencies">
+                      {% for option in form.currency.choices %}
+                        {% if option[0] in ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD'] %}
+                          <option value="{{ option[0] }}" {% if option[0] == form.currency.data %}selected{% endif %}>{{ option[0] }}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </optgroup>
+                    <optgroup label="African Currencies">
+                      {% for option in form.currency.choices %}
+                        {% if option[0] in ['NGN', 'GHS', 'XOF', 'XAF', 'ZAR', 'KES', 'EGP'] %}
+                          <option value="{{ option[0] }}" {% if option[0] == form.currency.data %}selected{% endif %}>{{ option[0] }}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </optgroup>
+                    <optgroup label="Other Currencies">
+                      {% for option in form.currency.choices %}
+                        {% if option[0] not in ['NVCT', 'SPU', 'TU', 'AFD1', 'SFN', 'AKLUMI', 'USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD', 'NGN', 'GHS', 'XOF', 'XAF', 'ZAR', 'KES', 'EGP'] %}
+                          <option value="{{ option[0] }}" {% if option[0] == form.currency.data %}selected{% endif %}>{{ option[0] }}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </optgroup>
+                  </select>
                   {% if form.currency.errors %}
                   <div class="text-danger">
                     {% for error in form.currency.errors %}
@@ -260,6 +289,40 @@
 {% block scripts %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    // Format principal amount with commas
+    const principalAmountField = document.getElementById('principal_amount');
+    
+    // Format on input
+    principalAmountField.addEventListener('input', function(e) {
+      // Store cursor position
+      const cursorPos = this.selectionStart;
+      const originalLength = this.value.length;
+      
+      // Remove existing commas
+      let value = this.value.replace(/,/g, '');
+      
+      // Only process if we have a valid number
+      if (!isNaN(parseFloat(value))) {
+        // Format with commas
+        const parts = value.split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        const formatted = parts.join('.');
+        
+        // Update the field value
+        this.value = formatted;
+        
+        // Adjust cursor position based on added commas
+        const newLength = this.value.length;
+        const lengthDiff = newLength - originalLength;
+        this.setSelectionRange(cursorPos + lengthDiff, cursorPos + lengthDiff);
+      }
+    });
+    
+    // On form submit, strip commas before submitting
+    document.getElementById('investment-form').addEventListener('submit', function(e) {
+      principalAmountField.value = principalAmountField.value.replace(/,/g, '');
+    });
+    
     // Date validation
     document.getElementById('investment-form').addEventListener('submit', function(e) {
       const startDate = new Date(document.getElementById('start_date').value);
