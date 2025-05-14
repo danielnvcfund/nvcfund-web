@@ -777,11 +777,19 @@ def get_wire_transfer_with_tracking_data(wire_transfer_id):
                     # Determine badge class
                     badge_class = _get_badge_class_for_status(status_value)
                     
-                    # Extract timestamp safely
-                    if hasattr(entry, 'timestamp') and entry.timestamp:
-                        timestamp = entry.timestamp
-                    else:
-                        timestamp = datetime.utcnow()
+                    # Extract timestamp safely - handle both string and datetime
+                    timestamp = datetime.utcnow()
+                    if hasattr(entry, 'timestamp'):
+                        if entry.timestamp:
+                            if isinstance(entry.timestamp, datetime):
+                                timestamp = entry.timestamp
+                            elif isinstance(entry.timestamp, str):
+                                try:
+                                    # Try parsing the timestamp string
+                                    timestamp = datetime.strptime(entry.timestamp, "%Y-%m-%d %H:%M:%S")
+                                except (ValueError, TypeError):
+                                    # If parsing fails, use current time
+                                    timestamp = datetime.utcnow()
                     
                     # Extract description safely
                     if hasattr(entry, 'description') and entry.description:
@@ -819,9 +827,19 @@ def get_wire_transfer_with_tracking_data(wire_transfer_id):
             # Extract status timestamps from processed history
             for entry in processed_history:
                 status_value = entry['status']
-                timestamp = entry['timestamp']
+                timestamp_value = entry['timestamp']
+                
+                # Ensure the timestamp is always a datetime object
+                if isinstance(timestamp_value, str):
+                    try:
+                        # Try to parse string to datetime
+                        timestamp_value = datetime.strptime(timestamp_value, "%Y-%m-%d %H:%M:%S")
+                    except (ValueError, TypeError):
+                        # If parsing fails, use current time
+                        timestamp_value = datetime.utcnow()
+                        
                 # Keep only the most recent timestamp for each status
-                status_timestamps[status_value] = timestamp
+                status_timestamps[status_value] = timestamp_value
         except Exception as e:
             current_app.logger.error(f"Error creating status timestamps: {str(e)}")
         
@@ -880,8 +898,13 @@ def get_wire_transfer_with_tracking_data(wire_transfer_id):
         # Add transaction data if available
         if wire_transfer.transaction_id:
             try:
-                transaction = Transaction.query.get(wire_transfer.transaction_id)
-                tracking_data['transaction'] = transaction
+                # Instead of using get() which expects a primary key,
+                # use filter_by() with transaction_id which might be a string value
+                transaction = Transaction.query.filter_by(transaction_id=wire_transfer.transaction_id).first()
+                if transaction:
+                    tracking_data['transaction'] = transaction
+                else:
+                    current_app.logger.warning(f"No transaction found with ID: {wire_transfer.transaction_id}")
             except Exception as e:
                 current_app.logger.error(f"Error retrieving transaction: {str(e)}")
         
