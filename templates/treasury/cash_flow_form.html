@@ -1,0 +1,237 @@
+{% extends 'layout.html' %}
+
+{% block title %}{% if is_new %}New Cash Flow Forecast{% else %}Edit Cash Flow Forecast{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('treasury.dashboard') }}">Treasury</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('treasury.cash_flow_list') }}">Cash Flow Forecasts</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{% if is_new %}New Forecast{% else %}Edit Forecast{% endif %}</li>
+        </ol>
+      </nav>
+      
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{% if is_new %}New Cash Flow Forecast{% else %}Edit Cash Flow Forecast{% endif %}</h1>
+        <a href="{{ url_for('treasury.cash_flow_list') }}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-1"></i> Back to List
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">Forecast Details</h5>
+        </div>
+        <div class="card-body">
+          <form method="POST" id="cash-flow-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form.title.label(class="form-label") }}
+                  {{ form.title(class="form-control") }}
+                  {% if form.title.errors %}
+                  <div class="text-danger">
+                    {% for error in form.title.errors %}
+                    <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form.account_id.label(class="form-label") }}
+                  {{ form.account_id(class="form-select") }}
+                  {% if form.account_id.errors %}
+                  <div class="text-danger">
+                    {% for error in form.account_id.errors %}
+                    <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="form-group">
+                  {{ form.amount.label(class="form-label") }}
+                  {{ form.amount(class="form-control") }}
+                  {% if form.amount.errors %}
+                  <div class="text-danger">
+                    {% for error in form.amount.errors %}
+                    <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="form-group">
+                  {{ form.currency.label(class="form-label") }}
+                  {{ form.currency(class="form-select") }}
+                  {% if form.currency.errors %}
+                  <div class="text-danger">
+                    {% for error in form.currency.errors %}
+                    <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="form-group">
+                  {{ form.cash_flow_direction.label(class="form-label") }}
+                  {{ form.cash_flow_direction(class="form-select") }}
+                  {% if form.cash_flow_direction.errors %}
+                  <div class="text-danger">
+                    {% for error in form.cash_flow_direction.errors %}
+                    <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form.start_date.label(class="form-label") }}
+                  {{ form.start_date(class="form-control", type="date") }}
+                  {% if form.start_date.errors %}
+                  <div class="text-danger">
+                    {% for error in form.start_date.errors %}
+                    <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form.recurrence_type.label(class="form-label") }}
+                  {{ form.recurrence_type(class="form-select") }}
+                  {% if form.recurrence_type.errors %}
+                  <div class="text-danger">
+                    {% for error in form.recurrence_type.errors %}
+                    <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            
+            <div class="row mb-3 recurrence-options" id="recurrence-options" style="display: none;">
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form.end_date.label(class="form-label") }}
+                  {{ form.end_date(class="form-control", type="date") }}
+                  {% if form.end_date.errors %}
+                  <div class="text-danger">
+                    {% for error in form.end_date.errors %}
+                    <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  <small class="form-text text-muted">End date for recurring forecasts.</small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form.confidence_level.label(class="form-label") }}
+                  {{ form.confidence_level(class="form-select") }}
+                  {% if form.confidence_level.errors %}
+                  <div class="text-danger">
+                    {% for error in form.confidence_level.errors %}
+                    <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <div class="form-group">
+                  {{ form.description.label(class="form-label") }}
+                  {{ form.description(class="form-control", rows=3) }}
+                  {% if form.description.errors %}
+                  <div class="text-danger">
+                    {% for error in form.description.errors %}
+                    <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+              <a href="{{ url_for('treasury.cash_flow_list') }}" class="btn btn-outline-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary">
+                {% if is_new %}Create Forecast{% else %}Update Forecast{% endif %}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Show/hide recurrence options based on recurrence type
+    const recurrenceTypeSelect = document.getElementById('recurrence_type');
+    const recurrenceOptions = document.getElementById('recurrence-options');
+    
+    function toggleRecurrenceOptions() {
+      if (recurrenceTypeSelect.value === 'one_time') {
+        recurrenceOptions.style.display = 'none';
+      } else {
+        recurrenceOptions.style.display = 'flex';
+      }
+    }
+    
+    // Initial state
+    toggleRecurrenceOptions();
+    
+    // Add event listener
+    recurrenceTypeSelect.addEventListener('change', toggleRecurrenceOptions);
+    
+    // Form validation
+    document.getElementById('cash-flow-form').addEventListener('submit', function(e) {
+      const startDate = new Date(document.getElementById('start_date').value);
+      const endDate = document.getElementById('end_date').value ? new Date(document.getElementById('end_date').value) : null;
+      
+      // Validate end date is after start date for recurring forecasts
+      if (recurrenceTypeSelect.value !== 'one_time' && endDate && endDate <= startDate) {
+        e.preventDefault();
+        alert('End date must be after the start date for recurring forecasts.');
+      }
+    });
+  });
+</script>
+{% endblock %}
