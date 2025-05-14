@@ -17,7 +17,7 @@
                         </button>
                     {% endif %}
                     
-                    {% if current_user.role.name == 'ADMIN' or wire_transfer.created_by_id == current_user.id %}
+                    {% if current_user.role.name == 'ADMIN' or (wire_transfer.user and wire_transfer.user.id == current_user.id) %}
                         <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#cancelModal">
                             <i class="fas fa-times-circle"></i> Cancel Transfer
                         </button>
@@ -86,7 +86,7 @@
                                         </tr>
                                         <tr>
                                             <th>Created By:</th>
-                                            <td>{{ wire_transfer.created_by.username }}</td>
+                                            <td>{{ wire_transfer.user.username if wire_transfer.user else 'System' }}</td>
                                         </tr>
                                         <tr>
                                             <th>Created At:</th>
