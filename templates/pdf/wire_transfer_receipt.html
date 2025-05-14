@@ -7,12 +7,22 @@
 </head>
 <body>
     <div class="watermark">
-        {% if wire_transfer.status.value == 'completed' %}
-        COMPLETED
-        {% elif wire_transfer.status.value == 'cancelled' %}
-        CANCELLED
-        {% elif wire_transfer.status.value == 'failed' %}
-        FAILED
+        {% if wire_transfer.status.value is defined %}
+            {% if wire_transfer.status.value == 'completed' %}
+            COMPLETED
+            {% elif wire_transfer.status.value == 'cancelled' %}
+            CANCELLED
+            {% elif wire_transfer.status.value == 'failed' %}
+            FAILED
+            {% endif %}
+        {% else %}
+            {% if wire_transfer.status == 'completed' %}
+            COMPLETED
+            {% elif wire_transfer.status == 'cancelled' %}
+            CANCELLED
+            {% elif wire_transfer.status == 'failed' %}
+            FAILED
+            {% endif %}
         {% endif %}
     </div>
 
@@ -31,11 +41,17 @@
             </tr>
             <tr>
                 <th>Status</th>
-                <td><span class="badge {{ status_class }}">{{ wire_transfer.status.value|title }}</span></td>
+                <td><span class="badge {{ status_class }}">
+                    {% if wire_transfer.status.value is defined %}
+                        {{ wire_transfer.status.value|title }}
+                    {% else %}
+                        {{ wire_transfer.status|title }}
+                    {% endif %}
+                </span></td>
             </tr>
             <tr>
                 <th>Amount</th>
-                <td>{{ wire_transfer.currency }} {{ "%.2f"|format(wire_transfer.amount) }}</td>
+                <td>{{ wire_transfer.currency }} {{ "{:,.2f}".format(wire_transfer.amount) }}</td>
             </tr>
             <tr>
                 <th>Purpose</th>

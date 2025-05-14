@@ -69,7 +69,7 @@
             </tr>
             <tr>
                 <th>Amount:</th>
-                <td>{{ transaction.currency }} {{ "%.2f"|format(transaction.amount) }}</td>
+                <td>{{ transaction.currency }} {{ "{:,.2f}".format(transaction.amount) }}</td>
             </tr>
             <tr>
                 <th>Created Date:</th>
