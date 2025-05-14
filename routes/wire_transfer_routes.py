@@ -67,7 +67,7 @@ def new_wire_transfer():
     
     # Populate form choices
     form.correspondent_bank_id.choices = [
-        (bank.id, f"{bank.name} ({bank.swift_code})") for bank in correspondent_banks
+        (bank.id, f"{bank.name} - SWIFT: {bank.swift_code}") for bank in correspondent_banks
     ]
     
     form.treasury_account_id.choices = [
