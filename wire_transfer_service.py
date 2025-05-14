@@ -168,6 +168,9 @@ def create_wire_transfer(
         wire_transfer.message_to_beneficiary = message_to_beneficiary
         wire_transfer.status = WireTransferStatus.PENDING
         wire_transfer.user_id = user_id
+        # Set transfer_id to the reference number or another unique identifier
+        # This field is required by the database schema
+        wire_transfer.transfer_id = reference_number
         
         db.session.add(wire_transfer)
         db.session.commit()
