@@ -77,7 +77,13 @@
               <p class="text-muted mb-3">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
               
               <p class="mb-1"><strong>Created By:</strong></p>
-              <p class="text-muted mb-3">{{ transaction.created_by.username }}</p>
+              <p class="text-muted mb-3">
+                {% if transaction.created_by_user %}
+                  {{ transaction.created_by_user.username }}
+                {% else %}
+                  System
+                {% endif %}
+              </p>
               
               {% if transaction.completed_at %}
               <p class="mb-1"><strong>Completed Date:</strong></p>

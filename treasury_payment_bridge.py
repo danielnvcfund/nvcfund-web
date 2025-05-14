@@ -87,6 +87,7 @@ class SettlementBridge:
             transaction.reference_number = settlement_id
             transaction.memo = f"Automated settlement of {len(payments)} Stripe payments"
             transaction.status = TransactionStatus.COMPLETED
+            transaction.created_by = 1  # Set to admin user for automated processes
             
             db.session.add(transaction)
             
@@ -151,6 +152,7 @@ class SettlementBridge:
             transaction.reference_number = settlement_id
             transaction.memo = f"Automated settlement of {len(payments)} PayPal payments"
             transaction.status = TransactionStatus.COMPLETED
+            transaction.created_by = 1  # Set to admin user for automated processes
             
             db.session.add(transaction)
             
@@ -215,6 +217,7 @@ class SettlementBridge:
             transaction.reference_number = settlement_id
             transaction.memo = f"Automated settlement of {len(payments)} POS payments"
             transaction.status = TransactionStatus.COMPLETED
+            transaction.created_by = 1  # Set to admin user for automated processes
             
             db.session.add(transaction)
             
