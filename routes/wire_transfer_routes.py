@@ -6,12 +6,13 @@ This module handles the routes for the wire transfer functionality.
 import json
 from datetime import datetime
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, session
 from flask_login import login_required, current_user
 from sqlalchemy.exc import SQLAlchemyError
+from utils import save_form_data_to_session, restore_form_data_from_session, clear_form_data_from_session
 
 from models import db, User, WireTransfer, CorrespondentBank, Transaction, TreasuryAccount, TreasuryTransaction, TreasuryTransactionType, TransactionStatus
-from utils import generate_transaction_id, generate_unique_id
+from utils import generate_transaction_id, generate_unique_id, format_currency
 from forms import WireTransferForm
 from wire_transfer_service import (
     create_wire_transfer, process_wire_transfer, confirm_wire_transfer, 
@@ -74,8 +75,13 @@ def new_wire_transfer():
         for account in treasury_accounts
     ]
     
+    # Form data will be automatically restored when rendering the form
+    
     if form.validate_on_submit():
         try:
+            # Save form data to session in case we encounter an error
+            save_form_data_to_session(form)
+            
             # Get the treasury account
             treasury_account = TreasuryAccount.query.get(form.treasury_account_id.data)
             if not treasury_account:
@@ -130,6 +136,7 @@ def new_wire_transfer():
             
             if error:
                 db.session.rollback()
+                # We don't clear the form data here so it will be restored when the form loads again
                 flash(f"Error creating wire transfer: {error}", "danger")
                 return redirect(url_for('wire_transfer.new_wire_transfer'))
             
@@ -137,16 +144,20 @@ def new_wire_transfer():
             wire_transfer.treasury_transaction_id = treasury_tx.id
             db.session.commit()
             
+            # Clear form data from session on successful submission
+            clear_form_data_from_session(WireTransferForm)
+            
             flash("Wire transfer created successfully", "success")
             return redirect(url_for('wire_transfer.view_wire_transfer', wire_transfer_id=wire_transfer.id))
             
         except SQLAlchemyError as e:
             db.session.rollback()
             current_app.logger.error(f"Database error creating wire transfer: {str(e)}")
+            # We retain form data in session for this error case too
             flash("An error occurred while creating the wire transfer", "danger")
     
-    # Prepopulate form fields with user information
-    if request.method == 'GET':
+    # Prepopulate form fields with user information only if there's no saved form data
+    if request.method == 'GET' and not restore_form_data_from_session(form):
         form.originator_name.data = current_user.full_name
         
     return render_template(

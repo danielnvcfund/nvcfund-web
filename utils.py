@@ -6,7 +6,7 @@ import string
 import json
 import locale
 from datetime import datetime, timedelta
-from flask import abort, current_app
+from flask import abort, current_app, session
 from flask_login import current_user
 from app import db
 from models import User, TransactionStatus, UserRole
@@ -523,3 +523,73 @@ def format_transaction_type(transaction_type):
     
     # Return friendly name or formatted original if not found
     return friendly_names.get(type_value, type_value.replace('_', ' ').title())
+
+
+def save_form_data_to_session(form, prefix="form_"):
+    """
+    Save form data to session to restore later if there's an error
+    
+    Args:
+        form: The form object containing the data
+        prefix: Prefix to use for the session keys to avoid conflicts
+    """
+    form_data = {}
+    
+    # Iterate through form fields
+    for field_name, field in form._fields.items():
+        # Skip CSRF token, submit buttons and hidden fields
+        if field_name in ('csrf_token', 'submit') or field.type == 'HiddenField':
+            continue
+        
+        # Save the field data
+        if field.data is not None:
+            form_data[field_name] = field.data
+    
+    # Store in session
+    session[f"{prefix}{form.__class__.__name__}"] = form_data
+
+
+def restore_form_data_from_session(form, prefix="form_", clear=False):
+    """
+    Restore form data from session
+    
+    Args:
+        form: The form object to populate
+        prefix: Prefix used for the session keys
+        clear: Whether to clear the data from session after restoring
+    
+    Returns:
+        bool: True if data was restored, False if no data found
+    """
+    session_key = f"{prefix}{form.__class__.__name__}"
+    
+    if session_key not in session:
+        return False
+    
+    form_data = session[session_key]
+    
+    # Populate form fields
+    for field_name, value in form_data.items():
+        if field_name in form._fields:
+            # Skip select fields as they need special handling
+            if form._fields[field_name].type != 'SelectField':
+                form._fields[field_name].data = value
+    
+    # Optionally clear the data
+    if clear:
+        session.pop(session_key, None)
+    
+    return True
+
+
+def clear_form_data_from_session(form_class, prefix="form_"):
+    """
+    Clear form data from session
+    
+    Args:
+        form_class: The form class
+        prefix: Prefix used for the session keys
+    """
+    session_key = f"{prefix}{form_class.__name__}"
+    if session_key in session:
+        session.pop(session_key, None)
