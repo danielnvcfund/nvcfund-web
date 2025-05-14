@@ -30,7 +30,7 @@
                                 </tr>
                                 <tr>
                                     <th>Amount:</th>
-                                    <td>{{ wire_transfer.currency }} {{ "%.2f"|format(wire_transfer.amount) }}</td>
+                                    <td>{{ wire_transfer.currency }} {{ "{:,.2f}".format(wire_transfer.amount) }}</td>
                                 </tr>
                                 <tr>
                                     <th>Beneficiary:</th>
@@ -288,27 +288,34 @@
 /* Status-specific content styling with enhanced color scheme */
 .timeline-warning .timeline-content { 
     border-left: 4px solid #ffc107; 
-    background-color: rgba(255, 193, 7, 0.15);
+    background-color: rgba(255, 193, 7, 0.25);
+    color: #fff;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 }
 .timeline-primary .timeline-content { 
     border-left: 4px solid #007bff; 
-    background-color: rgba(0, 123, 255, 0.15);
+    background-color: rgba(0, 123, 255, 0.25);
+    color: #e6f2ff;
 }
 .timeline-info .timeline-content { 
     border-left: 4px solid #17a2b8; 
-    background-color: rgba(23, 162, 184, 0.15);
+    background-color: rgba(23, 162, 184, 0.25);
+    color: #e6f9fc;
 }
 .timeline-success .timeline-content { 
     border-left: 4px solid #28a745; 
-    background-color: rgba(40, 167, 69, 0.15);
+    background-color: rgba(40, 167, 69, 0.25);
+    color: #e9ffef;
 }
 .timeline-secondary .timeline-content { 
     border-left: 4px solid #6c757d; 
-    background-color: rgba(108, 117, 125, 0.15);
+    background-color: rgba(108, 117, 125, 0.25);
+    color: #f5f5f5;
 }
 .timeline-danger .timeline-content { 
     border-left: 4px solid #dc3545; 
-    background-color: rgba(220, 53, 69, 0.15);
+    background-color: rgba(220, 53, 69, 0.25);
+    color: #fff0f1;
 }
 
 /* Current status marker */
@@ -323,10 +330,12 @@
 
 .timeline-current .timeline-content {
     border-left: 4px solid #fd7e14;
-    background-color: rgba(253, 126, 20, 0.2);
+    background-color: rgba(253, 126, 20, 0.25);
     font-weight: bold;
     color: #fff;
     border: 1px solid #fd7e14;
+    box-shadow: 0 0 10px rgba(253, 126, 20, 0.5);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
 /* Future (expected) statuses */

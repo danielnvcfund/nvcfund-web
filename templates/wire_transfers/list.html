@@ -30,7 +30,7 @@
                             <tr>
                                 <td>{{ transfer.reference_number }}</td>
                                 <td>{{ transfer.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                                <td>{{ transfer.currency }} {{ "%.2f"|format(transfer.amount) }}</td>
+                                <td>{{ transfer.currency }} {{ "{:,.2f}".format(transfer.amount) }}</td>
                                 <td>{{ transfer.beneficiary_name }}</td>
                                 <td>{{ transfer.beneficiary_bank_name }}</td>
                                 <td>
