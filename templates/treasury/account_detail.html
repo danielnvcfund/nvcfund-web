@@ -63,50 +63,7 @@
 </style>
 {% endblock %}
 
-{% block scripts %}
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Manual initialization of dropdowns
-    const actionsDropdownButton = document.getElementById('actionsDropdown');
-    const actionsDropdownMenu = document.querySelector('.actions-dropdown .dropdown-menu');
-    
-    if (actionsDropdownButton && actionsDropdownMenu) {
-      // Initialize dropdown manually
-      actionsDropdownButton.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Toggle display
-        const isVisible = actionsDropdownMenu.classList.contains('show');
-        if (!isVisible) {
-          actionsDropdownMenu.classList.add('show');
-          actionsDropdownButton.setAttribute('aria-expanded', 'true');
-        } else {
-          actionsDropdownMenu.classList.remove('show');
-          actionsDropdownButton.setAttribute('aria-expanded', 'false');
-        }
-      });
-      
-      // Close dropdown when clicking outside
-      document.addEventListener('click', function(e) {
-        if (!actionsDropdownButton.contains(e.target) && !actionsDropdownMenu.contains(e.target)) {
-          actionsDropdownMenu.classList.remove('show');
-          actionsDropdownButton.setAttribute('aria-expanded', 'false');
-        }
-      });
-      
-      // Add click handlers for each menu item
-      const dropdownItems = actionsDropdownMenu.querySelectorAll('.dropdown-item');
-      dropdownItems.forEach(function(item) {
-        item.addEventListener('click', function() {
-          actionsDropdownMenu.classList.remove('show');
-          actionsDropdownButton.setAttribute('aria-expanded', 'false');
-        });
-      });
-    }
-  });
-</script>
-{% endblock %}
+<!-- Scripts will be added at the end of the template -->
 
 {% block content %}
 <div class="container mt-4">
@@ -535,6 +492,46 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  // Manual initialization of dropdowns
+  const actionsDropdownButton = document.getElementById('actionsDropdown');
+  const actionsDropdownMenu = document.querySelector('.actions-dropdown .dropdown-menu');
+  
+  if (actionsDropdownButton && actionsDropdownMenu) {
+    // Initialize dropdown manually
+    actionsDropdownButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Toggle display
+      const isVisible = actionsDropdownMenu.classList.contains('show');
+      if (!isVisible) {
+        actionsDropdownMenu.classList.add('show');
+        actionsDropdownButton.setAttribute('aria-expanded', 'true');
+      } else {
+        actionsDropdownMenu.classList.remove('show');
+        actionsDropdownButton.setAttribute('aria-expanded', 'false');
+      }
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!actionsDropdownButton.contains(e.target) && !actionsDropdownMenu.contains(e.target)) {
+        actionsDropdownMenu.classList.remove('show');
+        actionsDropdownButton.setAttribute('aria-expanded', 'false');
+      }
+    });
+    
+    // Add click handlers for each menu item
+    const dropdownItems = actionsDropdownMenu.querySelectorAll('.dropdown-item');
+    dropdownItems.forEach(function(item) {
+      item.addEventListener('click', function() {
+        actionsDropdownMenu.classList.remove('show');
+        actionsDropdownButton.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+  
+  // Chart.js initialization
   // Cash Flow Chart
   if (document.getElementById('cashFlowChart')) {
     const cashFlowCtx = document.getElementById('cashFlowChart').getContext('2d');
