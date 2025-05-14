@@ -236,7 +236,7 @@ def process_wire_transfer(wire_transfer_id):
         
         # Update with completion confirmation
         wire_transfer.status = WireTransferStatus.PROCESSING
-        wire_transfer.confirmation_number = f"CNF-{str(uuid.uuid4())[:8].upper()}"
+        wire_transfer.confirmation_receipt = f"CNF-{str(uuid.uuid4())[:8].upper()}"
         db.session.commit()
         
         # Update the transaction status as well

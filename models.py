@@ -1689,7 +1689,7 @@ class WireTransfer(db.Model):
     status = db.Column(db.Enum(WireTransferStatus), default=WireTransferStatus.PENDING)
     status_description = db.Column(db.String(256))
     confirmation_receipt = db.Column(db.String(128))  # Called "confirmation_receipt" in the database
-    fed_reference_number = db.Column(db.String(128))  # Federal Reserve reference number for US wires
+    # Note: fed_reference_number column doesn't exist in the actual database
     
     # Attachments and Metadata
     attachments_json = db.Column(db.Text)  # JSON array of attachment file paths
