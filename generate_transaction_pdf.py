@@ -29,17 +29,22 @@ def generate_transaction_pdf(transaction_id):
         
         # Format date
         formatted_date = transaction.created_at.strftime('%Y-%m-%d %H:%M:%S')
-        completed_date = transaction.completed_at.strftime('%Y-%m-%d %H:%M:%S') if transaction.completed_at else None
+        # Check if completed_at attribute exists (TreasuryTransaction might not have it)
+        completed_date = None
+        if hasattr(transaction, 'completed_at') and transaction.completed_at:
+            completed_date = transaction.completed_at.strftime('%Y-%m-%d %H:%M:%S')
         
         # Get status badge class
         status_class = "badge-warning"
-        if transaction.status == TransactionStatus.COMPLETED:
+        status_name = transaction.status.name if hasattr(transaction.status, 'name') else str(transaction.status)
+        
+        if status_name == 'COMPLETED':
             status_class = "badge-success"
-        elif transaction.status == TransactionStatus.REJECTED:
+        elif status_name == 'REJECTED':
             status_class = "badge-danger"
-        elif transaction.status == TransactionStatus.CANCELLED:
+        elif status_name == 'CANCELLED':
             status_class = "badge-secondary"
-        elif transaction.status == TransactionStatus.PENDING:
+        elif status_name == 'PENDING':
             status_class = "badge-warning"
         
         # Render template with transaction data

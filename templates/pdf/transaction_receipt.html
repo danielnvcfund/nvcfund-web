@@ -7,12 +7,22 @@
 </head>
 <body>
     <div class="watermark">
-        {% if transaction.status.name == 'COMPLETED' %}
-        COMPLETED
-        {% elif transaction.status.name == 'REJECTED' %}
-        REJECTED
-        {% elif transaction.status.name == 'CANCELLED' %}
-        CANCELLED
+        {% if transaction.status.name is defined %}
+            {% if transaction.status.name == 'COMPLETED' %}
+            COMPLETED
+            {% elif transaction.status.name == 'REJECTED' %}
+            REJECTED
+            {% elif transaction.status.name == 'CANCELLED' %}
+            CANCELLED
+            {% endif %}
+        {% else %}
+            {% if transaction.status == 'COMPLETED' %}
+            COMPLETED
+            {% elif transaction.status == 'REJECTED' %}
+            REJECTED
+            {% elif transaction.status == 'CANCELLED' %}
+            CANCELLED
+            {% endif %}
         {% endif %}
     </div>
 
@@ -35,13 +45,25 @@
             </tr>
             <tr>
                 <th>Type:</th>
-                <td>{{ transaction.transaction_type.value|replace('_', ' ')|title }}</td>
+                <td>
+                    {% if transaction.transaction_type is defined and transaction.transaction_type.value is defined %}
+                        {{ transaction.transaction_type.value|replace('_', ' ')|title }}
+                    {% elif transaction.transaction_type is defined %}
+                        {{ transaction.transaction_type|replace('_', ' ')|title }}
+                    {% else %}
+                        Investment Purchase
+                    {% endif %}
+                </td>
             </tr>
             <tr>
                 <th>Status:</th>
                 <td>
                     <span class="badge {{ status_class }}">
-                        {{ transaction.status.name|title }}
+                        {% if transaction.status.name is defined %}
+                            {{ transaction.status.name|title }}
+                        {% else %}
+                            {{ transaction.status|title }}
+                        {% endif %}
                     </span>
                 </td>
             </tr>
