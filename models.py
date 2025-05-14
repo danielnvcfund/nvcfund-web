@@ -1163,7 +1163,7 @@ class TreasuryInvestment(db.Model):
     account_id = db.Column(db.Integer, db.ForeignKey('treasury_account.id'))
     investment_type = db.Column(db.Enum(InvestmentType), nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    currency = db.Column(db.String(3), default="USD")
+    currency = db.Column(db.String(10), default="USD")
     interest_rate = db.Column(db.Float)
     start_date = db.Column(db.DateTime, nullable=False)
     maturity_date = db.Column(db.DateTime, nullable=False)
