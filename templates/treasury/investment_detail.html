@@ -222,7 +222,8 @@
             <div class="list-group-item d-flex justify-content-between">
               <strong>Days Remaining:</strong>
               <span>
-                {% set days_remaining = (investment.maturity_date - current_date).days %}
+                {% set maturity_date_as_date = investment.maturity_date.date() if investment.maturity_date.tzinfo is not none else investment.maturity_date.date() %}
+                {% set days_remaining = (maturity_date_as_date - current_date).days %}
                 {% if days_remaining > 0 %}
                   {{ days_remaining }} day{{ 's' if days_remaining > 1 }}
                 {% else %}
