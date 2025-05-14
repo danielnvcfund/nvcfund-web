@@ -341,19 +341,17 @@
 }
 
 .actions-dropdown {
-    position: static !important;
-    z-index: 1030;
+    position: relative;
+    z-index: 1050;
 }
 
 .actions-dropdown .dropdown-menu {
-    min-width: 200px;
+    min-width: 220px;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
     border: 1px solid rgba(0, 0, 0, 0.15);
     background-color: #1e2630;
     z-index: 9999;
-    position: absolute;
-    overflow: visible;
-    transform: none !important;
+    display: none;
 }
 
 .actions-dropdown .dropdown-item {
