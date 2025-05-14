@@ -8,7 +8,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
 from flask_login import login_required, current_user
 from account_holder_models import CurrencyType, ExchangeType, ExchangeStatus, CurrencyExchangeTransaction
-from currency_exchange_service import CurrencyExchangeService, exchange_service
+from currency_exchange_service import CurrencyExchangeService
 from app import db
 from forms import CurrencyExchangeForm
 from models import TreasuryAccount  # For account selection
@@ -56,10 +56,13 @@ def get_rate():
         from_currency_enum = CurrencyType[from_currency]
         to_currency_enum = CurrencyType[to_currency]
         
+        # Create a local exchange service instance
+        local_exchange_service = CurrencyExchangeService(db)
+        
         # Get exchange rate
-        rate = exchange_service.get_exchange_rate(from_currency_enum, to_currency_enum)
+        rate = local_exchange_service.get_exchange_rate(from_currency_enum, to_currency_enum)
         converted_amount = amount * rate
-        fee = exchange_service.calculate_fee(amount, from_currency_enum)
+        fee = local_exchange_service.calculate_fee(amount, from_currency_enum)
         net_amount = converted_amount - fee if from_currency == to_currency else converted_amount
         
         return jsonify({
@@ -94,10 +97,13 @@ def convert():
             from_account = form.from_account.data
             to_account = form.to_account.data
             
+            # Create a local exchange service instance
+            local_exchange_service = CurrencyExchangeService(db)
+            
             # Get exchange rate
-            rate = exchange_service.get_exchange_rate(from_currency, to_currency)
+            rate = local_exchange_service.get_exchange_rate(from_currency, to_currency)
             converted_amount = amount * rate
-            fee = exchange_service.calculate_fee(amount, from_currency)
+            fee = local_exchange_service.calculate_fee(amount, from_currency)
             
             # Create transaction record
             exchange_tx = CurrencyExchangeTransaction(
@@ -156,6 +162,9 @@ def rates():
         CurrencyType.NVCT, CurrencyType.AFD1, CurrencyType.SFN
     ]
     
+    # Create a local exchange service instance
+    local_exchange_service = CurrencyExchangeService(db)
+    
     # Create a matrix of rates
     rate_matrix = []
     
@@ -163,7 +172,7 @@ def rates():
         rates_row = {'base': base.value, 'rates': {}}
         for target in major_currencies:
             if base != target:
-                rate = exchange_service.get_exchange_rate(base, target)
+                rate = local_exchange_service.get_exchange_rate(base, target)
                 rates_row['rates'][target.value] = rate
         
         rate_matrix.append(rates_row)
@@ -282,12 +291,6 @@ def register_currency_exchange_routes(app):
     """Register currency exchange routes with the Flask app"""
     # Initialize the exchange service
     try:
-        # Create exchange service if it doesn't exist
-        if not exchange_service:
-            logger.warning("Exchange service not initialized, creating new instance")
-            # Initialize a new exchange service
-            exchange_service = CurrencyExchangeService(db)
-        
         # Register the blueprint
         app.register_blueprint(currency_exchange)
         
@@ -304,13 +307,16 @@ def register_currency_exchange_routes(app):
                     CurrencyType.JPY, CurrencyType.NVCT, CurrencyType.AFD1
                 ]
                 
+                # Create a local exchange service instance
+                local_exchange_service = CurrencyExchangeService(db)
+                
                 # Create rate matrix
                 rates = {}
                 for base in major_currencies:
                     rates[base.value] = {}
                     for target in major_currencies:
                         if base != target:
-                            rate = exchange_service.get_exchange_rate(base, target)
+                            rate = local_exchange_service.get_exchange_rate(base, target)
                             rates[base.value][target.value] = rate
                 
                 return jsonify({
