@@ -22,6 +22,14 @@
             REJECTED
         {% elif 'CANCELLED' in status_text %}
             CANCELLED
+        {% elif 'FAILED' in status_text %}
+            FAILED
+        {% elif 'REFUNDED' in status_text %}
+            REFUNDED
+        {% elif 'PROCESSING' in status_text %}
+            PROCESSING
+        {% elif 'SCHEDULED' in status_text %}
+            SCHEDULED
         {% elif 'PENDING' in status_text %}
             PENDING
         {% endif %}

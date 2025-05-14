@@ -47,6 +47,14 @@ def generate_wire_transfer_pdf(wire_transfer_id):
             status_class = "badge-secondary"
         elif "FAILED" in status_value:
             status_class = "badge-danger"
+        elif "REJECTED" in status_value:
+            status_class = "badge-danger"
+        elif "SENT" in status_value:
+            status_class = "badge-info"
+        elif "CONFIRMED" in status_value:
+            status_class = "badge-info"
+        elif "PENDING" in status_value:
+            status_class = "badge-warning"
         
         # Format currency amount with commas
         formatted_amount = "{:,.2f}".format(wire_transfer.amount)
@@ -155,6 +163,9 @@ def generate_wire_transfer_pdf(wire_transfer_id):
                 }
                 .badge-secondary {
                     background-color: #6c757d;
+                }
+                .badge-info {
+                    background-color: #17a2b8;
                 }
                 .watermark {
                     position: fixed;

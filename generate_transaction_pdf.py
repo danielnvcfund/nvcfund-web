@@ -54,6 +54,14 @@ def generate_transaction_pdf(transaction_id):
             status_class = "badge-danger"
         elif "CANCELLED" in status_value:
             status_class = "badge-secondary"
+        elif "FAILED" in status_value:
+            status_class = "badge-danger"
+        elif "REFUNDED" in status_value:
+            status_class = "badge-info"
+        elif "PROCESSING" in status_value:
+            status_class = "badge-primary"
+        elif "SCHEDULED" in status_value:
+            status_class = "badge-info"
         elif "PENDING" in status_value:
             status_class = "badge-warning"
         
