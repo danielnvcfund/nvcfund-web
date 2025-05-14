@@ -620,17 +620,23 @@ def get_timeline_progress(wire_transfer):
              0=Not started, 1=Pending, 2=Processing, 3=Sent, 4=Confirmed, 5=Completed
     """
     try:
+        # Create a mapping using string values rather than enum members for safety
         status_mapping = {
-            WireTransferStatus.PENDING: 1,
-            WireTransferStatus.PROCESSING: 2,
-            WireTransferStatus.SENT: 3,
-            WireTransferStatus.CONFIRMED: 4,
-            WireTransferStatus.COMPLETED: 5
+            'pending': 1,
+            'processing': 2,
+            'sent': 3,
+            'confirmed': 4,
+            'completed': 5
         }
+        
+        # Get status as string
+        current_status = wire_transfer.status.value if wire_transfer and wire_transfer.status else None
         
         # Return the numeric progress value for the current status
         # If the status isn't in our mapping (e.g., FAILED), return 0
-        return status_mapping.get(wire_transfer.status, 0)
+        if current_status is None:
+            return 0
+        return status_mapping.get(current_status, 0)
     except Exception as e:
         logger.error(f"Error calculating timeline progress: {str(e)}")
         return 0
@@ -659,14 +665,21 @@ def estimate_completion_time(wire_transfer):
         # Standard processing times (in hours) from creation to completion
         # based on current status
         processing_times = {
-            WireTransferStatus.PENDING: 24,      # 24 hours total if still pending
-            WireTransferStatus.PROCESSING: 20,   # 20 hours total if processing
-            WireTransferStatus.SENT: 8,          # 8 hours total if already sent
-            WireTransferStatus.CONFIRMED: 2      # 2 hours total if confirmed
+            'pending': 24,      # 24 hours total if still pending
+            'processing': 20,   # 20 hours total if processing
+            'sent': 8,          # 8 hours total if already sent
+            'confirmed': 2      # 2 hours total if confirmed
         }
         
+        # Get status as string
+        current_status = wire_transfer.status.value if wire_transfer and wire_transfer.status else None
+        
         # Calculate estimated completion time
-        hours_to_add = processing_times.get(wire_transfer.status, 24)
+        if current_status is None:
+            hours_to_add = 24  # Default to 24 hours if status is None
+        else:
+            hours_to_add = processing_times.get(current_status, 24)
+        
         return creation_time + timedelta(hours=hours_to_add)
         
     except Exception as e:
@@ -698,20 +711,24 @@ def get_wire_transfer_with_tracking_data(wire_transfer_id):
         # Process history entries for UI display
         processed_history = []
         for entry in status_history:
-            badge_class = "badge-warning"
-            if entry.status == WireTransferStatus.COMPLETED:
+            # Get status as string
+            status_value = entry.status.value if entry and entry.status else None
+            
+            # Set appropriate badge class based on status
+            badge_class = "badge-warning"  # Default for pending
+            if status_value == 'completed':
                 badge_class = "badge-success"
-            elif entry.status == WireTransferStatus.REJECTED:
+            elif status_value == 'rejected':
                 badge_class = "badge-danger"
-            elif entry.status == WireTransferStatus.CANCELLED:
+            elif status_value == 'cancelled':
                 badge_class = "badge-secondary"
-            elif entry.status == WireTransferStatus.FAILED:
+            elif status_value == 'failed':
                 badge_class = "badge-danger"
-            elif entry.status == WireTransferStatus.SENT:
+            elif status_value == 'sent':
                 badge_class = "badge-info"
-            elif entry.status == WireTransferStatus.CONFIRMED:
+            elif status_value == 'confirmed':
                 badge_class = "badge-info"
-            elif entry.status == WireTransferStatus.PROCESSING:
+            elif status_value == 'processing':
                 badge_class = "badge-primary"
                 
             processed_history.append({
@@ -731,17 +748,20 @@ def get_wire_transfer_with_tracking_data(wire_transfer_id):
         # Estimate completion time if not already completed
         estimated_completion = estimate_completion_time(wire_transfer)
         
+        # Get status as string
+        current_status = wire_transfer.status.value if wire_transfer and wire_transfer.status else None
+        
         # Determine status badge class for display
-        status_class = "warning"
-        if wire_transfer.status == WireTransferStatus.COMPLETED:
+        status_class = "warning"  # Default for pending
+        if current_status == 'completed':
             status_class = "success"
-        elif wire_transfer.status in [WireTransferStatus.FAILED, WireTransferStatus.REJECTED]:
+        elif current_status in ['failed', 'rejected']:
             status_class = "danger"
-        elif wire_transfer.status == WireTransferStatus.CANCELLED:
+        elif current_status == 'cancelled':
             status_class = "secondary"
-        elif wire_transfer.status == WireTransferStatus.PROCESSING:
+        elif current_status == 'processing':
             status_class = "primary"
-        elif wire_transfer.status in [WireTransferStatus.SENT, WireTransferStatus.CONFIRMED]:
+        elif current_status in ['sent', 'confirmed']:
             status_class = "info"
         
         # Compile tracking data
