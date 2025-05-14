@@ -336,9 +336,28 @@
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
     border: 1px solid rgba(0, 0, 0, 0.15);
     background-color: #1e2630;
+    z-index: 9999;
+    position: absolute;
+}
+
+.actions-dropdown {
+    position: relative;
+    z-index: 1030;
 }
 
 .actions-dropdown .dropdown-item {
     color: #fff;
     padding: 0.5rem 1rem;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.actions-dropdown .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateX(3px);
+}
+
+.actions-dropdown .dropdown-menu-end {
+    right: 0;
+    left: auto !important;
 }
