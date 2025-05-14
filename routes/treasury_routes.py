@@ -604,15 +604,13 @@ def new_investment():
             account_id=form.account_id.data,
             investment_type=InvestmentType(form.investment_type.data),
             institution_id=form.institution_id.data,  # Using institution instead of counterparty
-            amount=form.principal_amount.data,  # Using principal_amount
+            amount=form.principal_amount.data,  # Using principal_amount 
             currency=form.currency.data,
             interest_rate=form.interest_rate.data,
             start_date=form.start_date.data,
             maturity_date=form.maturity_date.data,
             description=form.description.data,
-            status=InvestmentStatus.PENDING,
-            created_by_id=current_user.id,
-            is_active=True  # Default to active
+            status=InvestmentStatus.PENDING
         )
         
         # Create associated transaction
