@@ -41,7 +41,71 @@
   .tab-pane {
     padding: 1.5rem;
   }
+  /* Override any conflicting dropdown styles */
+  .actions-dropdown .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: auto;
+    margin-top: 0.5rem;
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    width: 220px;
+    z-index: 1000;
+    display: none;
+    padding: 0.5rem 0;
+  }
+  
+  .actions-dropdown .dropdown-menu.show {
+    display: block;
+  }
 </style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Manual initialization of dropdowns
+    const actionsDropdownButton = document.getElementById('actionsDropdown');
+    const actionsDropdownMenu = document.querySelector('.actions-dropdown .dropdown-menu');
+    
+    if (actionsDropdownButton && actionsDropdownMenu) {
+      // Initialize dropdown manually
+      actionsDropdownButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Toggle display
+        const isVisible = actionsDropdownMenu.classList.contains('show');
+        if (!isVisible) {
+          actionsDropdownMenu.classList.add('show');
+          actionsDropdownButton.setAttribute('aria-expanded', 'true');
+        } else {
+          actionsDropdownMenu.classList.remove('show');
+          actionsDropdownButton.setAttribute('aria-expanded', 'false');
+        }
+      });
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!actionsDropdownButton.contains(e.target) && !actionsDropdownMenu.contains(e.target)) {
+          actionsDropdownMenu.classList.remove('show');
+          actionsDropdownButton.setAttribute('aria-expanded', 'false');
+        }
+      });
+      
+      // Add click handlers for each menu item
+      const dropdownItems = actionsDropdownMenu.querySelectorAll('.dropdown-item');
+      dropdownItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+          actionsDropdownMenu.classList.remove('show');
+          actionsDropdownButton.setAttribute('aria-expanded', 'false');
+        });
+      });
+    }
+  });
+</script>
 {% endblock %}
 
 {% block content %}
@@ -92,11 +156,11 @@
                 <a href="{{ url_for('treasury.edit_account', account_id=account.id) }}" class="btn btn-outline-primary me-2">
                   <i class="fas fa-edit me-1"></i> Edit
                 </a>
-                <div class="btn-group actions-dropdown">
-                  <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-plus me-1"></i> Actions
+                <div class="dropdown actions-dropdown">
+                  <button type="button" class="btn btn-primary" id="actionsDropdown">
+                    <i class="fas fa-plus me-1"></i> Actions <i class="fas fa-caret-down ms-1"></i>
                   </button>
-                  <ul class="dropdown-menu dropdown-menu-end">
+                  <ul class="dropdown-menu">
                     <li>
                       <a class="dropdown-item" href="{{ url_for('treasury.new_transaction') }}?from_account_id={{ account.id }}">
                         <i class="fas fa-exchange-alt me-1"></i> New Transaction
