@@ -10,6 +10,33 @@ from flask import current_app
 from flask_login import current_user
 from sqlalchemy.exc import SQLAlchemyError
 
+def _get_badge_class_for_status(status_value):
+    """
+    Helper function to get the appropriate badge class for a status value
+    
+    Args:
+        status_value (str): The status value as a string
+        
+    Returns:
+        str: The appropriate badge class
+    """
+    if status_value == 'completed':
+        return "badge-success"
+    elif status_value == 'rejected':
+        return "badge-danger"
+    elif status_value == 'cancelled':
+        return "badge-secondary"
+    elif status_value == 'failed':
+        return "badge-danger"
+    elif status_value == 'sent':
+        return "badge-info"
+    elif status_value == 'confirmed':
+        return "badge-info"
+    elif status_value == 'processing':
+        return "badge-primary"
+    else:
+        return "badge-warning"  # Default for pending and unknown
+
 from models import (
     db, Transaction, WireTransfer, WireTransferStatus, WireTransferStatusHistory, 
     TransactionType, TransactionStatus, CorrespondentBank, User, FinancialInstitution, 
@@ -704,72 +731,122 @@ def get_wire_transfer_with_tracking_data(wire_transfer_id):
         # Get the wire transfer
         wire_transfer = WireTransfer.query.get(wire_transfer_id)
         if not wire_transfer:
-            return None, {}, "Wire transfer not found"
-        
-        # Get status history
-        status_history = get_status_history(wire_transfer_id)
-        
-        # Process history entries for UI display
+            return None, [], "Wire transfer not found"
+            
+        # Create sample data if no history found
+        # This ensures tracking dashboard works even before any status changes are recorded
         processed_history = []
-        for entry in status_history:
-            if not entry or not hasattr(entry, 'status') or not entry.status:
-                continue
-                
-            # Get status as string
-            status_value = entry.status.value if hasattr(entry.status, 'value') else str(entry.status)
+        
+        # Get all real status history entries
+        try:
+            history_entries = WireTransferStatusHistory.query.filter_by(wire_transfer_id=wire_transfer_id).order_by(WireTransferStatusHistory.timestamp).all()
+        except Exception as e:
+            current_app.logger.error(f"Failed to retrieve status history: {str(e)}")
+            history_entries = []
             
-            # Set appropriate badge class based on status
-            badge_class = "badge-warning"  # Default for pending
-            if status_value == 'completed':
-                badge_class = "badge-success"
-            elif status_value == 'rejected':
-                badge_class = "badge-danger"
-            elif status_value == 'cancelled':
-                badge_class = "badge-secondary"
-            elif status_value == 'failed':
-                badge_class = "badge-danger"
-            elif status_value == 'sent':
-                badge_class = "badge-info"
-            elif status_value == 'confirmed':
-                badge_class = "badge-info"
-            elif status_value == 'processing':
-                badge_class = "badge-primary"
+        # If no history entries exist, create one initial entry for the current status
+        if not history_entries:
+            current_app.logger.info(f"No status history found for wire transfer {wire_transfer_id}, creating minimal history")
+            # Add the current status with current timestamp
+            status_value = wire_transfer.status.value if hasattr(wire_transfer.status, 'value') else 'pending'
             
-            # Check for required attributes before adding to processed history
-            if not hasattr(entry, 'timestamp') or not entry.timestamp:
-                current_app.logger.warning(f"Missing timestamp for status history entry: {entry}")
-                timestamp = datetime.utcnow()
-            else:
-                timestamp = entry.timestamp
-                
-            description = entry.description if hasattr(entry, 'description') else ""
+            # Determine badge class
+            badge_class = _get_badge_class_for_status(status_value)
             
-            user = None
-            if hasattr(entry, 'user') and entry.user:
-                user = entry.user.username if hasattr(entry.user, 'username') else "Unknown User"
-            else:
-                user = "System"
-                
+            # Build an entry with minimal required data
             processed_history.append({
                 'status': status_value,
-                'timestamp': timestamp, 
-                'description': description,
+                'timestamp': datetime.utcnow(),
+                'description': "Initial status",
                 'badge_class': badge_class,
-                'user': user
+                'user': "System"
             })
+        else:
+            # Process real history entries for UI display
+            for entry in history_entries:
+                try:
+                    # Extract status value safely
+                    if hasattr(entry, 'status') and entry.status:
+                        if hasattr(entry.status, 'value'):
+                            status_value = entry.status.value
+                        else:
+                            status_value = str(entry.status)
+                    else:
+                        status_value = 'unknown'
+                    
+                    # Determine badge class
+                    badge_class = _get_badge_class_for_status(status_value)
+                    
+                    # Extract timestamp safely
+                    if hasattr(entry, 'timestamp') and entry.timestamp:
+                        timestamp = entry.timestamp
+                    else:
+                        timestamp = datetime.utcnow()
+                    
+                    # Extract description safely
+                    if hasattr(entry, 'description') and entry.description:
+                        description = entry.description
+                    else:
+                        description = ""
+                    
+                    # Extract user safely
+                    if hasattr(entry, 'user') and entry.user:
+                        if hasattr(entry.user, 'username'):
+                            user = entry.user.username
+                        else:
+                            user = "Unknown User"
+                    else:
+                        user = "System"
+                    
+                    # Add processed entry
+                    processed_history.append({
+                        'status': status_value,
+                        'timestamp': timestamp,
+                        'description': description,
+                        'badge_class': badge_class,
+                        'user': user
+                    })
+                except Exception as e:
+                    current_app.logger.error(f"Error processing history entry: {str(e)}")
+                    continue
+                    
+        # Sort history by timestamp
+        processed_history.sort(key=lambda x: x['timestamp'] if isinstance(x['timestamp'], datetime) else datetime.utcnow())
         
-        # Get status timestamps
-        status_timestamps = get_status_timestamps(wire_transfer_id)
+        # Create a safe version of status_timestamps
+        status_timestamps = {}
+        try:
+            # Extract status timestamps from processed history
+            for entry in processed_history:
+                status_value = entry['status']
+                timestamp = entry['timestamp']
+                # Keep only the most recent timestamp for each status
+                status_timestamps[status_value] = timestamp
+        except Exception as e:
+            current_app.logger.error(f"Error creating status timestamps: {str(e)}")
         
         # Calculate timeline progress
-        timeline_progress = get_timeline_progress(wire_transfer)
+        timeline_progress = 0
+        try:
+            timeline_progress = get_timeline_progress(wire_transfer)
+        except Exception as e:
+            current_app.logger.error(f"Error calculating timeline progress: {str(e)}")
         
         # Estimate completion time if not already completed
-        estimated_completion = estimate_completion_time(wire_transfer)
+        estimated_completion = None
+        try:
+            estimated_completion = estimate_completion_time(wire_transfer)
+        except Exception as e:
+            current_app.logger.error(f"Error estimating completion time: {str(e)}")
         
-        # Get status as string
-        current_status = wire_transfer.status.value if wire_transfer and wire_transfer.status else None
-        
+        # Get current status from wire transfer
+        current_status = 'pending'
+        if wire_transfer and hasattr(wire_transfer, 'status') and wire_transfer.status:
+            if hasattr(wire_transfer.status, 'value'):
+                current_status = wire_transfer.status.value
+            else:
+                current_status = str(wire_transfer.status)
+                
         # Determine status badge class for display
         status_class = "warning"  # Default for pending
         if current_status == 'completed':
@@ -782,8 +859,8 @@ def get_wire_transfer_with_tracking_data(wire_transfer_id):
             status_class = "primary"
         elif current_status in ['sent', 'confirmed']:
             status_class = "info"
-        
-        # Compile tracking data
+                
+        # Prepare the complete tracking data dictionary
         tracking_data = {
             'status_history': processed_history,
             'status_timestamps': status_timestamps,
@@ -791,6 +868,22 @@ def get_wire_transfer_with_tracking_data(wire_transfer_id):
             'estimated_completion': estimated_completion,
             'status_class': status_class
         }
+        
+        # Add additional data if available
+        if wire_transfer.correspondent_bank_id:
+            try:
+                correspondent_bank = CorrespondentBank.query.get(wire_transfer.correspondent_bank_id)
+                tracking_data['correspondent_bank'] = correspondent_bank
+            except Exception as e:
+                current_app.logger.error(f"Error retrieving correspondent bank: {str(e)}")
+                
+        # Add transaction data if available
+        if wire_transfer.transaction_id:
+            try:
+                transaction = Transaction.query.get(wire_transfer.transaction_id)
+                tracking_data['transaction'] = transaction
+            except Exception as e:
+                current_app.logger.error(f"Error retrieving transaction: {str(e)}")
         
         return wire_transfer, tracking_data, None
         
