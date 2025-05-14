@@ -31,6 +31,42 @@ class PartnerType(enum.Enum):
     SETTLEMENT_PARTNER = "Settlement Partner"
     STABLECOIN_ISSUER = "Stablecoin Issuer"
     INDUSTRIAL_BANK = "Industrial Bank"
+    
+class CorrespondentBankApplication(db.Model):
+    """Model for correspondent bank applications"""
+    id = db.Column(db.Integer, primary_key=True)
+    reference_number = db.Column(db.String(20), unique=True, nullable=False)
+    submission_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    status = db.Column(db.String(20), default='PENDING', nullable=False)  # PENDING, REVIEWING, APPROVED, REJECTED
+    
+    # Institution information
+    institution_name = db.Column(db.String(100), nullable=False)
+    country = db.Column(db.String(100), nullable=False)
+    swift_code = db.Column(db.String(11))
+    institution_type = db.Column(db.String(50), nullable=False)
+    regulatory_authority = db.Column(db.String(100), nullable=False)
+    
+    # Contact information
+    contact_name = db.Column(db.String(100), nullable=False)
+    contact_title = db.Column(db.String(100), nullable=False)
+    contact_email = db.Column(db.String(100), nullable=False)
+    contact_phone = db.Column(db.String(30), nullable=False)
+    
+    # Services and preferences
+    services = db.Column(db.Text)
+    expected_volume = db.Column(db.String(50), nullable=False)
+    african_regions = db.Column(db.Text)
+    additional_info = db.Column(db.Text)
+    
+    # Internal processing fields
+    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'))
+    review_date = db.Column(db.DateTime)
+    approval_date = db.Column(db.DateTime)
+    rejection_reason = db.Column(db.Text)
+    notes = db.Column(db.Text)
+    
+    # Relationships
+    reviewer = db.relationship('User', foreign_keys=[assigned_to])
 
 class IntegrationType(enum.Enum):
     API = "API"

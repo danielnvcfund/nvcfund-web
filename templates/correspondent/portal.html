@@ -1,0 +1,368 @@
+{% extends "layout.html" %}
+
+{% block title %}Correspondent Banking Partnership Portal{% endblock %}
+
+{% block content %}
+<div class="content-section my-4">
+    <div class="row">
+        <div class="col-md-7">
+            <div class="portal-intro-section mb-4">
+                <h1 class="display-4 mb-3">Correspondent Banking Partnership</h1>
+                <h2 class="h4 text-muted">Accelerate Your Global Banking Capabilities</h2>
+                <hr class="my-4">
+                <p class="lead">Join our network of correspondent banking partners and expand your international reach. Our correspondent banking relationships offer efficient cross-border transactions, robust liquidity solutions, and access to emerging markets.</p>
+            </div>
+            
+            <div class="africa-focus-section p-4 mb-4 bg-light rounded shadow-sm" style="background-image: url('/static/images/africa_map_background.svg'); background-size: cover; background-position: center;">
+                <h3 class="text-white">Africa-Focused Partnership Benefits</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-3 border-0 bg-white shadow-sm">
+                            <div class="card-body">
+                                <h5><i class="fas fa-chart-line text-warning"></i> First-Mover Advantage</h5>
+                                <p class="small">Establish your presence in high-growth African markets with untapped potential.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-3 border-0 bg-white shadow-sm">
+                            <div class="card-body">
+                                <h5><i class="fas fa-money-bill-wave text-warning"></i> Specialized Currency Corridors</h5>
+                                <p class="small">Access to challenging currency corridors with competitive rates.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-3 border-0 bg-white shadow-sm">
+                            <div class="card-body">
+                                <h5><i class="fas fa-shield-alt text-warning"></i> Risk Mitigation</h5>
+                                <p class="small">Specialized expertise in managing African market risks and compliance.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-3 border-0 bg-white shadow-sm">
+                            <div class="card-body">
+                                <h5><i class="fas fa-globe-africa text-warning"></i> Pan-African Gateway</h5>
+                                <p class="small">Single relationship for access to multiple African markets and institutions.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="service-overview-section mb-4">
+                <h3>Our Comprehensive Services</h3>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-exchange-alt fa-3x mb-3 text-primary"></i>
+                                <h5 class="card-title">Payments & Transfers</h5>
+                                <p class="card-text small">Efficient cross-border payment processing with optimized transaction routing</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-landmark fa-3x mb-3 text-primary"></i>
+                                <h5 class="card-title">Account Services</h5>
+                                <p class="card-text small">Multi-currency nostro and vostro accounts with real-time reporting</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-chart-line fa-3x mb-3 text-primary"></i>
+                                <h5 class="card-title">Foreign Exchange</h5>
+                                <p class="card-text small">Competitive FX rates for major and exotic currency pairs</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-shield-alt fa-3x mb-3 text-primary"></i>
+                                <h5 class="card-title">Compliance & Risk</h5>
+                                <p class="card-text small">Advanced compliance framework and risk management solutions</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-project-diagram fa-3x mb-3 text-primary"></i>
+                                <h5 class="card-title">Blockchain Solutions</h5>
+                                <p class="card-text small">Integrated stablecoin and blockchain settlement options</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-code fa-3x mb-3 text-primary"></i>
+                                <h5 class="card-title">API Integration</h5>
+                                <p class="card-text small">Seamless technical integration with our banking platform</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-5">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Partnership Application</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('correspondent.submit_application') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="application-section mb-4">
+                            <h5>Institution Information</h5>
+                            <hr>
+                            <div class="form-group mb-3">
+                                {{ form.institution_name.label(class="form-control-label font-weight-bold") }}
+                                {% if form.institution_name.errors %}
+                                    {{ form.institution_name(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.institution_name.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.institution_name(class="form-control") }}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                {{ form.country.label(class="form-control-label font-weight-bold") }}
+                                {% if form.country.errors %}
+                                    {{ form.country(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.country.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.country(class="form-control") }}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                {{ form.swift_code.label(class="form-control-label font-weight-bold") }}
+                                {% if form.swift_code.errors %}
+                                    {{ form.swift_code(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.swift_code.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.swift_code(class="form-control") }}
+                                {% endif %}
+                                <small class="form-text text-muted">Optional. Format: 8 or 11 characters (e.g., BOFAUS3N)</small>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                {{ form.institution_type.label(class="form-control-label font-weight-bold") }}
+                                {% if form.institution_type.errors %}
+                                    {{ form.institution_type(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.institution_type.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.institution_type(class="form-control") }}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                {{ form.regulatory_authority.label(class="form-control-label font-weight-bold") }}
+                                {% if form.regulatory_authority.errors %}
+                                    {{ form.regulatory_authority(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.regulatory_authority.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.regulatory_authority(class="form-control") }}
+                                {% endif %}
+                                <small class="form-text text-muted">e.g., Federal Reserve, ECB, FCA, etc.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="application-section mb-4">
+                            <h5>Contact Information</h5>
+                            <hr>
+                            <div class="form-group mb-3">
+                                {{ form.contact_name.label(class="form-control-label font-weight-bold") }}
+                                {% if form.contact_name.errors %}
+                                    {{ form.contact_name(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.contact_name.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.contact_name(class="form-control") }}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                {{ form.contact_title.label(class="form-control-label font-weight-bold") }}
+                                {% if form.contact_title.errors %}
+                                    {{ form.contact_title(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.contact_title.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.contact_title(class="form-control") }}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                {{ form.contact_email.label(class="form-control-label font-weight-bold") }}
+                                {% if form.contact_email.errors %}
+                                    {{ form.contact_email(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.contact_email.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.contact_email(class="form-control") }}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                {{ form.contact_phone.label(class="form-control-label font-weight-bold") }}
+                                {% if form.contact_phone.errors %}
+                                    {{ form.contact_phone(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.contact_phone.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.contact_phone(class="form-control") }}
+                                {% endif %}
+                                <small class="form-text text-muted">Include country code (e.g., +1 555-123-4567)</small>
+                            </div>
+                        </div>
+                        
+                        <div class="application-section mb-4">
+                            <h5>Services & Markets</h5>
+                            <hr>
+                            <div class="form-group mb-3">
+                                {{ form.services.label(class="form-control-label font-weight-bold") }}
+                                {% if form.services.errors %}
+                                    {{ form.services(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.services.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="select-multiple-wrapper border rounded p-2">
+                                        {% for subfield in form.services %}
+                                            <div class="form-check">
+                                                {{ subfield(class="form-check-input") }}
+                                                {{ subfield.label(class="form-check-label") }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Select all services that interest you</small>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                {{ form.expected_volume.label(class="form-control-label font-weight-bold") }}
+                                {% if form.expected_volume.errors %}
+                                    {{ form.expected_volume(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.expected_volume.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.expected_volume(class="form-control") }}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                {{ form.african_regions.label(class="form-control-label font-weight-bold") }}
+                                {% if form.african_regions.errors %}
+                                    {{ form.african_regions(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.african_regions.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="select-multiple-wrapper border rounded p-2">
+                                        {% for subfield in form.african_regions %}
+                                            <div class="form-check">
+                                                {{ subfield(class="form-check-input") }}
+                                                {{ subfield.label(class="form-check-label") }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Select regions of interest in Africa</small>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                {{ form.additional_info.label(class="form-control-label font-weight-bold") }}
+                                {% if form.additional_info.errors %}
+                                    {{ form.additional_info(class="form-control is-invalid", rows=4) }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.additional_info.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.additional_info(class="form-control", rows=4) }}
+                                {% endif %}
+                                <small class="form-text text-muted">Any additional information about your partnership goals</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <div class="form-check">
+                                {% if form.terms_agree.errors %}
+                                    {{ form.terms_agree(class="form-check-input is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.terms_agree.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.terms_agree(class="form-check-input") }}
+                                {% endif %}
+                                {{ form.terms_agree.label(class="form-check-label") }}
+                                <small class="form-text text-muted">By submitting this application, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.submit(class="btn btn-primary btn-lg btn-block w-100") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

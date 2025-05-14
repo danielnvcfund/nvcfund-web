@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Received - NVC Banking Platform</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #0d6efd;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .footer {
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            border-top: 1px solid #eee;
+        }
+        .important {
+            background-color: #e9f5ff;
+            border-left: 4px solid #0d6efd;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #0d6efd;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Correspondent Banking Application Received</h1>
+        </div>
+        
+        <div class="content">
+            <p>Dear {{ contact_name }},</p>
+            
+            <p>Thank you for your interest in becoming a correspondent banking partner with NVC Banking Platform. We have received your application for <strong>{{ institution }}</strong>.</p>
+            
+            <div class="important">
+                <p><strong>Application Reference:</strong> {{ reference }}</p>
+                <p>Please save this reference number for your records. You will need it for any queries regarding your application.</p>
+            </div>
+            
+            <h2>What Happens Next?</h2>
+            <p>Our partnership team will review your application, which typically takes 3-5 business days. After initial review, a partnership manager will contact you at the email address or phone number provided in your application to discuss the next steps.</p>
+            
+            <h2>The Partnership Process</h2>
+            <ol>
+                <li><strong>Application Review</strong> (Current stage)</li>
+                <li><strong>Initial Consultation</strong> with a partnership manager</li>
+                <li><strong>Documentation Exchange</strong> and due diligence</li>
+                <li><strong>Account Setup & Integration</strong> with systems</li>
+                <li><strong>Go-Live</strong> with correspondent banking services</li>
+            </ol>
+            
+            <p>If you have any questions before we contact you, please feel free to reach out to our partnership team at <a href="mailto:partnerships@nvcplatform.net">partnerships@nvcplatform.net</a>.</p>
+            
+            <p>We look forward to exploring a potential banking partnership with your institution.</p>
+            
+            <p>Best regards,</p>
+            <p>The NVC Banking Platform Partnership Team</p>
+        </div>
+        
+        <div class="footer">
+            <p>This email was sent to you because you submitted an application through the NVC Banking Platform Correspondent Banking Portal.</p>
+            <p>&copy; 2025 NVC Banking Platform. All rights reserved.</p>
+            <p>Please do not reply to this automated email.</p>
+        </div>
+    </div>
+</body>
+</html>

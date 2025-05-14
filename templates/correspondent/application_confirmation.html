@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+
+{% block title %}Application Confirmation{% endblock %}
+
+{% block content %}
+<div class="content-section my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header text-center p-4 bg-success text-white">
+                    <i class="fas fa-check-circle fa-4x mb-3"></i>
+                    <h1 class="card-title">Application Submitted</h1>
+                    <p class="lead mb-0">Thank you for your interest in becoming a correspondent banking partner</p>
+                </div>
+                
+                <div class="card-body p-5">
+                    <div class="alert alert-info mb-4">
+                        <h4><i class="fas fa-info-circle mr-2"></i> Application Reference: {{ reference }}</h4>
+                        <p class="mb-0">Please save this reference number for your records.</p>
+                    </div>
+                    
+                    <h3>Thank You, {{ contact }}</h3>
+                    <p class="lead">Your application for {{ institution }} has been received and is now being processed by our partnership team.</p>
+                    
+                    <h4 class="mt-4">What Happens Next?</h4>
+                    <div class="process-steps mt-3">
+                        <div class="row mb-3">
+                            <div class="col-md-2 text-center">
+                                <div class="p-2 bg-primary text-white rounded-circle d-inline-block">
+                                    <span class="h5">1</span>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <h5>Application Review</h5>
+                                <p>Our team will review your application (typically within 3-5 business days)</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-2 text-center">
+                                <div class="p-2 bg-primary text-white rounded-circle d-inline-block">
+                                    <span class="h5">2</span>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <h5>Initial Consultation</h5>
+                                <p>A partnership manager will contact you to discuss your specific needs</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-2 text-center">
+                                <div class="p-2 bg-primary text-white rounded-circle d-inline-block">
+                                    <span class="h5">3</span>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <h5>Documentation Exchange</h5>
+                                <p>We'll exchange necessary documentation and agreements</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2 text-center">
+                                <div class="p-2 bg-primary text-white rounded-circle d-inline-block">
+                                    <span class="h5">4</span>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <h5>Account Setup & Integration</h5>
+                                <p>Our technical team will work with you to set up accounts and integrate systems</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-4 border-0 bg-light">
+                        <div class="card-body">
+                            <h4><i class="fas fa-envelope mr-2"></i> Confirmation Email Sent</h4>
+                            <p>We've sent a confirmation email to your provided email address with all the application details and next steps. If you don't receive it within the next hour, please check your spam folder or contact us at <a href="mailto:partnerships@nvcplatform.net">partnerships@nvcplatform.net</a>.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-5">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg">Return to Home</a>
+                        <p class="mt-3">Have questions? <a href="{{ url_for('main.contact') }}">Contact our team</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
