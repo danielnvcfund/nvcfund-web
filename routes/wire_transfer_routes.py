@@ -6,10 +6,12 @@ This module handles the routes for the wire transfer functionality.
 import json
 from datetime import datetime
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, session, send_file
 from flask_login import login_required, current_user
 from sqlalchemy.exc import SQLAlchemyError
+from io import BytesIO
 from utils import save_form_data_to_session, restore_form_data_from_session, clear_form_data_from_session
+from generate_wire_transfer_pdf import generate_wire_transfer_pdf
 
 from models import db, User, WireTransfer, CorrespondentBank, Transaction, TreasuryAccount, TreasuryTransaction, TreasuryTransactionType, TransactionStatus
 from utils import generate_transaction_id, generate_unique_id, format_currency
@@ -25,6 +27,44 @@ from utils import format_currency
 
 # Blueprint Definition
 wire_transfer_bp = Blueprint('wire_transfer', __name__, url_prefix='/wire-transfers')
+
+
+@wire_transfer_bp.route('/download/<int:wire_transfer_id>', methods=['GET'])
+@login_required
+def download_wire_transfer_pdf(wire_transfer_id):
+    """Download a PDF receipt for a wire transfer"""
+    try:
+        # Check access permission
+        wire_transfer = WireTransfer.query.get_or_404(wire_transfer_id)
+        
+        # Check if current user has access to this wire transfer
+        if current_user.role.name != 'ADMIN' and (not wire_transfer.user or wire_transfer.user.id != current_user.id):
+            flash("You don't have permission to access this wire transfer", "danger")
+            return redirect(url_for('wire_transfer.list_wire_transfers'))
+        
+        # Generate the PDF
+        pdf_bytes, filename = generate_wire_transfer_pdf(wire_transfer_id)
+        
+        if not pdf_bytes:
+            flash(f"Could not generate PDF: {filename}", "danger")
+            return redirect(url_for('wire_transfer.view_wire_transfer', wire_transfer_id=wire_transfer_id))
+        
+        # Create BytesIO object
+        pdf_buffer = BytesIO(pdf_bytes)
+        pdf_buffer.seek(0)
+        
+        # Send the PDF as a response
+        return send_file(
+            pdf_buffer,
+            download_name=filename,
+            as_attachment=True,
+            mimetype='application/pdf'
+        )
+    
+    except Exception as e:
+        current_app.logger.error(f"Error downloading wire transfer PDF: {str(e)}")
+        flash(f"Error generating PDF: {str(e)}", "danger")
+        return redirect(url_for('wire_transfer.view_wire_transfer', wire_transfer_id=wire_transfer_id))
 
 
 @wire_transfer_bp.route('/', methods=['GET'])
