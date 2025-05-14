@@ -25,10 +25,6 @@ currency_exchange = Blueprint('currency_exchange', __name__, url_prefix='/curren
 def index():
     """Display the currency exchange main page"""
     exchange_form = CurrencyExchangeForm()
-    # Get list of currencies for dropdowns
-    currencies = [(c.name, c.value) for c in CurrencyType]
-    exchange_form.from_currency.choices = currencies
-    exchange_form.to_currency.choices = currencies
     
     # Fetch recent exchange transactions
     recent_transactions = CurrencyExchangeTransaction.query.filter_by(

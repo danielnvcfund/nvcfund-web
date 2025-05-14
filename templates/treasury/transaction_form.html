@@ -125,7 +125,27 @@
               <div class="col-md-6">
                 <div class="form-group">
                   {{ form.currency.label(class="form-label required-field") }}
-                  {{ form.currency(class="form-select form-control-lg" + (" is-invalid" if form.currency.errors else "")) }}
+                  <select class="form-select form-control-lg{% if form.currency.errors %} is-invalid{% endif %}" id="currency" name="currency">
+                    <optgroup label="NVC Currencies">
+                      <option value="NVCT" {% if form.currency.data == 'NVCT' %}selected{% endif %}>NVCT</option>
+                      <option value="AFD1" {% if form.currency.data == 'AFD1' %}selected{% endif %}>AFD1</option>
+                      <option value="SFN" {% if form.currency.data == 'SFN' %}selected{% endif %}>SFN</option>
+                      <option value="AKLUMI" {% if form.currency.data == 'AKLUMI' %}selected{% endif %}>AKLUMI</option>
+                    </optgroup>
+                    <optgroup label="Fiat Currencies">
+                      <option value="USD" {% if form.currency.data == 'USD' %}selected{% endif %}>USD</option>
+                      <option value="EUR" {% if form.currency.data == 'EUR' %}selected{% endif %}>EUR</option>
+                      <option value="GBP" {% if form.currency.data == 'GBP' %}selected{% endif %}>GBP</option>
+                      <option value="JPY" {% if form.currency.data == 'JPY' %}selected{% endif %}>JPY</option>
+                      <option value="CHF" {% if form.currency.data == 'CHF' %}selected{% endif %}>CHF</option>
+                      <option value="NGN" {% if form.currency.data == 'NGN' %}selected{% endif %}>NGN</option>
+                    </optgroup>
+                    <optgroup label="Cryptocurrencies">
+                      <option value="BTC" {% if form.currency.data == 'BTC' %}selected{% endif %}>BTC</option>
+                      <option value="ETH" {% if form.currency.data == 'ETH' %}selected{% endif %}>ETH</option>
+                      <option value="USDT" {% if form.currency.data == 'USDT' %}selected{% endif %}>USDT</option>
+                    </optgroup>
+                  </select>
                   {% if form.currency.errors %}
                   <div class="invalid-feedback">
                     {% for error in form.currency.errors %}

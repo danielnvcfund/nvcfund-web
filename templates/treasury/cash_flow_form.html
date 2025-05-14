@@ -67,7 +67,7 @@
               <div class="col-md-4">
                 <div class="form-group">
                   {{ form.amount.label(class="form-label") }}
-                  {{ form.amount(class="form-control") }}
+                  {{ form.amount(class="form-control", id="amount") }}
                   {% if form.amount.errors %}
                   <div class="text-danger">
                     {% for error in form.amount.errors %}
@@ -81,7 +81,27 @@
               <div class="col-md-4">
                 <div class="form-group">
                   {{ form.currency.label(class="form-label") }}
-                  {{ form.currency(class="form-select") }}
+                  <select class="form-select" id="currency" name="currency">
+                    <optgroup label="NVC Currencies">
+                      <option value="NVCT" {% if form.currency.data == 'NVCT' %}selected{% endif %}>NVCT</option>
+                      <option value="AFD1" {% if form.currency.data == 'AFD1' %}selected{% endif %}>AFD1</option>
+                      <option value="SFN" {% if form.currency.data == 'SFN' %}selected{% endif %}>SFN</option>
+                      <option value="AKLUMI" {% if form.currency.data == 'AKLUMI' %}selected{% endif %}>AKLUMI</option>
+                    </optgroup>
+                    <optgroup label="Fiat Currencies">
+                      <option value="USD" {% if form.currency.data == 'USD' %}selected{% endif %}>USD</option>
+                      <option value="EUR" {% if form.currency.data == 'EUR' %}selected{% endif %}>EUR</option>
+                      <option value="GBP" {% if form.currency.data == 'GBP' %}selected{% endif %}>GBP</option>
+                      <option value="JPY" {% if form.currency.data == 'JPY' %}selected{% endif %}>JPY</option>
+                      <option value="CHF" {% if form.currency.data == 'CHF' %}selected{% endif %}>CHF</option>
+                      <option value="NGN" {% if form.currency.data == 'NGN' %}selected{% endif %}>NGN</option>
+                    </optgroup>
+                    <optgroup label="Cryptocurrencies">
+                      <option value="BTC" {% if form.currency.data == 'BTC' %}selected{% endif %}>BTC</option>
+                      <option value="ETH" {% if form.currency.data == 'ETH' %}selected{% endif %}>ETH</option>
+                      <option value="USDT" {% if form.currency.data == 'USDT' %}selected{% endif %}>USDT</option>
+                    </optgroup>
+                  </select>
                   {% if form.currency.errors %}
                   <div class="text-danger">
                     {% for error in form.currency.errors %}
@@ -231,7 +251,39 @@
         e.preventDefault();
         alert('End date must be after the start date for recurring forecasts.');
       }
+      
+      // Remove commas before submitting form
+      const amountInput = document.getElementById('amount');
+      if (amountInput) {
+        amountInput.value = amountInput.value.replace(/,/g, '');
+      }
     });
+    
+    // Format numbers with commas
+    const amountInput = document.getElementById('amount');
+    if (amountInput) {
+      // Initial formatting if value exists
+      if (amountInput.value) {
+        const originalValue = amountInput.value.replace(/,/g, '');
+        amountInput.value = numberWithCommas(originalValue);
+      }
+      
+      // Format when user enters data
+      amountInput.addEventListener('input', function(e) {
+        const value = e.target.value.replace(/,/g, '');
+        e.target.value = numberWithCommas(value);
+      });
+    }
+    
+    function numberWithCommas(x) {
+      // Skip empty or invalid inputs
+      if (!x || x === '') return '';
+      
+      // Handle decimal numbers
+      const parts = x.toString().split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      return parts.join('.');
+    }
   });
 </script>
 {% endblock %}

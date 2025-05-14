@@ -118,33 +118,24 @@
                 <div class="form-group">
                   {{ form.currency.label(class="form-label") }}
                   <select class="form-select" id="currency" name="currency">
-                    <optgroup label="Primary NVC Currencies">
-                      {% for option in form.currency.choices %}
-                        {% if option[0] in ['NVCT', 'SPU', 'TU', 'AFD1', 'SFN', 'AKLUMI'] %}
-                          <option value="{{ option[0] }}" {% if option[0] == form.currency.data %}selected{% endif %}>{{ option[0] }}</option>
-                        {% endif %}
-                      {% endfor %}
+                    <optgroup label="NVC Currencies">
+                      <option value="NVCT" {% if form.currency.data == 'NVCT' %}selected{% endif %}>NVCT</option>
+                      <option value="AFD1" {% if form.currency.data == 'AFD1' %}selected{% endif %}>AFD1</option>
+                      <option value="SFN" {% if form.currency.data == 'SFN' %}selected{% endif %}>SFN</option>
+                      <option value="AKLUMI" {% if form.currency.data == 'AKLUMI' %}selected{% endif %}>AKLUMI</option>
                     </optgroup>
-                    <optgroup label="Major Currencies">
-                      {% for option in form.currency.choices %}
-                        {% if option[0] in ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD'] %}
-                          <option value="{{ option[0] }}" {% if option[0] == form.currency.data %}selected{% endif %}>{{ option[0] }}</option>
-                        {% endif %}
-                      {% endfor %}
+                    <optgroup label="Fiat Currencies">
+                      <option value="USD" {% if form.currency.data == 'USD' %}selected{% endif %}>USD</option>
+                      <option value="EUR" {% if form.currency.data == 'EUR' %}selected{% endif %}>EUR</option>
+                      <option value="GBP" {% if form.currency.data == 'GBP' %}selected{% endif %}>GBP</option>
+                      <option value="JPY" {% if form.currency.data == 'JPY' %}selected{% endif %}>JPY</option>
+                      <option value="CHF" {% if form.currency.data == 'CHF' %}selected{% endif %}>CHF</option>
+                      <option value="NGN" {% if form.currency.data == 'NGN' %}selected{% endif %}>NGN</option>
                     </optgroup>
-                    <optgroup label="African Currencies">
-                      {% for option in form.currency.choices %}
-                        {% if option[0] in ['NGN', 'GHS', 'XOF', 'XAF', 'ZAR', 'KES', 'EGP'] %}
-                          <option value="{{ option[0] }}" {% if option[0] == form.currency.data %}selected{% endif %}>{{ option[0] }}</option>
-                        {% endif %}
-                      {% endfor %}
-                    </optgroup>
-                    <optgroup label="Other Currencies">
-                      {% for option in form.currency.choices %}
-                        {% if option[0] not in ['NVCT', 'SPU', 'TU', 'AFD1', 'SFN', 'AKLUMI', 'USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD', 'NGN', 'GHS', 'XOF', 'XAF', 'ZAR', 'KES', 'EGP'] %}
-                          <option value="{{ option[0] }}" {% if option[0] == form.currency.data %}selected{% endif %}>{{ option[0] }}</option>
-                        {% endif %}
-                      {% endfor %}
+                    <optgroup label="Cryptocurrencies">
+                      <option value="BTC" {% if form.currency.data == 'BTC' %}selected{% endif %}>BTC</option>
+                      <option value="ETH" {% if form.currency.data == 'ETH' %}selected{% endif %}>ETH</option>
+                      <option value="USDT" {% if form.currency.data == 'USDT' %}selected{% endif %}>USDT</option>
                     </optgroup>
                   </select>
                   {% if form.currency.errors %}
