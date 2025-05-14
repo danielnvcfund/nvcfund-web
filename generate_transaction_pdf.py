@@ -171,6 +171,12 @@ def generate_transaction_pdf(transaction_id):
                 .badge-secondary {
                     background-color: #6c757d;
                 }
+                .badge-primary {
+                    background-color: #007bff;
+                }
+                .badge-info {
+                    background-color: #17a2b8;
+                }
                 .watermark {
                     position: fixed;
                     top: 50%;
