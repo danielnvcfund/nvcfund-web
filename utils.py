@@ -541,9 +541,20 @@ def save_form_data_to_session(form, prefix="form_"):
         if field_name in ('csrf_token', 'submit') or field.type == 'HiddenField':
             continue
         
-        # Save the field data
+        # Save the field data with type information
         if field.data is not None:
-            form_data[field_name] = field.data
+            # Convert numeric types to strings for safer storage in session
+            if field.type in ('DecimalField', 'FloatField', 'IntegerField'):
+                # Store as string but remember field type
+                form_data[field_name] = {
+                    'value': str(field.data),
+                    'type': field.type
+                }
+            else:
+                form_data[field_name] = {
+                    'value': field.data,
+                    'type': field.type
+                }
     
     # Store in session
     session[f"{prefix}{form.__class__.__name__}"] = form_data
@@ -568,12 +579,55 @@ def restore_form_data_from_session(form, prefix="form_", clear=False):
     
     form_data = session[session_key]
     
+    # Check if we're using the old or new format
+    is_new_format = all(isinstance(v, dict) and 'value' in v for v in form_data.values() if v is not None)
+    
     # Populate form fields
-    for field_name, value in form_data.items():
+    for field_name, field_info in form_data.items():
         if field_name in form._fields:
+            field = form._fields[field_name]
+            
             # Skip select fields as they need special handling
-            if form._fields[field_name].type != 'SelectField':
-                form._fields[field_name].data = value
+            if field.type == 'SelectField':
+                continue
+            
+            if is_new_format:
+                # New format with type information
+                value = field_info.get('value')
+                field_type = field_info.get('type')
+                
+                # Handle numeric fields
+                if field_type in ('DecimalField', 'FloatField', 'IntegerField'):
+                    try:
+                        if value is not None:
+                            if field_type == 'IntegerField':
+                                field.data = int(value)
+                            else:
+                                field.data = float(value)
+                    except (ValueError, TypeError):
+                        # If conversion fails, leave as default
+                        pass
+                else:
+                    # For non-numeric fields
+                    field.data = value
+            else:
+                # Old format (backward compatibility)
+                value = field_info
+                
+                # Handle numeric fields
+                if field.type in ('DecimalField', 'FloatField', 'IntegerField'):
+                    try:
+                        if value is not None:
+                            if field.type == 'IntegerField':
+                                field.data = int(value)
+                            else:
+                                field.data = float(value)
+                    except (ValueError, TypeError):
+                        # If conversion fails, leave as default
+                        pass
+                else:
+                    # For non-numeric fields
+                    field.data = value
     
     # Optionally clear the data
     if clear:
