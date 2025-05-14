@@ -2,6 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, TextAreaField, DecimalField, PasswordField, BooleanField, FloatField, SubmitField, HiddenField, DateField, RadioField, IntegerField
 from wtforms.validators import DataRequired, Length, Optional, Email, EqualTo, NumberRange, ValidationError, Regexp
 from models import TransactionType, PaymentGatewayType
+from account_holder_models import CurrencyType
 from datetime import datetime, timedelta
 
 
@@ -23,13 +24,23 @@ def get_currency_choices():
         ('AUD', 'AUD - Australian Dollar'),
         ('CAD', 'CAD - Canadian Dollar'),
         
-        # Cryptocurrencies
+        # African Currencies
+        ('NGN', 'NGN - Nigerian Naira'),
+        ('ZAR', 'ZAR - South African Rand'),
+        ('EGP', 'EGP - Egyptian Pound'),
+        ('GHS', 'GHS - Ghanaian Cedi'),
+        
+        # Native Tokens
         ('NVCT', 'NVCT - NVC Token'),
+        ('AFD1', 'AFD1 - American Federation Dollar'),
+        ('SFN', 'SFN - SFN Coin'),
+        ('AKLUMI', 'AKLUMI - Ak Lumi'),
+        
+        # Cryptocurrencies
         ('ETH', 'ETH - Ethereum'),
         ('BTC', 'BTC - Bitcoin'),
         ('USDT', 'USDT - Tether'),
-        ('USDC', 'USDC - USD Coin'),
-        ('AFD1', 'AFD1 - American Federation Dollar')
+        ('USDC', 'USDC - USD Coin')
     ]
 
 class FinancialInstitutionForm(FlaskForm):
@@ -47,6 +58,21 @@ class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     remember_me = BooleanField('Remember Me')
+    
+class CurrencyExchangeForm(BaseForm):
+    """Form for currency exchange operations"""
+    from_currency = SelectField('From Currency', validators=[DataRequired()], choices=get_currency_choices())
+    to_currency = SelectField('To Currency', validators=[DataRequired()], choices=get_currency_choices())
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=1.0)
+    
+    # Source and destination accounts
+    from_account = SelectField('From Account', validators=[DataRequired()], coerce=int)
+    to_account = SelectField('To Account', validators=[DataRequired()], coerce=int)
+    
+    # Optional fields
+    use_custom_rate = BooleanField('Use Custom Rate', default=False)
+    custom_rate = DecimalField('Custom Rate', validators=[Optional(), NumberRange(min=0.00001)], default=1.0)
+    notes = TextAreaField('Notes', validators=[Optional(), Length(max=500)])
 
 class RegistrationForm(FlaskForm):
     """Combined user registration form for both personal and business accounts"""
