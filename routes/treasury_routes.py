@@ -623,7 +623,7 @@ def new_investment():
             description=f"Investment purchase: {form.investment_type.data}",  # Using string directly
             reference_number=reference_id,
             status=TransactionStatus.PENDING,
-            created_by_id=current_user.id
+            created_by=current_user.id
         )
         
         db.session.add(investment)
@@ -780,9 +780,10 @@ def mature_investment(investment_id):
             description=f"Investment maturity: {investment.investment_type.value} - Principal: {format_currency(investment.amount, investment.currency)}, Interest: {format_currency(interest_earned, investment.currency)}",
             reference_number=investment.investment_id,
             status=TransactionStatus.COMPLETED,
-            created_by_id=current_user.id,
-            approved_at=datetime.datetime.utcnow(),
-            approved_by_id=current_user.id
+            created_by=current_user.id,
+            execution_date=datetime.datetime.utcnow(),
+            approval_user_id=current_user.id,
+            approval_date=datetime.datetime.utcnow()
         )
         
         # Update account balance
@@ -885,7 +886,7 @@ def new_loan():
             description=f"Loan disbursement: {form.loan_type.data.value} from {lender_name}",
             reference_number=loan_id,
             status=TransactionStatus.PENDING,
-            created_by_id=current_user.id
+            created_by=current_user.id
         )
         
         db.session.add(loan)
@@ -1003,7 +1004,7 @@ def make_loan_payment(loan_id):
             description=f"Loan payment for {loan.loan_id}: Principal: {format_currency(form.principal_amount.data, loan.currency)}, Interest: {format_currency(form.interest_amount.data, loan.currency)}",
             reference_number=loan.loan_id,
             status=TransactionStatus.PENDING,
-            created_by_id=current_user.id
+            created_by=current_user.id
         )
         
         db.session.add(transaction)
