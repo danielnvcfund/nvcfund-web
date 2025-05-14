@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, TextAreaField, DecimalField, PasswordField, BooleanField, FloatField, SubmitField, HiddenField, DateField, RadioField, IntegerField
 from wtforms.validators import DataRequired, Length, Optional, Email, EqualTo, NumberRange, ValidationError, Regexp
-from models import TransactionType, PaymentGatewayType
+from models import TransactionType, PaymentGatewayType, WireTransferStatus
 from account_holder_models import CurrencyType
 from datetime import datetime, timedelta
 
@@ -1131,3 +1131,46 @@ class POSTransactionFilterForm(FlaskForm):
     ], validators=[Optional()])
     search = StringField('Search', validators=[Optional()])
     submit = SubmitField('Filter')
+    
+
+class WireTransferForm(BaseForm):
+    """Form for creating a new wire transfer"""
+    correspondent_bank_id = SelectField('Correspondent Bank', validators=[DataRequired()], coerce=int)
+    treasury_account_id = SelectField('Source Treasury Account', validators=[DataRequired()], coerce=int)
+    
+    # Amount and purpose
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], places=2)
+    purpose = StringField('Purpose of Transfer', validators=[DataRequired(), Length(max=256)], 
+                        description="Required for regulatory compliance")
+    
+    # Originator information
+    originator_name = StringField('Originator Name', validators=[DataRequired(), Length(max=256)])
+    originator_account = StringField('Originator Account Number', validators=[DataRequired(), Length(max=128)])
+    originator_address = TextAreaField('Originator Address', validators=[DataRequired(), Length(max=1000)])
+    
+    # Beneficiary information
+    beneficiary_name = StringField('Beneficiary Name', validators=[DataRequired(), Length(max=256)])
+    beneficiary_account = StringField('Beneficiary Account Number', validators=[DataRequired(), Length(max=128)])
+    beneficiary_address = TextAreaField('Beneficiary Address', validators=[DataRequired(), Length(max=1000)])
+    
+    # Beneficiary bank information
+    beneficiary_bank_name = StringField('Beneficiary Bank Name', validators=[DataRequired(), Length(max=256)])
+    beneficiary_bank_address = TextAreaField('Beneficiary Bank Address', validators=[DataRequired(), Length(max=1000)])
+    beneficiary_bank_swift = StringField('Beneficiary Bank SWIFT/BIC Code', 
+                                       validators=[Optional(), Length(min=8, max=11)],
+                                       description="8 or 11 characters")
+    beneficiary_bank_routing = StringField('Beneficiary Bank Routing Number (for US banks)', 
+                                         validators=[Optional(), Length(max=20)])
+    
+    # Optional intermediary bank information
+    intermediary_bank_name = StringField('Intermediary Bank Name (if applicable)', 
+                                       validators=[Optional(), Length(max=256)])
+    intermediary_bank_swift = StringField('Intermediary Bank SWIFT/BIC Code', 
+                                        validators=[Optional(), Length(min=8, max=11)])
+    
+    # Additional information
+    message_to_beneficiary = TextAreaField('Message to Beneficiary', 
+                                         validators=[Optional(), Length(max=1000)],
+                                         description="Optional message that will be sent to the beneficiary")
+    
+    submit = SubmitField('Create Wire Transfer')

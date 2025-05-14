@@ -180,7 +180,16 @@ def create_app():
     # Add custom filters
     import json
     from utils import format_currency, format_transaction_type
+    from markupsafe import Markup
     app.jinja_env.filters['format_currency'] = lambda amount, currency='USD': format_currency(amount, currency)
+    
+    # Add nl2br filter for newlines to <br> conversion
+    @app.template_filter('nl2br')
+    def nl2br_filter(text):
+        """Convert newlines to <br> tags"""
+        if text is None:
+            return ""
+        return Markup(text.replace('\n', '<br>'))
     
     # Register number formatting filter
     @app.template_filter('format_number')
@@ -626,6 +635,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering Correspondent Banking routes: {str(e)}")
             logger.warning("Application will run without Correspondent Banking functionality")
+        
+        # Register Wire Transfer routes
+        try:
+            from routes.wire_transfer_routes import wire_transfer_bp
+            app.register_blueprint(wire_transfer_bp)
+            logger.info("Wire Transfer routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Wire Transfer routes: {str(e)}")
+            logger.warning("Application will run without Wire Transfer functionality")
         
         # Register Document Download Center routes
         try:

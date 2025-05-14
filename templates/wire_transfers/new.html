@@ -1,0 +1,317 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h2>New Wire Transfer</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" id="wire-transfer-form" class="needs-validation" novalidate>
+                {{ form.hidden_tag() }}
+                
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <h4 class="text-primary"><i class="fas fa-university"></i> Account Information</h4>
+                        <hr>
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.treasury_account_id.label(class="form-label") }}
+                        {{ form.treasury_account_id(class="form-control") }}
+                        {% if form.treasury_account_id.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.treasury_account_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.correspondent_bank_id.label(class="form-label") }}
+                        {{ form.correspondent_bank_id(class="form-control") }}
+                        {% if form.correspondent_bank_id.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.correspondent_bank_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">The correspondent bank that will process this wire transfer</small>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <h4 class="text-primary"><i class="fas fa-exchange-alt"></i> Transfer Details</h4>
+                        <hr>
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.amount.label(class="form-label") }}
+                        {{ form.amount(class="form-control", step="0.01", min="0.01") }}
+                        {% if form.amount.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.amount.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.purpose.label(class="form-label") }}
+                        {{ form.purpose(class="form-control") }}
+                        {% if form.purpose.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.purpose.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">{{ form.purpose.description }}</small>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <h4 class="text-primary"><i class="fas fa-user"></i> Originator Information</h4>
+                        <hr>
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.originator_name.label(class="form-label") }}
+                        {{ form.originator_name(class="form-control") }}
+                        {% if form.originator_name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.originator_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.originator_account.label(class="form-label") }}
+                        {{ form.originator_account(class="form-control") }}
+                        {% if form.originator_account.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.originator_account.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-12 form-group">
+                        {{ form.originator_address.label(class="form-label") }}
+                        {{ form.originator_address(class="form-control", rows=3) }}
+                        {% if form.originator_address.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.originator_address.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <h4 class="text-primary"><i class="fas fa-user-plus"></i> Beneficiary Information</h4>
+                        <hr>
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.beneficiary_name.label(class="form-label") }}
+                        {{ form.beneficiary_name(class="form-control") }}
+                        {% if form.beneficiary_name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.beneficiary_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.beneficiary_account.label(class="form-label") }}
+                        {{ form.beneficiary_account(class="form-control") }}
+                        {% if form.beneficiary_account.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.beneficiary_account.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-12 form-group">
+                        {{ form.beneficiary_address.label(class="form-label") }}
+                        {{ form.beneficiary_address(class="form-control", rows=3) }}
+                        {% if form.beneficiary_address.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.beneficiary_address.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <h4 class="text-primary"><i class="fas fa-landmark"></i> Beneficiary Bank Information</h4>
+                        <hr>
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.beneficiary_bank_name.label(class="form-label") }}
+                        {{ form.beneficiary_bank_name(class="form-control") }}
+                        {% if form.beneficiary_bank_name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.beneficiary_bank_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.beneficiary_bank_swift.label(class="form-label") }}
+                        {{ form.beneficiary_bank_swift(class="form-control") }}
+                        {% if form.beneficiary_bank_swift.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.beneficiary_bank_swift.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">{{ form.beneficiary_bank_swift.description }}</small>
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.beneficiary_bank_routing.label(class="form-label") }}
+                        {{ form.beneficiary_bank_routing(class="form-control") }}
+                        {% if form.beneficiary_bank_routing.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.beneficiary_bank_routing.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.beneficiary_bank_address.label(class="form-label") }}
+                        {{ form.beneficiary_bank_address(class="form-control", rows=3) }}
+                        {% if form.beneficiary_bank_address.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.beneficiary_bank_address.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <h4 class="text-primary"><i class="fas fa-exchange-alt"></i> Intermediary Bank (Optional)</h4>
+                        <hr>
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.intermediary_bank_name.label(class="form-label") }}
+                        {{ form.intermediary_bank_name(class="form-control") }}
+                        {% if form.intermediary_bank_name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.intermediary_bank_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.intermediary_bank_swift.label(class="form-label") }}
+                        {{ form.intermediary_bank_swift(class="form-control") }}
+                        {% if form.intermediary_bank_swift.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.intermediary_bank_swift.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <h4 class="text-primary"><i class="fas fa-comment"></i> Additional Information</h4>
+                        <hr>
+                    </div>
+                    
+                    <div class="col-md-12 form-group">
+                        {{ form.message_to_beneficiary.label(class="form-label") }}
+                        {{ form.message_to_beneficiary(class="form-control", rows=3) }}
+                        {% if form.message_to_beneficiary.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.message_to_beneficiary.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">{{ form.message_to_beneficiary.description }}</small>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="alert alert-info">
+                            <strong>Important:</strong> Please ensure all information is accurate. Once submitted, wire transfers cannot be easily modified.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        <a href="{{ url_for('wire_transfer.list_wire_transfers') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        {{ form.submit(class="btn btn-primary", value="Submit Wire Transfer") }}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form validation
+        const form = document.getElementById('wire-transfer-form');
+        
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+        
+        // Handle account selection to display currency and balance
+        const accountSelect = document.getElementById('treasury_account_id');
+        if (accountSelect) {
+            accountSelect.addEventListener('change', function() {
+                // You can implement AJAX to fetch account details and update the UI
+                // For example, show available balance in the selected currency
+            });
+        }
+    });
+</script>
+{% endblock %}
