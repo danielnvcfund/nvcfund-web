@@ -928,6 +928,7 @@ class TreasuryInvestmentForm(FlaskForm):
     institution_id = SelectField('Institution', validators=[DataRequired()], coerce=int)
     description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
     is_auto_renewal = BooleanField('Auto Renewal', default=False)
+    currency = SelectField('Currency', choices=[], validators=[DataRequired()])
     submit = SubmitField('Create Investment')
     
     def validate_maturity_date(self, field):
@@ -1005,6 +1006,7 @@ class CashFlowForecastForm(FlaskForm):
         ('medium', 'Medium (50-90%)'),
         ('low', 'Low (0-50%)')
     ], validators=[DataRequired()])
+    currency = SelectField('Currency', choices=[], validators=[DataRequired()])
     submit = SubmitField('Create Forecast')
 
 class LoanPaymentForm(FlaskForm):

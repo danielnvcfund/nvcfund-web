@@ -66,11 +66,11 @@
             <div class="row mb-3">
               <div class="col-md-6">
                 <div class="form-group">
-                  {{ form.name.label(class="form-label") }}
-                  {{ form.name(class="form-control") }}
-                  {% if form.name.errors %}
+                  {{ form.investment_name.label(class="form-label") }}
+                  {{ form.investment_name(class="form-control") }}
+                  {% if form.investment_name.errors %}
                   <div class="text-danger">
-                    {% for error in form.name.errors %}
+                    {% for error in form.investment_name.errors %}
                     <small>{{ error }}</small>
                     {% endfor %}
                   </div>
@@ -102,11 +102,11 @@
             <div class="row mb-3">
               <div class="col-md-4">
                 <div class="form-group">
-                  {{ form.amount.label(class="form-label") }}
-                  {{ form.amount(class="form-control") }}
-                  {% if form.amount.errors %}
+                  {{ form.principal_amount.label(class="form-label") }}
+                  {{ form.principal_amount(class="form-control") }}
+                  {% if form.principal_amount.errors %}
                   <div class="text-danger">
-                    {% for error in form.amount.errors %}
+                    {% for error in form.principal_amount.errors %}
                     <small>{{ error }}</small>
                     {% endfor %}
                   </div>
@@ -195,11 +195,11 @@
             <div class="row mb-3">
               <div class="col-md-6">
                 <div class="form-check form-switch mt-4">
-                  {{ form.is_active(class="form-check-input") }}
-                  {{ form.is_active.label(class="form-check-label") }}
-                  {% if form.is_active.errors %}
+                  {{ form.is_auto_renewal(class="form-check-input") }}
+                  {{ form.is_auto_renewal.label(class="form-check-label") }}
+                  {% if form.is_auto_renewal.errors %}
                   <div class="text-danger">
-                    {% for error in form.is_active.errors %}
+                    {% for error in form.is_auto_renewal.errors %}
                     <small>{{ error }}</small>
                     {% endfor %}
                   </div>

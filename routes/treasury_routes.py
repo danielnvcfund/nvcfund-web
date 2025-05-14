@@ -570,7 +570,7 @@ def new_investment():
         account = TreasuryAccount.query.get_or_404(form.account_id.data)
         
         # Check if account has sufficient funds
-        if account.available_balance < form.amount.data:
+        if account.available_balance < form.principal_amount.data:
             flash('Insufficient funds in the selected account.', 'danger')
             return render_template(
                 'treasury/investment_form.html',
@@ -584,16 +584,17 @@ def new_investment():
         investment = TreasuryInvestment(
             investment_id=reference_id,
             account_id=form.account_id.data,
-            investment_type=form.investment_type.data,
-            counterparty=form.counterparty.data,
-            amount=form.amount.data,
+            investment_type=InvestmentType(form.investment_type.data),
+            institution_id=form.institution_id.data,  # Using institution instead of counterparty
+            amount=form.principal_amount.data,  # Using principal_amount
             currency=form.currency.data,
             interest_rate=form.interest_rate.data,
             start_date=form.start_date.data,
             maturity_date=form.maturity_date.data,
             description=form.description.data,
             status=InvestmentStatus.PENDING,
-            created_by_id=current_user.id
+            created_by_id=current_user.id,
+            is_active=True  # Default to active
         )
         
         # Create associated transaction
@@ -601,9 +602,9 @@ def new_investment():
             transaction_id=f"TXN-{reference_id}",
             transaction_type=TreasuryTransactionType.INVESTMENT_PURCHASE,
             from_account_id=account.id,
-            amount=form.amount.data,
+            amount=form.principal_amount.data,  # Using principal_amount
             currency=form.currency.data,
-            description=f"Investment purchase: {form.investment_type.data.value}",
+            description=f"Investment purchase: {form.investment_type.data}",  # Using string directly
             reference_number=reference_id,
             status=TransactionStatus.PENDING,
             created_by_id=current_user.id
@@ -1070,59 +1071,69 @@ def new_cash_flow():
             form.currency.data = account.currency
     
     if form.validate_on_submit():
+        # Map confidence level to probability percentage
+        probability = 95.0  # High (default)
+        if form.confidence_level.data == 'medium':
+            probability = 70.0
+        elif form.confidence_level.data == 'low':
+            probability = 30.0
+            
         cash_flow = CashFlowForecast(
             account_id=form.account_id.data,
-            transaction_date=form.transaction_date.data,
-            direction=form.direction.data,
+            transaction_date=form.start_date.data,  # Using start_date from form
+            direction=CashFlowDirection(form.cash_flow_direction.data),  # Map to enum
             amount=form.amount.data,
             currency=form.currency.data,
-            probability=form.probability.data,
-            category=form.category.data,
-            source_description=form.source_description.data,
-            recurrence_type=form.recurrence_type.data,
-            recurrence_end_date=form.recurrence_end_date.data,
-            notes=form.notes.data,
+            probability=probability,  # Derived from confidence_level
+            category=form.title.data,  # Using title as category
+            source_description=form.description.data,  # Description as source
+            recurrence_type=RecurrenceType(form.recurrence_type.data),  # Map to enum
+            recurrence_end_date=form.end_date.data,
+            notes=form.description.data,  # Using description for notes too
             created_by_id=current_user.id
         )
         
         db.session.add(cash_flow)
         
         # If this is a recurring forecast, create additional entries
-        if form.recurrence_type.data != RecurrenceType.NONE and form.recurrence_end_date.data:
-            start_date = form.transaction_date.data
-            end_date = form.recurrence_end_date.data
+        if form.recurrence_type.data != 'one_time' and form.end_date.data:
+            start_date = form.start_date.data
+            end_date = form.end_date.data
             current_date = start_date
             
-            if form.recurrence_type.data == RecurrenceType.DAILY:
+            if form.recurrence_type.data == 'daily':
                 delta = datetime.timedelta(days=1)
-            elif form.recurrence_type.data == RecurrenceType.WEEKLY:
+            elif form.recurrence_type.data == 'weekly':
                 delta = datetime.timedelta(weeks=1)
-            elif form.recurrence_type.data == RecurrenceType.MONTHLY:
+            elif form.recurrence_type.data == 'monthly':
                 # Use the same day of next month
                 delta = datetime.timedelta(days=30)  # Approximate for simplicity
-            elif form.recurrence_type.data == RecurrenceType.QUARTERLY:
+            elif form.recurrence_type.data == 'quarterly':
                 delta = datetime.timedelta(days=90)  # Approximate for simplicity
-            elif form.recurrence_type.data == RecurrenceType.ANNUAL:
+            elif form.recurrence_type.data == 'annual':
                 delta = datetime.timedelta(days=365)  # Approximate for simplicity
+            else:
+                delta = datetime.timedelta(days=0)  # No recurrence
             
-            current_date += delta
-            while current_date <= end_date:
-                recurring_cash_flow = CashFlowForecast(
-                    account_id=form.account_id.data,
-                    transaction_date=current_date,
-                    direction=form.direction.data,
-                    amount=form.amount.data,
-                    currency=form.currency.data,
-                    probability=form.probability.data,
-                    category=form.category.data,
-                    source_description=form.source_description.data,
-                    recurrence_type=form.recurrence_type.data,
-                    recurrence_end_date=form.recurrence_end_date.data,
-                    notes=form.notes.data,
-                    created_by_id=current_user.id
-                )
-                db.session.add(recurring_cash_flow)
+            if delta.days > 0:  # Only proceed if we have a valid recurrence
                 current_date += delta
+                while current_date <= end_date:
+                    recurring_cash_flow = CashFlowForecast(
+                        account_id=form.account_id.data,
+                        transaction_date=current_date,
+                        direction=CashFlowDirection(form.cash_flow_direction.data),
+                        amount=form.amount.data,
+                        currency=form.currency.data,
+                        probability=probability,  # Same probability as primary entry
+                        category=form.title.data,
+                        source_description=form.description.data,
+                        recurrence_type=RecurrenceType(form.recurrence_type.data),
+                        recurrence_end_date=form.end_date.data,
+                        notes=form.description.data,
+                        created_by_id=current_user.id
+                    )
+                    db.session.add(recurring_cash_flow)
+                    current_date += delta
         
         db.session.commit()
         
