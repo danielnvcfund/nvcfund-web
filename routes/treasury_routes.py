@@ -557,6 +557,24 @@ def new_investment():
     accounts = TreasuryAccount.query.filter_by(is_active=True).order_by(TreasuryAccount.name).all()
     form.account_id.choices = [(a.id, f"{a.name} ({format_currency(a.available_balance, a.currency)})") for a in accounts]
     
+    # Populate institution choices
+    institutions = FinancialInstitution.query.order_by(FinancialInstitution.name).all()
+    form.institution_id.choices = [(i.id, i.name) for i in institutions]
+    
+    # Populate currency choices with categorized options
+    form.currency.choices = [
+        ('NVCT', 'NVCT - NVC Token'),
+        ('AFD1', 'AFD1 - American Federation Dollar'),
+        ('SFN', 'SFN - Swifin Coin'),
+        ('AKLUMI', 'AKLUMI - Ak Lumi'),
+        ('USD', 'USD - US Dollar'),
+        ('EUR', 'EUR - Euro'),
+        ('GBP', 'GBP - British Pound'),
+        ('JPY', 'JPY - Japanese Yen'),
+        ('CHF', 'CHF - Swiss Franc'),
+        ('NGN', 'NGN - Nigerian Naira')
+    ]
+    
     # Pre-select the account_id from query string if provided
     account_id = request.args.get('account_id', type=int)
     if account_id and account_id in [a.id for a in accounts]:
@@ -653,6 +671,28 @@ def edit_investment(investment_id):
     investment = TreasuryInvestment.query.get_or_404(investment_id)
     
     form = TreasuryInvestmentForm(obj=investment)
+    
+    # Populate account choices
+    accounts = TreasuryAccount.query.filter_by(is_active=True).order_by(TreasuryAccount.name).all()
+    form.account_id.choices = [(a.id, f"{a.name} ({format_currency(a.available_balance, a.currency)})") for a in accounts]
+    
+    # Populate institution choices
+    institutions = FinancialInstitution.query.order_by(FinancialInstitution.name).all()
+    form.institution_id.choices = [(i.id, i.name) for i in institutions]
+    
+    # Populate currency choices with categorized options
+    form.currency.choices = [
+        ('NVCT', 'NVCT - NVC Token'),
+        ('AFD1', 'AFD1 - American Federation Dollar'),
+        ('SFN', 'SFN - Swifin Coin'),
+        ('AKLUMI', 'AKLUMI - Ak Lumi'),
+        ('USD', 'USD - US Dollar'),
+        ('EUR', 'EUR - Euro'),
+        ('GBP', 'GBP - British Pound'),
+        ('JPY', 'JPY - Japanese Yen'),
+        ('CHF', 'CHF - Swiss Franc'),
+        ('NGN', 'NGN - Nigerian Naira')
+    ]
     
     if form.validate_on_submit():
         form.populate_obj(investment)
