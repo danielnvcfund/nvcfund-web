@@ -29,7 +29,7 @@ from utils import format_currency
 wire_transfer_bp = Blueprint('wire_transfer', __name__, url_prefix='/wire-transfers')
 
 
-@wire_transfer_bp.route('/download/<int:wire_transfer_id>', methods=['GET'])
+@wire_transfer_bp.route('/download-pdf/<int:wire_transfer_id>', methods=['GET'])
 @login_required
 def download_wire_transfer_pdf(wire_transfer_id):
     """Download a PDF receipt for a wire transfer"""
