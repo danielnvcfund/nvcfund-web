@@ -732,7 +732,7 @@ def get_wire_transfer_with_tracking_data(wire_transfer_id):
                 badge_class = "badge-primary"
                 
             processed_history.append({
-                'status': entry.status.value,
+                'status': status_value,
                 'timestamp': entry.timestamp,
                 'description': entry.description,
                 'badge_class': badge_class,

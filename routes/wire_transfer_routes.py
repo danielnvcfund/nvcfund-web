@@ -237,14 +237,34 @@ def track_wire_transfer(wire_transfer_id):
             flash(f"Error retrieving wire transfer: {error}", "danger")
             return redirect(url_for('wire_transfer.list_wire_transfers'))
         
+        if not wire_transfer:
+            flash("Wire transfer not found", "danger")
+            return redirect(url_for('wire_transfer.list_wire_transfers'))
+        
         # Check if the user is authorized to view this wire transfer
         if current_user.role.name != 'ADMIN' and wire_transfer.user_id != current_user.id:
             flash("You are not authorized to view this wire transfer", "danger")
             return redirect(url_for('wire_transfer.list_wire_transfers'))
         
+        # Create a sanitized wire transfer object with string status values
+        wire_transfer_data = {
+            'id': wire_transfer.id,
+            'reference_number': wire_transfer.reference_number,
+            'transfer_id': wire_transfer.transfer_id,
+            'user_id': wire_transfer.user_id,
+            'status': {
+                'value': wire_transfer.status.value if wire_transfer.status else 'unknown'
+            },
+            'amount': wire_transfer.amount,
+            'currency': wire_transfer.currency,
+            'created_at': wire_transfer.created_at,
+            'beneficiary_name': wire_transfer.beneficiary_name,
+            'correspondent_bank': wire_transfer.correspondent_bank
+        }
+        
         return render_template(
             'wire_transfers/tracking.html',
-            wire_transfer=wire_transfer,
+            wire_transfer=wire_transfer_data,
             tracking_data=tracking_data,
             title=f"Track Wire Transfer {wire_transfer.reference_number or wire_transfer.transfer_id}"
         )

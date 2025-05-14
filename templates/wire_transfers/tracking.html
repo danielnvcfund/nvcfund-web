@@ -108,19 +108,19 @@
                         <ul class="timeline-items">
                             {% for status_entry in tracking_data %}
                                 <li class="timeline-item 
-                                    {% if status_entry.status.value == 'pending' %}
+                                    {% if status_entry.status == 'pending' %}
                                         timeline-warning
-                                    {% elif status_entry.status.value == 'processing' %}
+                                    {% elif status_entry.status == 'processing' %}
                                         timeline-primary
-                                    {% elif status_entry.status.value == 'sent' %}
+                                    {% elif status_entry.status == 'sent' %}
                                         timeline-info
-                                    {% elif status_entry.status.value == 'confirmed' %}
+                                    {% elif status_entry.status == 'confirmed' %}
                                         timeline-success
-                                    {% elif status_entry.status.value == 'completed' %}
+                                    {% elif status_entry.status == 'completed' %}
                                         timeline-success
-                                    {% elif status_entry.status.value == 'cancelled' %}
+                                    {% elif status_entry.status == 'cancelled' %}
                                         timeline-secondary
-                                    {% elif status_entry.status.value == 'rejected' %}
+                                    {% elif status_entry.status == 'rejected' %}
                                         timeline-danger
                                     {% else %}
                                         timeline-info
@@ -128,7 +128,7 @@
                                     <div class="timeline-marker"></div>
                                     <div class="timeline-content">
                                         <h4 class="timeline-title">
-                                            {{ status_entry.status.value|title }}
+                                            {{ status_entry.status|title }}
                                         </h4>
                                         <p class="timeline-date">
                                             <i class="fas fa-clock"></i> {{ status_entry.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
@@ -157,7 +157,7 @@
                             </li>
                             
                             <!-- Expected future statuses (grayed out) -->
-                            {% if wire_transfer.status.value != 'completed' and wire_transfer.status.value != 'cancelled' and wire_transfer.status.value != 'rejected' %}
+                            {% if wire_transfer.status.value not in ['completed', 'cancelled', 'rejected'] %}
                                 {% set remaining_statuses = [] %}
                                 
                                 {% if wire_transfer.status.value == 'pending' %}
