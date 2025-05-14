@@ -740,8 +740,10 @@ def create_app():
         # Initialize currency exchange rates including AFD1 and SFN
         try:
             from currency_exchange_service import CurrencyExchangeService
-            CurrencyExchangeService.initialize_default_rates()
-            logger.info("Currency exchange rates initialized successfully")
+            # Create an instance and update rates
+            exchange_service = CurrencyExchangeService(db)
+            updated_count = exchange_service.update_exchange_rates()
+            logger.info(f"Currency exchange rates initialized successfully, updated {updated_count} rates")
             
             # Update AFD1 rates (gold-backed)
             try:
