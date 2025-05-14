@@ -1691,46 +1691,34 @@ class WireTransfer(db.Model):
     confirmation_receipt = db.Column(db.String(128))  # Called "confirmation_receipt" in the database
     # Note: fed_reference_number column doesn't exist in the actual database
     
-    # Attachments and Metadata
-    attachments_json = db.Column(db.Text)  # JSON array of attachment file paths
-    metadata_json = db.Column(db.Text)  # Additional wire transfer details
+    # Fee Information
+    fee_amount = db.Column(db.Float)  # Fee charged for the wire transfer
     
     # Timestamps and Tracking
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    initiated_at = db.Column(db.DateTime)  # When transfer was sent to correspondent bank
+    processed_at = db.Column(db.DateTime)  # When the transfer was processed by the correspondent bank
     completed_at = db.Column(db.DateTime)  # When transfer was confirmed completed
-    cancelled_at = db.Column(db.DateTime)  # When transfer was cancelled
-    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    approved_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
+    # Error information
+    error_message = db.Column(db.Text)  # Error message if the transfer failed
+    
+    # User who created the transfer (note: in database this column is user_id not created_by_id)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    transfer_id = db.Column(db.String(128))  # Transfer ID from the correspondent bank system
     
     # Relationships
     transaction = db.relationship('Transaction', backref=db.backref('wire_transfer', uselist=False))
     treasury_transaction = db.relationship('TreasuryTransaction', backref=db.backref('wire_transfer', uselist=False))
-    created_by = db.relationship('User', foreign_keys=[created_by_id])
-    approved_by = db.relationship('User', foreign_keys=[approved_by_id])
+    user = db.relationship('User', foreign_keys=[user_id])
     
+    # These methods aren't applicable anymore since the fields don't exist in the database
+    # Keeping simplified versions for backward compatibility
     def get_metadata(self):
-        if not self.metadata_json:
-            return {}
-        try:
-            return json.loads(self.metadata_json)
-        except:
-            return {}
+        return {}
     
     def get_attachments(self):
-        if not self.attachments_json:
-            return []
-        try:
-            return json.loads(self.attachments_json)
-        except:
-            return []
-    
-    def add_attachment(self, file_path):
-        """Add a file attachment to the wire transfer"""
-        attachments = self.get_attachments()
-        attachments.append(file_path)
-        self.attachments_json = json.dumps(attachments)
+        return []
         
     def __repr__(self):
         return f"<WireTransfer {self.reference_number}: {self.currency} {self.amount:.2f} to {self.beneficiary_name}>"

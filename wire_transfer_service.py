@@ -167,7 +167,7 @@ def create_wire_transfer(
         wire_transfer.intermediary_bank_swift = intermediary_bank_swift
         wire_transfer.message_to_beneficiary = message_to_beneficiary
         wire_transfer.status = WireTransferStatus.PENDING
-        wire_transfer.created_by_id = user_id
+        wire_transfer.user_id = user_id
         
         db.session.add(wire_transfer)
         db.session.commit()
@@ -455,7 +455,7 @@ def get_user_wire_transfers(user_id):
         list: List of wire transfer objects
     """
     try:
-        return WireTransfer.query.filter_by(created_by_id=user_id).order_by(WireTransfer.created_at.desc()).all()
+        return WireTransfer.query.filter_by(user_id=user_id).order_by(WireTransfer.created_at.desc()).all()
     except Exception as e:
         logger.error(f"Error getting user wire transfers: {str(e)}")
         return []

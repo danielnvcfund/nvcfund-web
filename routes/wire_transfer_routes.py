@@ -163,7 +163,7 @@ def view_wire_transfer(wire_transfer_id):
     wire_transfer = WireTransfer.query.get_or_404(wire_transfer_id)
     
     # Check if the user is authorized to view this wire transfer
-    if current_user.role.name != 'ADMIN' and wire_transfer.created_by_id != current_user.id:
+    if current_user.role.name != 'ADMIN' and wire_transfer.user_id != current_user.id:
         flash("You are not authorized to view this wire transfer", "danger")
         return redirect(url_for('wire_transfer.list_wire_transfers'))
     
@@ -234,7 +234,7 @@ def cancel_transfer(wire_transfer_id):
     wire_transfer = WireTransfer.query.get_or_404(wire_transfer_id)
     
     # Check if the user is authorized to cancel this wire transfer
-    if current_user.role.name != 'ADMIN' and wire_transfer.created_by_id != current_user.id:
+    if current_user.role.name != 'ADMIN' and wire_transfer.user_id != current_user.id:
         flash("You are not authorized to cancel this wire transfer", "danger")
         return redirect(url_for('wire_transfer.view_wire_transfer', wire_transfer_id=wire_transfer.id))
     
