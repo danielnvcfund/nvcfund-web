@@ -36,15 +36,25 @@ def generate_transaction_pdf(transaction_id):
         
         # Get status badge class
         status_class = "badge-warning"
-        status_name = transaction.status.name if hasattr(transaction.status, 'name') else str(transaction.status)
+        status_value = ""
         
-        if status_name == 'COMPLETED':
+        # Handle different status attribute structures
+        if hasattr(transaction.status, "name"):
+            status_value = transaction.status.name
+        elif hasattr(transaction.status, "value"):
+            status_value = transaction.status.value
+        else:
+            status_value = str(transaction.status)
+            
+        status_value = status_value.upper()
+        
+        if "COMPLETED" in status_value:
             status_class = "badge-success"
-        elif status_name == 'REJECTED':
+        elif "REJECTED" in status_value:
             status_class = "badge-danger"
-        elif status_name == 'CANCELLED':
+        elif "CANCELLED" in status_value:
             status_class = "badge-secondary"
-        elif status_name == 'PENDING':
+        elif "PENDING" in status_value:
             status_class = "badge-warning"
         
         # Render template with transaction data

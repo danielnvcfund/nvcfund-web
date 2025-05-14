@@ -27,13 +27,25 @@ def generate_wire_transfer_pdf(wire_transfer_id):
         
         # Get status badge class
         status_class = "badge-warning"
-        if wire_transfer.status == WireTransferStatus.COMPLETED:
+        status_value = ""
+        
+        # Handle different status attribute structures
+        if hasattr(wire_transfer.status, "name"):
+            status_value = wire_transfer.status.name
+        elif hasattr(wire_transfer.status, "value"):
+            status_value = wire_transfer.status.value
+        else:
+            status_value = str(wire_transfer.status)
+            
+        status_value = status_value.upper()
+        
+        if "COMPLETED" in status_value:
             status_class = "badge-success"
-        elif wire_transfer.status == WireTransferStatus.PROCESSING:
+        elif "PROCESSING" in status_value:
             status_class = "badge-primary"
-        elif wire_transfer.status == WireTransferStatus.CANCELLED:
+        elif "CANCELLED" in status_value:
             status_class = "badge-secondary"
-        elif wire_transfer.status == WireTransferStatus.FAILED:
+        elif "FAILED" in status_value:
             status_class = "badge-danger"
         
         # Render template with wire_transfer data
