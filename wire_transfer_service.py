@@ -48,7 +48,8 @@ def create_wire_transfer(
     intermediary_bank_name=None,
     intermediary_bank_swift=None,
     purpose=None,
-    message_to_beneficiary=None
+    message_to_beneficiary=None,
+    treasury_transaction_id=None
 ):
     """
     Create a new wire transfer through a correspondent bank
@@ -72,6 +73,7 @@ def create_wire_transfer(
         intermediary_bank_swift (str, optional): SWIFT/BIC code of the intermediary bank
         purpose (str, optional): Purpose of the transfer
         message_to_beneficiary (str, optional): Additional message to the recipient
+        treasury_transaction_id (int, optional): ID of the associated treasury transaction
         
     Returns:
         tuple: (wire_transfer, transaction, error)
@@ -97,6 +99,24 @@ def create_wire_transfer(
         fee_amount = amount * (fee_percentage / 100)
         
         # Create the transaction record
+        wire_metadata = {
+            "wire_transfer": {
+                "beneficiary_name": beneficiary_name,
+                "beneficiary_account": beneficiary_account,
+                "beneficiary_address": beneficiary_address,
+                "beneficiary_bank_name": beneficiary_bank_name,
+                "beneficiary_bank_swift": beneficiary_bank_swift,
+                "beneficiary_bank_routing": beneficiary_bank_routing,
+                "intermediary_bank_name": intermediary_bank_name,
+                "intermediary_bank_swift": intermediary_bank_swift,
+                "purpose": purpose,
+                "message_to_beneficiary": message_to_beneficiary,
+                "fee_amount": fee_amount,
+                "fee_percentage": fee_percentage,
+                "institution_id": correspondent_bank.id if correspondent_bank else None
+            }
+        }
+        
         transaction = record_transaction(
             user_id=user_id,
             transaction_type=TransactionType.INTERNATIONAL_WIRE,
@@ -104,50 +124,34 @@ def create_wire_transfer(
             currency=currency,
             description=f"Wire transfer to {beneficiary_name} via {correspondent_bank.name}",
             status=TransactionStatus.PENDING,
-            recipient_name=beneficiary_name,
-            recipient_account=beneficiary_account,
-            recipient_address=beneficiary_address,
-            recipient_bank=beneficiary_bank_name,
-            institution_id=correspondent_bank.id if correspondent_bank else None,
-            tx_metadata_json=json.dumps({
-                "wire_transfer": {
-                    "beneficiary_bank_swift": beneficiary_bank_swift,
-                    "beneficiary_bank_routing": beneficiary_bank_routing,
-                    "intermediary_bank_name": intermediary_bank_name,
-                    "intermediary_bank_swift": intermediary_bank_swift,
-                    "purpose": purpose,
-                    "message_to_beneficiary": message_to_beneficiary,
-                    "fee_amount": fee_amount,
-                    "fee_percentage": fee_percentage
-                }
-            })
+            metadata=wire_metadata
         )
         
         # Create the wire transfer record
         reference_number = generate_transfer_id()
-        wire_transfer = WireTransfer(
-            reference_number=reference_number,
-            correspondent_bank_id=correspondent_bank_id,
-            transaction_id=transaction.id,
-            amount=amount,
-            currency=currency,
-            purpose=purpose or "International Wire Transfer",
-            originator_name=originator_name,
-            originator_account=originator_account,
-            originator_address=originator_address,
-            beneficiary_name=beneficiary_name,
-            beneficiary_account=beneficiary_account,
-            beneficiary_address=beneficiary_address,
-            beneficiary_bank_name=beneficiary_bank_name,
-            beneficiary_bank_address=beneficiary_bank_address,
-            beneficiary_bank_swift=beneficiary_bank_swift,
-            beneficiary_bank_routing=beneficiary_bank_routing,
-            intermediary_bank_name=intermediary_bank_name,
-            intermediary_bank_swift=intermediary_bank_swift,
-            message_to_beneficiary=message_to_beneficiary,
-            status=WireTransferStatus.PENDING,
-            created_by_id=user_id
-        )
+        wire_transfer = WireTransfer()
+        wire_transfer.reference_number = reference_number
+        wire_transfer.correspondent_bank_id = correspondent_bank_id
+        wire_transfer.transaction_id = transaction.id
+        wire_transfer.treasury_transaction_id = treasury_transaction_id
+        wire_transfer.amount = amount
+        wire_transfer.currency = currency
+        wire_transfer.purpose = purpose or "International Wire Transfer"
+        wire_transfer.originator_name = originator_name
+        wire_transfer.originator_account = originator_account
+        wire_transfer.originator_address = originator_address
+        wire_transfer.beneficiary_name = beneficiary_name
+        wire_transfer.beneficiary_account = beneficiary_account
+        wire_transfer.beneficiary_address = beneficiary_address
+        wire_transfer.beneficiary_bank_name = beneficiary_bank_name
+        wire_transfer.beneficiary_bank_address = beneficiary_bank_address
+        wire_transfer.beneficiary_bank_swift = beneficiary_bank_swift
+        wire_transfer.beneficiary_bank_routing = beneficiary_bank_routing
+        wire_transfer.intermediary_bank_name = intermediary_bank_name
+        wire_transfer.intermediary_bank_swift = intermediary_bank_swift
+        wire_transfer.message_to_beneficiary = message_to_beneficiary
+        wire_transfer.status = WireTransferStatus.PENDING
+        wire_transfer.created_by_id = user_id
         
         db.session.add(wire_transfer)
         db.session.commit()

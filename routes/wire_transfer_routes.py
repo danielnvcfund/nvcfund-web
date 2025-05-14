@@ -92,17 +92,16 @@ def new_wire_transfer():
             reference_number = f"WIRE-{generate_unique_id()}"
             
             # Create treasury transaction for the wire transfer
-            treasury_tx = TreasuryTransaction(
-                transaction_id=transaction_id,
-                from_account_id=treasury_account.id,
-                transaction_type=TreasuryTransactionType.EXTERNAL_TRANSFER,
-                amount=form.amount.data,
-                currency=treasury_account.currency,
-                description=f"Wire transfer to {form.beneficiary_name.data} via {form.beneficiary_bank_name.data}",
-                status=TransactionStatus.PENDING,
-                reference_number=reference_number,
-                created_by=current_user.id
-            )
+            treasury_tx = TreasuryTransaction()
+            treasury_tx.transaction_id = transaction_id
+            treasury_tx.from_account_id = treasury_account.id
+            treasury_tx.transaction_type = TreasuryTransactionType.EXTERNAL_TRANSFER
+            treasury_tx.amount = form.amount.data
+            treasury_tx.currency = treasury_account.currency
+            treasury_tx.description = f"Wire transfer to {form.beneficiary_name.data} via {form.beneficiary_bank_name.data}"
+            treasury_tx.status = TransactionStatus.PENDING
+            treasury_tx.reference_number = reference_number
+            treasury_tx.created_by = current_user.id
             db.session.add(treasury_tx)
             db.session.commit()
             
@@ -125,7 +124,8 @@ def new_wire_transfer():
                 intermediary_bank_name=form.intermediary_bank_name.data,
                 intermediary_bank_swift=form.intermediary_bank_swift.data,
                 purpose=form.purpose.data,
-                message_to_beneficiary=form.message_to_beneficiary.data
+                message_to_beneficiary=form.message_to_beneficiary.data,
+                treasury_transaction_id=treasury_tx.id
             )
             
             if error:
