@@ -8,7 +8,7 @@ import datetime
 from decimal import Decimal
 from uuid import uuid4
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, jsonify, current_app
 from flask_login import login_required, current_user
 from sqlalchemy import desc, func
 
@@ -354,19 +354,49 @@ def new_transaction():
     if to_account_id and to_account_id in [a.id for a in accounts]:
         form.to_account_id.data = to_account_id
     
+    # Default exchange rate
+    exchange_rate = 1.0
+    
+    # Try to set default currency from from_account if available
+    if form.from_account_id.data and form.from_account_id.data > 0:
+        from_account = TreasuryAccount.query.get(form.from_account_id.data)
+        if from_account:
+            form.currency.data = from_account.currency
+    
     if form.validate_on_submit():
         # Generate a unique transaction reference if not provided
         reference_number = form.reference_number.data
         if not reference_number:
             reference_number = f"TXN-{generate_unique_id()}"
         
-        # Get currency from the source account if it exists, otherwise use USD
+        # Get source and destination accounts if they exist
         from_account = None
+        to_account = None
         if form.from_account_id.data > 0:
             from_account = TreasuryAccount.query.get(form.from_account_id.data)
-            currency = from_account.currency if from_account else "USD"
+        if form.to_account_id.data > 0:
+            to_account = TreasuryAccount.query.get(form.to_account_id.data)
+        
+        # Get the currency selected by the user
+        currency = form.currency.data
+        
+        # Calculate exchange rate if needed
+        if form.exchange_rate.data:
+            exchange_rate = form.exchange_rate.data
         else:
-            currency = "USD"
+            # If both accounts exist and have different currencies, calculate exchange rate
+            if from_account and to_account and from_account.currency != to_account.currency:
+                # Import exchange rate service
+                from currency_exchange_service import get_exchange_rate
+                try:
+                    # Get exchange rate from currency service
+                    exchange_rate = get_exchange_rate(currency, to_account.currency)
+                except Exception as e:
+                    # Log the error but continue with default rate
+                    current_app.logger.warning(f"Failed to get exchange rate: {str(e)}. Using default 1.0")
+                    exchange_rate = 1.0
+            else:
+                exchange_rate = 1.0
             
         # Get transaction type from form (already in uppercase)
         transaction_type_str = form.transaction_type.data
@@ -377,7 +407,7 @@ def new_transaction():
             transaction_type=transaction_type_enum,
             amount=form.amount.data,
             currency=currency,
-            exchange_rate=1.0,  # Default exchange rate
+            exchange_rate=exchange_rate,
             description=form.description.data,
             # Get additional notes from the form if added
             memo=request.form.get('additional_notes', ''),
@@ -416,7 +446,8 @@ def new_transaction():
         'treasury/transaction_form.html',
         form=form,
         is_new=True,
-        from_account=selected_from_account
+        from_account=selected_from_account,
+        exchange_rate=exchange_rate
     )
 
 

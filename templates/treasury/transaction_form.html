@@ -122,19 +122,33 @@
             </div>
             
             <div class="row mb-3">
-              <!-- Currency is set automatically based on account selection -->
               <div class="col-md-6">
                 <div class="form-group">
-                  <label class="form-label">Currency</label>
-                  <input type="text" class="form-control" value="{{ from_account.currency if from_account else 'USD' }}" readonly>
-                  <small class="text-muted">Currency is determined by the selected account</small>
+                  {{ form.currency.label(class="form-label required-field") }}
+                  {{ form.currency(class="form-select form-control-lg" + (" is-invalid" if form.currency.errors else "")) }}
+                  {% if form.currency.errors %}
+                  <div class="invalid-feedback">
+                    {% for error in form.currency.errors %}
+                    {{ error }}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Select the currency for this transaction</small>
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="form-group">
-                  <label class="form-label">Exchange Rate</label>
-                  <input type="number" step="0.0001" class="form-control" value="1.0000" readonly>
-                  <small class="form-text text-muted">Exchange rate if currencies differ between accounts. Default is 1.0.</small>
+                  {{ form.exchange_rate.label(class="form-label") }}
+                  {{ form.exchange_rate(class="form-control form-control-lg" + (" is-invalid" if form.exchange_rate.errors else ""), 
+                                  step="0.0001", placeholder="1.0000", value=exchange_rate) }}
+                  {% if form.exchange_rate.errors %}
+                  <div class="invalid-feedback">
+                    {% for error in form.exchange_rate.errors %}
+                    {{ error }}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Exchange rate if currencies differ between accounts. Leave blank to use the system rate.</small>
                 </div>
               </div>
             </div>

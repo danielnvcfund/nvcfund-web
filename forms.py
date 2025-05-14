@@ -851,6 +851,23 @@ class TreasuryTransactionForm(FlaskForm):
     from_account_id = SelectField('From Account', validators=[DataRequired()], coerce=int)
     to_account_id = SelectField('To Account', validators=[DataRequired()], coerce=int)
     amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
+    currency = SelectField('Currency', validators=[DataRequired()], choices=[
+        ('USD', 'US Dollar (USD)'),
+        ('EUR', 'Euro (EUR)'),
+        ('GBP', 'British Pound (GBP)'),
+        ('NVCT', 'NVC Token (NVCT)'),
+        ('AFD1', 'American Federation Dollar (AFD1)'),
+        ('AKLUMI', 'AK Lumi (AKLUMI)'),
+        ('SFN', 'SFN Coin (SFN)'),
+        ('NGN', 'Nigerian Naira (NGN)'),
+        ('CAD', 'Canadian Dollar (CAD)'),
+        ('AUD', 'Australian Dollar (AUD)'),
+        ('JPY', 'Japanese Yen (JPY)'),
+        ('CNY', 'Chinese Yuan (CNY)'),
+        ('INR', 'Indian Rupee (INR)'),
+        ('BRL', 'Brazilian Real (BRL)'),
+        ('ZAR', 'South African Rand (ZAR)')
+    ])
     transaction_type = SelectField('Transaction Type', choices=[
         ('INTERNAL_TRANSFER', 'Internal Transfer'),
         ('EXTERNAL_TRANSFER', 'External Transfer'),
@@ -863,6 +880,7 @@ class TreasuryTransactionForm(FlaskForm):
     ], validators=[DataRequired()])
     reference_number = StringField('Reference Number', validators=[Optional(), Length(max=50)])
     description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
+    exchange_rate = FloatField('Exchange Rate', validators=[Optional(), NumberRange(min=0.00001)])
     submit = SubmitField('Create Transaction')
 
 class TreasuryInvestmentForm(FlaskForm):
