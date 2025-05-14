@@ -19,6 +19,7 @@ from routes.swift_routes import swift
 from routes.ach_routes import ach
 from routes.api_access_routes import api_access_bp
 from routes.institutional_routes import institutional_bp
+from routes.correspondent_banking_routes import correspondent
 
 # Import payment and transaction routes
 from routes.payment_history_routes import payment_history_bp
@@ -52,6 +53,7 @@ web_blueprint.register_blueprint(ha_web, url_prefix='/ha')
 web_blueprint.register_blueprint(main, url_prefix='/main')
 web_blueprint.register_blueprint(swift, url_prefix='/swift')
 web_blueprint.register_blueprint(ach, url_prefix='/ach')
+web_blueprint.register_blueprint(correspondent, url_prefix='/correspondent')
 web_blueprint.register_blueprint(institutional_bp, url_prefix='/institutional')
 web_blueprint.register_blueprint(payment_history_bp)
 web_blueprint.register_blueprint(pdf_receipt_bp)

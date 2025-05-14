@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, TextAreaField, DecimalField, PasswordField, BooleanField, FloatField, SubmitField, HiddenField, DateField, RadioField, IntegerField, MultipleFileField, SelectMultipleField, widgets
 from models import TransactionType
-from wtforms.validators import DataRequired, Length, Optional, Email, EqualTo, NumberRange, ValidationError, Regexp
+from wtforms.validators import DataRequired, Length, Optional, Email, EqualTo, NumberRange, ValidationError, Regexp, URL
 from datetime import datetime, timedelta
 import json
 
@@ -344,8 +344,24 @@ class SwiftFreeFormatMessageForm(FlaskForm):
 
 class ACHTransferForm(FlaskForm):
     """Form for ACH transfers within the US banking system"""
-    sender_account_id = SelectField('From Account', coerce=int, validators=[DataRequired()])
+    # Sender information
+    sender_account_type = SelectField('Sender Account Type', choices=[
+        ('checking', 'Checking Account'),
+        ('savings', 'Savings Account'),
+        ('business', 'Business Account')
+    ], validators=[DataRequired()])
+    
+    # Recipient information
     recipient_name = StringField('Recipient Name', validators=[DataRequired(), Length(min=2, max=100)])
+    recipient_address_line1 = StringField('Address Line 1', validators=[DataRequired(), Length(max=100)])
+    recipient_address_line2 = StringField('Address Line 2', validators=[Optional(), Length(max=100)])
+    recipient_city = StringField('City', validators=[DataRequired(), Length(max=100)])
+    recipient_state = StringField('State', validators=[DataRequired(), Length(max=2)])
+    recipient_zip = StringField('ZIP Code', validators=[DataRequired(), Length(min=5, max=10)])
+    
+    # Bank information
+    recipient_bank_name = StringField('Bank Name', validators=[DataRequired(), Length(max=100)])
+    recipient_bank_address = StringField('Bank Address', validators=[Optional(), Length(max=200)])
     recipient_account_type = SelectField('Account Type', choices=[
         ('checking', 'Checking Account'),
         ('savings', 'Savings Account'),
@@ -363,25 +379,30 @@ class ACHTransferForm(FlaskForm):
         # Digit-only validator
         Regexp(r'^\d+$', message="Account number must contain only digits")
     ])
-    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
     
-    # Optional fields
-    memo = StringField('Memo/Reference', validators=[Optional(), Length(max=50)])
+    # Transaction details
+    amount = FloatField('Amount (USD)', validators=[DataRequired(), NumberRange(min=0.01)])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=140)])
     
-    # Transfer category
-    category = SelectField('Transfer Category', choices=[
-        ('internal', 'Internal Transfer'),
-        ('external', 'External Transfer'),
-        ('bill_payment', 'Bill Payment'),
-        ('payroll', 'Payroll'),
-        ('other', 'Other')
+    # ACH specific fields
+    entry_class_code = SelectField('Entry Class Code', choices=[
+        ('PPD', 'PPD - Personal Payment'),
+        ('CCD', 'CCD - Corporate Credit or Debit'),
+        ('WEB', 'WEB - Internet Initiated Entry'),
+        ('TEL', 'TEL - Telephone Initiated Entry'),
+        ('IAT', 'IAT - International ACH Transaction')
+    ], default='PPD', validators=[DataRequired()])
+    company_entry_description = StringField('Company Entry Description', validators=[Optional(), Length(max=10)])
+    effective_date = DateField('Effective Date', validators=[Optional()], format='%Y-%m-%d')
+    
+    # Recurring options
+    recurring = BooleanField('Set as Recurring Payment', default=False)
+    recurring_frequency = SelectField('Frequency', choices=[
+        ('weekly', 'Weekly'),
+        ('biweekly', 'Bi-Weekly'),
+        ('monthly', 'Monthly'),
+        ('quarterly', 'Quarterly')
     ], validators=[Optional()])
-    
-    # Transfer timing
-    transfer_timing = SelectField('When to Send', choices=[
-        ('standard', 'Standard (2-3 business days)'),
-        ('same_day', 'Same-Day ACH (additional fee applies)')
-    ], default='standard', validators=[DataRequired()])
     
     # Terms agreement
     agree_terms = BooleanField('I confirm this information is correct and authorize this transfer', validators=[DataRequired()])
@@ -390,15 +411,510 @@ class ACHTransferForm(FlaskForm):
     
     def __init__(self, *args, **kwargs):
         super(ACHTransferForm, self).__init__(*args, **kwargs)
-        from models import Account
+        # Set default effective date to next business day
+        if not self.effective_date.data:
+            next_business_day = datetime.now() + timedelta(days=1)
+            # If next business day is weekend, move to Monday
+            if next_business_day.weekday() >= 5:  # 5=Saturday, 6=Sunday
+                next_business_day += timedelta(days=7 - next_business_day.weekday())
+            self.effective_date.data = next_business_day
+
+
+class ApiAccessRequestForm(FlaskForm):
+    """Form for API access request"""
+    company_name = StringField('Company Name', validators=[DataRequired(), Length(min=2, max=100)])
+    website = StringField('Website', validators=[DataRequired(), URL()])
+    contact_name = StringField('Contact Name', validators=[DataRequired(), Length(min=2, max=100)])
+    contact_email = StringField('Contact Email', validators=[DataRequired(), Email()])
+    contact_phone = StringField('Contact Phone', validators=[DataRequired(), Length(min=10, max=20)])
+    
+    # API access details
+    access_reason = TextAreaField('Reason for API Access', validators=[DataRequired(), Length(min=20, max=1000)])
+    intended_use = TextAreaField('Intended Use', validators=[DataRequired(), Length(min=20, max=1000)])
+    expected_volume = SelectField('Expected Transaction Volume (monthly)', choices=[
+        ('', '-- Select --'),
+        ('low', 'Low (< 1,000 transactions)'),
+        ('medium', 'Medium (1,000 - 10,000 transactions)'),
+        ('high', 'High (10,000 - 100,000 transactions)'),
+        ('very_high', 'Very High (> 100,000 transactions)')
+    ], validators=[DataRequired()])
+    
+    # Technical contact
+    technical_contact_name = StringField('Technical Contact Name', validators=[DataRequired(), Length(min=2, max=100)])
+    technical_contact_email = StringField('Technical Contact Email', validators=[DataRequired(), Email()])
+    
+    # API endpoints
+    api_endpoints = SelectMultipleField('Required API Endpoints', choices=[
+        ('payments', 'Payment Processing'),
+        ('accounts', 'Account Information'),
+        ('transfers', 'Fund Transfers'),
+        ('custody', 'Custody Services'),
+        ('exchange', 'Currency Exchange'),
+        ('blockchain', 'Blockchain Integration')
+    ], validators=[DataRequired()])
+    
+    # Security
+    ip_addresses = TextAreaField('IP Addresses (one per line)', validators=[DataRequired(), Length(min=7, max=1000)])
+    
+    # Agreement
+    terms_agree = BooleanField('I agree to the API Terms of Service and Privacy Policy', validators=[DataRequired()])
+    
+    submit = SubmitField('Submit Request')
+
+
+class PartnerApiKeyForm(FlaskForm):
+    """Form for managing partner API keys"""
+    partner_id = SelectField('Partner', coerce=int, validators=[DataRequired()])
+    api_key_type = SelectField('API Key Type', choices=[
+        ('read', 'Read Only'),
+        ('write', 'Read & Write'),
+        ('admin', 'Administrative')
+    ], validators=[DataRequired()])
+    
+    expiration_date = DateField('Expiration Date', format='%Y-%m-%d', validators=[Optional()])
+    
+    rate_limit = IntegerField('Rate Limit (requests per minute)', 
+                            validators=[DataRequired(), NumberRange(min=1, max=10000)],
+                            default=60)
+    
+    daily_limit = IntegerField('Daily Limit (requests)', 
+                            validators=[DataRequired(), NumberRange(min=1, max=1000000)],
+                            default=10000)
+    
+    ip_restriction = BooleanField('Enable IP Restriction', default=False)
+    allowed_ips = TextAreaField('Allowed IP Addresses (one per line)', validators=[Optional()])
+    
+    enabled = BooleanField('Enabled', default=True)
+    
+    notes = TextAreaField('Notes', validators=[Optional(), Length(max=500)])
+    
+    submit = SubmitField('Generate API Key')
+    
+    def __init__(self, *args, **kwargs):
+        super(PartnerApiKeyForm, self).__init__(*args, **kwargs)
         try:
-            # Get user accounts for the sender field
-            user_id = kwargs.get('user_id')
-            if user_id:
-                accounts = Account.query.filter_by(user_id=user_id, active=True).all()
-                self.sender_account_id.choices = [(a.id, f"{a.account_number} - {a.account_name} ({a.currency})") for a in accounts]
+            from models import Partner
+            partners = Partner.query.filter_by(active=True).order_by(Partner.name).all()
+            self.partner_id.choices = [(p.id, p.name) for p in partners]
+            
+            # Set default expiration date to 1 year from today
+            if not self.expiration_date.data:
+                self.expiration_date.data = datetime.now() + timedelta(days=365)
         except Exception as e:
-            print(f"Error populating accounts in ACH form: {str(e)}")
+            print(f"Error populating partner list: {str(e)}")
+
+
+class NVCPlatformSettingsForm(FlaskForm):
+    """Form for platform settings"""
+    platform_name = StringField('Platform Name', validators=[DataRequired(), Length(min=3, max=50)])
+    support_email = StringField('Support Email', validators=[DataRequired(), Email()])
+    admin_email = StringField('Admin Email', validators=[DataRequired(), Email()])
+    
+    # Transaction settings
+    min_transaction_amount = DecimalField('Minimum Transaction Amount', 
+                                        validators=[DataRequired(), NumberRange(min=0)],
+                                        default=0.01)
+    
+    max_transaction_amount = DecimalField('Maximum Transaction Amount', 
+                                        validators=[DataRequired(), NumberRange(min=1)],
+                                        default=1000000.00)
+    
+    default_transaction_fee = DecimalField('Default Transaction Fee (%)', 
+                                        validators=[DataRequired(), NumberRange(min=0, max=100)],
+                                        default=1.5)
+    
+    # Blockchain settings
+    gas_price_buffer = IntegerField('Gas Price Buffer (%)', 
+                                 validators=[DataRequired(), NumberRange(min=0, max=200)],
+                                 default=20)
+    
+    # Security settings
+    session_timeout = IntegerField('Session Timeout (minutes)', 
+                                validators=[DataRequired(), NumberRange(min=5, max=1440)],
+                                default=60)
+    
+    failed_login_attempts = IntegerField('Max Failed Login Attempts', 
+                                      validators=[DataRequired(), NumberRange(min=3, max=10)],
+                                      default=5)
+    
+    # Email settings
+    enable_email_notifications = BooleanField('Enable Email Notifications', default=True)
+    
+    # Maintenance mode
+    maintenance_mode = BooleanField('Maintenance Mode', default=False)
+    maintenance_message = TextAreaField('Maintenance Message', validators=[Optional(), Length(max=500)])
+    
+    submit = SubmitField('Save Settings')
+
+
+class EdiPartnerForm(FlaskForm):
+    """Form for managing EDI partners"""
+    partner_name = StringField('Partner Name', validators=[DataRequired(), Length(min=2, max=100)])
+    partner_code = StringField('Partner Code', validators=[DataRequired(), Length(min=2, max=20)])
+    
+    # Connection details
+    connection_type = SelectField('Connection Type', choices=[
+        ('ftp', 'FTP/SFTP'),
+        ('api', 'API/Web Service'),
+        ('as2', 'AS2'),
+        ('email', 'Email')
+    ], validators=[DataRequired()])
+    
+    host = StringField('Host/Server', validators=[Optional(), Length(max=255)])
+    port = IntegerField('Port', validators=[Optional(), NumberRange(min=1, max=65535)])
+    username = StringField('Username', validators=[Optional(), Length(max=100)])
+    password = PasswordField('Password', validators=[Optional(), Length(max=100)])
+    
+    # File settings
+    inbound_directory = StringField('Inbound Directory', validators=[Optional(), Length(max=255)])
+    outbound_directory = StringField('Outbound Directory', validators=[Optional(), Length(max=255)])
+    file_pattern = StringField('File Pattern', validators=[Optional(), Length(max=100)])
+    
+    # Processing options
+    auto_process = BooleanField('Auto Process', default=True)
+    processing_interval = IntegerField('Processing Interval (minutes)', validators=[Optional(), NumberRange(min=1, max=1440)])
+    
+    # EDI Standards
+    edi_standard = SelectField('EDI Standard', choices=[
+        ('x12', 'ANSI X12'),
+        ('edifact', 'UN/EDIFACT'),
+        ('tradacoms', 'TRADACOMS'),
+        ('proprietary', 'Proprietary Format')
+    ], validators=[DataRequired()])
+    
+    # Contact information
+    contact_name = StringField('Contact Name', validators=[Optional(), Length(max=100)])
+    contact_email = StringField('Contact Email', validators=[Optional(), Email()])
+    contact_phone = StringField('Contact Phone', validators=[Optional(), Length(max=20)])
+    
+    active = BooleanField('Active', default=True)
+    notes = TextAreaField('Notes', validators=[Optional(), Length(max=500)])
+    
+    submit = SubmitField('Save Partner')
+
+
+class TreasuryAccountForm(FlaskForm):
+    """Form for creating or updating a Treasury Account"""
+    name = StringField('Account Name', validators=[DataRequired(), Length(min=3, max=100)])
+    account_type = SelectField('Account Type', coerce=int, validators=[DataRequired()])
+    institution_id = SelectField('Financial Institution', coerce=int, validators=[DataRequired()])
+    account_number = StringField('Account Number', validators=[DataRequired(), Length(min=5, max=50)])
+    routing_number = StringField('Routing Number', validators=[Optional(), Length(min=9, max=9)])
+    swift_code = StringField('SWIFT Code', validators=[Optional(), Length(min=8, max=11)])
+    iban = StringField('IBAN', validators=[Optional(), Length(min=15, max=34)])
+    currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
+    initial_balance = DecimalField('Initial Balance', validators=[DataRequired(), NumberRange(min=0)], default=0.0)
+    credit_limit = DecimalField('Credit Limit', validators=[Optional(), NumberRange(min=0)], default=0.0)
+    is_active = BooleanField('Active', default=True)
+    notes = TextAreaField('Notes', validators=[Optional(), Length(max=500)])
+    submit = SubmitField('Save Account')
+
+    def __init__(self, *args, **kwargs):
+        super(TreasuryAccountForm, self).__init__(*args, **kwargs)
+        try:
+            from models import TreasuryAccountType, FinancialInstitution
+            self.account_type.choices = [(t.id, t.name) for t in TreasuryAccountType.query.all()]
+            self.institution_id.choices = [(i.id, i.name) for i in 
+                                         FinancialInstitution.query.filter_by(active=True).order_by(FinancialInstitution.name).all()]
+        except Exception as e:
+            print(f"Error loading form data: {str(e)}")
+
+
+class TreasuryTransactionForm(FlaskForm):
+    """Form for creating a Treasury transaction"""
+    transaction_type = SelectField('Transaction Type', coerce=int, validators=[DataRequired()])
+    source_account_id = SelectField('Source Account', coerce=int, validators=[DataRequired()])
+    destination_account_id = SelectField('Destination Account', coerce=int, validators=[DataRequired()])
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=0.0)
+    currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
+    exchange_rate = DecimalField('Exchange Rate', validators=[Optional(), NumberRange(min=0.000001)], default=1.0)
+    value_date = DateField('Value Date', format='%Y-%m-%d', validators=[DataRequired()])
+    reference = StringField('Reference', validators=[DataRequired(), Length(min=3, max=50)])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
+    metadata = TextAreaField('Metadata (JSON)', validators=[Optional(), Length(max=1000)])
+    submit = SubmitField('Execute Transaction')
+
+    def __init__(self, *args, **kwargs):
+        super(TreasuryTransactionForm, self).__init__(*args, **kwargs)
+        try:
+            from models import TreasuryTransactionType, TreasuryAccount
+            self.transaction_type.choices = [(t.id, t.name) for t in TreasuryTransactionType.query.all()]
+            accounts = TreasuryAccount.query.filter_by(is_active=True).all()
+            self.source_account_id.choices = [(a.id, f"{a.name} ({a.currency})") for a in accounts]
+            self.destination_account_id.choices = [(a.id, f"{a.name} ({a.currency})") for a in accounts]
+            
+            # Set default value date to today
+            if not self.value_date.data:
+                self.value_date.data = datetime.now().date()
+        except Exception as e:
+            print(f"Error loading form data: {str(e)}")
+
+
+class TreasuryInvestmentForm(FlaskForm):
+    """Form for creating or updating a Treasury Investment"""
+    account_id = SelectField('Treasury Account', coerce=int, validators=[DataRequired()])
+    investment_type = SelectField('Investment Type', coerce=int, validators=[DataRequired()])
+    name = StringField('Investment Name', validators=[DataRequired(), Length(min=3, max=100)])
+    amount = DecimalField('Investment Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=0.0)
+    currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
+    interest_rate = DecimalField('Interest Rate (%)', validators=[DataRequired(), NumberRange(min=0)], default=0.0)
+    start_date = DateField('Start Date', format='%Y-%m-%d', validators=[DataRequired()])
+    maturity_date = DateField('Maturity Date', format='%Y-%m-%d', validators=[Optional()])
+    term_days = IntegerField('Term (Days)', validators=[Optional(), NumberRange(min=1)], default=0)
+    auto_renew = BooleanField('Auto Renew', default=False)
+    counterparty = StringField('Counterparty', validators=[Optional(), Length(max=100)])
+    risk_rating = SelectField('Risk Rating', choices=[
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High')
+    ], validators=[DataRequired()])
+    notes = TextAreaField('Notes', validators=[Optional(), Length(max=500)])
+    submit = SubmitField('Save Investment')
+
+    def __init__(self, *args, **kwargs):
+        super(TreasuryInvestmentForm, self).__init__(*args, **kwargs)
+        try:
+            from models import TreasuryAccount, InvestmentType
+            accounts = TreasuryAccount.query.filter_by(is_active=True).all()
+            self.account_id.choices = [(a.id, f"{a.name} ({a.currency})") for a in accounts]
+            self.investment_type.choices = [(t.id, t.name) for t in InvestmentType.query.all()]
+            
+            # Set default start date to today
+            if not self.start_date.data:
+                self.start_date.data = datetime.now().date()
+                
+            # Calculate maturity date based on term days if provided
+            if self.term_days.data and self.term_days.data > 0 and self.start_date.data:
+                self.maturity_date.data = self.start_date.data + timedelta(days=self.term_days.data)
+        except Exception as e:
+            print(f"Error loading form data: {str(e)}")
+
+
+class TreasuryLoanForm(FlaskForm):
+    """Form for creating or updating a Treasury Loan"""
+    account_id = SelectField('Treasury Account', coerce=int, validators=[DataRequired()])
+    loan_type = SelectField('Loan Type', coerce=int, validators=[DataRequired()])
+    name = StringField('Loan Name', validators=[DataRequired(), Length(min=3, max=100)])
+    principal_amount = DecimalField('Principal Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=0.0)
+    currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
+    interest_type = SelectField('Interest Type', coerce=int, validators=[DataRequired()])
+    interest_rate = DecimalField('Interest Rate (%)', validators=[DataRequired(), NumberRange(min=0)], default=0.0)
+    start_date = DateField('Start Date', format='%Y-%m-%d', validators=[DataRequired()])
+    maturity_date = DateField('Maturity Date', format='%Y-%m-%d', validators=[DataRequired()])
+    payment_frequency = SelectField('Payment Frequency', choices=[
+        ('monthly', 'Monthly'),
+        ('quarterly', 'Quarterly'),
+        ('semi_annual', 'Semi-Annual'),
+        ('annual', 'Annual'),
+        ('bullet', 'Bullet (At Maturity)')
+    ], validators=[DataRequired()])
+    num_payments = IntegerField('Number of Payments', validators=[Optional(), NumberRange(min=1)], default=0)
+    prepayment_penalty = DecimalField('Prepayment Penalty (%)', validators=[Optional(), NumberRange(min=0, max=100)], default=0.0)
+    collateral = TextAreaField('Collateral Description', validators=[Optional(), Length(max=500)])
+    borrower = StringField('Borrower', validators=[Optional(), Length(max=100)])
+    lender = StringField('Lender', validators=[Optional(), Length(max=100)])
+    notes = TextAreaField('Notes', validators=[Optional(), Length(max=500)])
+    submit = SubmitField('Save Loan')
+
+    def __init__(self, *args, **kwargs):
+        super(TreasuryLoanForm, self).__init__(*args, **kwargs)
+        try:
+            from models import TreasuryAccount, LoanType, InterestType
+            accounts = TreasuryAccount.query.filter_by(is_active=True).all()
+            self.account_id.choices = [(a.id, f"{a.name} ({a.currency})") for a in accounts]
+            self.loan_type.choices = [(t.id, t.name) for t in LoanType.query.all()]
+            self.interest_type.choices = [(t.id, t.name) for t in InterestType.query.all()]
+            
+            # Set default start date to today
+            if not self.start_date.data:
+                self.start_date.data = datetime.now().date()
+                
+            # Set default maturity date to 1 year from start date
+            if not self.maturity_date.data and self.start_date.data:
+                self.maturity_date.data = self.start_date.data + timedelta(days=365)
+                
+            # Calculate number of payments if not provided
+            if (not self.num_payments.data or self.num_payments.data == 0) and self.payment_frequency.data:
+                if self.start_date.data and self.maturity_date.data:
+                    days = (self.maturity_date.data - self.start_date.data).days
+                    if self.payment_frequency.data == 'monthly':
+                        self.num_payments.data = max(1, int(days / 30))
+                    elif self.payment_frequency.data == 'quarterly':
+                        self.num_payments.data = max(1, int(days / 90))
+                    elif self.payment_frequency.data == 'semi_annual':
+                        self.num_payments.data = max(1, int(days / 180))
+                    elif self.payment_frequency.data == 'annual':
+                        self.num_payments.data = max(1, int(days / 365))
+                    elif self.payment_frequency.data == 'bullet':
+                        self.num_payments.data = 1
+        except Exception as e:
+            print(f"Error loading form data: {str(e)}")
+
+
+class LoanPaymentForm(FlaskForm):
+    """Form for making a loan payment"""
+    payment_type = SelectField('Payment Type', choices=[
+        ('regular', 'Regular Payment'),
+        ('interest_only', 'Interest Only'),
+        ('principal_only', 'Principal Only'),
+        ('prepayment', 'Prepayment')
+    ], validators=[DataRequired()])
+    
+    payment_amount = DecimalField('Payment Amount', validators=[Optional(), NumberRange(min=0.01)], default=0.0)
+    payment_date = DateField('Payment Date', format='%Y-%m-%d', validators=[DataRequired()])
+    calculate_amount = BooleanField('Calculate Amount Automatically', default=True)
+    
+    notes = TextAreaField('Notes', validators=[Optional(), Length(max=500)])
+    submit = SubmitField('Make Payment')
+
+    def __init__(self, *args, **kwargs):
+        super(LoanPaymentForm, self).__init__(*args, **kwargs)
+        # Set default payment date to today
+        if not self.payment_date.data:
+            self.payment_date.data = datetime.now().date()
+
+
+class CashFlowForecastForm(FlaskForm):
+    """Form for creating or updating a Cash Flow Forecast"""
+    account_id = SelectField('Treasury Account', coerce=int, validators=[DataRequired()])
+    flow_direction = SelectField('Flow Direction', choices=[
+        ('inflow', 'Inflow'),
+        ('outflow', 'Outflow')
+    ], validators=[DataRequired()])
+    
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=0.0)
+    currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
+    
+    description = StringField('Description', validators=[DataRequired(), Length(min=3, max=100)])
+    forecast_date = DateField('Forecast Date', format='%Y-%m-%d', validators=[DataRequired()])
+    
+    category = SelectField('Category', choices=[
+        ('operational', 'Operational'),
+        ('investment', 'Investment'),
+        ('financing', 'Financing'),
+        ('tax', 'Tax'),
+        ('extraordinary', 'Extraordinary'),
+        ('other', 'Other')
+    ], validators=[DataRequired()])
+    
+    probability = SelectField('Probability', choices=[
+        ('certain', 'Certain (100%)'),
+        ('likely', 'Likely (75%)'),
+        ('possible', 'Possible (50%)'),
+        ('unlikely', 'Unlikely (25%)'),
+        ('remote', 'Remote (<10%)')
+    ], validators=[DataRequired()])
+    
+    is_recurring = BooleanField('Recurring', default=False)
+    recurrence_type = SelectField('Recurrence Type', choices=[
+        ('', '-- Select --'),
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('quarterly', 'Quarterly'),
+        ('annual', 'Annual')
+    ], validators=[Optional()])
+    
+    recurrence_end_date = DateField('Recurrence End Date', format='%Y-%m-%d', validators=[Optional()])
+    
+    notes = TextAreaField('Notes', validators=[Optional(), Length(max=500)])
+    submit = SubmitField('Save Forecast')
+
+    def __init__(self, *args, **kwargs):
+        super(CashFlowForecastForm, self).__init__(*args, **kwargs)
+        try:
+            from models import TreasuryAccount
+            accounts = TreasuryAccount.query.filter_by(is_active=True).all()
+            self.account_id.choices = [(a.id, f"{a.name} ({a.currency})") for a in accounts]
+            
+            # Set default forecast date to today
+            if not self.forecast_date.data:
+                self.forecast_date.data = datetime.now().date()
+                
+            # Set default recurrence end date to 1 year from forecast date
+            if not self.recurrence_end_date.data and self.forecast_date.data and self.is_recurring.data:
+                self.recurrence_end_date.data = self.forecast_date.data + timedelta(days=365)
+        except Exception as e:
+            print(f"Error loading form data: {str(e)}")
+
+
+class EDITransactionForm(FlaskForm):
+    """Form for EDI transaction creation/processing"""
+    partner_id = SelectField('EDI Partner', coerce=int, validators=[DataRequired()])
+    
+    transaction_type = SelectField('Transaction Type', choices=[
+        ('850', 'Purchase Order (850)'),
+        ('810', 'Invoice (810)'),
+        ('856', 'Advanced Shipping Notice (856)'),
+        ('820', 'Payment Order (820)'),
+        ('997', 'Functional Acknowledgment (997)'),
+        ('custom', 'Custom Transaction')
+    ], validators=[DataRequired()])
+    
+    direction = SelectField('Direction', choices=[
+        ('inbound', 'Inbound (Partner to NVC)'),
+        ('outbound', 'Outbound (NVC to Partner)')
+    ], validators=[DataRequired()])
+    
+    transmission_method = SelectField('Transmission Method', choices=[
+        ('automatic', 'Automatic (Use Partner Settings)'),
+        ('manual', 'Manual Upload/Download')
+    ], validators=[DataRequired()])
+    
+    file_content = TextAreaField('EDI File Content', validators=[Optional(), Length(max=100000)])
+    file_upload = MultipleFileField('Upload EDI Files', validators=[Optional()])
+    
+    process_immediately = BooleanField('Process Immediately', default=True)
+    
+    notes = TextAreaField('Processing Notes', validators=[Optional(), Length(max=500)])
+    
+    submit = SubmitField('Process Transaction')
+    
+    def __init__(self, *args, **kwargs):
+        super(EDITransactionForm, self).__init__(*args, **kwargs)
+        try:
+            from models import EdiPartner
+            partners = EdiPartner.query.filter_by(active=True).order_by(EdiPartner.partner_name).all()
+            self.partner_id.choices = [(p.id, p.partner_name) for p in partners]
+        except Exception as e:
+            print(f"Error populating EDI partner list: {str(e)}")
+
+
+class ApiAccessReviewForm(FlaskForm):
+    """Form for reviewing API access requests"""
+    status = SelectField('Application Status', choices=[
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('more_info', 'Request More Information')
+    ], validators=[DataRequired()])
+    
+    api_key = StringField('API Key', validators=[Optional(), Length(min=32, max=64)])
+    api_secret = StringField('API Secret', validators=[Optional(), Length(min=64, max=128)])
+    
+    rate_limit = IntegerField('Rate Limit (requests per minute)', validators=[Optional(), NumberRange(min=1, max=10000)])
+    daily_limit = IntegerField('Daily Limit (requests per day)', validators=[Optional(), NumberRange(min=1, max=1000000)])
+    
+    allowed_endpoints = SelectMultipleField('Allowed Endpoints', choices=[
+        ('payments', 'Payment Processing'),
+        ('accounts', 'Account Information'),
+        ('transfers', 'Fund Transfers'),
+        ('custody', 'Custody Services'),
+        ('exchange', 'Currency Exchange'),
+        ('blockchain', 'Blockchain Integration')
+    ], validators=[Optional()])
+    
+    expiration_date = DateField('Access Expiration Date', format='%Y-%m-%d', validators=[Optional()])
+    
+    reviewer_notes = TextAreaField('Reviewer Notes', validators=[Optional(), Length(max=1000)])
+    
+    submit = SubmitField('Update Status')
+    
+    def __init__(self, *args, **kwargs):
+        super(ApiAccessReviewForm, self).__init__(*args, **kwargs)
+        # Set default expiration date to 1 year from now
+        if not self.expiration_date.data:
+            self.expiration_date.data = datetime.now() + timedelta(days=365)
 
 
 class SwiftMT542Form(FlaskForm):
