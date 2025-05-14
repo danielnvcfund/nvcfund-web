@@ -96,7 +96,23 @@ def create_wire_transfer(
         
         # Calculate the fee (can be based on correspondent bank's settings)
         fee_percentage = correspondent_bank.settlement_fee_percentage
-        fee_amount = amount * (fee_percentage / 100)
+        # Convert decimal to float if needed
+        if hasattr(amount, 'to_float'):
+            amount_float = amount.to_float()
+        elif hasattr(amount, '__float__'):
+            amount_float = float(amount)
+        else:
+            amount_float = amount
+            
+        # Convert fee percentage to float if needed
+        if hasattr(fee_percentage, 'to_float'):
+            fee_percentage_float = fee_percentage.to_float()
+        elif hasattr(fee_percentage, '__float__'):
+            fee_percentage_float = float(fee_percentage)
+        else:
+            fee_percentage_float = fee_percentage
+            
+        fee_amount = amount_float * (fee_percentage_float / 100)
         
         # Create the transaction record
         wire_metadata = {
@@ -257,6 +273,7 @@ def confirm_wire_transfer(wire_transfer_id, reference_number=None, confirmation_
             success (bool): Whether the transfer was confirmed successfully
             error (str): Error message if any
     """
+    # Note: confirmation_number parameter is actually stored as confirmation_receipt in the database
     try:
         wire_transfer = WireTransfer.query.get(wire_transfer_id)
         if not wire_transfer:
@@ -269,9 +286,9 @@ def confirm_wire_transfer(wire_transfer_id, reference_number=None, confirmation_
         if reference_number:
             wire_transfer.reference_number = reference_number
         
-        # Update the confirmation number if provided
+        # Update the confirmation receipt if provided
         if confirmation_number:
-            wire_transfer.confirmation_number = confirmation_number
+            wire_transfer.confirmation_receipt = confirmation_number
         
         # Update the status to confirmed/completed
         wire_transfer.status = WireTransferStatus.COMPLETED
@@ -292,7 +309,7 @@ def confirm_wire_transfer(wire_transfer_id, reference_number=None, confirmation_
             treasury_tx.status = "completed"
             db.session.commit()
         
-        logger.info(f"Confirmed wire transfer {wire_transfer_id} with confirmation {wire_transfer.confirmation_number}")
+        logger.info(f"Confirmed wire transfer {wire_transfer_id} with confirmation {wire_transfer.confirmation_receipt}")
         
         return True, None
         

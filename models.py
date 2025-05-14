@@ -1688,7 +1688,7 @@ class WireTransfer(db.Model):
     # Status and Tracking
     status = db.Column(db.Enum(WireTransferStatus), default=WireTransferStatus.PENDING)
     status_description = db.Column(db.String(256))
-    confirmation_number = db.Column(db.String(128))
+    confirmation_receipt = db.Column(db.String(128))  # Called "confirmation_receipt" in the database
     fed_reference_number = db.Column(db.String(128))  # Federal Reserve reference number for US wires
     
     # Attachments and Metadata
