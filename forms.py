@@ -914,12 +914,13 @@ class TreasuryInvestmentForm(FlaskForm):
     investment_name = StringField('Investment Name', validators=[DataRequired(), Length(max=100)])
     account_id = SelectField('Account', validators=[DataRequired()], coerce=int)
     investment_type = SelectField('Investment Type', choices=[
-        ('bond', 'Bond'),
-        ('cd', 'Certificate of Deposit'),
-        ('commercial_paper', 'Commercial Paper'),
+        ('certificate_of_deposit', 'Certificate of Deposit'),
         ('money_market', 'Money Market'),
         ('treasury_bill', 'Treasury Bill'),
-        ('mutual_fund', 'Mutual Fund')
+        ('bond', 'Bond'),
+        ('commercial_paper', 'Commercial Paper'),
+        ('overnight_investment', 'Overnight Investment'),
+        ('time_deposit', 'Time Deposit')
     ], validators=[DataRequired()])
     principal_amount = FloatField('Principal Amount', validators=[DataRequired(), NumberRange(min=0.01)])
     interest_rate = FloatField('Interest Rate (%)', validators=[DataRequired(), NumberRange(min=0, max=100)])
