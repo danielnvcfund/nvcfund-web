@@ -158,8 +158,9 @@ def create_wire_transfer(
         wire_transfer = WireTransfer()
         wire_transfer.reference_number = reference_number
         wire_transfer.correspondent_bank_id = correspondent_bank_id
-        # Use the transaction.id (primary key) for the foreign key reference
-        wire_transfer.transaction_id = transaction.id 
+        # Set the transaction_id to the transaction.transaction_id string
+        # This should match the column type and structure in the database
+        wire_transfer.transaction_id = transaction.transaction_id
         wire_transfer.treasury_transaction_id = treasury_transaction_id
         wire_transfer.amount = amount
         wire_transfer.currency = currency
@@ -179,9 +180,12 @@ def create_wire_transfer(
         wire_transfer.message_to_beneficiary = message_to_beneficiary
         wire_transfer.status = WireTransferStatus.PENDING
         wire_transfer.user_id = user_id
-        # Set transfer_id to the reference number or another unique identifier
-        # This field is required by the database schema
+        # Set transfer_id to the reference number for consistency
+        # This is required by the database schema
         wire_transfer.transfer_id = reference_number
+        
+        # Log the transaction information for debugging
+        logger.info(f"Wire transfer data: ref={reference_number}, transaction_id={transaction.transaction_id}")
         
         db.session.add(wire_transfer)
         db.session.commit()

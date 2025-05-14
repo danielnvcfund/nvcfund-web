@@ -1656,8 +1656,12 @@ class WireTransfer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     reference_number = db.Column(db.String(64), unique=True, nullable=False)
     correspondent_bank_id = db.Column(db.Integer, db.ForeignKey('correspondent_bank.id'), nullable=False)
-    transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
+    # Using String instead of Integer to match the actual database schema
+    # This references transaction.transaction_id, not transaction.id
+    transaction_id = db.Column(db.String(64), db.ForeignKey('transaction.transaction_id'))
     treasury_transaction_id = db.Column(db.Integer, db.ForeignKey('treasury_transaction.id'))
+    # Required for wire transfers in the database
+    transfer_id = db.Column(db.String(128))
     
     # Financial Details
     amount = db.Column(db.Float, nullable=False)
@@ -1705,10 +1709,13 @@ class WireTransfer(db.Model):
     
     # User who created the transfer (note: in database this column is user_id not created_by_id)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    transfer_id = db.Column(db.String(128))  # Transfer ID from the correspondent bank system
     
     # Relationships
-    transaction = db.relationship('Transaction', backref=db.backref('wire_transfer', uselist=False))
+    # Since transaction_id references transaction.transaction_id, we need to specify the foreign_keys
+    transaction = db.relationship('Transaction', 
+                                foreign_keys=[transaction_id],
+                                primaryjoin="WireTransfer.transaction_id==Transaction.transaction_id",
+                                backref=db.backref('wire_transfer', uselist=False))
     treasury_transaction = db.relationship('TreasuryTransaction', backref=db.backref('wire_transfer', uselist=False))
     user = db.relationship('User', foreign_keys=[user_id])
     
