@@ -16,6 +16,7 @@ from decorators import roles_required
 
 # Setup blueprint
 correspondent = Blueprint('correspondent', __name__, url_prefix='/correspondent')
+correspondent_bp = correspondent  # Create an alias for the blueprint for compatibility
 
 # Setup logging
 logger = logging.getLogger(__name__)

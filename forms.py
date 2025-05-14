@@ -774,6 +774,131 @@ class LoanPaymentForm(FlaskForm):
             self.payment_date.data = datetime.now().date()
 
 
+class PayPalPaymentForm(FlaskForm):
+    """Form for PayPal payments"""
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=1.0)
+    currency = SelectField('Currency', choices=[
+        ('USD', 'US Dollar (USD)'),
+        ('EUR', 'Euro (EUR)'),
+        ('GBP', 'British Pound (GBP)'),
+        ('CAD', 'Canadian Dollar (CAD)'),
+        ('AUD', 'Australian Dollar (AUD)'),
+        ('JPY', 'Japanese Yen (JPY)')
+    ], validators=[DataRequired()], default='USD')
+    
+    description = StringField('Payment Description', validators=[DataRequired(), Length(min=3, max=127)])
+    invoice_id = StringField('Invoice ID', validators=[Optional(), Length(max=127)])
+    
+    customer_name = StringField('Customer Name', validators=[DataRequired(), Length(min=2, max=100)])
+    customer_email = StringField('Customer Email', validators=[DataRequired(), Email()])
+    
+    return_url = HiddenField('Return URL')
+    cancel_url = HiddenField('Cancel URL')
+    
+    submit = SubmitField('Proceed to PayPal')
+
+
+class WireTransferForm(FlaskForm):
+    """Form for wire transfers"""
+    sender_name = StringField('Sender Name', validators=[DataRequired(), Length(min=2, max=100)])
+    sender_account = StringField('Sender Account', validators=[DataRequired(), Length(min=5, max=50)])
+    sender_bank = StringField('Sending Bank', validators=[DataRequired(), Length(min=2, max=100)])
+    sender_swift = StringField('Sender SWIFT/BIC', validators=[DataRequired(), Length(min=8, max=11)])
+    
+    recipient_name = StringField('Recipient Name', validators=[DataRequired(), Length(min=2, max=100)])
+    recipient_account = StringField('Recipient Account/IBAN', validators=[DataRequired(), Length(min=5, max=50)])
+    recipient_bank = StringField('Recipient Bank', validators=[DataRequired(), Length(min=2, max=100)])
+    recipient_swift = StringField('Recipient SWIFT/BIC', validators=[DataRequired(), Length(min=8, max=11)])
+    recipient_address = TextAreaField('Recipient Address', validators=[DataRequired(), Length(min=5, max=200)])
+    
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=0.0)
+    currency = SelectField('Currency', choices=[
+        ('USD', 'US Dollar (USD)'),
+        ('EUR', 'Euro (EUR)'),
+        ('GBP', 'British Pound (GBP)'),
+        ('CAD', 'Canadian Dollar (CAD)'),
+        ('AUD', 'Australian Dollar (AUD)'),
+        ('JPY', 'Japanese Yen (JPY)')
+    ], validators=[DataRequired()], default='USD')
+    
+    transfer_purpose = TextAreaField('Purpose of Transfer', validators=[DataRequired(), Length(min=5, max=200)])
+    reference = StringField('Reference Number', validators=[DataRequired(), Length(min=3, max=35)])
+    
+    # Intermediary bank (if any)
+    intermediary_bank = StringField('Intermediary Bank', validators=[Optional(), Length(max=100)])
+    intermediary_swift = StringField('Intermediary SWIFT/BIC', validators=[Optional(), Length(min=8, max=11)])
+    
+    # Fee options
+    fee_option = SelectField('Fee Option', choices=[
+        ('OUR', 'OUR - Sender pays all fees'),
+        ('SHA', 'SHA - Shared fees'),
+        ('BEN', 'BEN - Beneficiary pays all fees')
+    ], validators=[DataRequired()], default='SHA')
+    
+    # Compliance information
+    compliance_purpose = SelectField('Purpose Category', choices=[
+        ('', '-- Select Purpose --'),
+        ('TRADE', 'Trade Payment'),
+        ('SALA', 'Salary Payment'),
+        ('INTC', 'Intra-Company Payment'),
+        ('CORT', 'Corporate Trade'),
+        ('TREA', 'Treasury Payment'),
+        ('CASH', 'Cash Management Transfer'),
+        ('DIVI', 'Dividend Payment'),
+        ('GOVT', 'Government Payment'),
+        ('PENS', 'Pension Payment'),
+        ('TAXS', 'Tax Payment'),
+        ('OTHR', 'Other')
+    ], validators=[DataRequired()])
+    
+    compliance_source = TextAreaField('Source of Funds', validators=[DataRequired(), Length(min=5, max=200)])
+    compliance_relationship = TextAreaField('Relationship to Beneficiary', validators=[DataRequired(), Length(min=5, max=200)])
+    
+    terms_agree = BooleanField('I confirm all details are correct and consent to this wire transfer', validators=[DataRequired()])
+    
+    submit = SubmitField('Submit Wire Transfer')
+
+
+class CurrencyExchangeForm(FlaskForm):
+    """Form for currency exchange"""
+    source_currency = SelectField('From Currency', choices=get_currency_choices(), validators=[DataRequired()])
+    target_currency = SelectField('To Currency', choices=get_currency_choices(), validators=[DataRequired()])
+    
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=100.0)
+    
+    # Display only fields (calculated in real-time via JS)
+    exchange_rate = HiddenField('Exchange Rate')
+    fee_percentage = HiddenField('Fee Percentage')
+    fee_amount = HiddenField('Fee Amount')
+    total_amount = HiddenField('Total Amount')
+    
+    source_account_id = SelectField('Source Account', coerce=int, validators=[DataRequired()])
+    target_account_id = SelectField('Target Account', coerce=int, validators=[Optional()])
+    
+    create_new_account = BooleanField('Create New Account for Target Currency', default=False)
+    
+    terms_agree = BooleanField('I agree to the exchange rate and fees', validators=[DataRequired()])
+    
+    submit = SubmitField('Exchange Currency')
+    
+    def __init__(self, *args, **kwargs):
+        super(CurrencyExchangeForm, self).__init__(*args, **kwargs)
+        try:
+            from models import TreasuryAccount
+            # Populate account choices from the database
+            if current_user and current_user.is_authenticated:
+                accounts = TreasuryAccount.query.filter_by(
+                    is_active=True
+                ).order_by(TreasuryAccount.name).all()
+                
+                self.source_account_id.choices = [(a.id, f"{a.name} ({a.currency})") for a in accounts]
+                self.target_account_id.choices = [('', '-- Select Account --')] + [
+                    (a.id, f"{a.name} ({a.currency})") for a in accounts
+                ]
+        except Exception as e:
+            print(f"Error loading accounts for currency exchange form: {str(e)}")
+
+
 class CashFlowForecastForm(FlaskForm):
     """Form for creating or updating a Cash Flow Forecast"""
     account_id = SelectField('Treasury Account', coerce=int, validators=[DataRequired()])
