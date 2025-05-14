@@ -635,10 +635,14 @@ def view_investment(investment_id):
         reference_number=investment.investment_id
     ).order_by(desc(TreasuryTransaction.created_at)).all()
     
+    # Add current date for calculations in the template
+    current_date = datetime.utcnow().date()
+    
     return render_template(
         'treasury/investment_detail.html',
         investment=investment,
-        transactions=transactions
+        transactions=transactions,
+        current_date=current_date
     )
 
 
