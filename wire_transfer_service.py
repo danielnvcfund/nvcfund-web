@@ -6,6 +6,7 @@ import json
 import logging
 import uuid
 from datetime import datetime, timedelta
+from flask import current_app
 from flask_login import current_user
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -711,8 +712,11 @@ def get_wire_transfer_with_tracking_data(wire_transfer_id):
         # Process history entries for UI display
         processed_history = []
         for entry in status_history:
+            if not entry or not hasattr(entry, 'status') or not entry.status:
+                continue
+                
             # Get status as string
-            status_value = entry.status.value if entry and entry.status else None
+            status_value = entry.status.value if hasattr(entry.status, 'value') else str(entry.status)
             
             # Set appropriate badge class based on status
             badge_class = "badge-warning"  # Default for pending
@@ -730,13 +734,28 @@ def get_wire_transfer_with_tracking_data(wire_transfer_id):
                 badge_class = "badge-info"
             elif status_value == 'processing':
                 badge_class = "badge-primary"
+            
+            # Check for required attributes before adding to processed history
+            if not hasattr(entry, 'timestamp') or not entry.timestamp:
+                current_app.logger.warning(f"Missing timestamp for status history entry: {entry}")
+                timestamp = datetime.utcnow()
+            else:
+                timestamp = entry.timestamp
+                
+            description = entry.description if hasattr(entry, 'description') else ""
+            
+            user = None
+            if hasattr(entry, 'user') and entry.user:
+                user = entry.user.username if hasattr(entry.user, 'username') else "Unknown User"
+            else:
+                user = "System"
                 
             processed_history.append({
                 'status': status_value,
-                'timestamp': entry.timestamp,
-                'description': entry.description,
+                'timestamp': timestamp, 
+                'description': description,
                 'badge_class': badge_class,
-                'user': entry.user.username if entry.user else "System"
+                'user': user
             })
         
         # Get status timestamps
