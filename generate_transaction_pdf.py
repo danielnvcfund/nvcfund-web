@@ -57,6 +57,9 @@ def generate_transaction_pdf(transaction_id):
         elif "PENDING" in status_value:
             status_class = "badge-warning"
         
+        # Format currency amount with commas
+        formatted_amount = "{:,.2f}".format(transaction.amount)
+        
         # Render template with transaction data
         html_content = render_template(
             'pdf/transaction_receipt.html',
@@ -64,6 +67,7 @@ def generate_transaction_pdf(transaction_id):
             formatted_date=formatted_date,
             completed_date=completed_date,
             status_class=status_class,
+            formatted_amount=formatted_amount,
             generation_date=datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')
         )
         

@@ -7,22 +7,23 @@
 </head>
 <body>
     <div class="watermark">
+        {% set status_text = '' %}
         {% if transaction.status.name is defined %}
-            {% if transaction.status.name == 'COMPLETED' %}
-            COMPLETED
-            {% elif transaction.status.name == 'REJECTED' %}
-            REJECTED
-            {% elif transaction.status.name == 'CANCELLED' %}
-            CANCELLED
-            {% endif %}
+            {% set status_text = transaction.status.name|upper %}
+        {% elif transaction.status.value is defined %}
+            {% set status_text = transaction.status.value|upper %}
         {% else %}
-            {% if transaction.status == 'COMPLETED' %}
+            {% set status_text = transaction.status|upper %}
+        {% endif %}
+        
+        {% if 'COMPLETED' in status_text %}
             COMPLETED
-            {% elif transaction.status == 'REJECTED' %}
+        {% elif 'REJECTED' in status_text %}
             REJECTED
-            {% elif transaction.status == 'CANCELLED' %}
+        {% elif 'CANCELLED' in status_text %}
             CANCELLED
-            {% endif %}
+        {% elif 'PENDING' in status_text %}
+            PENDING
         {% endif %}
     </div>
 
@@ -59,17 +60,21 @@
                 <th>Status:</th>
                 <td>
                     <span class="badge {{ status_class }}">
+                        {% set status_text = '' %}
                         {% if transaction.status.name is defined %}
-                            {{ transaction.status.name|title }}
+                            {% set status_text = transaction.status.name|title %}
+                        {% elif transaction.status.value is defined %}
+                            {% set status_text = transaction.status.value|title %}
                         {% else %}
-                            {{ transaction.status|title }}
+                            {% set status_text = transaction.status|title %}
                         {% endif %}
+                        {{ status_text }}
                     </span>
                 </td>
             </tr>
             <tr>
                 <th>Amount:</th>
-                <td>{{ transaction.currency }} {{ "{:,.2f}".format(transaction.amount) }}</td>
+                <td>{{ transaction.currency }} {{ formatted_amount }}</td>
             </tr>
             <tr>
                 <th>Created Date:</th>
