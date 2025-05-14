@@ -140,6 +140,25 @@
     </div>
     
     <div class="col-lg-4">
+      <!-- PDF Receipt Download -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">Transaction Receipt</h5>
+        </div>
+        <div class="card-body text-center">
+          <p>Download a professional PDF receipt for this transaction.</p>
+          {% if transaction.wire_transfer %}
+          <a href="{{ url_for('wire_transfer.download_wire_transfer_pdf', wire_transfer_id=transaction.wire_transfer.id) }}" class="btn btn-success btn-lg" style="font-weight: bold;">
+            <i class="fas fa-file-pdf"></i> Download PDF Receipt
+          </a>
+          {% else %}
+          <a href="{{ url_for('treasury.download_transaction_pdf', transaction_id=transaction.id) }}" class="btn btn-success btn-lg" style="font-weight: bold;">
+            <i class="fas fa-file-pdf"></i> Download PDF Receipt
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
       <!-- Transaction Status Card -->
       <div class="card shadow-sm mb-4">
         <div class="card-header bg-light">

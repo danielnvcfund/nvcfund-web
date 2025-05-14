@@ -7,10 +7,13 @@ transactions, investments, cash flow forecasting, and loans.
 from datetime import datetime, timedelta, date
 from decimal import Decimal
 from uuid import uuid4
+from io import BytesIO
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, jsonify, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, jsonify, current_app, send_file
 from flask_login import login_required, current_user
 from sqlalchemy import desc, func
+
+from generate_transaction_pdf import generate_transaction_pdf
 
 from app import db
 from models import (
@@ -461,6 +464,39 @@ def view_transaction(transaction_id):
         'treasury/transaction_detail.html',
         transaction=transaction
     )
+
+
+@treasury_bp.route('/transactions/<int:transaction_id>/download-pdf', methods=['GET'])
+@login_required
+def download_transaction_pdf(transaction_id):
+    """Download a PDF receipt for a treasury transaction"""
+    try:
+        # Check access permission
+        transaction = TreasuryTransaction.query.get_or_404(transaction_id)
+        
+        # Generate the PDF
+        pdf_bytes, filename = generate_transaction_pdf(transaction_id)
+        
+        if not pdf_bytes:
+            flash(f"Could not generate PDF: {filename}", "danger")
+            return redirect(url_for('treasury.view_transaction', transaction_id=transaction_id))
+        
+        # Create BytesIO object
+        pdf_buffer = BytesIO(pdf_bytes)
+        pdf_buffer.seek(0)
+        
+        # Send the PDF as a response
+        return send_file(
+            pdf_buffer,
+            download_name=filename,
+            as_attachment=True,
+            mimetype='application/pdf'
+        )
+        
+    except Exception as e:
+        current_app.logger.error(f"Error downloading transaction PDF: {str(e)}")
+        flash(f"Error downloading PDF: {str(e)}", "danger")
+        return redirect(url_for('treasury.view_transaction', transaction_id=transaction_id))
 
 
 @treasury_bp.route('/transactions/<int:transaction_id>/approve', methods=['POST'])
