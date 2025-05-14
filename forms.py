@@ -551,24 +551,40 @@ class SwiftFundTransferForm(FlaskForm):
     correspondent_bank_name = StringField('Correspondent Bank Name', validators=[Optional()])
     correspondent_bank_swift = StringField('Correspondent Bank SWIFT/BIC', validators=[Optional()])
     intermediary_bank_name = StringField('Intermediary Bank Name', validators=[Optional()])
-    intermediary_bank_swift = StringField('Intermediary Bank SWIFT/BIC', validators=[Optional()])
+    
+class WireTransferForm(FlaskForm):
+    """Form for creating a wire transfer through a correspondent bank"""
+    # Correspondent Bank Selection
+    correspondent_bank_id = SelectField('Correspondent Bank', coerce=int, validators=[DataRequired()])
     
     # Transfer Details
     amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
-    currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
+    currency = SelectField('Currency', validators=[DataRequired()])
+    purpose = StringField('Purpose of Transfer', validators=[DataRequired()],
+                         description="Required for regulatory compliance")
+    message_to_beneficiary = TextAreaField('Message to Beneficiary', validators=[Optional()])
     
-    # Sender & Recipient Information
-    ordering_customer = TextAreaField('Ordering Customer/Institution', validators=[DataRequired()])
-    beneficiary_customer = TextAreaField('Beneficiary Customer/Institution', validators=[DataRequired()])
-    details_of_payment = TextAreaField('Payment Details', validators=[DataRequired()])
+    # Originator Information (Sender)
+    originator_name = StringField('Originator Name', validators=[DataRequired()])
+    originator_account = StringField('Originator Account', validators=[DataRequired()])
+    originator_address = TextAreaField('Originator Address', validators=[DataRequired()])
     
-    # Transfer Type
-    is_financial_institution = RadioField('Transfer Type', choices=[
-        (0, 'Customer Transfer (MT103)'),
-        (1, 'Financial Institution Transfer (MT202)')
-    ], coerce=int, default=0)
+    # Beneficiary Information (Recipient)
+    beneficiary_name = StringField('Beneficiary Name', validators=[DataRequired()])
+    beneficiary_account = StringField('Beneficiary Account/IBAN', validators=[DataRequired()])
+    beneficiary_address = TextAreaField('Beneficiary Address', validators=[DataRequired()])
     
-    submit = SubmitField('Create Fund Transfer')
+    # Beneficiary Bank Information
+    beneficiary_bank_name = StringField('Beneficiary Bank Name', validators=[DataRequired()])
+    beneficiary_bank_address = TextAreaField('Beneficiary Bank Address', validators=[DataRequired()])
+    beneficiary_bank_swift = StringField('Beneficiary Bank SWIFT/BIC', validators=[Optional()])
+    beneficiary_bank_routing = StringField('Beneficiary Bank Routing Number (ABA)', validators=[Optional()])
+    
+    # Intermediary Bank (Optional)
+    intermediary_bank_name = StringField('Intermediary Bank Name', validators=[Optional()])
+    intermediary_bank_swift = StringField('Intermediary Bank SWIFT/BIC', validators=[Optional()])
+    
+    submit = SubmitField('Create Wire Transfer')
 
 class ACHTransferForm(FlaskForm):
     """Form for creating an ACH (Automated Clearing House) transfer"""

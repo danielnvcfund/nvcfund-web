@@ -602,6 +602,20 @@ class CorrespondentBank(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     stablecoin_account = db.relationship('StablecoinAccount', backref=db.backref('correspondent_bank', uselist=False))
+    wire_transfers = db.relationship('WireTransfer', backref='correspondent_bank', lazy=True)
+    
+class WireTransferStatus(enum.Enum):
+    """Status for wire transfers"""
+    PENDING = "pending"
+    PROCESSING = "processing"
+    SENT = "sent"
+    CONFIRMED = "confirmed"
+    COMPLETED = "completed"
+    REJECTED = "rejected"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+    
+# Wire Transfer model moved to line ~1693
     
 class LedgerEntry(db.Model):
     """Double-entry accounting ledger for the closed-loop system"""
@@ -1617,3 +1631,99 @@ class ContractPayment(db.Model):
             return json.loads(self.metadata_json)
         except:
             return {}
+
+
+class WireTransferStatus(enum.Enum):
+    """Status for wire transfers"""
+    PENDING = "pending"
+    APPROVED = "approved"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    REJECTED = "rejected"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class WireTransfer(db.Model):
+    """Model for wire transfers through correspondent banks"""
+    id = db.Column(db.Integer, primary_key=True)
+    reference_number = db.Column(db.String(64), unique=True, nullable=False)
+    correspondent_bank_id = db.Column(db.Integer, db.ForeignKey('correspondent_bank.id'), nullable=False)
+    transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
+    treasury_transaction_id = db.Column(db.Integer, db.ForeignKey('treasury_transaction.id'))
+    
+    # Financial Details
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), nullable=False)
+    purpose = db.Column(db.String(256), nullable=False)
+    message_to_beneficiary = db.Column(db.Text)
+    
+    # Originator Information (Sender)
+    originator_name = db.Column(db.String(256), nullable=False)
+    originator_account = db.Column(db.String(128), nullable=False)
+    originator_address = db.Column(db.Text, nullable=False)
+    
+    # Beneficiary Information (Recipient)
+    beneficiary_name = db.Column(db.String(256), nullable=False)
+    beneficiary_account = db.Column(db.String(128), nullable=False)
+    beneficiary_address = db.Column(db.Text, nullable=False)
+    
+    # Beneficiary Bank Information
+    beneficiary_bank_name = db.Column(db.String(256), nullable=False)
+    beneficiary_bank_address = db.Column(db.Text, nullable=False)
+    beneficiary_bank_swift = db.Column(db.String(11))
+    beneficiary_bank_routing = db.Column(db.String(20))
+    
+    # Intermediary Bank (Optional)
+    intermediary_bank_name = db.Column(db.String(256))
+    intermediary_bank_swift = db.Column(db.String(11))
+    
+    # Status and Tracking
+    status = db.Column(db.Enum(WireTransferStatus), default=WireTransferStatus.PENDING)
+    status_description = db.Column(db.String(256))
+    confirmation_number = db.Column(db.String(128))
+    fed_reference_number = db.Column(db.String(128))  # Federal Reserve reference number for US wires
+    
+    # Attachments and Metadata
+    attachments_json = db.Column(db.Text)  # JSON array of attachment file paths
+    metadata_json = db.Column(db.Text)  # Additional wire transfer details
+    
+    # Timestamps and Tracking
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    initiated_at = db.Column(db.DateTime)  # When transfer was sent to correspondent bank
+    completed_at = db.Column(db.DateTime)  # When transfer was confirmed completed
+    cancelled_at = db.Column(db.DateTime)  # When transfer was cancelled
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    approved_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
+    # Relationships
+    transaction = db.relationship('Transaction', backref=db.backref('wire_transfer', uselist=False))
+    treasury_transaction = db.relationship('TreasuryTransaction', backref=db.backref('wire_transfer', uselist=False))
+    created_by = db.relationship('User', foreign_keys=[created_by_id])
+    approved_by = db.relationship('User', foreign_keys=[approved_by_id])
+    
+    def get_metadata(self):
+        if not self.metadata_json:
+            return {}
+        try:
+            return json.loads(self.metadata_json)
+        except:
+            return {}
+    
+    def get_attachments(self):
+        if not self.attachments_json:
+            return []
+        try:
+            return json.loads(self.attachments_json)
+        except:
+            return []
+    
+    def add_attachment(self, file_path):
+        """Add a file attachment to the wire transfer"""
+        attachments = self.get_attachments()
+        attachments.append(file_path)
+        self.attachments_json = json.dumps(attachments)
+        
+    def __repr__(self):
+        return f"<WireTransfer {self.reference_number}: {self.currency} {self.amount:.2f} to {self.beneficiary_name}>"
