@@ -560,12 +560,11 @@ def record_status_change(wire_transfer_id, status, description=None, user_id=Non
             return False, "Wire transfer not found"
         
         # Create a new status history entry
-        status_history = WireTransferStatusHistory(
-            wire_transfer_id=wire_transfer_id,
-            status=status,
-            description=description,
-            user_id=user_id
-        )
+        status_history = WireTransferStatusHistory()
+        status_history.wire_transfer_id = wire_transfer_id
+        status_history.status = status
+        status_history.description = description
+        status_history.user_id = user_id
         
         # Update the wire transfer status
         wire_transfer.status = status
@@ -818,8 +817,20 @@ def get_wire_transfer_with_tracking_data(wire_transfer_id):
                     current_app.logger.error(f"Error processing history entry: {str(e)}")
                     continue
                     
-        # Sort history by timestamp
-        processed_history.sort(key=lambda x: x['timestamp'] if isinstance(x['timestamp'], datetime) else datetime.utcnow())
+        # Sort history by timestamp with safety checks
+        def safe_timestamp_key(entry):
+            timestamp = entry.get('timestamp')
+            if isinstance(timestamp, datetime):
+                return timestamp
+            elif isinstance(timestamp, str):
+                try:
+                    return datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+                except (ValueError, TypeError):
+                    return datetime.utcnow()
+            else:
+                return datetime.utcnow()
+                
+        processed_history.sort(key=safe_timestamp_key)
         
         # Create a safe version of status_timestamps
         status_timestamps = {}

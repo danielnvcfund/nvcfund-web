@@ -104,9 +104,9 @@
                 </h3>
                 
                 <div class="timeline">
-                    {% if tracking_data %}
+                    {% if tracking_data and tracking_data.status_history %}
                         <ul class="timeline-items">
-                            {% for status_entry in tracking_data %}
+                            {% for status_entry in tracking_data.status_history %}
                                 <li class="timeline-item 
                                     {% if status_entry.status == 'pending' %}
                                         timeline-warning
@@ -131,14 +131,21 @@
                                             {{ status_entry.status|title }}
                                         </h4>
                                         <p class="timeline-date">
-                                            <i class="fas fa-clock"></i> {{ status_entry.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                                            <i class="fas fa-clock"></i> 
+                                            {% if status_entry.timestamp is string %}
+                                                {{ status_entry.timestamp }}
+                                            {% else %}
+                                                {{ status_entry.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                                            {% endif %}
                                         </p>
-                                        {% if status_entry.notes %}
-                                            <p class="timeline-notes">{{ status_entry.notes }}</p>
+                                        {% if status_entry.description %}
+                                            <p class="timeline-notes">{{ status_entry.description }}</p>
                                         {% endif %}
                                         <p class="timeline-user">
                                             <i class="fas fa-user"></i> 
-                                            {% if status_entry.user %}
+                                            {% if status_entry.user is string %}
+                                                {{ status_entry.user }}
+                                            {% elif status_entry.user and status_entry.user.username %}
                                                 {{ status_entry.user.username }}
                                             {% else %}
                                                 System
