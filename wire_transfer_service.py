@@ -133,22 +133,33 @@ def create_wire_transfer(
             }
         }
         
-        transaction = record_transaction(
-            user_id=user_id,
-            transaction_type=TransactionType.INTERNATIONAL_WIRE,
-            amount=amount,
-            currency=currency,
-            description=f"Wire transfer to {beneficiary_name} via {correspondent_bank.name}",
-            status=TransactionStatus.PENDING,
-            metadata=wire_metadata
-        )
+        # Create the transaction record first
+        try:
+            transaction = record_transaction(
+                user_id=user_id,
+                transaction_type=TransactionType.INTERNATIONAL_WIRE,
+                amount=amount,
+                currency=currency,
+                description=f"Wire transfer to {beneficiary_name} via {correspondent_bank.name}",
+                status=TransactionStatus.PENDING,
+                metadata=wire_metadata
+            )
+            
+            # Fetch the transaction by ID to ensure we have the latest version from the database
+            db.session.refresh(transaction)
+            
+            logger.info(f"Created transaction with ID: {transaction.id} and transaction_id: {transaction.transaction_id}")
+        except Exception as e:
+            logger.error(f"Failed to create transaction: {str(e)}")
+            return None, None, f"Failed to create transaction: {str(e)}"
         
         # Create the wire transfer record
         reference_number = generate_transfer_id()
         wire_transfer = WireTransfer()
         wire_transfer.reference_number = reference_number
         wire_transfer.correspondent_bank_id = correspondent_bank_id
-        wire_transfer.transaction_id = transaction.id
+        # Use the transaction.id (primary key) for the foreign key reference
+        wire_transfer.transaction_id = transaction.id 
         wire_transfer.treasury_transaction_id = treasury_transaction_id
         wire_transfer.amount = amount
         wire_transfer.currency = currency
