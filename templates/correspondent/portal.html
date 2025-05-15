@@ -13,8 +13,42 @@
                 <p class="lead">Join our network of correspondent banking partners and expand your international reach. Our correspondent banking relationships offer efficient cross-border transactions, robust liquidity solutions, and access to emerging markets.</p>
             </div>
             
-            <div class="africa-focus-section p-4 mb-4 bg-light rounded shadow-sm" style="background-image: url('/static/images/africa_map_improved.svg'); background-size: cover; background-position: center;">
-                <h3 class="text-white">Africa-Focused Partnership Benefits</h3>
+            <div class="africa-focus-section p-4 mb-4 bg-dark rounded shadow-sm">
+                <h3 class="text-white mb-3">Africa-Focused Partnership Benefits</h3>
+                
+                <!-- Direct SVG Map embedding -->
+                <link rel="stylesheet" href="/static/css/africa_map.css">
+                <div class="africa-map-container mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+                        <!-- Region boundaries -->
+                        <path class="region" id="north-africa" d="M140,215 L240,160 L350,190 L380,280 L330,380 L220,350 L170,320 L140,215" fill="#E8EAF6" stroke="#3F51B5" stroke-width="2"/>
+                        <path class="region" id="east-africa" d="M330,380 L380,280 L450,310 L520,370 L480,450 L380,420 L330,380" fill="#E3F2FD" stroke="#2196F3" stroke-width="2"/>
+                        <path class="region" id="southern-africa" d="M220,350 L330,380 L380,420 L350,520 L250,500 L220,350" fill="#E0F7FA" stroke="#00BCD4" stroke-width="2"/>
+                        <path class="region" id="central-africa" d="M380,280 L450,140 L520,180 L550,270 L520,370 L450,310 L380,280" fill="#F1F8E9" stroke="#8BC34A" stroke-width="2"/>
+                        <path class="region" id="west-africa" d="M140,215 L220,350 L170,320 L140,215" fill="#FFF9C4" stroke="#FFC107" stroke-width="2"/>
+
+                        <!-- Regional Labels -->
+                        <text x="290" y="260" class="region-label">EAST AFRICA</text>
+                        <text x="180" y="400" class="region-label">SOUTHERN AFRICA</text>
+                        <text x="200" y="180" class="region-label">NORTH AFRICA</text>
+                        <text x="450" y="370" class="region-label">CENTRAL AFRICA</text>
+                        <text x="130" y="300" class="region-label">WEST AFRICA</text>
+  
+                        <!-- Banking hubs -->
+                        <g id="hubs">
+                            <circle class="hub-marker" cx="210" cy="210" r="12" fill="#FFC107" stroke="#FF6F00" stroke-width="2"/>
+                            <circle class="hub-marker" cx="315" cy="315" r="12" fill="#FFC107" stroke="#FF6F00" stroke-width="2"/>
+                            <circle class="hub-marker" cx="270" cy="450" r="12" fill="#FFC107" stroke="#FF6F00" stroke-width="2"/>
+                            <circle class="hub-marker" cx="150" cy="280" r="12" fill="#FFC107" stroke="#FF6F00" stroke-width="2"/>
+                        </g>
+
+                        <!-- Growth Indicators -->
+                        <path d="M220,230 L250,210 L280,240 L310,220 L340,250" stroke="#4CAF50" stroke-width="2" fill="none"/>
+                        <path d="M330,330 L360,310 L390,330 L420,300 L450,320" stroke="#4CAF50" stroke-width="2" fill="none"/>
+                        <path d="M220,410 L250,390 L280,420 L310,400 L340,430" stroke="#4CAF50" stroke-width="2" fill="none"/>
+                    </svg>
+                </div>
+                
                 <div class="row">
                     <div class="col-md-6">
                         <div class="card mb-3 border-0 bg-white shadow-sm">
