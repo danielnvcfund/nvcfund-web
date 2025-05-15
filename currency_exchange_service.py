@@ -254,6 +254,56 @@ class CurrencyExchangeService:
             logger.error(f"Error committing exchange rate updates: {str(e)}")
         
         return updated_count
+    
+    def update_exchange_rate(self, from_currency, to_currency, rate, source='manual'):
+        """Update exchange rate between two currencies"""
+        if not self.db:
+            logger.error("Database not available for updating exchange rate")
+            return None
+            
+        try:
+            # Calculate inverse rate
+            inverse_rate = 1 / rate if rate != 0 else 0
+            
+            # Check if rate exists
+            existing_rate = CurrencyExchangeRate.query.filter_by(
+                from_currency=from_currency,
+                to_currency=to_currency,
+                is_active=True
+            ).first()
+            
+            if existing_rate:
+                # Update existing rate
+                existing_rate.rate = rate
+                existing_rate.inverse_rate = inverse_rate
+                existing_rate.source = source
+                existing_rate.last_updated = datetime.now()
+                rate_obj = existing_rate
+            else:
+                # Create new rate
+                rate_obj = CurrencyExchangeRate(
+                    from_currency=from_currency,
+                    to_currency=to_currency,
+                    rate=rate,
+                    inverse_rate=inverse_rate,
+                    source=source,
+                    is_active=True
+                )
+                self.db.session.add(rate_obj)
+            
+            # Update cache
+            rate_key = self.get_rate_key(from_currency, to_currency)
+            self.rates_cache[rate_key] = rate
+            self.rates_timestamp[rate_key] = datetime.now()
+            
+            self.db.session.commit()
+            logger.info(f"Updated exchange rate: {from_currency.value} -> {to_currency.value} = {rate}")
+            return rate_obj
+            
+        except Exception as e:
+            self.db.session.rollback()
+            logger.error(f"Error updating exchange rate: {str(e)}")
+            return None
 
 # Create global instance
 exchange_service = CurrencyExchangeService()

@@ -774,6 +774,32 @@ class LoanPaymentForm(FlaskForm):
             self.payment_date.data = datetime.now().date()
 
 
+class PayPalPayoutForm(FlaskForm):
+    """Form for PayPal payouts"""
+    recipient_email = StringField('Recipient Email', validators=[DataRequired(), Email()])
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=1.0)
+    currency = SelectField('Currency', choices=[
+        ('USD', 'US Dollar (USD)'),
+        ('EUR', 'Euro (EUR)'),
+        ('GBP', 'British Pound (GBP)'),
+        ('CAD', 'Canadian Dollar (CAD)'),
+        ('AUD', 'Australian Dollar (AUD)'),
+        ('JPY', 'Japanese Yen (JPY)')
+    ], validators=[DataRequired()], default='USD')
+    
+    note = StringField('Note to Recipient', validators=[Optional(), Length(max=255)])
+    reference_id = StringField('Reference ID', validators=[Optional(), Length(max=50)])
+    
+    # Sender information
+    sender_name = StringField('Sender Name', validators=[Optional(), Length(max=100)])
+    sender_account = StringField('Sender Account', validators=[Optional(), Length(max=100)])
+    
+    # Batch options
+    batch_id = HiddenField('Batch ID')
+    
+    submit = SubmitField('Send Payout')
+
+
 class PayPalPaymentForm(FlaskForm):
     """Form for PayPal payments"""
     amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=1.0)
@@ -857,6 +883,140 @@ class WireTransferForm(FlaskForm):
     terms_agree = BooleanField('I confirm all details are correct and consent to this wire transfer', validators=[DataRequired()])
     
     submit = SubmitField('Submit Wire Transfer')
+
+
+class POSPayoutForm(FlaskForm):
+    """Form for POS (Point of Sale) payouts"""
+    recipient_name = StringField('Recipient Name', validators=[DataRequired(), Length(min=2, max=100)])
+    recipient_id = StringField('Recipient ID', validators=[Optional(), Length(max=50)])
+    recipient_email = StringField('Recipient Email', validators=[Optional(), Email()])
+    recipient_phone = StringField('Recipient Phone', validators=[Optional(), Length(max=20)])
+    
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=1.0)
+    currency = SelectField('Currency', choices=[
+        ('USD', 'US Dollar (USD)'),
+        ('EUR', 'Euro (EUR)'),
+        ('GBP', 'British Pound (GBP)'),
+        ('NGN', 'Nigerian Naira (NGN)'),
+        ('KES', 'Kenyan Shilling (KES)'),
+        ('ZAR', 'South African Rand (ZAR)'),
+        ('GHS', 'Ghanaian Cedi (GHS)')
+    ], validators=[DataRequired()], default='USD')
+    
+    reference = StringField('Reference', validators=[Optional(), Length(max=100)])
+    description = StringField('Description', validators=[Optional(), Length(max=255)])
+    
+    # Payout method
+    payout_method = SelectField('Payout Method', choices=[
+        ('cash', 'Cash'),
+        ('bank_transfer', 'Bank Transfer'),
+        ('mobile_money', 'Mobile Money'),
+        ('crypto', 'Cryptocurrency'),
+        ('nvct', 'NVC Token')
+    ], validators=[DataRequired()], default='cash')
+    
+    # Bank transfer details
+    bank_name = StringField('Bank Name', validators=[Optional(), Length(max=100)])
+    account_number = StringField('Account Number', validators=[Optional(), Length(max=50)])
+    routing_number = StringField('Routing/Swift Number', validators=[Optional(), Length(max=30)])
+    
+    # Mobile money details
+    mobile_number = StringField('Mobile Number', validators=[Optional(), Length(min=10, max=15)])
+    mobile_provider = SelectField('Mobile Provider', choices=[
+        ('', '-- Select Provider --'),
+        ('mtn', 'MTN'),
+        ('airtel', 'Airtel'),
+        ('vodafone', 'Vodafone'),
+        ('orange', 'Orange'),
+        ('mpesa', 'M-Pesa'),
+        ('other', 'Other')
+    ], validators=[Optional()])
+    
+    # Africa-specific fields
+    region = SelectField('Region', choices=[
+        ('', '-- Select Region --'),
+        ('west_africa', 'West Africa'),
+        ('east_africa', 'East Africa'),
+        ('central_africa', 'Central Africa'),
+        ('southern_africa', 'Southern Africa'),
+        ('north_africa', 'North Africa')
+    ], validators=[Optional()])
+    
+    # Authorization
+    authorized_by = StringField('Authorized By', validators=[Optional(), Length(max=100)])
+    authorization_code = StringField('Authorization Code', validators=[Optional(), Length(max=50)])
+    
+    submit = SubmitField('Process Payout')
+
+
+class POSPaymentForm(FlaskForm):
+    """Form for POS (Point of Sale) payments"""
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=1.0)
+    currency = SelectField('Currency', choices=[
+        ('USD', 'US Dollar (USD)'),
+        ('EUR', 'Euro (EUR)'),
+        ('GBP', 'British Pound (GBP)'),
+        ('NGN', 'Nigerian Naira (NGN)'),
+        ('KES', 'Kenyan Shilling (KES)'),
+        ('ZAR', 'South African Rand (ZAR)'),
+        ('GHS', 'Ghanaian Cedi (GHS)')
+    ], validators=[DataRequired()], default='USD')
+    
+    reference = StringField('Reference', validators=[Optional(), Length(max=100)])
+    description = StringField('Description', validators=[Optional(), Length(max=255)])
+    
+    # Customer information
+    customer_name = StringField('Customer Name', validators=[DataRequired(), Length(min=2, max=100)])
+    customer_email = StringField('Customer Email', validators=[Optional(), Email()])
+    customer_phone = StringField('Customer Phone', validators=[Optional(), Length(max=20)])
+    
+    # Receipt options
+    send_receipt = BooleanField('Send Receipt', default=True)
+    receipt_email = StringField('Receipt Email', validators=[Optional(), Email()])
+    
+    # Payment method
+    payment_method = SelectField('Payment Method', choices=[
+        ('cash', 'Cash'),
+        ('card', 'Card'),
+        ('mobile_money', 'Mobile Money'),
+        ('crypto', 'Cryptocurrency'),
+        ('nvct', 'NVC Token')
+    ], validators=[DataRequired()], default='card')
+    
+    # Card details (if card payment)
+    card_number = StringField('Card Number', validators=[Optional(), Length(min=13, max=19)])
+    card_expiry = StringField('Expiry (MM/YY)', validators=[Optional(), Length(min=5, max=5)])
+    card_cvv = StringField('CVV', validators=[Optional(), Length(min=3, max=4)])
+    
+    # Mobile money details (if mobile_money payment)
+    mobile_number = StringField('Mobile Number', validators=[Optional(), Length(min=10, max=15)])
+    mobile_provider = SelectField('Mobile Provider', choices=[
+        ('', '-- Select Provider --'),
+        ('mtn', 'MTN'),
+        ('airtel', 'Airtel'),
+        ('vodafone', 'Vodafone'),
+        ('orange', 'Orange'),
+        ('mpesa', 'M-Pesa'),
+        ('other', 'Other')
+    ], validators=[Optional()])
+    
+    # Africa-specific payment fields
+    region = SelectField('Region', choices=[
+        ('', '-- Select Region --'),
+        ('west_africa', 'West Africa'),
+        ('east_africa', 'East Africa'),
+        ('central_africa', 'Central Africa'),
+        ('southern_africa', 'Southern Africa'),
+        ('north_africa', 'North Africa')
+    ], validators=[Optional()])
+    
+    store_location = StringField('Store Location', validators=[Optional(), Length(max=100)])
+    
+    # Terminal information (admin only)
+    terminal_id = HiddenField('Terminal ID')
+    merchant_id = HiddenField('Merchant ID')
+    
+    submit = SubmitField('Process Payment')
 
 
 class CurrencyExchangeForm(FlaskForm):
