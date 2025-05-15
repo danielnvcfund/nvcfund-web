@@ -597,7 +597,7 @@ class TreasuryAccountForm(FlaskForm):
     """Form for creating or updating a Treasury Account"""
     name = StringField('Account Name', validators=[DataRequired(), Length(min=3, max=100)])
     account_name = StringField('Account Name', validators=[DataRequired(), Length(min=3, max=100)])  # Duplicate to match template
-    account_type = SelectField('Account Type', coerce=int, validators=[DataRequired()])
+    account_type = SelectField('Account Type', coerce=str, validators=[DataRequired()])
     institution_id = SelectField('Financial Institution', coerce=int, validators=[DataRequired()])
     account_number = StringField('Account Number', validators=[DataRequired(), Length(min=5, max=50)])
     routing_number = StringField('Routing Number', validators=[Optional(), Length(min=9, max=9)])
@@ -619,7 +619,15 @@ class TreasuryAccountForm(FlaskForm):
         super(TreasuryAccountForm, self).__init__(*args, **kwargs)
         try:
             from models import TreasuryAccountType, FinancialInstitution
-            self.account_type.choices = [(t.id, t.name) for t in TreasuryAccountType.query.all()]
+            # Use enum values directly for account types
+            self.account_type.choices = [
+                (TreasuryAccountType.OPERATING.value, 'Operating Account'),
+                (TreasuryAccountType.INVESTMENT.value, 'Investment Account'),
+                (TreasuryAccountType.RESERVE.value, 'Reserve Account'),
+                (TreasuryAccountType.PAYROLL.value, 'Payroll Account'),
+                (TreasuryAccountType.TAX.value, 'Tax Account'),
+                (TreasuryAccountType.DEBT_SERVICE.value, 'Debt Service Account')
+            ]
             self.institution_id.choices = [(i.id, i.name) for i in 
                                          FinancialInstitution.query.filter_by(active=True).order_by(FinancialInstitution.name).all()]
         except Exception as e:
@@ -664,6 +672,7 @@ class TreasuryInvestmentForm(FlaskForm):
     name = StringField('Investment Name', validators=[DataRequired(), Length(min=3, max=100)])
     investment_name = StringField('Investment Name', validators=[DataRequired(), Length(min=3, max=100)])  # Duplicate to match template
     amount = DecimalField('Investment Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=0.0)
+    principal_amount = DecimalField('Principal Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=0.0)  # Duplicate to match template
     currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
     interest_rate = DecimalField('Interest Rate (%)', validators=[DataRequired(), NumberRange(min=0)], default=0.0)
     start_date = DateField('Start Date', format='%Y-%m-%d', validators=[DataRequired()])
@@ -677,6 +686,7 @@ class TreasuryInvestmentForm(FlaskForm):
         ('high', 'High')
     ], validators=[DataRequired()])
     notes = TextAreaField('Notes', validators=[Optional(), Length(max=500)])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=500)])  # Added to match template
     submit = SubmitField('Save Investment')
 
     def __init__(self, *args, **kwargs):

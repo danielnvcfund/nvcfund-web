@@ -219,9 +219,13 @@ def new_account():
     form.institution_id.choices = [(0, 'None')] + [(i.id, i.name) for i in institutions]
     
     if form.validate_on_submit():
+        # Convert string account_type to enum value
+        account_type_value = form.account_type.data
+        account_type_enum = TreasuryAccountType(account_type_value)  # Convert string to enum
+        
         account = TreasuryAccount(
             name=form.account_name.data,
-            account_type=form.account_type.data,
+            account_type=account_type_enum,
             description=form.description.data,
             account_number=form.account_number.data,
             currency=form.currency.data,
