@@ -29,6 +29,27 @@ def portal():
     return render_template('correspondent/portal.html', form=form)
 
 
+@correspondent.route('/agreement', methods=['GET'])
+def agreement():
+    """Display the correspondent banking agreement"""
+    return render_template('correspondent/agreement.html')
+
+
+@correspondent.route('/download-agreement', methods=['GET'])
+def download_agreement():
+    """Download the correspondent banking agreement PDF"""
+    # This would typically be a PDF file, but for now we'll show the HTML version
+    # In a real implementation, this would use the PDF generation utilities to create and serve a PDF
+    flash("PDF download functionality will be implemented in the next phase.", "info")
+    return redirect(url_for('correspondent.agreement'))
+
+
+@correspondent.route('/onboarding', methods=['GET'])
+def onboarding():
+    """Display the correspondent bank onboarding process"""
+    return render_template('correspondent/onboarding.html')
+
+
 @correspondent.route('/submit-application', methods=['POST'])
 def submit_application():
     """Process correspondent bank application submission"""
