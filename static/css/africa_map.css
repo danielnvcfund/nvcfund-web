@@ -298,20 +298,23 @@ body {
 }
 
 .service-overview-section .card-title {
-  color: #0077ff;
-  font-weight: 600;
-  font-size: 1rem;
+  color: #4db2ff;
+  font-weight: 700;
+  font-size: 1.125rem;
   margin-top: 0.5rem;
+  text-shadow: 0 0 2px rgba(0,0,0,0.8);
 }
 
 .service-overview-section .card-text {
-  color: #e2e8f0;
-  font-size: 0.875rem;
-  line-height: 1.5;
+  color: #ffffff;
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 400;
+  margin-top: 0.75rem;
 }
 
 .service-overview-section .service-card {
-  background-color: #111111;
+  background-color: #0a0a0a;
   border: 1px solid #0066cc;
   border-radius: 8px;
   transition: all 0.3s ease;
@@ -319,6 +322,11 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   height: 100%;
   position: relative;
+  padding: 0.5rem;
+}
+
+.service-overview-section .card-body {
+  padding: 1.5rem;
 }
 
 .service-overview-section .service-card:hover {
@@ -333,14 +341,16 @@ body {
   justify-content: center;
   width: 80px;
   height: 80px;
-  background-color: rgba(124, 58, 237, 0.1);
+  background-color: rgba(0, 102, 204, 0.15);
   border-radius: 50%;
   margin-bottom: 1rem;
-  box-shadow: 0 0 15px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 0 15px rgba(0, 153, 255, 0.4);
+  border: 1px solid rgba(0, 153, 255, 0.3);
 }
 
 .service-overview-section .fas {
-  color: #7c3aed;
+  color: #4db2ff;
+  text-shadow: 0 0 8px rgba(0, 153, 255, 0.6);
 }
 
 /* Application Form Styling */
