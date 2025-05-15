@@ -6,9 +6,10 @@ body {
 
 .content-section {
   background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  border-top: 5px solid #7c3aed;
 }
 
 .portal-intro-section h1 {
@@ -81,18 +82,50 @@ body {
 
 /* Africa Map Styling */
 .africa-focus-section {
-  background-color: #ffffff !important;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: #f0f9ff !important; /* Light blue background */
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+  border-right: 5px solid #0ea5e9; /* Blue border */
+  position: relative;
+  margin-top: 2.5rem;
+}
+
+.africa-focus-section:before {
+  content: 'Africa Focus';
+  position: absolute;
+  top: -1.5rem;
+  right: 2rem;
+  background-color: #0ea5e9;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(14, 165, 233, 0.2);
+  font-weight: 600;
 }
 
 .africa-focus-section h3 {
-  color: #111827;
-  font-weight: 600;
+  color: #0c4a6e; /* Dark blue */
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  text-align: center;
+  font-size: 1.75rem;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.africa-focus-section h3:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 3px;
+  background: linear-gradient(90deg, #0ea5e9, #06b6d4);
 }
 
 .africa-map-container {
@@ -100,10 +133,11 @@ body {
   width: 100%;
   height: 400px;
   margin-bottom: 20px;
-  background-color: #f9fafb;
-  border-radius: 8px;
+  background-color: #ecfeff; /* Very light cyan */
+  border-radius: 10px;
   overflow: hidden;
-  border: 1px solid #e5e7eb;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .africa-map-container svg {
@@ -232,32 +266,56 @@ body {
 
 /* Service Overview Section */
 .service-overview-section {
-  padding: 1.5rem;
-  background-color: #ffffff;
-  border-radius: 8px;
+  padding: 2rem;
+  background-color: #f8f7ff;
+  border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-left: 5px solid #6366f1;
+  margin-top: 2.5rem;
+  position: relative;
+}
+
+.service-overview-section:before {
+  content: '';
+  position: absolute;
+  top: -1.5rem;
+  left: 2rem;
+  background-color: #6366f1;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(99, 102, 241, 0.2);
+  font-weight: 600;
+  content: "Our Services";
 }
 
 .service-overview-section h3 {
-  color: #111827;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
+  color: #4338ca;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-size: 1.75rem;
+  letter-spacing: 0.025em;
 }
 
 .service-overview-section .card {
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background-color: #ffffff;
+  border: none;
+  border-radius: 12px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
 }
 
 .service-overview-section .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12);
 }
 
 .service-overview-section .card-title {
   color: #111827;
-  font-weight: 600;
+  font-weight: 700;
+  margin-top: 0.5rem;
 }
 
 .service-overview-section .card-text {
@@ -265,11 +323,24 @@ body {
 }
 
 .service-overview-section .service-card {
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  background-color: #ffffff;
+  border: none;
+  border-radius: 12px;
   transition: all 0.3s ease;
   overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  height: 100%;
+  position: relative;
+}
+
+.service-overview-section .service-card:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
 }
 
 .service-overview-section .service-card:hover {
@@ -297,75 +368,121 @@ body {
 /* Application Form Styling */
 .card.shadow {
   background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05) !important;
+  border: none;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.card.shadow:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #7c3aed, #c084fc);
+  z-index: 1;
 }
 
 .card-header.bg-primary {
-  background-color: #7c3aed !important;
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6) !important;
   border-bottom: 0;
+  padding: 1.5rem;
+  position: relative;
+}
+
+.card-header.bg-primary h4 {
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .application-section {
-  background-color: #f9fafb;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  background-color: #faf5ff;
+  border-radius: 10px;
+  border-left: 3px solid #a855f7;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  position: relative;
 }
 
 .application-section h5 {
-  color: #111827;
-  font-weight: 600;
-  margin-bottom: 1rem;
+  color: #6d28d9;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+}
+
+.application-section h5:before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-color: #8b5cf6;
+  margin-right: 0.75rem;
+  border-radius: 4px;
+  transform: rotate(45deg);
 }
 
 .application-section hr {
-  border-color: #e5e7eb;
-  opacity: 0.7;
-  margin: 1rem 0;
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, #a855f7, transparent);
+  opacity: 0.3;
+  margin: 1.25rem 0;
 }
 
 .form-control-label {
   color: #4b5563;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
 }
 
 .form-control {
   background-color: #ffffff;
-  border: 1px solid #d1d5db;
+  border: 2px solid #e5e7eb;
   color: #111827;
   transition: all 0.3s ease;
+  border-radius: 8px;
+  padding: 0.625rem 1rem;
 }
 
 .form-control:focus {
   background-color: #ffffff;
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 0.25rem rgba(124, 58, 237, 0.25);
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 0.25rem rgba(139, 92, 246, 0.15);
   color: #111827;
 }
 
 .form-select {
   background-color: #ffffff;
-  border: 1px solid #d1d5db;
+  border: 2px solid #e5e7eb;
   color: #111827;
+  border-radius: 8px;
+  padding: 0.625rem 1rem;
+  background-position: right 1rem center;
 }
 
 .form-select:focus {
   background-color: #ffffff;
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 0.25rem rgba(124, 58, 237, 0.25);
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 0.25rem rgba(139, 92, 246, 0.15);
 }
 
 .select-multiple-wrapper {
   max-height: 250px;
   overflow-y: auto;
   background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 0.5rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* Custom checkbox styling */
@@ -378,13 +495,25 @@ body {
   padding: 0.75rem;
   border-radius: 8px;
   background-color: #ffffff;
-  border: 1px solid #e5e7eb;
+  border: 2px solid #e5e7eb;
+  margin-bottom: 0.625rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
 }
 
 .custom-checkbox:hover {
-  background-color: #f3f4f6;
+  background-color: #f8f5ff;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
+  border-color: #c4b5fd;
+}
+
+/* Service checkboxes with distinct colors */
+.custom-checkbox:nth-child(odd) {
+  border-left: 3px solid #8b5cf6;
+}
+
+.custom-checkbox:nth-child(even) {
+  border-left: 3px solid #6366f1;
 }
 
 .custom-checkbox-input {
@@ -408,83 +537,186 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   margin-right: 0.75rem;
-  background-color: rgba(124, 58, 237, 0.1);
+  background-color: #f5f3ff;
   transition: all 0.3s ease;
+  border: 1px solid rgba(124, 58, 237, 0.2);
 }
 
 .custom-checkbox-input:checked + .custom-checkbox-label {
   font-weight: 700;
+  color: #4c1d95;
 }
 
 .custom-checkbox-input:checked + .custom-checkbox-label .icon-wrapper {
-  background-color: #7c3aed;
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
   box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+  transform: rotate(5deg);
 }
 
 .custom-checkbox-input:checked + .custom-checkbox-label i {
   color: #ffffff !important;
+  transform: scale(1.1);
 }
 
 /* Service option specific styling */
+.service-option .icon-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.service-option .icon-wrapper:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #7c3aed, transparent);
+}
+
 .service-option .icon-wrapper i {
   color: #7c3aed;
+  font-size: 1.25rem;
+}
+
+/* Submit button styling */
+.btn-primary {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  border: none;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  box-shadow: 0 4px 6px rgba(124, 58, 237, 0.25);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(124, 58, 237, 0.3);
+  background: linear-gradient(135deg, #6d28d9, #7c3aed);
 }
 
 /* Region option specific styling */
+.region-option .custom-checkbox {
+  border-left-width: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.region-option .custom-checkbox:before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 10px;
+  height: 100%;
+  opacity: 0.15;
+}
+
+/* North Africa */
 .region-option .region-icon-1 {
-  background-color: rgba(99, 102, 241, 0.1);
+  background: linear-gradient(45deg, #eef2ff, #e0e7ff);
+  border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
+.region-option .custom-checkbox:has(.region-icon-1):before {
+  background-color: #6366f1;
+}
+
+.region-option .custom-checkbox:has(.region-icon-1) {
+  border-left-color: #6366f1;
+}
+
+/* West Africa */
 .region-option .region-icon-2 {
-  background-color: rgba(14, 165, 233, 0.1);
+  background: linear-gradient(45deg, #e0f2fe, #f0f9ff);
+  border: 1px solid rgba(14, 165, 233, 0.2);
 }
 
+.region-option .custom-checkbox:has(.region-icon-2):before {
+  background-color: #0ea5e9;
+}
+
+.region-option .custom-checkbox:has(.region-icon-2) {
+  border-left-color: #0ea5e9;
+}
+
+/* East Africa */
 .region-option .region-icon-3 {
-  background-color: rgba(34, 211, 238, 0.1);
+  background: linear-gradient(45deg, #e0f7fa, #cffafe);
+  border: 1px solid rgba(34, 211, 238, 0.2);
 }
 
+.region-option .custom-checkbox:has(.region-icon-3):before {
+  background-color: #22d3ee;
+}
+
+.region-option .custom-checkbox:has(.region-icon-3) {
+  border-left-color: #22d3ee;
+}
+
+/* Southern Africa */
 .region-option .region-icon-4 {
-  background-color: rgba(250, 204, 21, 0.1);
+  background: linear-gradient(45deg, #fefce8, #fef9c3);
+  border: 1px solid rgba(250, 204, 21, 0.2);
+}
+
+.region-option .custom-checkbox:has(.region-icon-4):before {
+  background-color: #facc15;
+}
+
+.region-option .custom-checkbox:has(.region-icon-4) {
+  border-left-color: #facc15;
 }
 
 .region-option .region-icon-1 i {
   color: #6366f1;
+  font-size: 1.25rem;
 }
 
 .region-option .region-icon-2 i {
   color: #0ea5e9;
+  font-size: 1.25rem;
 }
 
 .region-option .region-icon-3 i {
   color: #22d3ee;
+  font-size: 1.25rem;
 }
 
 .region-option .region-icon-4 i {
   color: #facc15;
+  font-size: 1.25rem;
 }
 
+/* When region is checked */
 .custom-checkbox-input:checked + .region-label-1 .icon-wrapper {
-  background-color: #6366f1;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
   box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+  transform: rotate(5deg);
 }
 
 .custom-checkbox-input:checked + .region-label-2 .icon-wrapper {
-  background-color: #0ea5e9;
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
   box-shadow: 0 0 10px rgba(14, 165, 233, 0.5);
+  transform: rotate(5deg);
 }
 
 .custom-checkbox-input:checked + .region-label-3 .icon-wrapper {
-  background-color: #22d3ee;
+  background: linear-gradient(135deg, #06b6d4, #22d3ee);
   box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+  transform: rotate(5deg);
 }
 
 .custom-checkbox-input:checked + .region-label-4 .icon-wrapper {
-  background-color: #facc15;
+  background: linear-gradient(135deg, #eab308, #facc15);
   box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+  transform: rotate(5deg);
 }
 
 .btn-primary {
