@@ -20,32 +20,55 @@
                 <link rel="stylesheet" href="/static/css/africa_map.css">
                 <div class="africa-map-container mb-4">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
-                        <!-- Region boundaries -->
-                        <path class="region" id="north-africa" d="M140,215 L240,160 L350,190 L380,280 L330,380 L220,350 L170,320 L140,215" fill="#E8EAF6" stroke="#3F51B5" stroke-width="2"/>
-                        <path class="region" id="east-africa" d="M330,380 L380,280 L450,310 L520,370 L480,450 L380,420 L330,380" fill="#E3F2FD" stroke="#2196F3" stroke-width="2"/>
-                        <path class="region" id="southern-africa" d="M220,350 L330,380 L380,420 L350,520 L250,500 L220,350" fill="#E0F7FA" stroke="#00BCD4" stroke-width="2"/>
-                        <path class="region" id="central-africa" d="M380,280 L450,140 L520,180 L550,270 L520,370 L450,310 L380,280" fill="#F1F8E9" stroke="#8BC34A" stroke-width="2"/>
-                        <path class="region" id="west-africa" d="M140,215 L220,350 L170,320 L140,215" fill="#FFF9C4" stroke="#FFC107" stroke-width="2"/>
+                        <!-- Africa continent outline for context -->
+                        <path d="M394,129c-2.8,0.7-5.1,2.1-8.1,1.9c-3.3,2.8-7.9,2.1-11.2,4.7c-2.6,1.9-2.1,5.4-3.3,8.1c-0.7,3.5,3.7,6.3,1.4,9.8
+                        c-2.8,4.2-7.5,6.5-10.7,10.5c-2.1,1.9-3.5,5.1-2.6,7.9c-0.5,2.6-1.9,5.1-4.7,5.8c-3,1.2-4.9,4.4-4.7,7.5c-0.2,4.2-2.1,7.9-4.7,11.2
+                        c-0.9,2.6-1.6,5.4-0.7,8.1c1.2,4.7,0.7,9.8-1.4,14c-1.4,4.2-4.7,7.5-6.5,11.4c-1.2,3-0.7,6.3-1.9,9.3c-1.6,3-4.9,4.4-7.7,5.6
+                        c-2.6,0.9-4.9,2.6-7.5,3.5c-3.5,1.4-7.5,1.6-10.7,3.7c-2.6,1.6-4.7,4.2-7.7,5.1c-4.4,1.2-8.9,1.6-13.3,1.9c-4.2,0.5-7.5,3.5-10.5,6.1
+                        c-3.7,2.8-7.7,5.1-11.9,7c-3.5,1.6-6.8,3.5-9.8,5.8c-2.6,2.1-4.7,4.7-7.7,6.3c-2.8,1.4-5.8,2.1-8.6,3.5c-2.3,1.2-4.2,3-6.5,4.2
+                        c-3.5,1.9-7.5,2.3-11.2,3.5c-3.3,1.2-6.8,2.6-9.8,4.4c-3.5,2.1-7,3.7-10.7,5.4c-3.5,1.4-7.2,2.6-9.8,5.4c-2.1,2.3-2.8,5.6-3.7,8.6
+                        c-0.9,3-0.7,6.3-0.9,9.5c-0.2,3.5-0.9,7-0.9,10.5c0,4.7-0.2,9.3-1.4,13.8c-0.9,2.6-3,4.4-5.1,6.1c-3,2.6-6.3,4.7-9.5,6.8
+                        c-2.3,1.6-4.4,3.5-7,4.7c-2.8,1.2-5.8,0.9-8.6,1.6c-3.3,0.9-6.5,2.6-9.8,3.3c-3.5,0.7-7.2,0.2-10.7,0.7c-3.3,0.5-5.6,3.3-7.7,5.6
+                        c-3,3.3-6.8,5.8-10.5,8.1c-3.3,2.1-6.8,3.7-10.5,5.1c-3.3,1.4-6.3,3.5-9.5,5.1"
+                        fill="none" stroke="#AAAAFF" stroke-width="1.5" opacity="0.2"/>
+                        
+                        <!-- Region boundaries with higher opacity -->
+                        <path class="region" id="north-africa" d="M140,215 L240,160 L350,190 L380,280 L330,380 L220,350 L170,320 L140,215" fill="#E8EAF6" stroke="#3F51B5" stroke-width="3"/>
+                        <path class="region" id="east-africa" d="M330,380 L380,280 L450,310 L520,370 L480,450 L380,420 L330,380" fill="#E3F2FD" stroke="#2196F3" stroke-width="3"/>
+                        <path class="region" id="southern-africa" d="M220,350 L330,380 L380,420 L350,520 L250,500 L220,350" fill="#E0F7FA" stroke="#00BCD4" stroke-width="3"/>
+                        <path class="region" id="central-africa" d="M380,280 L450,140 L520,180 L550,270 L520,370 L450,310 L380,280" fill="#F1F8E9" stroke="#8BC34A" stroke-width="3"/>
+                        <path class="region" id="west-africa" d="M140,215 L220,350 L170,320 L140,215" fill="#FFF9C4" stroke="#FFC107" stroke-width="3"/>
 
-                        <!-- Regional Labels -->
-                        <text x="290" y="260" class="region-label">EAST AFRICA</text>
-                        <text x="180" y="400" class="region-label">SOUTHERN AFRICA</text>
-                        <text x="200" y="180" class="region-label">NORTH AFRICA</text>
-                        <text x="450" y="370" class="region-label">CENTRAL AFRICA</text>
-                        <text x="130" y="300" class="region-label">WEST AFRICA</text>
+                        <!-- Regional Labels with increased font size -->
+                        <text x="300" y="230" class="region-label" font-size="20">EAST AFRICA</text>
+                        <text x="180" y="400" class="region-label" font-size="20">SOUTHERN AFRICA</text>
+                        <text x="200" y="180" class="region-label" font-size="20">NORTH AFRICA</text>
+                        <text x="450" y="330" class="region-label" font-size="20">CENTRAL AFRICA</text>
+                        <text x="130" y="300" class="region-label" font-size="20">WEST AFRICA</text>
   
-                        <!-- Banking hubs -->
+                        <!-- Banking hub markers with larger size and plus symbol -->
                         <g id="hubs">
-                            <circle class="hub-marker" cx="210" cy="210" r="12" fill="#FFC107" stroke="#FF6F00" stroke-width="2"/>
-                            <circle class="hub-marker" cx="315" cy="315" r="12" fill="#FFC107" stroke="#FF6F00" stroke-width="2"/>
-                            <circle class="hub-marker" cx="270" cy="450" r="12" fill="#FFC107" stroke="#FF6F00" stroke-width="2"/>
-                            <circle class="hub-marker" cx="150" cy="280" r="12" fill="#FFC107" stroke="#FF6F00" stroke-width="2"/>
+                            <!-- North Africa hub -->
+                            <circle class="hub-marker" cx="210" cy="210" r="15" fill="#FFC107" stroke="#FF6F00" stroke-width="3"/>
+                            <path d="M202,210 L218,210 M210,202 L210,218" stroke="#FF6F00" stroke-width="3"/>
+                            
+                            <!-- East Africa hub -->
+                            <circle class="hub-marker" cx="315" cy="315" r="15" fill="#FFC107" stroke="#FF6F00" stroke-width="3"/>
+                            <path d="M307,315 L323,315 M315,307 L315,323" stroke="#FF6F00" stroke-width="3"/>
+                            
+                            <!-- Southern Africa hub -->
+                            <circle class="hub-marker" cx="270" cy="450" r="15" fill="#FFC107" stroke="#FF6F00" stroke-width="3"/>
+                            <path d="M262,450 L278,450 M270,442 L270,458" stroke="#FF6F00" stroke-width="3"/>
+                            
+                            <!-- West Africa hub -->
+                            <circle class="hub-marker" cx="150" cy="280" r="15" fill="#FFC107" stroke="#FF6F00" stroke-width="3"/>
+                            <path d="M142,280 L158,280 M150,272 L150,288" stroke="#FF6F00" stroke-width="3"/>
                         </g>
 
-                        <!-- Growth Indicators -->
-                        <path d="M220,230 L250,210 L280,240 L310,220 L340,250" stroke="#4CAF50" stroke-width="2" fill="none"/>
-                        <path d="M330,330 L360,310 L390,330 L420,300 L450,320" stroke="#4CAF50" stroke-width="2" fill="none"/>
-                        <path d="M220,410 L250,390 L280,420 L310,400 L340,430" stroke="#4CAF50" stroke-width="2" fill="none"/>
+                        <!-- Growth Indicators with enhanced visibility -->
+                        <path d="M220,230 L250,210 L280,240 L310,220 L340,250" stroke="#4CAF50" stroke-width="3" fill="none"/>
+                        <path d="M330,330 L360,310 L390,330 L420,300 L450,320" stroke="#4CAF50" stroke-width="3" fill="none"/>
+                        <path d="M220,410 L250,390 L280,420 L310,400 L340,430" stroke="#4CAF50" stroke-width="3" fill="none"/>
                     </svg>
                 </div>
                 
