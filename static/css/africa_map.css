@@ -10,7 +10,7 @@ body {
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   padding: 2rem;
-  border-left: 4px solid #7c3aed;
+  border-left: 4px solid #0077ff;
   margin-bottom: 1.5rem;
 }
 
@@ -23,7 +23,7 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(90deg, #4a1d95, #7c3aed);
+  background: linear-gradient(90deg, #004080, #0077ff);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -31,7 +31,7 @@ body {
 }
 
 .text-gradient-secondary {
-  background: linear-gradient(90deg, #7c3aed, #c084fc);
+  background: linear-gradient(90deg, #0077ff, #00acff);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -53,9 +53,9 @@ body {
 }
 
 .partnership-text {
-  color: #7c3aed;
-  -webkit-text-fill-color: #7c3aed;
-  text-shadow: 0 0 15px rgba(124, 58, 237, 0.3);
+  color: #0077ff;
+  -webkit-text-fill-color: #0077ff;
+  text-shadow: 0 0 15px rgba(0, 119, 255, 0.3);
   font-weight: 600;
 }
 
@@ -79,19 +79,19 @@ body {
   display: inline-flex;
   align-items: center;
   padding: 0.5rem 1rem;
-  background-color: #f5f3ff;
-  border: 1px solid rgba(124, 58, 237, 0.3);
+  background-color: #111111;
+  border: 1px solid rgba(0, 119, 255, 0.3);
   border-radius: 20px;
-  color: #4c1d95;
+  color: #e2e8f0;
   font-weight: 500;
   transition: all 0.3s ease;
 }
 
 .highlight-badge:hover {
-  background-color: #ede9fe;
+  background-color: #1a1a1a;
   transform: translateY(-2px);
-  box-shadow: 0 0 15px rgba(124, 58, 237, 0.3);
-  border-color: #7c3aed;
+  box-shadow: 0 0 15px rgba(0, 119, 255, 0.3);
+  border-color: #0077ff;
 }
 
 /* Africa Map Styling */
@@ -268,7 +268,7 @@ body {
   background-color: #111111;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  border-left: 4px solid #7c3aed;
+  border-left: 4px solid #0077ff;
   margin-top: 1.5rem;
   position: relative;
 }
@@ -300,8 +300,8 @@ body {
 
 .service-overview-section .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  border-color: #7c3aed;
+  box-shadow: 0 10px 25px rgba(0, 102, 204, 0.3);
+  border-color: #0077ff;
 }
 
 .service-overview-section .card-title {
