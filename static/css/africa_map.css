@@ -1,23 +1,23 @@
-/* Dark Theme Styles for Correspondent Banking Portal */
+/* Light Theme Styles for Correspondent Banking Portal */
 body {
-  background-color: #000000;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #000000;
 }
 
 .content-section {
-  background-color: #000000;
+  background-color: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
 }
 
 .portal-intro-section h1 {
-  color: #fff;
+  color: #000000;
   font-weight: 700;
 }
 
 .text-gradient {
-  background: linear-gradient(90deg, #ffffff, #a78bfa);
+  background: linear-gradient(90deg, #4a1d95, #7c3aed);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -25,7 +25,7 @@ body {
 }
 
 .text-gradient-secondary {
-  background: linear-gradient(90deg, #94a3b8, #60a5fa);
+  background: linear-gradient(90deg, #1e40af, #3b82f6);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -35,24 +35,24 @@ body {
 .partnership-text {
   color: #7c3aed;
   -webkit-text-fill-color: #7c3aed;
-  text-shadow: 0 0 15px rgba(124, 58, 237, 0.5);
+  text-shadow: 0 0 15px rgba(124, 58, 237, 0.3);
 }
 
 .portal-intro-section h2 {
-  color: #ffffff;
+  color: #1f2937;
   font-weight: 500;
   letter-spacing: 0.5px;
 }
 
 .portal-intro-section .lead {
-  color: #ffffff;
+  color: #374151;
   font-size: 1.1rem;
   line-height: 1.6;
 }
 
 .portal-intro-section hr {
-  border-color: #2d3748;
-  opacity: 0.3;
+  border-color: #e5e7eb;
+  opacity: 0.7;
   margin: 1.5rem 0;
 }
 
@@ -64,32 +64,31 @@ body {
   display: inline-flex;
   align-items: center;
   padding: 0.5rem 1rem;
-  background-color: #000000;
-  border: 1px solid rgba(124, 58, 237, 0.6);
+  background-color: #f5f3ff;
+  border: 1px solid rgba(124, 58, 237, 0.3);
   border-radius: 20px;
-  color: #ffffff;
+  color: #4c1d95;
   font-weight: 500;
   transition: all 0.3s ease;
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
 }
 
 .highlight-badge:hover {
-  background-color: rgba(124, 58, 237, 0.2);
+  background-color: #ede9fe;
   transform: translateY(-2px);
-  box-shadow: 0 0 15px rgba(124, 58, 237, 0.5);
+  box-shadow: 0 0 15px rgba(124, 58, 237, 0.3);
   border-color: #7c3aed;
 }
 
 /* Africa Map Styling */
 .africa-focus-section {
-  background-color: #000000 !important;
-  border: 1px solid #333333;
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb;
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .africa-focus-section h3 {
-  color: #ffffff;
+  color: #111827;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -101,10 +100,10 @@ body {
   width: 100%;
   height: 400px;
   margin-bottom: 20px;
-  background-color: #000000;
+  background-color: #f9fafb;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #333333;
+  border: 1px solid #e5e7eb;
 }
 
 .africa-map-container svg {
@@ -227,47 +226,47 @@ body {
 }
 
 .card-text {
-  color: #ffffff;
+  color: #4b5563;
   margin-bottom: 0;
 }
 
 /* Service Overview Section */
 .service-overview-section {
   padding: 1.5rem;
-  background-color: #000000;
+  background-color: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .service-overview-section h3 {
-  color: #ffffff;
+  color: #111827;
   font-weight: 600;
   margin-bottom: 1.5rem;
 }
 
 .service-overview-section .card {
-  background-color: #0a0a0a;
-  border: 1px solid #333333;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .service-overview-section .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.08);
 }
 
 .service-overview-section .card-title {
-  color: #ffffff;
+  color: #111827;
   font-weight: 600;
 }
 
 .service-overview-section .card-text {
-  color: #ffffff;
+  color: #4b5563;
 }
 
 .service-overview-section .service-card {
-  background-color: #000000;
-  border: 1px solid #333333;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 10px;
   transition: all 0.3s ease;
   overflow: hidden;
@@ -297,9 +296,9 @@ body {
 
 /* Application Form Styling */
 .card.shadow {
-  background-color: #000000;
-  border: 1px solid #333333;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05) !important;
 }
 
 .card-header.bg-primary {
@@ -308,54 +307,54 @@ body {
 }
 
 .application-section {
-  background-color: #000000;
+  background-color: #f9fafb;
   border-radius: 8px;
-  border: 1px solid #333333;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
 .application-section h5 {
-  color: #ffffff;
+  color: #111827;
   font-weight: 600;
   margin-bottom: 1rem;
 }
 
 .application-section hr {
-  border-color: #333333;
-  opacity: 0.5;
+  border-color: #e5e7eb;
+  opacity: 0.7;
   margin: 1rem 0;
 }
 
 .form-control-label {
-  color: #ffffff;
+  color: #4b5563;
   font-weight: 500;
   margin-bottom: 0.5rem;
 }
 
 .form-control {
-  background-color: #000000;
-  border: 1px solid #333333;
-  color: #ffffff;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #111827;
   transition: all 0.3s ease;
 }
 
 .form-control:focus {
-  background-color: #000000;
+  background-color: #ffffff;
   border-color: #7c3aed;
   box-shadow: 0 0 0 0.25rem rgba(124, 58, 237, 0.25);
-  color: #ffffff;
+  color: #111827;
 }
 
 .form-select {
-  background-color: #000000;
-  border: 1px solid #333333;
-  color: #ffffff;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #111827;
 }
 
 .form-select:focus {
-  background-color: #000000;
+  background-color: #ffffff;
   border-color: #7c3aed;
   box-shadow: 0 0 0 0.25rem rgba(124, 58, 237, 0.25);
 }
@@ -363,8 +362,8 @@ body {
 .select-multiple-wrapper {
   max-height: 250px;
   overflow-y: auto;
-  background-color: #000000;
-  border: 1px solid #333333;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 6px;
   padding: 0.5rem;
 }
@@ -378,14 +377,14 @@ body {
   transition: all 0.3s ease;
   padding: 0.75rem;
   border-radius: 8px;
-  background-color: #0a0a0a;
-  border: 1px solid #333333;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
 }
 
 .custom-checkbox:hover {
-  background-color: #111111;
+  background-color: #f3f4f6;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
 }
 
 .custom-checkbox-input {
@@ -397,7 +396,7 @@ body {
 }
 
 .custom-checkbox-label {
-  color: #ffffff;
+  color: #1f2937;
   font-weight: 500;
   display: flex;
   align-items: center;
