@@ -1,21 +1,21 @@
-/* Light Theme Styles for Correspondent Banking Portal */
+/* Dark Theme Styles for Correspondent Banking Portal */
 body {
-  background-color: #f8f9fa;
-  color: #212529;
+  background-color: #000000;
+  color: #ffffff;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 .content-section {
-  background-color: #ffffff;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: #111111;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   padding: 2rem;
-  border-left: 4px solid #0035a0;
+  border-left: 4px solid #7c3aed;
   margin-bottom: 1.5rem;
 }
 
 .portal-intro-section h1 {
-  color: #0035a0;
+  color: #ffffff;
   font-weight: 700;
   font-size: 2.25rem;
   letter-spacing: -0.02em;
@@ -23,7 +23,7 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(90deg, #002060, #0051a9);
+  background: linear-gradient(90deg, #4a1d95, #7c3aed);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -31,7 +31,7 @@ body {
 }
 
 .text-gradient-secondary {
-  background: linear-gradient(90deg, #0051a9, #0077cc);
+  background: linear-gradient(90deg, #7c3aed, #c084fc);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -39,23 +39,23 @@ body {
 }
 
 .portal-intro-section h2 {
-  color: #333333;
+  color: #e2e8f0;
   font-weight: 600;
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
 .portal-intro-section p {
-  color: #4a5568;
+  color: #cbd5e1;
   line-height: 1.6;
   margin-bottom: 1.5rem;
   font-size: 1rem;
 }
 
 .partnership-text {
-  color: #0051a9;
-  -webkit-text-fill-color: #0051a9;
-  text-shadow: 0 0 5px rgba(0, 81, 169, 0.15);
+  color: #7c3aed;
+  -webkit-text-fill-color: #7c3aed;
+  text-shadow: 0 0 15px rgba(124, 58, 237, 0.3);
   font-weight: 600;
 }
 
@@ -96,23 +96,23 @@ body {
 
 /* Africa Map Styling */
 .africa-focus-section {
-  background-color: #ffffff !important;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: #111111 !important;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   padding: 2rem;
-  border-left: 4px solid #0051a9;
+  border-left: 4px solid #7c3aed;
   position: relative;
   margin-top: 1.5rem;
 }
 
 .africa-focus-section h3 {
-  color: #0051a9;
+  color: #ffffff;
   font-weight: 600;
   margin-bottom: 1.5rem;
   font-size: 1.25rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #333333;
 }
 
 .africa-map-container {
@@ -120,11 +120,11 @@ body {
   width: 100%;
   height: 400px;
   margin-bottom: 1.5rem;
-  background-color: #f5f8fa;
-  border-radius: 4px;
+  background-color: #0a0a0a;
+  border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #333333;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .africa-map-container svg {
@@ -258,73 +258,73 @@ body {
 /* Service Overview Section */
 .service-overview-section {
   padding: 2rem;
-  background-color: #f8fafc;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border-left: 4px solid #0051a9;
+  background-color: #111111;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-left: 4px solid #7c3aed;
   margin-top: 1.5rem;
   position: relative;
 }
 
 .service-overview-section h2 {
-  color: #0051a9;
+  color: #ffffff;
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #333333;
 }
 
 .service-overview-section h3 {
-  color: #0f172a;
+  color: #e2e8f0;
   font-weight: 600;
   margin-bottom: 1.5rem;
   font-size: 1.125rem;
 }
 
 .service-overview-section .card {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  background-color: #1e1e1e;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   overflow: hidden;
 }
 
 .service-overview-section .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-  border-color: #0051a9;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  border-color: #7c3aed;
 }
 
 .service-overview-section .card-title {
-  color: #0f172a;
+  color: #ffffff;
   font-weight: 600;
   font-size: 1rem;
   margin-top: 0.5rem;
 }
 
 .service-overview-section .card-text {
-  color: #4b5563;
+  color: #a0aec0;
   font-size: 0.875rem;
   line-height: 1.5;
 }
 
 .service-overview-section .service-card {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  background-color: #1e1e1e;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  transition: all 0.3s ease;
   overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   height: 100%;
   position: relative;
 }
 
 .service-overview-section .service-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-  border-color: #0051a9;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  border-color: #7c3aed;
 }
 
 .service-icon-wrapper {
@@ -345,9 +345,9 @@ body {
 
 /* Application Form Styling */
 .card.shadow {
-  background-color: #ffffff;
-  border: none;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
+  background-color: #1e1e1e;
+  border: 1px solid #333333;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2) !important;
   border-radius: 12px;
   overflow: hidden;
   position: relative;
@@ -365,7 +365,7 @@ body {
 }
 
 .card-header.bg-primary {
-  background-color: #0051a9 !important;
+  background-color: #7c3aed !important;
   border-bottom: 0;
   padding: 1.25rem 1.5rem;
   position: relative;
@@ -378,63 +378,74 @@ body {
   color: #ffffff;
 }
 
+.card-body {
+  background-color: #1e1e1e;
+  color: #e2e8f0;
+}
+
+.invalid-feedback {
+  color: #f87171;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
 .application-section {
-  background-color: #ffffff;
-  border-radius: 4px;
-  border: 1px solid #e2e8f0;
-  border-left: 3px solid #0051a9;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  border: 1px solid #333333;
+  border-left: 3px solid #7c3aed;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   position: relative;
 }
 
 .application-section h5 {
-  color: #0f172a;
+  color: #ffffff;
   font-weight: 600;
   margin-bottom: 1rem;
   font-size: 1rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #333333;
   padding-bottom: 0.5rem;
 }
 
 .application-section hr {
   border: none;
   height: 1px;
-  background-color: #e2e8f0;
+  background-color: #333333;
   opacity: 1;
   margin: 1.25rem 0;
 }
 
 .form-control-label {
-  color: #4b5563;
+  color: #e2e8f0;
   font-weight: 500;
   margin-bottom: 0.5rem;
   font-size: 0.875rem;
 }
 
 .form-control {
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
-  color: #1f2937;
-  transition: all 0.2s ease;
-  border-radius: 4px;
+  background-color: #2d2d2d;
+  border: 1px solid #444444;
+  color: #e2e8f0;
+  transition: all 0.3s ease;
+  border-radius: 6px;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
 }
 
 .form-control:focus {
-  background-color: #ffffff;
-  border-color: #0051a9;
-  box-shadow: 0 0 0 2px rgba(0, 81, 169, 0.1);
-  color: #1f2937;
+  background-color: #333333;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+  color: #ffffff;
 }
 
 .form-select {
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
-  color: #1f2937;
-  border-radius: 4px;
+  background-color: #2d2d2d;
+  border: 1px solid #444444;
+  color: #e2e8f0;
+  border-radius: 6px;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   background-position: right 0.75rem center;
@@ -442,19 +453,19 @@ body {
 }
 
 .form-select:focus {
-  background-color: #ffffff;
-  border-color: #0051a9;
-  box-shadow: 0 0 0 2px rgba(0, 81, 169, 0.1);
+  background-color: #333333;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
 }
 
 .select-multiple-wrapper {
   max-height: 250px;
   overflow-y: auto;
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
+  background-color: #2d2d2d;
+  border: 1px solid #444444;
+  border-radius: 6px;
   padding: 0.75rem;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* Custom checkbox styling */
@@ -463,26 +474,27 @@ body {
   display: flex;
   align-items: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   padding: 0.625rem;
-  border-radius: 4px;
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: #2d2d2d;
+  border: 1px solid #444444;
   margin-bottom: 0.5rem;
 }
 
 .custom-checkbox:hover {
-  background-color: #f3f4f6;
-  border-color: #0051a9;
+  background-color: #333333;
+  border-color: #7c3aed;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Service checkboxes with distinct colors */
 .custom-checkbox:nth-child(odd) {
-  border-left: 2px solid #0051a9;
+  border-left: 2px solid #7c3aed;
 }
 
 .custom-checkbox:nth-child(even) {
-  border-left: 2px solid #0077cc;
+  border-left: 2px solid #8b5cf6;
 }
 
 .custom-checkbox-input {
@@ -494,7 +506,7 @@ body {
 }
 
 .custom-checkbox-label {
-  color: #1f2937;
+  color: #e2e8f0;
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -517,7 +529,7 @@ body {
 
 .custom-checkbox-input:checked + .custom-checkbox-label {
   font-weight: 700;
-  color: #4c1d95;
+  color: #a78bfa;
 }
 
 .custom-checkbox-input:checked + .custom-checkbox-label .icon-wrapper {
@@ -538,25 +550,110 @@ body {
 }
 
 .service-option .icon-wrapper i {
-  color: #0051a9;
+  color: #7c3aed;
   font-size: 1rem;
 }
 
 /* Submit button styling */
 .btn-primary {
-  background-color: #0051a9;
+  background-color: #7c3aed;
   border: none;
   padding: 0.5rem 1.25rem;
   font-weight: 500;
   font-size: 0.875rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+  border-radius: 6px;
+  transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
-  background-color: #003d80;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #6d28d9;
+  box-shadow: 0 6px 15px rgba(124, 58, 237, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Global dark theme overrides */
+body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.content-section {
+  background-color: #0a0a0a !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+/* Portal intro section */
+.portal-intro-section {
+  padding: 1.5rem;
+  border-radius: 8px;
+  background-color: #1e1e1e;
+  border: 1px solid #333333;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.portal-intro-section h1,
+.portal-intro-section h2,
+.portal-intro-section p {
+  color: #ffffff;
+}
+
+.portal-intro-section .lead {
+  color: #e2e8f0;
+}
+
+.portal-intro-section hr {
+  border: none;
+  height: 1px;
+  background-color: #333333;
+  opacity: 1;
+  margin: 1.25rem 0;
+}
+
+.highlight-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: #2d2d2d;
+  color: #e2e8f0;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid #444444;
+  transition: all 0.3s ease;
+}
+
+.highlight-badge:hover {
+  background-color: #333333;
+  border-color: #7c3aed;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.highlight-badge i {
+  color: #7c3aed;
+  margin-right: 8px;
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #ffffff, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-secondary {
+  background: linear-gradient(90deg, #e2e8f0, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.partnership-text {
+  color: #7c3aed;
+  -webkit-text-fill-color: #7c3aed;
 }
 
 /* Region option specific styling */
