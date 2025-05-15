@@ -596,6 +596,7 @@ class EdiPartnerForm(FlaskForm):
 class TreasuryAccountForm(FlaskForm):
     """Form for creating or updating a Treasury Account"""
     name = StringField('Account Name', validators=[DataRequired(), Length(min=3, max=100)])
+    account_name = StringField('Account Name', validators=[DataRequired(), Length(min=3, max=100)])  # Duplicate to match template
     account_type = SelectField('Account Type', coerce=int, validators=[DataRequired()])
     institution_id = SelectField('Financial Institution', coerce=int, validators=[DataRequired()])
     account_number = StringField('Account Number', validators=[DataRequired(), Length(min=5, max=50)])
@@ -604,9 +605,14 @@ class TreasuryAccountForm(FlaskForm):
     iban = StringField('IBAN', validators=[Optional(), Length(min=15, max=34)])
     currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
     initial_balance = DecimalField('Initial Balance', validators=[DataRequired(), NumberRange(min=0)], default=0.0)
+    opening_balance = DecimalField('Opening Balance', validators=[DataRequired(), NumberRange(min=0)], default=0.0)  # Duplicate to match template
     credit_limit = DecimalField('Credit Limit', validators=[Optional(), NumberRange(min=0)], default=0.0)
+    target_balance = DecimalField('Target Balance', validators=[Optional(), NumberRange(min=0)], default=0.0)
+    minimum_balance = DecimalField('Minimum Balance', validators=[Optional(), NumberRange(min=0)], default=0.0)
+    maximum_balance = DecimalField('Maximum Balance', validators=[Optional(), NumberRange(min=0)], default=0.0)
     is_active = BooleanField('Active', default=True)
     notes = TextAreaField('Notes', validators=[Optional(), Length(max=500)])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=500)])  # Duplicate to match template
     submit = SubmitField('Save Account')
 
     def __init__(self, *args, **kwargs):
@@ -656,6 +662,7 @@ class TreasuryInvestmentForm(FlaskForm):
     investment_type = SelectField('Investment Type', coerce=str, validators=[DataRequired()])
     institution_id = SelectField('Financial Institution', coerce=int, validators=[DataRequired()])
     name = StringField('Investment Name', validators=[DataRequired(), Length(min=3, max=100)])
+    investment_name = StringField('Investment Name', validators=[DataRequired(), Length(min=3, max=100)])  # Duplicate to match template
     amount = DecimalField('Investment Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=0.0)
     currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
     interest_rate = DecimalField('Interest Rate (%)', validators=[DataRequired(), NumberRange(min=0)], default=0.0)
