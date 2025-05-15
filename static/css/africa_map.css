@@ -210,17 +210,17 @@ body {
 /* Benefit Cards Styling */
 .benefit-card {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-left: 4px solid #0051a9 !important;
+  border-left: 4px solid #0077ff !important;
   margin-bottom: 1rem;
-  background-color: #ffffff !important;
-  border: 1px solid #e2e8f0;
+  background-color: #0a0a0a !important;
+  border: 1px solid #0066cc;
   border-radius: 4px;
 }
 
 .benefit-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-  border-color: #0077cc !important;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3) !important;
+  border-color: #00acff !important;
 }
 
 .benefit-card .card-body {
@@ -228,10 +228,11 @@ body {
 }
 
 .benefit-card h5 {
-  color: #0f172a;
-  font-weight: 600;
+  color: #4db2ff;
+  font-weight: 700;
   font-size: 1.125rem;
   margin-bottom: 0.75rem;
+  text-shadow: 0 0 2px rgba(0,0,0,0.8);
 }
 
 .benefit-icon-wrapper {
@@ -240,19 +241,25 @@ body {
   justify-content: center;
   width: 42px;
   height: 42px;
-  background-color: rgba(0, 81, 169, 0.1);
+  background-color: rgba(0, 119, 255, 0.15);
   border-radius: 6px;
   margin-bottom: 1rem;
+  border: 1px solid rgba(0, 153, 255, 0.3);
+  box-shadow: 0 0 10px rgba(0, 153, 255, 0.2);
 }
 
 .benefit-icon-wrapper i {
   font-size: 1.25rem;
-  color: #0051a9;
+  color: #4db2ff !important;
+  text-shadow: 0 0 6px rgba(0, 153, 255, 0.6);
 }
 
-.card-text {
-  color: #4b5563;
+.benefit-card .card-text {
+  color: #ffffff;
   margin-bottom: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 400;
 }
 
 /* Service Overview Section */
