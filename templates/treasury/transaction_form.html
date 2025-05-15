@@ -62,11 +62,11 @@
             <div class="row mb-3">
               <div class="col-md-6">
                 <div class="form-group">
-                  {{ form.from_account_id.label(class="form-label required-field") }}
-                  {{ form.from_account_id(class="form-select form-control-lg" + (" is-invalid" if form.from_account_id.errors else "")) }}
-                  {% if form.from_account_id.errors %}
+                  {{ form.source_account_id.label(class="form-label required-field") }}
+                  {{ form.source_account_id(class="form-select form-control-lg" + (" is-invalid" if form.source_account_id.errors else "")) }}
+                  {% if form.source_account_id.errors %}
                   <div class="invalid-feedback">
-                    {% for error in form.from_account_id.errors %}
+                    {% for error in form.source_account_id.errors %}
                     {{ error }}
                     {% endfor %}
                   </div>
@@ -76,11 +76,11 @@
               </div>
               <div class="col-md-6">
                 <div class="form-group">
-                  {{ form.to_account_id.label(class="form-label required-field") }}
-                  {{ form.to_account_id(class="form-select form-control-lg" + (" is-invalid" if form.to_account_id.errors else "")) }}
-                  {% if form.to_account_id.errors %}
+                  {{ form.destination_account_id.label(class="form-label required-field") }}
+                  {{ form.destination_account_id(class="form-select form-control-lg" + (" is-invalid" if form.destination_account_id.errors else "")) }}
+                  {% if form.destination_account_id.errors %}
                   <div class="invalid-feedback">
-                    {% for error in form.to_account_id.errors %}
+                    {% for error in form.destination_account_id.errors %}
                     {{ error }}
                     {% endfor %}
                   </div>
@@ -174,11 +174,11 @@
             </div>
             
             <div class="form-group mb-3">
-              {{ form.reference_number.label(class="form-label") }}
-              {{ form.reference_number(class="form-control" + (" is-invalid" if form.reference_number.errors else "")) }}
-              {% if form.reference_number.errors %}
+              {{ form.reference.label(class="form-label") }}
+              {{ form.reference(class="form-control" + (" is-invalid" if form.reference.errors else "")) }}
+              {% if form.reference.errors %}
               <div class="invalid-feedback">
-                {% for error in form.reference_number.errors %}
+                {% for error in form.reference.errors %}
                 {{ error }}
                 {% endfor %}
               </div>
@@ -285,8 +285,8 @@
     // Get form elements
     const form = document.querySelector('form.needs-validation');
     const submitButton = document.getElementById('submit-button');
-    const fromAccountSelect = document.getElementById('from_account_id');
-    const toAccountSelect = document.getElementById('to_account_id');
+    const fromAccountSelect = document.getElementById('source_account_id');
+    const toAccountSelect = document.getElementById('destination_account_id');
     const transactionTypeSelect = document.getElementById('transaction_type');
     const amountInput = document.getElementById('amount');
     
@@ -442,7 +442,7 @@
     toAccountSelect.tabIndex = 2;
     transactionTypeSelect.tabIndex = 3;
     amountInput.tabIndex = 4;
-    document.getElementById('reference_number').tabIndex = 5;
+    document.getElementById('reference').tabIndex = 5;
     document.getElementById('description').tabIndex = 6;
     document.querySelector('textarea[name="additional_notes"]').tabIndex = 7;
     submitButton.tabIndex = 8;

@@ -348,41 +348,41 @@ def new_transaction():
     # Populate account choices
     accounts = TreasuryAccount.query.filter_by(is_active=True).order_by(TreasuryAccount.name).all()
     # Add an "External Account" option for external transfers
-    form.from_account_id.choices = [(0, 'External Account')] + [(a.id, a.name) for a in accounts]
-    form.to_account_id.choices = [(0, 'External Account')] + [(a.id, a.name) for a in accounts]
+    form.source_account_id.choices = [(0, 'External Account')] + [(a.id, a.name) for a in accounts]
+    form.destination_account_id.choices = [(0, 'External Account')] + [(a.id, a.name) for a in accounts]
     
-    # Pre-select the from_account_id from query string if provided
+    # Pre-select the source_account_id from query string if provided
     from_account_id = request.args.get('from_account_id', type=int)
     if from_account_id and from_account_id in [a.id for a in accounts]:
-        form.from_account_id.data = from_account_id
+        form.source_account_id.data = from_account_id
     
-    # Pre-select the to_account_id from query string if provided
+    # Pre-select the destination_account_id from query string if provided
     to_account_id = request.args.get('to_account_id', type=int)
     if to_account_id and to_account_id in [a.id for a in accounts]:
-        form.to_account_id.data = to_account_id
+        form.destination_account_id.data = to_account_id
     
     # Default exchange rate
     exchange_rate = 1.0
     
-    # Try to set default currency from from_account if available
-    if form.from_account_id.data and form.from_account_id.data > 0:
-        from_account = TreasuryAccount.query.get(form.from_account_id.data)
+    # Try to set default currency from source_account if available
+    if form.source_account_id.data and form.source_account_id.data > 0:
+        from_account = TreasuryAccount.query.get(form.source_account_id.data)
         if from_account:
             form.currency.data = from_account.currency
     
     if form.validate_on_submit():
         # Generate a unique transaction reference if not provided
-        reference_number = form.reference_number.data
+        reference_number = form.reference.data
         if not reference_number:
             reference_number = f"TXN-{generate_unique_id()}"
         
         # Get source and destination accounts if they exist
         from_account = None
         to_account = None
-        if form.from_account_id.data > 0:
-            from_account = TreasuryAccount.query.get(form.from_account_id.data)
-        if form.to_account_id.data > 0:
-            to_account = TreasuryAccount.query.get(form.to_account_id.data)
+        if form.source_account_id.data > 0:
+            from_account = TreasuryAccount.query.get(form.source_account_id.data)
+        if form.destination_account_id.data > 0:
+            to_account = TreasuryAccount.query.get(form.destination_account_id.data)
         
         # Get the currency selected by the user
         currency = form.currency.data
@@ -423,15 +423,15 @@ def new_transaction():
             created_by=current_user.id
         )
         
-        if form.from_account_id.data > 0:
-            transaction.from_account_id = form.from_account_id.data
+        if form.source_account_id.data > 0:
+            transaction.from_account_id = form.source_account_id.data
         
-        if form.to_account_id.data > 0:
-            transaction.to_account_id = form.to_account_id.data
+        if form.destination_account_id.data > 0:
+            transaction.to_account_id = form.destination_account_id.data
         
         # Validate that not both from and to accounts are external
         if transaction.from_account_id is None and transaction.to_account_id is None:
-            form.from_account_id.errors.append('Both source and destination cannot be external accounts.')
+            form.source_account_id.errors.append('Both source and destination cannot be external accounts.')
             return render_template(
                 'treasury/transaction_form.html',
                 form=form,
@@ -444,10 +444,10 @@ def new_transaction():
         flash(f'Transaction {transaction.transaction_id} has been created and is pending approval.', 'success')
         return redirect(url_for('treasury.view_transaction', transaction_id=transaction.id))
     
-    # Check if from_account_id is set and get the account for the template
+    # Check if source_account_id is set and get the account for the template
     selected_from_account = None
-    if form.from_account_id.data and form.from_account_id.data > 0:
-        selected_from_account = TreasuryAccount.query.get(form.from_account_id.data)
+    if form.source_account_id.data and form.source_account_id.data > 0:
+        selected_from_account = TreasuryAccount.query.get(form.source_account_id.data)
     
     return render_template(
         'treasury/transaction_form.html',
@@ -1040,7 +1040,7 @@ def make_loan_payment(loan_id):
     
     # Populate account choices
     accounts = TreasuryAccount.query.filter_by(is_active=True).order_by(TreasuryAccount.name).all()
-    form.from_account_id.choices = [(a.id, f"{a.name} ({format_currency(a.available_balance, a.currency)})") for a in accounts]
+    form.source_account_id.choices = [(a.id, f"{a.name} ({format_currency(a.available_balance, a.currency)})") for a in accounts]
     
     # Pre-fill with suggested values
     if request.method == 'GET':
@@ -1049,7 +1049,7 @@ def make_loan_payment(loan_id):
         form.interest_amount.data = loan.calculate_interest_payment(form.payment_amount.data)
     
     if form.validate_on_submit():
-        account = TreasuryAccount.query.get_or_404(form.from_account_id.data)
+        account = TreasuryAccount.query.get_or_404(form.source_account_id.data)
         
         # Check if account has sufficient funds
         if account.available_balance < form.payment_amount.data:
@@ -1064,7 +1064,7 @@ def make_loan_payment(loan_id):
         transaction = TreasuryTransaction(
             transaction_id=f"LPMT-{generate_unique_id()}",
             transaction_type=TreasuryTransactionType.LOAN_PAYMENT,
-            from_account_id=form.from_account_id.data,
+            from_account_id=form.source_account_id.data,
             amount=form.payment_amount.data,
             currency=loan.currency,
             description=f"Loan payment for {loan.loan_id}: Principal: {format_currency(form.principal_amount.data, loan.currency)}, Interest: {format_currency(form.interest_amount.data, loan.currency)}",

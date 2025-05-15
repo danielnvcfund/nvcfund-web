@@ -813,6 +813,10 @@ class LoanPaymentForm(FlaskForm):
     payment_date = DateField('Payment Date', format='%Y-%m-%d', validators=[DataRequired()])
     calculate_amount = BooleanField('Calculate Amount Automatically', default=True)
     
+    source_account_id = SelectField('Source Account', coerce=int, validators=[DataRequired()])
+    principal_amount = DecimalField('Principal Amount', validators=[Optional(), NumberRange(min=0.01)], default=0.0)
+    interest_amount = DecimalField('Interest Amount', validators=[Optional(), NumberRange(min=0.0)], default=0.0)
+    
     notes = TextAreaField('Notes', validators=[Optional(), Length(max=500)])
     submit = SubmitField('Make Payment')
 
