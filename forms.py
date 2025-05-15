@@ -1408,14 +1408,14 @@ class CorrespondentBankApplicationForm(FlaskForm):
     # Services and preferences
     services = SelectMultipleField('Services of Interest',
                                   choices=[
-                                      ('USD Correspondent Account', 'USD Correspondent Account'),
-                                      ('EUR Correspondent Account', 'EUR Correspondent Account'),
-                                      ('African Currency Accounts', 'African Currency Accounts'),
-                                      ('NVCT Stablecoin Account', 'NVCT Stablecoin Account'),
-                                      ('Foreign Exchange Services', 'Foreign Exchange Services'),
-                                      ('Trade Finance Services', 'Trade Finance Services'),
-                                      ('Project Finance Access', 'Project Finance Access'),
-                                      ('API Integration', 'API Integration')
+                                      ('USD_correspondent', 'USD Correspondent Account'),
+                                      ('EUR_correspondent', 'EUR Correspondent Account'),
+                                      ('african_currencies', 'African Currency Accounts'),
+                                      ('nvct_stablecoin', 'NVCT Stablecoin Account'),
+                                      ('forex_services', 'Foreign Exchange Services'),
+                                      ('trade_finance', 'Trade Finance Services'),
+                                      ('project_finance', 'Project Finance Access'),
+                                      ('api_integration', 'API Integration')
                                   ])
     expected_volume = SelectField('Expected Monthly Transaction Volume',
                                  choices=[
@@ -1431,10 +1431,10 @@ class CorrespondentBankApplicationForm(FlaskForm):
                                  validators=[DataRequired()])
     african_regions = SelectMultipleField('African Regions of Interest',
                                         choices=[
-                                            ('West Africa', 'West Africa'),
-                                            ('East Africa', 'East Africa'),
-                                            ('Southern Africa', 'Southern Africa'),
-                                            ('North Africa', 'North Africa')
+                                            ('west_africa', 'West Africa'),
+                                            ('east_africa', 'East Africa'),
+                                            ('southern_africa', 'Southern Africa'),
+                                            ('north_africa', 'North Africa')
                                         ])
     additional_info = TextAreaField('Additional Information', validators=[Optional(), Length(max=1000)])
     

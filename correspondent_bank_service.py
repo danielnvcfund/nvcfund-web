@@ -8,7 +8,7 @@ import string
 from datetime import datetime
 import logging
 
-from flask import render_template
+from flask import render_template, url_for
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
@@ -115,7 +115,8 @@ def send_applicant_confirmation(application):
             'emails/correspondent_bank_application_confirmation.html',
             institution=institution_name,
             contact_name=contact_name,
-            reference=reference_number
+            reference=reference_number,
+            submission_date=application.submission_date.strftime('%B %d, %Y %H:%M UTC')
         )
         
         # Send the email
@@ -156,12 +157,16 @@ def send_admin_notification(application):
         services = json.loads(application.services)
         regions = json.loads(application.african_regions)
         
+        # Hardcode the URL for viewing the application in the admin panel
+        view_url = f"/correspondent/applications/{application.reference_number}"
+        
         email_body = render_template(
             'emails/new_correspondent_bank_application.html',
             application=application,
             services=services,
             regions=regions,
-            submission_date=application.submission_date.strftime('%B %d, %Y %H:%M UTC')
+            submission_date=application.submission_date.strftime('%B %d, %Y %H:%M UTC'),
+            view_url=view_url
         )
         
         # Send to each admin
@@ -252,12 +257,19 @@ def get_application_statistics():
         
         # Get applications by region (using JSON functions)
         region_stats = {}
-        for region in ['West Africa', 'East Africa', 'Southern Africa', 'North Africa']:
-            # This query counts applications where the african_regions JSON array contains the region
+        region_mapping = {
+            'west_africa': 'West Africa',
+            'east_africa': 'East Africa',
+            'southern_africa': 'Southern Africa',
+            'north_africa': 'North Africa'
+        }
+        
+        for region_code, region_name in region_mapping.items():
+            # This query counts applications where the african_regions JSON array contains the region code
             count = CorrespondentBankApplication.query.filter(
-                CorrespondentBankApplication.african_regions.like(f'%{region}%')
+                CorrespondentBankApplication.african_regions.like(f'%{region_code}%')
             ).count()
-            region_stats[region] = count
+            region_stats[region_name] = count
             
         return {
             'total': total,

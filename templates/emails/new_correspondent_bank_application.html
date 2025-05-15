@@ -152,15 +152,33 @@
                 
                 <p><strong>Services of Interest:</strong></p>
                 <div>
-                    {% for service in services %}
-                        <span class="tag">{{ service }}</span>
+                    {% set service_labels = {
+                        'USD_correspondent': 'USD Correspondent Account',
+                        'EUR_correspondent': 'EUR Correspondent Account',
+                        'african_currencies': 'African Currency Accounts',
+                        'nvct_stablecoin': 'NVCT Stablecoin Account',
+                        'forex_services': 'Foreign Exchange Services',
+                        'trade_finance': 'Trade Finance Services',
+                        'project_finance': 'Project Finance Access',
+                        'api_integration': 'API Integration'
+                    } %}
+                    
+                    {% for service_code in services %}
+                        <span class="tag">{{ service_labels.get(service_code, service_code) }}</span>
                     {% endfor %}
                 </div>
                 
                 <p><strong>African Regions of Interest:</strong></p>
                 <div>
-                    {% for region in regions %}
-                        <span class="tag africa-tag">{{ region }}</span>
+                    {% set region_labels = {
+                        'west_africa': 'West Africa',
+                        'east_africa': 'East Africa',
+                        'southern_africa': 'Southern Africa',
+                        'north_africa': 'North Africa'
+                    } %}
+                    
+                    {% for region_code in regions %}
+                        <span class="tag africa-tag">{{ region_labels.get(region_code, region_code) }}</span>
                     {% endfor %}
                 </div>
                 
@@ -172,7 +190,7 @@
                 {% endif %}
             </div>
             
-            <a href="{{ url_for('correspondent.view_application', reference=application.reference_number, _external=True) }}" class="button">View Full Application</a>
+            <a href="{{ view_url }}" class="button">View Full Application</a>
             
             <p style="margin-top: 20px;">Please review this application and follow up with the applicant as appropriate.</p>
         </div>

@@ -74,36 +74,56 @@
                 
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="card mb-3 border-0 bg-white shadow-sm">
+                        <div class="card mb-3 border-0 bg-white shadow-sm benefit-card">
                             <div class="card-body">
-                                <h5><i class="fas fa-chart-line text-warning"></i> First-Mover Advantage</h5>
-                                <p class="small">Establish your presence in high-growth African markets with untapped potential.</p>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="benefit-icon-wrapper me-3">
+                                        <i class="fas fa-chart-line text-warning"></i>
+                                    </div>
+                                    <h5 class="mb-0 fw-bold">First-Mover Advantage</h5>
+                                </div>
+                                <p class="card-text">Establish your presence in high-growth African markets with untapped potential.</p>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="card mb-3 border-0 bg-white shadow-sm">
+                        <div class="card mb-3 border-0 bg-white shadow-sm benefit-card">
                             <div class="card-body">
-                                <h5><i class="fas fa-money-bill-wave text-warning"></i> Specialized Currency Corridors</h5>
-                                <p class="small">Access to challenging currency corridors with competitive rates.</p>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="benefit-icon-wrapper me-3">
+                                        <i class="fas fa-money-bill-wave text-warning"></i>
+                                    </div>
+                                    <h5 class="mb-0 fw-bold">Specialized Currency Corridors</h5>
+                                </div>
+                                <p class="card-text">Access to challenging currency corridors with competitive rates.</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="card mb-3 border-0 bg-white shadow-sm">
+                        <div class="card mb-3 border-0 bg-white shadow-sm benefit-card">
                             <div class="card-body">
-                                <h5><i class="fas fa-shield-alt text-warning"></i> Risk Mitigation</h5>
-                                <p class="small">Specialized expertise in managing African market risks and compliance.</p>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="benefit-icon-wrapper me-3">
+                                        <i class="fas fa-shield-alt text-warning"></i>
+                                    </div>
+                                    <h5 class="mb-0 fw-bold">Risk Mitigation</h5>
+                                </div>
+                                <p class="card-text">Specialized expertise in managing African market risks and compliance.</p>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="card mb-3 border-0 bg-white shadow-sm">
+                        <div class="card mb-3 border-0 bg-white shadow-sm benefit-card">
                             <div class="card-body">
-                                <h5><i class="fas fa-globe-africa text-warning"></i> Pan-African Gateway</h5>
-                                <p class="small">Single relationship for access to multiple African markets and institutions.</p>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="benefit-icon-wrapper me-3">
+                                        <i class="fas fa-globe-africa text-warning"></i>
+                                    </div>
+                                    <h5 class="mb-0 fw-bold">Pan-African Gateway</h5>
+                                </div>
+                                <p class="card-text">Single relationship for access to multiple African markets and institutions.</p>
                             </div>
                         </div>
                     </div>
@@ -323,7 +343,7 @@
                             <h5>Services & Markets</h5>
                             <hr>
                             <div class="form-group mb-3">
-                                {{ form.services.label(class="form-control-label font-weight-bold") }}
+                                {{ form.services.label(class="form-control-label fw-bold mb-2") }}
                                 {% if form.services.errors %}
                                     {{ form.services(class="form-control is-invalid") }}
                                     <div class="invalid-feedback">
@@ -332,13 +352,17 @@
                                         {% endfor %}
                                     </div>
                                 {% else %}
-                                    <div class="select-multiple-wrapper border rounded p-2">
-                                        {% for subfield in form.services %}
-                                            <div class="form-check">
-                                                {{ subfield(class="form-check-input") }}
-                                                {{ subfield.label(class="form-check-label") }}
-                                            </div>
-                                        {% endfor %}
+                                    <div class="select-multiple-wrapper border rounded p-3 bg-light">
+                                        <div class="row">
+                                            {% for subfield in form.services %}
+                                                <div class="col-md-6 mb-2">
+                                                    <div class="form-check service-option py-2">
+                                                        {{ subfield(class="form-check-input") }}
+                                                        {{ subfield.label(class="form-check-label") }}
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
                                     </div>
                                 {% endif %}
                                 <small class="form-text text-muted">Select all services that interest you</small>
@@ -359,7 +383,7 @@
                             </div>
                             
                             <div class="form-group mb-3">
-                                {{ form.african_regions.label(class="form-control-label font-weight-bold") }}
+                                {{ form.african_regions.label(class="form-control-label fw-bold mb-2") }}
                                 {% if form.african_regions.errors %}
                                     {{ form.african_regions(class="form-control is-invalid") }}
                                     <div class="invalid-feedback">
@@ -368,13 +392,17 @@
                                         {% endfor %}
                                     </div>
                                 {% else %}
-                                    <div class="select-multiple-wrapper border rounded p-2">
-                                        {% for subfield in form.african_regions %}
-                                            <div class="form-check">
-                                                {{ subfield(class="form-check-input") }}
-                                                {{ subfield.label(class="form-check-label") }}
-                                            </div>
-                                        {% endfor %}
+                                    <div class="select-multiple-wrapper border rounded p-3 bg-light">
+                                        <div class="row">
+                                            {% for subfield in form.african_regions %}
+                                                <div class="col-md-6 mb-2">
+                                                    <div class="form-check region-option py-2">
+                                                        {{ subfield(class="form-check-input") }}
+                                                        {{ subfield.label(class="form-check-label") }}
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
                                     </div>
                                 {% endif %}
                                 <small class="form-text text-muted">Select regions of interest in Africa</small>

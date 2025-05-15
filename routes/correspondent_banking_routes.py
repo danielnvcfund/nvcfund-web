@@ -93,7 +93,9 @@ def submit_application():
         # Form validation failed
         for field, errors in form.errors.items():
             for error in errors:
-                flash(f"{getattr(form, field).label.text}: {error}", 'danger')
+                # Handle the case where field might be None
+                field_label = getattr(form, field).label.text if hasattr(getattr(form, field, None), 'label') else field
+                flash(f"{field_label}: {error}", 'danger')
         return render_template('correspondent/portal.html', form=form)
 
 

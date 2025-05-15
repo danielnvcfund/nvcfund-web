@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application Received - NVC Banking Platform</title>
+    <title>Application Confirmation - NVC Banking Platform</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,11 +35,28 @@
             padding: 10px;
             border-top: 1px solid #eee;
         }
-        .important {
-            background-color: #e9f5ff;
-            border-left: 4px solid #0d6efd;
+        .highlight {
+            background-color: #fff8e6;
+            border-left: 4px solid #ffc107;
             padding: 15px;
             margin: 20px 0;
+        }
+        .next-step {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        .next-step-number {
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 25px;
+            margin-right: 10px;
         }
         .button {
             display: inline-block;
@@ -48,50 +65,67 @@
             padding: 10px 20px;
             text-decoration: none;
             border-radius: 5px;
-            margin-top: 20px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Correspondent Banking Application Received</h1>
+            <h1>Application Confirmation</h1>
+            <p>Thank you for your interest in NVC Banking Platform</p>
         </div>
         
         <div class="content">
             <p>Dear {{ contact_name }},</p>
             
-            <p>Thank you for your interest in becoming a correspondent banking partner with NVC Banking Platform. We have received your application for <strong>{{ institution }}</strong>.</p>
+            <p>Thank you for submitting your application for correspondent banking services with NVC Banking Platform. We have received your application and will begin the review process shortly.</p>
             
-            <div class="important">
-                <p><strong>Application Reference:</strong> {{ reference }}</p>
-                <p>Please save this reference number for your records. You will need it for any queries regarding your application.</p>
+            <div class="highlight">
+                <h3 style="margin-top: 0;">Application Details</h3>
+                <p><strong>Institution:</strong> {{ institution }}</p>
+                <p><strong>Reference Number:</strong> {{ reference }}</p>
+                <p><strong>Submission Date:</strong> {{ submission_date }}</p>
             </div>
             
-            <h2>What Happens Next?</h2>
-            <p>Our partnership team will review your application, which typically takes 3-5 business days. After initial review, a partnership manager will contact you at the email address or phone number provided in your application to discuss the next steps.</p>
+            <h3>What happens next?</h3>
             
-            <h2>The Partnership Process</h2>
-            <ol>
-                <li><strong>Application Review</strong> (Current stage)</li>
-                <li><strong>Initial Consultation</strong> with a partnership manager</li>
-                <li><strong>Documentation Exchange</strong> and due diligence</li>
-                <li><strong>Account Setup & Integration</strong> with systems</li>
-                <li><strong>Go-Live</strong> with correspondent banking services</li>
-            </ol>
+            <div class="next-step">
+                <span class="next-step-number">1</span>
+                <strong>Application Review</strong>
+                <p>Our team will review your application details and assess compatibility with our correspondent banking network.</p>
+            </div>
             
-            <p>If you have any questions before we contact you, please feel free to reach out to our partnership team at <a href="mailto:partnerships@nvcplatform.net">partnerships@nvcplatform.net</a>.</p>
+            <div class="next-step">
+                <span class="next-step-number">2</span>
+                <strong>Additional Information</strong>
+                <p>We may contact you for additional information or documentation if needed to complete the review process.</p>
+            </div>
             
-            <p>We look forward to exploring a potential banking partnership with your institution.</p>
+            <div class="next-step">
+                <span class="next-step-number">3</span>
+                <strong>Decision Notification</strong>
+                <p>You will receive a decision notification by email once the review is complete.</p>
+            </div>
+            
+            <div class="next-step">
+                <span class="next-step-number">4</span>
+                <strong>Onboarding Process</strong>
+                <p>If approved, we will guide you through the onboarding process to establish the correspondent banking relationship.</p>
+            </div>
+            
+            <p>Please keep your reference number for future correspondence. If you have any questions regarding your application, please contact our correspondent banking team.</p>
+            
+            <p>We appreciate your interest in becoming a correspondent banking partner with NVC Banking Platform and look forward to the potential of working together.</p>
             
             <p>Best regards,</p>
-            <p>The NVC Banking Platform Partnership Team</p>
+            <p>The NVC Banking Team</p>
         </div>
         
         <div class="footer">
-            <p>This email was sent to you because you submitted an application through the NVC Banking Platform Correspondent Banking Portal.</p>
+            <p>This is an automated email sent by the NVC Banking Platform. Please do not reply to this email.</p>
+            <p>If you need assistance, please contact us through our <a href="/contact">support portal</a>.</p>
             <p>&copy; 2025 NVC Banking Platform. All rights reserved.</p>
-            <p>Please do not reply to this automated email.</p>
         </div>
     </div>
 </body>
