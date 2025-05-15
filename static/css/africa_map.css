@@ -97,11 +97,11 @@ body {
 /* Africa Map Styling */
 .africa-focus-section {
   background-color: #111111 !important;
-  border: 1px solid #333333;
+  border: 1px solid #0066cc;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   padding: 2rem;
-  border-left: 4px solid #7c3aed;
+  border-left: 4px solid #0077ff;
   position: relative;
   margin-top: 1.5rem;
 }
@@ -298,21 +298,21 @@ body {
 }
 
 .service-overview-section .card-title {
-  color: #ffffff;
+  color: #0077ff;
   font-weight: 600;
   font-size: 1rem;
   margin-top: 0.5rem;
 }
 
 .service-overview-section .card-text {
-  color: #a0aec0;
+  color: #e2e8f0;
   font-size: 0.875rem;
   line-height: 1.5;
 }
 
 .service-overview-section .service-card {
-  background-color: #1e1e1e;
-  border: 1px solid #333333;
+  background-color: #111111;
+  border: 1px solid #0066cc;
   border-radius: 8px;
   transition: all 0.3s ease;
   overflow: hidden;
@@ -323,8 +323,8 @@ body {
 
 .service-overview-section .service-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  border-color: #7c3aed;
+  box-shadow: 0 10px 25px rgba(0, 102, 204, 0.3);
+  border-color: #00acff;
 }
 
 .service-icon-wrapper {
@@ -360,12 +360,12 @@ body {
   left: 0;
   right: 0;
   height: 5px;
-  background: linear-gradient(90deg, #7c3aed, #c084fc);
+  background: linear-gradient(90deg, #0077ff, #00ddff);
   z-index: 1;
 }
 
 .card-header.bg-primary {
-  background-color: #7c3aed !important;
+  background-color: #0066cc !important;
   border-bottom: 0;
   padding: 1.25rem 1.5rem;
   position: relative;
@@ -393,7 +393,7 @@ body {
   background-color: #1e1e1e;
   border-radius: 8px;
   border: 1px solid #333333;
-  border-left: 3px solid #7c3aed;
+  border-left: 3px solid #0066cc;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -436,8 +436,8 @@ body {
 
 .form-control:focus {
   background-color: #333333;
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+  border-color: #0077ff;
+  box-shadow: 0 0 0 2px rgba(0, 119, 255, 0.2);
   color: #ffffff;
 }
 
@@ -454,8 +454,8 @@ body {
 
 .form-select:focus {
   background-color: #333333;
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+  border-color: #0077ff;
+  box-shadow: 0 0 0 2px rgba(0, 119, 255, 0.2);
 }
 
 .select-multiple-wrapper {
@@ -484,17 +484,17 @@ body {
 
 .custom-checkbox:hover {
   background-color: #333333;
-  border-color: #7c3aed;
+  border-color: #0077ff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Service checkboxes with distinct colors */
 .custom-checkbox:nth-child(odd) {
-  border-left: 2px solid #7c3aed;
+  border-left: 2px solid #0077ff;
 }
 
 .custom-checkbox:nth-child(even) {
-  border-left: 2px solid #8b5cf6;
+  border-left: 2px solid #00acff;
 }
 
 .custom-checkbox-input {
@@ -522,19 +522,19 @@ body {
   height: 40px;
   border-radius: 10px;
   margin-right: 0.75rem;
-  background-color: #f5f3ff;
+  background-color: #101010;
   transition: all 0.3s ease;
-  border: 1px solid rgba(124, 58, 237, 0.2);
+  border: 1px solid rgba(0, 119, 255, 0.2);
 }
 
 .custom-checkbox-input:checked + .custom-checkbox-label {
   font-weight: 700;
-  color: #a78bfa;
+  color: #00acff;
 }
 
 .custom-checkbox-input:checked + .custom-checkbox-label .icon-wrapper {
-  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
-  box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+  background: linear-gradient(135deg, #0066cc, #00acff);
+  box-shadow: 0 0 10px rgba(0, 119, 255, 0.5);
   transform: rotate(5deg);
 }
 
@@ -550,25 +550,25 @@ body {
 }
 
 .service-option .icon-wrapper i {
-  color: #7c3aed;
+  color: #0077ff;
   font-size: 1rem;
 }
 
 /* Submit button styling */
 .btn-primary {
-  background-color: #7c3aed;
+  background-color: #0066cc;
   border: none;
   padding: 0.5rem 1.25rem;
   font-weight: 500;
   font-size: 0.875rem;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
   border-radius: 6px;
   transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
-  background-color: #6d28d9;
-  box-shadow: 0 6px 15px rgba(124, 58, 237, 0.4);
+  background-color: #0077ff;
+  box-shadow: 0 6px 15px rgba(0, 119, 255, 0.4);
   transform: translateY(-2px);
 }
 
@@ -614,46 +614,46 @@ body {
 .highlight-badge {
   display: inline-flex;
   align-items: center;
-  background-color: #2d2d2d;
+  background-color: #111111;
   color: #e2e8f0;
   padding: 0.5rem 1rem;
   border-radius: 4px;
   font-size: 0.875rem;
   font-weight: 500;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  border: 1px solid #444444;
+  border: 1px solid #0066cc;
   transition: all 0.3s ease;
 }
 
 .highlight-badge:hover {
-  background-color: #333333;
-  border-color: #7c3aed;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background-color: #1a1a1a;
+  border-color: #00acff;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
   transform: translateY(-2px);
 }
 
 .highlight-badge i {
-  color: #7c3aed;
+  color: #0077ff;
   margin-right: 8px;
 }
 
 .text-gradient {
-  background: linear-gradient(90deg, #ffffff, #a78bfa);
+  background: linear-gradient(90deg, #ffffff, #0077ff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .text-gradient-secondary {
-  background: linear-gradient(90deg, #e2e8f0, #7c3aed);
+  background: linear-gradient(90deg, #e2e8f0, #0066cc);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .partnership-text {
-  color: #7c3aed;
-  -webkit-text-fill-color: #7c3aed;
+  color: #0077ff;
+  -webkit-text-fill-color: #0077ff;
 }
 
 /* Region option specific styling */
