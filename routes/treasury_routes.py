@@ -20,7 +20,7 @@ from models import (
     User, FinancialInstitution, FinancialInstitutionType, Transaction, TransactionStatus, TransactionType,
     TreasuryAccount, TreasuryAccountType, TreasuryTransaction, TreasuryTransactionType,
     TreasuryInvestment, InvestmentType, InvestmentStatus,
-    TreasuryLoan, LoanType, LoanStatus, InterestType,
+    TreasuryLoan, LoanType, LoanStatus, InterestType, PaymentFrequency,
     CashFlowForecast, CashFlowDirection, RecurrenceType
 )
 from forms import (
@@ -930,7 +930,7 @@ def new_loan():
             interest_rate=form.interest_rate.data,
             reference_rate=form.reference_rate.data,
             margin=form.margin.data,
-            payment_frequency=form.payment_frequency.data,
+            payment_frequency=PaymentFrequency(form.payment_frequency.data),
             start_date=form.start_date.data,
             maturity_date=form.maturity_date.data,
             next_payment_date=form.first_payment_date.data,

@@ -170,6 +170,42 @@
               </div>
             </div>
             
+            <!-- Reference Rate and Margin fields -->
+            <div class="row mb-3" id="reference-rate-section">
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form.reference_rate.label(class="form-label") }}
+                  {{ form.reference_rate(class="form-control", placeholder="e.g., LIBOR, SOFR") }}
+                  {% if form.reference_rate.errors %}
+                  <div class="text-danger">
+                    {% for error in form.reference_rate.errors %}
+                    <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Reference rate for variable rate loans.</small>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form.margin.label(class="form-label") }}
+                  <div class="input-group">
+                    {{ form.margin(class="form-control") }}
+                    <span class="input-group-text">%</span>
+                  </div>
+                  {% if form.margin.errors %}
+                  <div class="text-danger">
+                    {% for error in form.margin.errors %}
+                    <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  <small class="form-text text-muted">Margin added to reference rate.</small>
+                </div>
+              </div>
+            </div>
+            
             <div class="row mb-3">
               <div class="col-md-4">
                 <div class="form-group">
@@ -368,6 +404,25 @@
         }
       }
     });
+    
+    // Show/hide reference rate fields based on interest type
+    const interestTypeSelect = document.getElementById('interest_type');
+    const referenceRateSection = document.getElementById('reference-rate-section');
+    
+    function toggleReferenceRateFields() {
+      // If variable interest rate is selected, show reference rate fields
+      if (interestTypeSelect.value === 'variable') {
+        referenceRateSection.style.display = 'flex';
+      } else {
+        referenceRateSection.style.display = 'none';
+      }
+    }
+    
+    // Initial setup
+    toggleReferenceRateFields();
+    
+    // Add change event listener
+    interestTypeSelect.addEventListener('change', toggleReferenceRateFields);
     
     // Institution modal handling
     const addInstitutionBtn = document.getElementById('btn-add-institution');
