@@ -653,7 +653,8 @@ class TreasuryTransactionForm(FlaskForm):
 class TreasuryInvestmentForm(FlaskForm):
     """Form for creating or updating a Treasury Investment"""
     account_id = SelectField('Treasury Account', coerce=int, validators=[DataRequired()])
-    investment_type = SelectField('Investment Type', coerce=int, validators=[DataRequired()])
+    investment_type = SelectField('Investment Type', coerce=str, validators=[DataRequired()])
+    institution_id = SelectField('Financial Institution', coerce=int, validators=[DataRequired()])
     name = StringField('Investment Name', validators=[DataRequired(), Length(min=3, max=100)])
     amount = DecimalField('Investment Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=0.0)
     currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
@@ -677,7 +678,16 @@ class TreasuryInvestmentForm(FlaskForm):
             from models import TreasuryAccount, InvestmentType
             accounts = TreasuryAccount.query.filter_by(is_active=True).all()
             self.account_id.choices = [(a.id, f"{a.name} ({a.currency})") for a in accounts]
-            self.investment_type.choices = [(t.id, t.name) for t in InvestmentType.query.all()]
+            # Investment type is an Enum, not a database model, so we handle it differently
+            self.investment_type.choices = [
+                (InvestmentType.CERTIFICATE_OF_DEPOSIT.value, 'Certificate of Deposit'),
+                (InvestmentType.MONEY_MARKET.value, 'Money Market'),
+                (InvestmentType.TREASURY_BILL.value, 'Treasury Bill'),
+                (InvestmentType.BOND.value, 'Bond'),
+                (InvestmentType.COMMERCIAL_PAPER.value, 'Commercial Paper'),
+                (InvestmentType.OVERNIGHT_INVESTMENT.value, 'Overnight Investment'),
+                (InvestmentType.TIME_DEPOSIT.value, 'Time Deposit')
+            ]
             
             # Set default start date to today
             if not self.start_date.data:

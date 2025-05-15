@@ -597,6 +597,17 @@ def new_investment():
     institutions = FinancialInstitution.query.order_by(FinancialInstitution.name).all()
     form.institution_id.choices = [(i.id, i.name) for i in institutions]
     
+    # Populate investment type choices
+    form.investment_type.choices = [
+        (InvestmentType.CERTIFICATE_OF_DEPOSIT.value, 'Certificate of Deposit'),
+        (InvestmentType.MONEY_MARKET.value, 'Money Market'),
+        (InvestmentType.TREASURY_BILL.value, 'Treasury Bill'),
+        (InvestmentType.BOND.value, 'Bond'),
+        (InvestmentType.COMMERCIAL_PAPER.value, 'Commercial Paper'),
+        (InvestmentType.OVERNIGHT_INVESTMENT.value, 'Overnight Investment'),
+        (InvestmentType.TIME_DEPOSIT.value, 'Time Deposit')
+    ]
+    
     # Populate currency choices with categorized options
     form.currency.choices = [
         ('NVCT', 'NVCT - NVC Token'),
@@ -624,7 +635,7 @@ def new_investment():
         account = TreasuryAccount.query.get_or_404(form.account_id.data)
         
         # Check if account has sufficient funds
-        if account.available_balance < form.principal_amount.data:
+        if account.available_balance < form.amount.data:
             flash('Insufficient funds in the selected account.', 'danger')
             return render_template(
                 'treasury/investment_form.html',
@@ -635,17 +646,20 @@ def new_investment():
         # Generate a unique investment ID if not provided
         reference_id = f"INV-{generate_unique_id()}"
         
+        # Get the investment type enum value from the form string value
+        investment_type = InvestmentType(form.investment_type.data)
+        
         investment = TreasuryInvestment(
             investment_id=reference_id,
             account_id=form.account_id.data,
-            investment_type=InvestmentType(form.investment_type.data),
-            institution_id=form.institution_id.data,  # Using institution instead of counterparty
-            amount=form.principal_amount.data,  # Using principal_amount 
+            investment_type=investment_type,
+            institution_id=form.institution_id.data,
+            amount=form.amount.data,
             currency=form.currency.data,
             interest_rate=form.interest_rate.data,
             start_date=form.start_date.data,
             maturity_date=form.maturity_date.data,
-            description=form.description.data,
+            description=form.notes.data,  # Using notes field as description
             status=InvestmentStatus.PENDING
         )
         
@@ -654,9 +668,9 @@ def new_investment():
             transaction_id=f"TXN-{reference_id}",
             transaction_type=TreasuryTransactionType.INVESTMENT_PURCHASE,
             from_account_id=account.id,
-            amount=form.principal_amount.data,  # Using principal_amount
+            amount=form.amount.data,
             currency=form.currency.data,
-            description=f"Investment purchase: {form.investment_type.data}",  # Using string directly
+            description=f"Investment purchase: {form.name.data}",
             reference_number=reference_id,
             status=TransactionStatus.PENDING,
             created_by=current_user.id
@@ -713,6 +727,17 @@ def edit_investment(investment_id):
     # Populate institution choices
     institutions = FinancialInstitution.query.order_by(FinancialInstitution.name).all()
     form.institution_id.choices = [(i.id, i.name) for i in institutions]
+    
+    # Populate investment type choices
+    form.investment_type.choices = [
+        (InvestmentType.CERTIFICATE_OF_DEPOSIT.value, 'Certificate of Deposit'),
+        (InvestmentType.MONEY_MARKET.value, 'Money Market'),
+        (InvestmentType.TREASURY_BILL.value, 'Treasury Bill'),
+        (InvestmentType.BOND.value, 'Bond'),
+        (InvestmentType.COMMERCIAL_PAPER.value, 'Commercial Paper'),
+        (InvestmentType.OVERNIGHT_INVESTMENT.value, 'Overnight Investment'),
+        (InvestmentType.TIME_DEPOSIT.value, 'Time Deposit')
+    ]
     
     # Populate currency choices with categorized options
     form.currency.choices = [
