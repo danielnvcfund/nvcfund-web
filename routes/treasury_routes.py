@@ -897,9 +897,10 @@ def new_loan():
     accounts = TreasuryAccount.query.filter_by(is_active=True).order_by(TreasuryAccount.name).all()
     form.account_id.choices = [(a.id, a.name) for a in accounts]
     
-    # Populate financial institution choices
-    institutions = FinancialInstitution.query.order_by(FinancialInstitution.name).all()
-    form.lender_institution_id.choices = [(i.id, i.name) for i in institutions]
+    # Populate financial institution choices (handled in form __init__ method)
+    # This is redundant but kept for consistency
+    institutions = FinancialInstitution.query.filter_by(is_active=True).order_by(FinancialInstitution.name).all()
+    form.lender_institution_id.choices = [(0, 'None')] + [(i.id, i.name) for i in institutions]
     
     # Pre-select the account_id from query string if provided
     account_id = request.args.get('account_id', type=int)
@@ -921,11 +922,11 @@ def new_loan():
             loan_id=loan_id,
             name=form.name.data,
             account_id=form.account_id.data,
-            loan_type=form.loan_type.data,
+            loan_type=LoanType(form.loan_type.data),
             principal_amount=form.principal_amount.data,
             outstanding_amount=form.principal_amount.data,
             currency=form.currency.data,
-            interest_type=form.interest_type.data,
+            interest_type=InterestType(form.interest_type.data),
             interest_rate=form.interest_rate.data,
             reference_rate=form.reference_rate.data,
             margin=form.margin.data,

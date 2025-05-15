@@ -692,9 +692,12 @@ class TreasuryInvestmentForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(TreasuryInvestmentForm, self).__init__(*args, **kwargs)
         try:
-            from models import TreasuryAccount, InvestmentType
+            from models import TreasuryAccount, InvestmentType, FinancialInstitution
             accounts = TreasuryAccount.query.filter_by(is_active=True).all()
             self.account_id.choices = [(a.id, f"{a.name} ({a.currency})") for a in accounts]
+            
+            institutions = FinancialInstitution.query.filter_by(is_active=True).order_by(FinancialInstitution.name).all()
+            self.institution_id.choices = [(i.id, i.name) for i in institutions]
             # Investment type is an Enum, not a database model, so we handle it differently
             self.investment_type.choices = [
                 (InvestmentType.CERTIFICATE_OF_DEPOSIT.value, 'Certificate of Deposit'),
@@ -720,12 +723,14 @@ class TreasuryInvestmentForm(FlaskForm):
 class TreasuryLoanForm(FlaskForm):
     """Form for creating or updating a Treasury Loan"""
     account_id = SelectField('Treasury Account', coerce=int, validators=[DataRequired()])
-    loan_type = SelectField('Loan Type', coerce=int, validators=[DataRequired()])
+    loan_type = SelectField('Loan Type', coerce=str, validators=[DataRequired()])
     name = StringField('Loan Name', validators=[DataRequired(), Length(min=3, max=100)])
     principal_amount = DecimalField('Principal Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=0.0)
     currency = SelectField('Currency', choices=get_currency_choices(), validators=[DataRequired()])
-    interest_type = SelectField('Interest Type', coerce=int, validators=[DataRequired()])
+    interest_type = SelectField('Interest Type', coerce=str, validators=[DataRequired()])
     interest_rate = DecimalField('Interest Rate (%)', validators=[DataRequired(), NumberRange(min=0)], default=0.0)
+    reference_rate = StringField('Reference Rate', validators=[Optional(), Length(max=64)])
+    margin = DecimalField('Margin (%)', validators=[Optional(), NumberRange(min=0)], default=0.0)
     start_date = DateField('Start Date', format='%Y-%m-%d', validators=[DataRequired()])
     maturity_date = DateField('Maturity Date', format='%Y-%m-%d', validators=[DataRequired()])
     payment_frequency = SelectField('Payment Frequency', choices=[
@@ -735,22 +740,39 @@ class TreasuryLoanForm(FlaskForm):
         ('annual', 'Annual'),
         ('bullet', 'Bullet (At Maturity)')
     ], validators=[DataRequired()])
+    first_payment_date = DateField('First Payment Date', format='%Y-%m-%d', validators=[Optional()])
+    payment_amount = DecimalField('Payment Amount', validators=[Optional(), NumberRange(min=0)], default=0.0)
     num_payments = IntegerField('Number of Payments', validators=[Optional(), NumberRange(min=1)], default=0)
     prepayment_penalty = DecimalField('Prepayment Penalty (%)', validators=[Optional(), NumberRange(min=0, max=100)], default=0.0)
     collateral = TextAreaField('Collateral Description', validators=[Optional(), Length(max=500)])
+    collateral_description = TextAreaField('Additional Collateral Details', validators=[Optional(), Length(max=500)])
     borrower = StringField('Borrower', validators=[Optional(), Length(max=100)])
     lender = StringField('Lender', validators=[Optional(), Length(max=100)])
+    lender_institution_id = SelectField('Lender Institution', coerce=int, validators=[Optional()])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
     notes = TextAreaField('Notes', validators=[Optional(), Length(max=500)])
+    loan_id = StringField('Loan ID', validators=[Optional(), Length(max=64)])
+    status = SelectField('Status', coerce=str, validators=[Optional()], default='active')
     submit = SubmitField('Save Loan')
 
     def __init__(self, *args, **kwargs):
         super(TreasuryLoanForm, self).__init__(*args, **kwargs)
         try:
-            from models import TreasuryAccount, LoanType, InterestType
+            from models import TreasuryAccount, LoanType, InterestType, LoanStatus, PaymentFrequency, FinancialInstitution
             accounts = TreasuryAccount.query.filter_by(is_active=True).all()
             self.account_id.choices = [(a.id, f"{a.name} ({a.currency})") for a in accounts]
-            self.loan_type.choices = [(t.id, t.name) for t in LoanType.query.all()]
-            self.interest_type.choices = [(t.id, t.name) for t in InterestType.query.all()]
+            
+            # LoanType and InterestType are enums, not DB models
+            self.loan_type.choices = [(t.value, t.name.replace('_', ' ').title()) for t in LoanType]
+            self.interest_type.choices = [(t.value, t.name.title()) for t in InterestType]
+            self.status.choices = [(s.value, s.name.title()) for s in LoanStatus]
+            
+            # Ensure payment_frequency values match the PaymentFrequency enum
+            self.payment_frequency.choices = [(p.value, p.name.replace('_', ' ').title()) for p in PaymentFrequency]
+            
+            # Add financial institutions for lender dropdown
+            institutions = FinancialInstitution.query.filter_by(is_active=True).order_by(FinancialInstitution.name).all()
+            self.lender_institution_id.choices = [(0, 'None')] + [(i.id, i.name) for i in institutions]
             
             # Set default start date to today
             if not self.start_date.data:
