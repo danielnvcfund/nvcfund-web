@@ -70,8 +70,8 @@ select option:hover {
 
 /* ==== Base Styling & Common Elements ==== */
 :root {
-    --primary-gradient: linear-gradient(135deg, var(--bs-primary) 0%, #2c7be5 100%);
-    --secondary-gradient: linear-gradient(135deg, var(--bs-dark) 0%, #2b3035 100%);
+    --primary-gradient: linear-gradient(135deg, #003366 0%, #0066cc 100%);
+    --secondary-gradient: linear-gradient(135deg, #000000 0%, #111111 100%);
     --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     --card-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
     --border-radius-lg: 10px;
@@ -87,9 +87,10 @@ body {
 .card {
     border-radius: var(--border-radius-md);
     transition: all var(--animation-duration) ease-in-out;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 119, 255, 0.2);
     box-shadow: var(--card-shadow);
     overflow: hidden;
+    background-color: #0a0a0a;
 }
 
 .card:hover {
@@ -98,8 +99,9 @@ body {
 }
 
 .card-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    background: var(--secondary-gradient);
+    border-bottom: 1px solid rgba(0, 119, 255, 0.2);
+    background-color: #050505;
+    color: #4db2ff;
     font-weight: 600;
 }
 
@@ -230,7 +232,8 @@ pre {
 .navbar {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: #0a0a0a !important;
+    border-bottom: 1px solid rgba(0, 119, 255, 0.2);
     z-index: 99999;
     position: relative;
     padding: 0.5rem 0;
@@ -238,11 +241,11 @@ pre {
 
 /* Premium Quick Access Bar Styling */
 .quick-access-bar {
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(0, 119, 255, 0.15);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    background-color: rgba(20, 22, 28, 0.85);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background-color: rgba(5, 5, 5, 0.95);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .quick-access-bar .btn {
