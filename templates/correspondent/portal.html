@@ -378,13 +378,20 @@
                                         {% endfor %}
                                     </div>
                                 {% else %}
-                                    <div class="select-multiple-wrapper border rounded p-3 bg-light">
+                                    <div class="select-multiple-wrapper">
                                         <div class="row">
                                             {% for subfield in form.services %}
                                                 <div class="col-md-6 mb-2">
-                                                    <div class="form-check service-option py-2">
-                                                        {{ subfield(class="form-check-input") }}
-                                                        {{ subfield.label(class="form-check-label") }}
+                                                    <div class="form-check service-option">
+                                                        <div class="custom-checkbox">
+                                                            {{ subfield(class="custom-checkbox-input") }}
+                                                            <label for="{{ subfield.id }}" class="custom-checkbox-label">
+                                                                <span class="icon-wrapper">
+                                                                    <i class="fas {% if loop.index == 1 %}fa-dollar-sign{% elif loop.index == 2 %}fa-euro-sign{% elif loop.index == 3 %}fa-globe-africa{% elif loop.index == 4 %}fa-coins{% elif loop.index == 5 %}fa-exchange-alt{% elif loop.index == 6 %}fa-file-contract{% elif loop.index == 7 %}fa-project-diagram{% else %}fa-code{% endif %}"></i>
+                                                                </span>
+                                                                {{ subfield.label.text }}
+                                                            </label>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             {% endfor %}
@@ -418,13 +425,20 @@
                                         {% endfor %}
                                     </div>
                                 {% else %}
-                                    <div class="select-multiple-wrapper border rounded p-3 bg-light">
+                                    <div class="select-multiple-wrapper">
                                         <div class="row">
                                             {% for subfield in form.african_regions %}
                                                 <div class="col-md-6 mb-2">
-                                                    <div class="form-check region-option py-2">
-                                                        {{ subfield(class="form-check-input") }}
-                                                        {{ subfield.label(class="form-check-label") }}
+                                                    <div class="form-check region-option">
+                                                        <div class="custom-checkbox">
+                                                            {{ subfield(class="custom-checkbox-input") }}
+                                                            <label for="{{ subfield.id }}" class="custom-checkbox-label region-label-{{ loop.index }}">
+                                                                <span class="icon-wrapper region-icon-{{ loop.index }}">
+                                                                    <i class="fas {% if loop.index == 1 %}fa-compass{% elif loop.index == 2 %}fa-mountain{% elif loop.index == 3 %}fa-sun{% else %}fa-map-marker-alt{% endif %}"></i>
+                                                                </span>
+                                                                {{ subfield.label.text }}
+                                                            </label>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             {% endfor %}
