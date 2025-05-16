@@ -629,14 +629,14 @@ class TreasuryAccountForm(FlaskForm):
                 (TreasuryAccountType.DEBT_SERVICE.value, 'Debt Service Account')
             ]
             self.institution_id.choices = [(i.id, i.name) for i in 
-                                         FinancialInstitution.query.filter_by(active=True).order_by(FinancialInstitution.name).all()]
+                                         FinancialInstitution.query.filter_by(is_active=True).order_by(FinancialInstitution.name).all()]
         except Exception as e:
             print(f"Error loading form data: {str(e)}")
 
 
 class TreasuryTransactionForm(FlaskForm):
     """Form for creating a Treasury transaction"""
-    transaction_type = SelectField('Transaction Type', coerce=int, validators=[DataRequired()])
+    transaction_type = SelectField('Transaction Type', coerce=str, validators=[DataRequired()])
     source_account_id = SelectField('Source Account', coerce=int, validators=[DataRequired()])
     destination_account_id = SelectField('Destination Account', coerce=int, validators=[DataRequired()])
     amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=0.0)
@@ -652,7 +652,17 @@ class TreasuryTransactionForm(FlaskForm):
         super(TreasuryTransactionForm, self).__init__(*args, **kwargs)
         try:
             from models import TreasuryTransactionType, TreasuryAccount
-            self.transaction_type.choices = [(t.id, t.name) for t in TreasuryTransactionType.query.all()]
+            # Use enum values directly for transaction types
+            self.transaction_type.choices = [
+                (TreasuryTransactionType.INTERNAL_TRANSFER.value, 'Internal Transfer'),
+                (TreasuryTransactionType.EXTERNAL_TRANSFER.value, 'External Transfer'),
+                (TreasuryTransactionType.INVESTMENT_PURCHASE.value, 'Investment Purchase'),
+                (TreasuryTransactionType.INVESTMENT_MATURITY.value, 'Investment Maturity'),
+                (TreasuryTransactionType.LOAN_PAYMENT.value, 'Loan Payment'),
+                (TreasuryTransactionType.LOAN_DISBURSEMENT.value, 'Loan Disbursement'),
+                (TreasuryTransactionType.INTEREST_PAYMENT.value, 'Interest Payment'),
+                (TreasuryTransactionType.FEE_PAYMENT.value, 'Fee Payment')
+            ]
             accounts = TreasuryAccount.query.filter_by(is_active=True).all()
             self.source_account_id.choices = [(a.id, f"{a.name} ({a.currency})") for a in accounts]
             self.destination_account_id.choices = [(a.id, f"{a.name} ({a.currency})") for a in accounts]
