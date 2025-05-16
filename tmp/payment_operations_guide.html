@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Operation Types: Logic, Flow, and Endpoints</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 1.5cm;
+            color: #333;
+        }
+        h1 {
+            color: #1a5276;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            font-size: 24px;
+        }
+        h2 {
+            color: #2874a6;
+            margin-top: 25px;
+            font-size: 20px;
+        }
+        h3 {
+            color: #3498db;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        ul {
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        strong {
+            color: #2c3e50;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        code {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 15px;
+            display: block;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-style: italic;
+            color: #777;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+        @page {
+            size: letter;
+            margin: 2cm;
+        }
+    </style>
+</head>
+<body>
+    <h1>Payment Operation Types: Logic, Flow, and Endpoints</h1>
+    
+    <p>This guide explains each payment operation type in the NVC Banking Platform, detailing the logic, purpose, and endpoint results for deposit, withdrawal, transfer, payment, and settlement operations.</p>
+
+    <div class="section">
+        <h2>1. Deposit Operation</h2>
+        
+        <h3>Logic &amp; Purpose</h3>
+        <ul>
+            <li><strong>Definition</strong>: Adding funds to a user's account from an external source</li>
+            <li><strong>Primary Purpose</strong>: Increase available balance in the user's platform account</li>
+            <li><strong>Source of Funds</strong>: External bank accounts, payment cards, or crypto wallets</li>
+            <li><strong>Direction</strong>: Inbound (into the platform)</li>
+        </ul>
+        
+        <h3>Process Flow</h3>
+        <ol>
+            <li>User initiates deposit through the deposit form</li>
+            <li>Selects funding source (bank account, card, crypto wallet)</li>
+            <li>Specifies amount and currency</li>
+            <li>Platform verifies deposit request</li>
+            <li>External payment processor or gateway handles fund movement</li>
+            <li>Funds are credited to user's platform account</li>
+            <li>Transaction record is created with DEPOSIT type</li>
+        </ol>
+        
+        <h3>Endpoint Result</h3>
+        <ul>
+            <li>
+                <strong>Database Changes</strong>:
+                <ul>
+                    <li>New transaction record with type=DEPOSIT</li>
+                    <li>User account balance increased</li>
+                    <li>Activity logged in audit trail</li>
+                </ul>
+            </li>
+            <li>
+                <strong>User Experience</strong>:
+                <ul>
+                    <li>Success notification</li>
+                    <li>Updated balance visible in dashboard</li>
+                    <li>Transaction appears in history with "Deposit" label</li>
+                </ul>
+            </li>
+            <li>
+                <strong>API Response</strong> (if API-initiated):
+                <ul>
+                    <li>Transaction ID</li>
+                    <li>Status (completed/pending)</li>
+                    <li>Updated balance</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>2. Withdrawal Operation</h2>
+        
+        <h3>Logic &amp; Purpose</h3>
+        <ul>
+            <li><strong>Definition</strong>: Removing funds from a user's platform account to an external destination</li>
+            <li><strong>Primary Purpose</strong>: Access funds for use outside the platform</li>
+            <li><strong>Destination</strong>: External bank accounts, payment cards, or crypto wallets</li>
+            <li><strong>Direction</strong>: Outbound (leaving the platform)</li>
+        </ul>
+        
+        <h3>Process Flow</h3>
+        <ol>
+            <li>User initiates withdrawal from withdrawal form</li>
+            <li>Selects destination (bank account, crypto wallet)</li>
+            <li>Specifies amount (with validation against available balance)</li>
+            <li>Platform performs security verification (may include 2FA)</li>
+            <li>Withdrawal request is processed through appropriate gateway</li>
+            <li>Funds are deducted from user's platform account</li>
+            <li>External transfer to destination is initiated</li>
+            <li>Transaction record is created with WITHDRAWAL type</li>
+        </ol>
+        
+        <h3>Endpoint Result</h3>
+        <ul>
+            <li>
+                <strong>Database Changes</strong>:
+                <ul>
+                    <li>New transaction record with type=WITHDRAWAL</li>
+                    <li>User account balance decreased</li>
+                    <li>Pending withdrawal record may be created</li>
+                    <li>Activity logged in audit trail</li>
+                </ul>
+            </li>
+            <li>
+                <strong>User Experience</strong>:
+                <ul>
+                    <li>Success notification with estimated completion time</li>
+                    <li>Updated balance visible immediately</li>
+                    <li>Transaction appears in history with "Withdrawal" label</li>
+                    <li>Status tracking for pending withdrawals</li>
+                </ul>
+            </li>
+            <li>
+                <strong>API Response</strong> (if API-initiated):
+                <ul>
+                    <li>Transaction ID</li>
+                    <li>Status (pending/completed)</li>
+                    <li>Estimated completion time</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>3. Transfer Operation</h2>
+        
+        <h3>Logic &amp; Purpose</h3>
+        <ul>
+            <li><strong>Definition</strong>: Moving funds between users within the platform</li>
+            <li><strong>Primary Purpose</strong>: Internal fund movement without external processing</li>
+            <li><strong>Parties Involved</strong>: Two platform users (sender and recipient)</li>
+            <li><strong>Direction</strong>: Internal (stays within platform)</li>
+        </ul>
+        
+        <h3>Process Flow</h3>
+        <ol>
+            <li>User initiates transfer from transfer form</li>
+            <li>Specifies recipient (email, username, or account ID)</li>
+            <li>Enters amount and optional description</li>
+            <li>Platform validates sender balance and recipient existence</li>
+            <li>Sender is debited and recipient is credited in a single transaction</li>
+            <li>Both users receive notification of the transfer</li>
+            <li>Transaction records created for both parties with TRANSFER type</li>
+        </ol>
+        
+        <h3>Endpoint Result</h3>
+        <ul>
+            <li>
+                <strong>Database Changes</strong>:
+                <ul>
+                    <li>Two linked transaction records (sender/receiver)</li>
+                    <li>Sender's balance decreased</li>
+                    <li>Recipient's balance increased</li>
+                    <li>Activity logged for both users</li>
+                </ul>
+            </li>
+            <li>
+                <strong>User Experience</strong>:
+                <ul>
+                    <li>Success confirmation with transfer details</li>
+                    <li>Both users see the transaction in their history</li>
+                    <li>Sender sees "Transfer Out" and recipient sees "Transfer In"</li>
+                    <li>Immediate balance updates for both parties</li>
+                </ul>
+            </li>
+            <li>
+                <strong>API Response</strong> (if API-initiated):
+                <ul>
+                    <li>Transaction ID</li>
+                    <li>Status (almost always "completed" due to immediate processing)</li>
+                    <li>Updated balances for both accounts</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>4. Payment Operation</h2>
+        
+        <h3>Logic &amp; Purpose</h3>
+        <ul>
+            <li><strong>Definition</strong>: Funds sent to external entities for goods/services</li>
+            <li><strong>Primary Purpose</strong>: Complete commercial transactions</li>
+            <li><strong>Destination</strong>: Merchants, service providers, or vendors</li>
+            <li><strong>Direction</strong>: Outbound (leaving platform) with specific purpose</li>
+        </ul>
+        
+        <h3>Process Flow</h3>
+        <ol>
+            <li>User initiates payment from payment form</li>
+            <li>Selects payment method (platform balance, connected card, etc.)</li>
+            <li>Specifies merchant/recipient and payment details</li>
+            <li>Enters amount, purpose, and any reference numbers</li>
+            <li>Platform routes payment through appropriate payment gateway</li>
+            <li>Payment processor handles the merchant settlement</li>
+            <li>User's account is debited</li>
+            <li>Transaction record created with PAYMENT type</li>
+        </ol>
+        
+        <h3>Endpoint Result</h3>
+        <ul>
+            <li>
+                <strong>Database Changes</strong>:
+                <ul>
+                    <li>New transaction record with type=PAYMENT</li>
+                    <li>User account balance decreased</li>
+                    <li>Payment gateway references stored</li>
+                    <li>Merchant information linked to transaction</li>
+                </ul>
+            </li>
+            <li>
+                <strong>User Experience</strong>:
+                <ul>
+                    <li>Payment confirmation with reference number</li>
+                    <li>Receipt or invoice can be downloaded</li>
+                    <li>Transaction appears in history with merchant name</li>
+                    <li>Payment status tracking when applicable</li>
+                </ul>
+            </li>
+            <li>
+                <strong>API Response</strong> (if API-initiated):
+                <ul>
+                    <li>Transaction ID</li>
+                    <li>Payment reference number</li>
+                    <li>Status (processing/completed)</li>
+                    <li>Receipt URL if available</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>5. Settlement Operation</h2>
+        
+        <h3>Logic &amp; Purpose</h3>
+        <ul>
+            <li><strong>Definition</strong>: Final resolution of transactions through blockchain or banking systems</li>
+            <li><strong>Primary Purpose</strong>: Ensure finality and irreversibility of transactions</li>
+            <li><strong>Technology Used</strong>: Blockchain smart contracts or traditional banking systems</li>
+            <li><strong>Direction</strong>: Varies (can be internal or external)</li>
+        </ul>
+        
+        <h3>Process Flow</h3>
+        <ol>
+            <li>Settlement can be triggered automatically or manually</li>
+            <li>System identifies transactions needing settlement</li>
+            <li>For blockchain settlement:
+                <ul>
+                    <li>Smart contract is called with transaction details</li>
+                    <li>Transaction is recorded on blockchain</li>
+                    <li>Contract executes the transfer of assets</li>
+                </ul>
+            </li>
+            <li>For traditional settlement:
+                <ul>
+                    <li>Banking instructions are generated</li>
+                    <li>Funds are moved through correspondent banking or SWIFT</li>
+                </ul>
+            </li>
+            <li>Settlement confirmation is recorded with transaction</li>
+            <li>Original transaction status updated to SETTLED</li>
+        </ol>
+        
+        <h3>Endpoint Result</h3>
+        <ul>
+            <li>
+                <strong>Database Changes</strong>:
+                <ul>
+                    <li>Transaction status updated to SETTLED</li>
+                    <li>Settlement records created with blockchain TX hash or banking reference</li>
+                    <li>Settlement timestamp recorded</li>
+                </ul>
+            </li>
+            <li>
+                <strong>User Experience</strong>:
+                <ul>
+                    <li>Settlement confirmation may be displayed</li>
+                    <li>Transaction details show settlement information</li>
+                    <li>Blockchain explorer links provided for crypto settlements</li>
+                </ul>
+            </li>
+            <li>
+                <strong>API Response</strong> (if API-initiated):
+                <ul>
+                    <li>Settlement status</li>
+                    <li>Settlement timestamp</li>
+                    <li>Blockchain transaction hash or banking reference</li>
+                    <li>Finality confirmation</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Implementation Differences</h2>
+        
+        <h3>Technical Implementation</h3>
+        <ul>
+            <li><strong>Deposit/Withdrawal</strong>: Involves integration with external payment gateways and banking connections</li>
+            <li><strong>Transfer</strong>: Purely internal database operations</li>
+            <li><strong>Payment</strong>: Combines external gateway integration with merchant-specific handling</li>
+            <li><strong>Settlement</strong>: Involves either blockchain transaction execution or banking settlement systems</li>
+        </ul>
+        
+        <h3>Database Interactions</h3>
+        <code># Deposit (simplified database update)
+db.execute("""
+    UPDATE user_accounts
+    SET balance = balance + :amount
+    WHERE user_id = :user_id
+""", amount=amount, user_id=user_id)
+
+# Withdrawal (simplified database update)
+db.execute("""
+    UPDATE user_accounts
+    SET balance = balance - :amount,
+        pending_withdrawals = pending_withdrawals + :amount
+    WHERE user_id = :user_id AND balance >= :amount
+""", amount=amount, user_id=user_id)
+
+# Transfer (simplified database transaction)
+with db.transaction():
+    # Debit sender
+    db.execute("""
+        UPDATE user_accounts
+        SET balance = balance - :amount
+        WHERE user_id = :sender_id AND balance >= :amount
+    """, amount=amount, sender_id=sender_id)
+    
+    # Credit recipient
+    db.execute("""
+        UPDATE user_accounts
+        SET balance = balance + :amount
+        WHERE user_id = :recipient_id
+    """, amount=amount, recipient_id=recipient_id)</code>
+        
+        <h3>Risk Profiles</h3>
+        <ul>
+            <li><strong>Deposit</strong>: Risk of fraudulent funding sources</li>
+            <li><strong>Withdrawal</strong>: Risk of unauthorized account access</li>
+            <li><strong>Transfer</strong>: Lower risk due to being internal</li>
+            <li><strong>Payment</strong>: Risk of merchant fraud or service non-delivery</li>
+            <li><strong>Settlement</strong>: Technical risks of blockchain or banking systems</li>
+        </ul>
+    </div>
+    
+    <div class="footer">
+        <p>NVC Banking Platform: Payment Operations Documentation</p>
+        <p>Date: April 22, 2025</p>
+    </div>
+</body>
+</html>

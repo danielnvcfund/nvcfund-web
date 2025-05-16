@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVC Banking Platform - Developer Documentation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px;
+        }
+        .logo {
+            max-width: 150px;
+            margin-bottom: 15px;
+        }
+        h1 {
+            color: #0066cc;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.2rem;
+        }
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 500px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        .card h2 {
+            color: #0066cc;
+            margin-top: 0;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        .card-content {
+            margin-bottom: 25px;
+            min-height: 120px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #0066cc;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #0052a3;
+        }
+        .footer {
+            margin-top: 60px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        .contact {
+            margin-top: 40px;
+            background: #e9f0f7;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .contact h3 {
+            color: #0066cc;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="https://via.placeholder.com/150x50?text=NVC+Bank" alt="NVC Banking Platform Logo" class="logo">
+        <h1>NVC Banking Platform</h1>
+        <p class="subtitle">Technical Documentation for Developers</p>
+    </div>
+    
+    <div class="card-container">
+        <div class="card">
+            <h2>Capabilities Summary</h2>
+            <div class="card-content">
+                <p>A comprehensive overview of the NVC Banking Platform's capabilities, including payment processing integrations, card issuance functionality, and correspondent banking services.</p>
+                <p>This document provides a high-level understanding of our system's capabilities and current implementation status.</p>
+            </div>
+            <a href="NVC_Banking_Platform_Capabilities_Summary.md" class="button">View Capabilities Summary</a>
+        </div>
+        
+        <div class="card">
+            <h2>Technical Integration Guide</h2>
+            <div class="card-content">
+                <p>Detailed technical documentation covering API endpoints, data formats, authentication procedures, and integration workflows for developers.</p>
+                <p>This guide includes code examples, integration patterns, and best practices for connecting with our systems.</p>
+            </div>
+            <a href="NVC_Banking_Platform_Technical_Integration_Guide.md" class="button">View Technical Guide</a>
+        </div>
+    </div>
+    
+    <div class="contact">
+        <h3>Need Assistance?</h3>
+        <p>Our developer support team is available to help with any questions or issues you may encounter during integration.</p>
+        <p><strong>Email:</strong> developer-support@nvcbanking.com</p>
+        <p><strong>Phone:</strong> +1 (555) 123-4567</p>
+    </div>
+    
+    <div class="footer">
+        <p>&copy; 2025 NVC Banking Platform. All rights reserved.</p>
+        <p>This documentation is confidential and provided for integration purposes only.</p>
+    </div>
+</body>
+</html>
