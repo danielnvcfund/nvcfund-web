@@ -348,8 +348,8 @@ def new_transaction():
     # Populate account choices
     accounts = TreasuryAccount.query.filter_by(is_active=True).order_by(TreasuryAccount.name).all()
     # Add an "External Account" option for external transfers
-    form.source_account_id.choices = [(0, 'External Account')] + [(a.id, a.name) for a in accounts]
-    form.destination_account_id.choices = [(0, 'External Account')] + [(a.id, a.name) for a in accounts]
+    form.source_account_id.choices = [(0, 'External Account')] + [(a.id, f"{a.name} ({a.currency})") for a in accounts]
+    form.destination_account_id.choices = [(0, 'External Account')] + [(a.id, f"{a.name} ({a.currency})") for a in accounts]
     
     # Pre-select the source_account_id from query string if provided
     from_account_id = request.args.get('from_account_id', type=int)
@@ -405,9 +405,10 @@ def new_transaction():
             else:
                 exchange_rate = 1.0
             
-        # Get transaction type from form (already in uppercase)
+        # Get transaction type from form (using the value directly)
         transaction_type_str = form.transaction_type.data
-        transaction_type_enum = TreasuryTransactionType[transaction_type_str]
+        # Convert to enum - already a string value that matches the enum
+        transaction_type_enum = TreasuryTransactionType(transaction_type_str)
         
         transaction = TreasuryTransaction(
             transaction_id=reference_number,
