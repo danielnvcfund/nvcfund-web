@@ -107,8 +107,8 @@
               <div class="col-md-6">
                 <div class="form-group">
                   {{ form.amount.label(class="form-label required-field") }}
-                  <input type="number" name="amount" id="amount" class="form-control form-control-lg" 
-                         min="0.01" step="0.01" placeholder="Enter amount (no commas)" value="">
+                  <input type="text" name="amount" id="amount" class="form-control form-control-lg" 
+                         placeholder="Enter amount" value="">
                   {% if form.amount.errors %}
                   <div class="invalid-feedback">
                     {% for error in form.amount.errors %}
@@ -346,11 +346,33 @@
     });
     
     // Format amount with commas as user types and ensure valid data
-    // For the numeric input, ensure we have positive numbers
-    amountInput.addEventListener('input', function() {
-      // Make sure amount is positive
-      if (parseFloat(this.value) < 0) {
-        this.value = Math.abs(parseFloat(this.value));
+    // Advanced formatting for amount field with commas
+    amountInput.addEventListener('input', function(e) {
+      // Store cursor position
+      const cursorPos = this.selectionStart;
+      
+      // Remove any non-numeric characters except decimal point
+      let value = this.value.replace(/[^\d.]/g, '');
+      
+      // Ensure only one decimal point
+      const parts = value.split('.');
+      if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+      }
+      
+      // Format the number with commas for thousands
+      if (value && value !== '.') {
+        const numberParts = value.split('.');
+        numberParts[0] = numberParts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        value = numberParts.join('.');
+      }
+      
+      // Update the value
+      this.value = value;
+      
+      // Restore cursor approximately where it should be
+      if (cursorPos <= this.value.length) {
+        this.setSelectionRange(cursorPos, cursorPos);
       }
     });
     
