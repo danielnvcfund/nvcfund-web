@@ -346,9 +346,18 @@
       });
     });
     
-    // Format amount with commas as user types
+    // Format amount with commas as user types and ensure valid data
     amountInput.addEventListener('input', function() {
-      const value = this.value.replace(/,/g, '');
+      // Remove any non-numeric characters except decimal point
+      let value = this.value.replace(/[^\d.]/g, '');
+      
+      // Ensure only one decimal point
+      const decimalPoints = value.match(/\./g) || [];
+      if (decimalPoints.length > 1) {
+        value = value.replace(/\./g, function(match, index) {
+          return index === value.indexOf('.') ? match : '';
+        });
+      }
       
       // Only proceed if it's a valid number
       if (!isNaN(parseFloat(value))) {
@@ -356,6 +365,9 @@
         const parts = value.split('.');
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         this.value = parts.join('.');
+      } else if (value === '' || value === '.') {
+        // Allow empty field or just a decimal point
+        this.value = value;
       }
     });
     
@@ -373,8 +385,8 @@
       document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
       
       // Validate required fields
-      [fromAccountSelect, toAccountSelect, transactionTypeSelect, amountInput].forEach(field => {
-        if (!field.value || field.value.trim() === '' || parseFloat(field.value) === 0) {
+      [fromAccountSelect, toAccountSelect, transactionTypeSelect].forEach(field => {
+        if (!field.value || field.value.trim() === '') {
           valid = false;
           field.classList.add('is-invalid');
           
@@ -385,6 +397,31 @@
           field.parentNode.appendChild(errorMsg);
         }
       });
+      
+      // Special validation for amount field
+      if (!amountInput.value || amountInput.value.trim() === '') {
+        valid = false;
+        amountInput.classList.add('is-invalid');
+        
+        // Add custom error message
+        let errorMsg = document.createElement('div');
+        errorMsg.className = 'invalid-feedback custom-error-message';
+        errorMsg.innerHTML = 'Amount is required.';
+        amountInput.parentNode.appendChild(errorMsg);
+      } else {
+        // Remove commas before parsing
+        const parsedAmount = parseFloat(amountInput.value.replace(/,/g, ''));
+        if (isNaN(parsedAmount) || parsedAmount <= 0) {
+          valid = false;
+          amountInput.classList.add('is-invalid');
+          
+          // Add custom error message
+          let errorMsg = document.createElement('div');
+          errorMsg.className = 'invalid-feedback custom-error-message';
+          errorMsg.innerHTML = 'Please enter a valid positive amount.';
+          amountInput.parentNode.appendChild(errorMsg);
+        }
+      }
       
       // Validate account selection (can't both be external)
       if (fromAccountSelect.value === '0' && toAccountSelect.value === '0') {
