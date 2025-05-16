@@ -387,6 +387,23 @@ def new_transaction():
         # Get the currency selected by the user
         currency = form.currency.data
         
+        # Process the amount field - remove any commas and convert to decimal
+        try:
+            amount_str = request.form.get('amount', '0')
+            # Remove all commas from the amount string
+            amount_str = amount_str.replace(',', '')
+            # Convert to float
+            amount = float(amount_str)
+        except (ValueError, TypeError) as e:
+            current_app.logger.error(f"Error parsing amount: {str(e)}")
+            form.amount.errors.append('Invalid amount format. Please enter a valid number.')
+            return render_template(
+                'treasury/transaction_form.html',
+                form=form,
+                is_new=True,
+                from_account=from_account
+            )
+        
         # Calculate exchange rate if needed
         if form.exchange_rate.data:
             exchange_rate = form.exchange_rate.data
@@ -413,7 +430,7 @@ def new_transaction():
         transaction = TreasuryTransaction(
             transaction_id=reference_number,
             transaction_type=transaction_type_enum,
-            amount=form.amount.data,
+            amount=amount,  # Use the processed amount value
             currency=currency,
             exchange_rate=exchange_rate,
             description=form.description.data,
