@@ -109,7 +109,7 @@
                   {{ form.amount.label(class="form-label required-field") }}
                   {{ form.amount(class="form-control form-control-lg" + (" is-invalid" if form.amount.errors else ""), 
                                  inputmode="decimal", step="0.01", placeholder="Enter amount", 
-                                 autocomplete="on", min="0.01") }}
+                                 autocomplete="on", min="0.01", maxlength="20") }}
                   {% if form.amount.errors %}
                   <div class="invalid-feedback">
                     {% for error in form.amount.errors %}
@@ -348,6 +348,10 @@
     
     // Format amount with commas as user types and ensure valid data
     amountInput.addEventListener('input', function() {
+      // Store cursor position
+      const cursorPos = this.selectionStart;
+      const originalLength = this.value.length;
+      
       // Remove any non-numeric characters except decimal point
       let value = this.value.replace(/[^\d.]/g, '');
       
@@ -359,15 +363,24 @@
         });
       }
       
-      // Only proceed if it's a valid number
-      if (!isNaN(parseFloat(value))) {
-        // Format with commas for thousands
-        const parts = value.split('.');
-        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        this.value = parts.join('.');
-      } else if (value === '' || value === '.') {
+      // Only proceed if it's a valid number or empty
+      if (value === '' || value === '.') {
         // Allow empty field or just a decimal point
         this.value = value;
+      } else if (!isNaN(parseFloat(value))) {
+        // Get parts before and after decimal
+        const parts = value.split('.');
+        
+        // Format with commas for thousands, but allow any length
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        
+        // Reassemble with decimal part (if any)
+        this.value = parts.join('.');
+        
+        // Adjust cursor position to account for added commas
+        const newLength = this.value.length;
+        const lengthDiff = newLength - originalLength;
+        this.setSelectionRange(cursorPos + lengthDiff, cursorPos + lengthDiff);
       }
     });
     
