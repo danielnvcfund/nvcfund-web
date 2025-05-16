@@ -108,7 +108,7 @@
                 <div class="form-group">
                   {{ form.amount.label(class="form-label required-field") }}
                   <input type="text" name="amount" id="amount" class="form-control form-control-lg" 
-                         placeholder="Enter amount (e.g. 1,000,000.00)" autocomplete="on" value="">
+                         placeholder="Enter number only" autocomplete="on" value="">
                   {% if form.amount.errors %}
                   <div class="invalid-feedback">
                     {% for error in form.amount.errors %}
