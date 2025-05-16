@@ -391,12 +391,19 @@ def new_transaction():
         try:
             amount_str = request.form.get('amount', '0')
             # Remove all commas from the amount string
-            amount_str = amount_str.replace(',', '')
-            # Convert to float
-            amount = float(amount_str)
+            if amount_str:
+                amount_str = amount_str.replace(',', '')
+                # Convert to float
+                amount = float(amount_str)
+            else:
+                amount = 0.0
         except (ValueError, TypeError) as e:
             current_app.logger.error(f"Error parsing amount: {str(e)}")
-            form.amount.errors.append('Invalid amount format. Please enter a valid number.')
+            # Manually add error to the form
+            if not hasattr(form.amount.errors, 'append'):
+                form.amount.errors = ['Invalid amount format. Please enter a valid number.']
+            else:
+                form.amount.errors.append('Invalid amount format. Please enter a valid number.')
             return render_template(
                 'treasury/transaction_form.html',
                 form=form,
