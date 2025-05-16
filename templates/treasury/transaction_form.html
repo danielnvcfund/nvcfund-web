@@ -107,8 +107,8 @@
               <div class="col-md-6">
                 <div class="form-group">
                   {{ form.amount.label(class="form-label required-field") }}
-                  <input type="text" name="amount" id="amount" class="form-control form-control-lg" 
-                         placeholder="Enter number only" autocomplete="on" value="">
+                  <input type="number" name="amount" id="amount" class="form-control form-control-lg" 
+                         min="0.01" step="0.01" placeholder="Enter amount (no commas)" value="">
                   {% if form.amount.errors %}
                   <div class="invalid-feedback">
                     {% for error in form.amount.errors %}
@@ -346,25 +346,12 @@
     });
     
     // Format amount with commas as user types and ensure valid data
-    // Super simple amount input handler for maximum compatibility
+    // For the numeric input, ensure we have positive numbers
     amountInput.addEventListener('input', function() {
-      // Clean the input - only allow digits and one decimal point
-      let value = this.value.replace(/[^\d.]/g, '');
-      
-      // Ensure only one decimal point
-      const parts = value.split('.');
-      if (parts.length > 2) {
-        value = parts[0] + '.' + parts.slice(1).join('');
+      // Make sure amount is positive
+      if (parseFloat(this.value) < 0) {
+        this.value = Math.abs(parseFloat(this.value));
       }
-      
-      // Format with commas for thousands
-      if (value !== '' && value !== '.') {
-        const numberParts = value.split('.');
-        numberParts[0] = numberParts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        value = numberParts.join('.');
-      }
-      
-      this.value = value;
     });
     
     // Form validation and submission handling
