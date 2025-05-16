@@ -347,41 +347,57 @@
     });
     
     // Format amount with commas as user types and ensure valid data
+    // Handle amount input - simplified to ensure it works with any size number
     amountInput.addEventListener('input', function() {
-      // Store cursor position
+      // Get the raw input value
+      const rawValue = this.value;
+      // Remember cursor position
       const cursorPos = this.selectionStart;
-      const originalLength = this.value.length;
       
-      // Remove any non-numeric characters except decimal point
-      let value = this.value.replace(/[^\d.]/g, '');
+      // Remove all non-numeric characters except the decimal point
+      let cleanValue = rawValue.replace(/[^0-9.]/g, '');
       
-      // Ensure only one decimal point
-      const decimalPoints = value.match(/\./g) || [];
-      if (decimalPoints.length > 1) {
-        value = value.replace(/\./g, function(match, index) {
-          return index === value.indexOf('.') ? match : '';
-        });
+      // Make sure there's only one decimal point
+      let decimalCount = 0;
+      cleanValue = cleanValue.split('').filter(char => {
+        if (char === '.') {
+          decimalCount++;
+          return decimalCount === 1; // Only keep the first decimal
+        }
+        return true;
+      }).join('');
+      
+      // Don't format if empty or just a decimal
+      if (cleanValue === '' || cleanValue === '.') {
+        this.value = cleanValue;
+        return;
       }
       
-      // Only proceed if it's a valid number or empty
-      if (value === '' || value === '.') {
-        // Allow empty field or just a decimal point
-        this.value = value;
-      } else if (!isNaN(parseFloat(value))) {
-        // Get parts before and after decimal
-        const parts = value.split('.');
-        
-        // Format with commas for thousands, but allow any length
-        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        
-        // Reassemble with decimal part (if any)
-        this.value = parts.join('.');
-        
-        // Adjust cursor position to account for added commas
-        const newLength = this.value.length;
-        const lengthDiff = newLength - originalLength;
-        this.setSelectionRange(cursorPos + lengthDiff, cursorPos + lengthDiff);
+      // Split into whole and decimal parts
+      let [wholePart, decimalPart] = cleanValue.split('.');
+      
+      // Add commas to the whole part
+      let formattedWhole = '';
+      for (let i = 0; i < wholePart.length; i++) {
+        if (i > 0 && (wholePart.length - i) % 3 === 0) {
+          formattedWhole += ',';
+        }
+        formattedWhole += wholePart[i];
       }
+      
+      // Recombine with decimal part if it exists
+      let formattedValue = decimalPart !== undefined 
+        ? formattedWhole + '.' + decimalPart 
+        : formattedWhole;
+        
+      // Count added commas to adjust cursor position
+      const commasBeforeCursor = formattedValue.substring(0, cursorPos).split(',').length - 1;
+      const originalCommas = rawValue.substring(0, cursorPos).split(',').length - 1;
+      const extraCommas = commasBeforeCursor - originalCommas;
+      
+      // Set the value and restore cursor position
+      this.value = formattedValue;
+      this.setSelectionRange(cursorPos + extraCommas, cursorPos + extraCommas);
     });
     
     // Form validation and submission handling
