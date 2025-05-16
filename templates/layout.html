@@ -1157,9 +1157,46 @@
     <!-- Initialize tooltips -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Improve dropdown behavior for easier screenshots
+            const dropdownMenus = document.querySelectorAll('.dropdown-menu');
+            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+            
+            // Make dropdowns stay open when clicking inside them
+            dropdownMenus.forEach(menu => {
+                menu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
+            // Add click persistence to dropdown toggles
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    const menu = this.nextElementSibling;
+                    if (menu.classList.contains('persistent-show')) {
+                        menu.classList.remove('persistent-show');
+                    } else {
+                        // Close all other persistent menus
+                        document.querySelectorAll('.persistent-show').forEach(m => {
+                            m.classList.remove('persistent-show');
+                        });
+                        menu.classList.add('persistent-show');
+                    }
+                });
+            });
+            
+            // Close persistent menus when clicking elsewhere
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown')) {
+                    document.querySelectorAll('.persistent-show').forEach(menu => {
+                        menu.classList.remove('persistent-show');
+                    });
+                }
             });
         });
     </script>

@@ -94,6 +94,39 @@ select option:hover {
     transform: scale(1.05);
 }
 
+/* Make dropdown menus stay open longer for easier screenshots */
+.dropdown-menu {
+    transition: opacity 0.5s, visibility 0.5s;
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Additional hover delay to keep menu open */
+.dropdown-menu:hover {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Make sure menu stays visible during screenshot capture */
+.dropdown-menu.show, 
+.dropdown-menu.persistent-show {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-top: 0.125rem !important;
+    position: absolute !important;
+    z-index: 1000 !important;
+    transform: none !important;
+}
+
 .analytics-panel:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
