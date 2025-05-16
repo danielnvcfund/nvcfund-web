@@ -47,6 +47,53 @@ select option:hover {
     margin-right: 5px;
 }
 
+.special-feature {
+    background: linear-gradient(145deg, #0a1626, #162a4a);
+    border: 2px solid #0066cc;
+    transition: all 0.3s ease;
+}
+
+.special-feature:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    border-color: #0077ff;
+}
+
+.special-feature .card-title {
+    color: #4db2ff !important;
+    font-weight: bold;
+    font-size: 1.4rem;
+}
+
+.special-feature .service-icon-wrapper {
+    background-color: rgba(0, 102, 204, 0.2);
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.special-feature .service-icon-wrapper i {
+    color: #3399ff;
+}
+
+.special-feature .btn-primary {
+    background-color: #0066cc;
+    border-color: #0066cc;
+    padding: 10px 20px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.special-feature .btn-primary:hover {
+    background-color: #0077ff;
+    border-color: #0077ff;
+    transform: scale(1.05);
+}
+
 .analytics-panel:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
