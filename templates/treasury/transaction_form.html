@@ -107,8 +107,8 @@
               <div class="col-md-6">
                 <div class="form-group">
                   {{ form.amount.label(class="form-label required-field") }}
-                  <input type="text" name="amount" id="amount" class="form-control form-control-lg" 
-                         placeholder="Enter amount" value="">
+                  <input type="number" name="amount" id="amount" class="form-control form-control-lg" 
+                         min="0.01" step="0.01" placeholder="Enter amount (no commas)" value="1000000">
                   {% if form.amount.errors %}
                   <div class="invalid-feedback">
                     {% for error in form.amount.errors %}
@@ -346,36 +346,12 @@
     });
     
     // Format amount with commas as user types and ensure valid data
-    // Simple but effective amount field formatting
+    // No special handling for number field
     amountInput.addEventListener('input', function() {
-      // Get the raw input value without commas
-      let value = this.value.replace(/,/g, '');
-      
-      // Only allow digits and one decimal point
-      value = value.replace(/[^\d.]/g, '');
-      
-      // Handle multiple decimal points
-      const decimalSplit = value.split('.');
-      if (decimalSplit.length > 2) {
-        value = decimalSplit[0] + '.' + decimalSplit.slice(1).join('');
+      // Ensure positive number
+      if (parseFloat(this.value) < 0) {
+        this.value = Math.abs(parseFloat(this.value));
       }
-      
-      // If we have a valid number, format it
-      if (value && value !== '.') {
-        // Split into whole number and decimal parts
-        const parts = value.split('.');
-        
-        // Add commas to the whole number part
-        if (parts[0].length > 0) {
-          parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        }
-        
-        // Recombine the parts
-        value = parts.join('.');
-      }
-      
-      // Set the formatted value
-      this.value = value;
     });
     
     // Form validation and submission handling
