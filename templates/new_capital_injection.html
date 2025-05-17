@@ -74,6 +74,7 @@
                                     <option value="japan_fsa">Japan FSA</option>
                                     <option value="china_cbrc">China CBRC</option>
                                     <option value="india_rbi">India RBI</option>
+                                    <option value="nigeria_cbn">Nigeria CBN</option>
                                     <option value="african_regional">African Regional</option>
                                     <option value="national_specific">National Specific</option>
                                 </select>
@@ -140,6 +141,11 @@
                                     <option value="compliance">Compliance</option>
                                     <option value="operational_risk">Operational Risk</option>
                                     <option value="systemic_risk">Systemic Risk</option>
+                                    <option value="nigeria_cbn_compliance">Nigeria CBN Compliance</option>
+                                    <option value="nigeria_bofia_requirements">Nigeria BOFIA Requirements</option>
+                                    <option value="nigeria_frc_standards">Nigeria FRC Standards</option>
+                                    <option value="nigeria_foreign_exchange">Nigeria Foreign Exchange Exposure</option>
+                                    <option value="nigeria_sectoral_lending">Nigeria Sectoral Lending Requirements</option>
                                 </select>
                             </div>
                         </div>
@@ -176,6 +182,80 @@
                             <div class="col-md-3 mb-3">
                                 <label for="current_capital_ratio" class="form-label">Current Capital Ratio (%)*</label>
                                 <input type="number" step="0.01" min="0" max="100" class="form-control" id="current_capital_ratio" name="current_capital_ratio" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Nigeria-Specific Regulatory Requirements Section - Only shown when Nigeria is selected -->
+                        <div class="row mb-4" id="nigeria-section">
+                            <div class="col-12">
+                                <h5 class="text-gradient mb-3">Nigeria-Specific Regulatory Requirements</h5>
+                                <p class="text-muted small mb-3">Complete this section if the financial institution is regulated by the Central Bank of Nigeria (CBN)</p>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="nigeria_cbn_license_type" class="form-label">CBN License Type</label>
+                                <select class="form-select" id="nigeria_cbn_license_type" name="nigeria_cbn_license_type">
+                                    <option value="">Select License Type</option>
+                                    <option value="commercial_national">Commercial Bank - National</option>
+                                    <option value="commercial_regional">Commercial Bank - Regional</option>
+                                    <option value="merchant">Merchant Bank</option>
+                                    <option value="non_interest">Non-Interest Bank</option>
+                                    <option value="microfinance">Microfinance Bank</option>
+                                    <option value="development">Development Bank</option>
+                                    <option value="primary_mortgage">Primary Mortgage Bank</option>
+                                    <option value="payment_service">Payment Service Bank</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="nigeria_cbn_composite_risk_rating" class="form-label">CBN Composite Risk Rating</label>
+                                <select class="form-select" id="nigeria_cbn_composite_risk_rating" name="nigeria_cbn_composite_risk_rating">
+                                    <option value="">Select Rating</option>
+                                    <option value="low">Low</option>
+                                    <option value="moderate">Moderate</option>
+                                    <option value="above_average">Above Average</option>
+                                    <option value="high">High</option>
+                                    <option value="unsatisfactory">Unsatisfactory</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="nigeria_cbn_camel_rating" class="form-label">CBN CAMEL Rating</label>
+                                <select class="form-select" id="nigeria_cbn_camel_rating" name="nigeria_cbn_camel_rating">
+                                    <option value="">Select Rating</option>
+                                    <option value="1">1 - Strong</option>
+                                    <option value="2">2 - Satisfactory</option>
+                                    <option value="3">3 - Fair</option>
+                                    <option value="4">4 - Marginal</option>
+                                    <option value="5">5 - Unsatisfactory</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="nigeria_cbn_liquidity_ratio" class="form-label">Liquidity Ratio (%)</label>
+                                <input type="number" step="0.01" min="0" max="100" class="form-control" id="nigeria_cbn_liquidity_ratio" name="nigeria_cbn_liquidity_ratio">
+                                <small class="form-text text-muted">CBN minimum requirement: 30%</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="nigeria_cash_reserve_ratio" class="form-label">Cash Reserve Ratio (%)</label>
+                                <input type="number" step="0.01" min="0" max="100" class="form-control" id="nigeria_cash_reserve_ratio" name="nigeria_cash_reserve_ratio">
+                                <small class="form-text text-muted">Current CBN requirement: 27.5%</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="nigeria_loan_to_deposit_ratio" class="form-label">Loan-to-Deposit Ratio (%)</label>
+                                <input type="number" step="0.01" min="0" max="100" class="form-control" id="nigeria_loan_to_deposit_ratio" name="nigeria_loan_to_deposit_ratio">
+                                <small class="form-text text-muted">CBN minimum requirement: 65%</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="nigeria_sectoral_allocation" class="form-label">Sectoral Allocation Compliance</label>
+                                <select class="form-select" id="nigeria_sectoral_allocation" name="nigeria_sectoral_allocation">
+                                    <option value="">Select Status</option>
+                                    <option value="compliant">Fully Compliant</option>
+                                    <option value="partially_compliant">Partially Compliant</option>
+                                    <option value="non_compliant">Non-Compliant</option>
+                                </select>
+                                <small class="form-text text-muted">Compliance with CBN sectoral allocation requirements</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="nigeria_fx_exposure" class="form-label">Foreign Exchange Exposure (%)</label>
+                                <input type="number" step="0.01" min="0" class="form-control" id="nigeria_fx_exposure" name="nigeria_fx_exposure">
+                                <small class="form-text text-muted">Percentage of capital exposed to foreign exchange risk</small>
                             </div>
                         </div>
 
