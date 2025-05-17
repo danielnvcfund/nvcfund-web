@@ -383,6 +383,19 @@ def create_app():
         def recapitalization_dashboard():
             """Financial Institution Recapitalization Dashboard"""
             return render_template('recapitalization_dashboard.html')
+            
+        @app.route('/recapitalization/new')
+        def new_capital_injection():
+            """New Capital Injection Form"""
+            return render_template('new_capital_injection.html')
+            
+        @app.route('/recapitalization/process', methods=['POST'])
+        def process_capital_injection():
+            """Process Capital Injection Form"""
+            # In a real implementation, this would save the data to a database
+            # and trigger the necessary workflow
+            flash('Capital injection application has been submitted successfully!', 'success')
+            return redirect(url_for('recapitalization_dashboard'))
         
         # Register Documentation routes
         from routes.documentation_routes import documentation_bp
