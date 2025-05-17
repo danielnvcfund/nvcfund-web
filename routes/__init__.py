@@ -20,6 +20,7 @@ from routes.ach_routes import ach
 from routes.api_access_routes import api_access_bp
 from routes.institutional_routes import institutional_bp
 from routes.correspondent_banking_routes import correspondent
+from routes.recapitalization_routes import recapitalization
 
 # Import payment and transaction routes
 from routes.payment_history_routes import payment_history_bp

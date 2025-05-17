@@ -1,19 +1,22 @@
 """
-Capital Injection and Bank Recapitalization Models
-This module provides database models for financial institution recapitalization
-and equity injection programs.
+Financial Institution Recapitalization and Equity Injection Program
+This module provides standalone access to the financial institution recapitalization
+and equity injection features without requiring the models folder structure.
 """
 import enum
 from datetime import datetime
 import uuid
 import json
-
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Text, Enum, JSON
-from sqlalchemy.orm import relationship
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, send_from_directory
+from flask_login import login_required, current_user
+from werkzeug.utils import secure_filename
+import os
 
 from app import db
+from decorators import admin_required, analyst_required
 
 
+# Enums for capital injection models
 class CapitalType(enum.Enum):
     """Types of capital for financial institution recapitalization"""
     TIER1_EQUITY = "tier1_equity"  # Common equity, retained earnings
@@ -97,6 +100,7 @@ class RegulatoryFramework(enum.Enum):
     NATIONAL_SPECIFIC = "national_specific"
 
 
+# Define the models for our database tables
 class FinancialInstitutionProfile(db.Model):
     """Financial institution profile for capital injection program"""
     id = db.Column(db.Integer, primary_key=True)
@@ -135,13 +139,18 @@ class FinancialInstitutionProfile(db.Model):
     verification_date = db.Column(db.DateTime)
     verification_notes = db.Column(db.Text)
     
+    # User tracking
+    created_by = db.Column(db.Integer)
+    
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    applications = db.relationship('CapitalInjectionApplication', backref='institution_profile', lazy=True)
-    documents = db.relationship('InstitutionDocument', backref='institution_profile', lazy=True)
+    documents = db.relationship('InstitutionDocument', backref='institution_profile', lazy=True, 
+                               foreign_keys='InstitutionDocument.institution_id')
+    applications = db.relationship('CapitalInjectionApplication', backref='institution_profile', lazy=True,
+                                  foreign_keys='CapitalInjectionApplication.institution_id')
     
     def __repr__(self):
         return f"<FinancialInstitutionProfile {self.institution_name}>"
@@ -302,3 +311,35 @@ class CapitalInjectionTerm(db.Model):
     
     def __repr__(self):
         return f"<CapitalInjectionTerm {self.capital_type.value} - {self.investment_structure.value}>"
+
+
+# Create blueprint for the capital injection feature
+capital_injection = Blueprint('capital_injection', __name__, url_prefix='/capital-injection')
+
+
+# Define allowed file extensions and upload folder
+ALLOWED_EXTENSIONS = {'pdf', 'docx', 'xlsx', 'png', 'jpg', 'jpeg'}
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads', 'capital_injection')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
+@capital_injection.route('/')
+@login_required
+def index():
+    """Capital injection home page with placeholder data for demo"""
+    # Display a simplified version of the page for now
+    return render_template('capital_injection/index.html',
+                           profiles=[],
+                           pending_apps=[],
+                           approved_apps=[],
+                           funded_apps=[],
+                           other_apps=[],
+                           is_admin=True,
+                           is_analyst=True)
+
+
+@capital_injection.route('/placeholder')
+@login_required
+def placeholder():
+    """Placeholder page with info about the capital injection program"""
+    return render_template('capital_injection/placeholder.html')
