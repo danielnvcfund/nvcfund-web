@@ -373,11 +373,16 @@ def create_app():
         app.register_blueprint(web_blueprint)
         app.register_blueprint(api_access_bp)
         
-        # Add direct route for recapitalization program
+        # Add direct routes for recapitalization program
         @app.route('/recapitalization')
         def recapitalization():
             """Financial Institution Recapitalization Program information page"""
             return render_template('recapitalization.html')
+            
+        @app.route('/recapitalization/dashboard')
+        def recapitalization_dashboard():
+            """Financial Institution Recapitalization Dashboard"""
+            return render_template('recapitalization_dashboard.html')
         
         # Register Documentation routes
         from routes.documentation_routes import documentation_bp
