@@ -1,0 +1,404 @@
+{% extends "layout.html" %}
+
+{% block title %}Financial Institution Recapitalization Program{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card dark-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h1 class="h2 mb-0 text-gradient">Financial Institution Recapitalization Program</h1>
+                        <div>
+                            <a href="{{ url_for('capital_injection.new_institution') }}" class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-2"></i>New Institution Profile
+                            </a>
+                            {% if is_admin %}
+                            <a href="{{ url_for('capital_injection.dashboard') }}" class="btn btn-info ms-2">
+                                <i class="fas fa-chart-line me-2"></i>Program Dashboard
+                            </a>
+                            <a href="{{ url_for('capital_injection.manage_terms') }}" class="btn btn-secondary ms-2">
+                                <i class="fas fa-cog me-2"></i>Manage Program Terms
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="lead">
+                        Strengthen your institution's capital position and exceed Basel III regulatory requirements with our comprehensive recapitalization and equity injection program. We provide capital injections ranging from $10M to $10B USD with flexible terms and structures.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Program highlights -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card dark-card h-100 shadow-sm highlight-card">
+                <div class="card-body text-center">
+                    <div class="highlight-icon mb-3">
+                        <i class="fas fa-university fa-3x text-primary"></i>
+                    </div>
+                    <h3 class="h4 text-gradient">Basel III Compliance</h3>
+                    <p>Achieve and exceed regulatory capital requirements with tailored capital solutions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dark-card h-100 shadow-sm highlight-card">
+                <div class="card-body text-center">
+                    <div class="highlight-icon mb-3">
+                        <i class="fas fa-chart-bar fa-3x text-primary"></i>
+                    </div>
+                    <h3 class="h4 text-gradient">Tier 1 Enhancement</h3>
+                    <p>Strengthen your Tier 1 capital position with equity investments and hybrid instruments</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dark-card h-100 shadow-sm highlight-card">
+                <div class="card-body text-center">
+                    <div class="highlight-icon mb-3">
+                        <i class="fas fa-shield-alt fa-3x text-primary"></i>
+                    </div>
+                    <h3 class="h4 text-gradient">Risk Mitigation</h3>
+                    <p>Improve risk-weighted asset metrics and strengthen overall financial stability</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dark-card h-100 shadow-sm highlight-card">
+                <div class="card-body text-center">
+                    <div class="highlight-icon mb-3">
+                        <i class="fas fa-handshake fa-3x text-primary"></i>
+                    </div>
+                    <h3 class="h4 text-gradient">Strategic Partnership</h3>
+                    <p>Gain a strategic partner committed to your institution's long-term growth and success</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Process -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card dark-card shadow-sm">
+                <div class="card-header bg-gradient-dark">
+                    <h2 class="h4 mb-0">Application Process</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="process-step">
+                                <div class="process-number">1</div>
+                                <h5>Create Institution Profile</h5>
+                                <p>Register your financial institution with key financial and regulatory details</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="process-step">
+                                <div class="process-number">2</div>
+                                <h5>Submit Capital Application</h5>
+                                <p>Specify capital needs, proposed terms, and intended use of funds</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="process-step">
+                                <div class="process-number">3</div>
+                                <h5>Review Process</h5>
+                                <p>Our team evaluates your application and works with you on optimal terms</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="process-step">
+                                <div class="process-number">4</div>
+                                <h5>Capital Deployment</h5>
+                                <p>Upon approval, capital is efficiently deployed to your institution</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Institution Profiles -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card dark-card shadow-sm">
+                <div class="card-header bg-gradient-dark d-flex justify-content-between align-items-center">
+                    <h2 class="h4 mb-0">Institution Profiles</h2>
+                    <a href="{{ url_for('capital_injection.new_institution') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus-circle me-1"></i>New Profile
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if profiles %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Institution Name</th>
+                                    <th>Type</th>
+                                    <th>Location</th>
+                                    <th>Total Assets</th>
+                                    <th>Capital Ratio</th>
+                                    <th>Applications</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for profile in profiles %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('capital_injection.view_institution', institution_id=profile.id) }}" class="text-primary fw-bold">
+                                            {{ profile.institution_name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ profile.institution_type.value.replace('_', ' ').title() if profile.institution_type else 'N/A' }}</td>
+                                    <td>{{ profile.headquarters_city }}, {{ profile.headquarters_country }}</td>
+                                    <td>${{ "%.2f"|format(profile.total_assets|float) }} M</td>
+                                    <td>{{ "%.2f"|format(profile.current_capital_ratio|float) }}%</td>
+                                    <td>{{ profile.applications|length }}</td>
+                                    <td>
+                                        <div class="d-flex">
+                                            <a href="{{ url_for('capital_injection.view_institution', institution_id=profile.id) }}" class="btn btn-sm btn-info me-1" title="View Profile">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('capital_injection.new_application', institution_id=profile.id) }}" class="btn btn-sm btn-success me-1" title="New Application">
+                                                <i class="fas fa-file-alt"></i>
+                                            </a>
+                                            <a href="{{ url_for('capital_injection.edit_institution', institution_id=profile.id) }}" class="btn btn-sm btn-warning" title="Edit Profile">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-university fa-4x text-muted"></i>
+                        </div>
+                        <h3 class="h4">No Institution Profiles Yet</h3>
+                        <p class="mb-4">Create your first institution profile to begin the recapitalization process</p>
+                        <a href="{{ url_for('capital_injection.new_institution') }}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-2"></i>Create Institution Profile
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Applications -->
+    {% if pending_apps %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card dark-card shadow-sm">
+                <div class="card-header bg-gradient-dark">
+                    <h2 class="h4 mb-0">Pending Applications</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Application #</th>
+                                    <th>Institution</th>
+                                    <th>Capital Type</th>
+                                    <th>Requested Amount</th>
+                                    <th>Submission Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in pending_apps %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('capital_injection.view_application', application_id=app.id) }}" class="text-primary fw-bold">
+                                            {{ app.application_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ app.institution_profile.institution_name }}</td>
+                                    <td>{{ app.capital_type.value.replace('_', ' ').title() if app.capital_type else 'N/A' }}</td>
+                                    <td>${{ "%.2f"|format(app.requested_amount|float) }} M</td>
+                                    <td>{{ app.application_date.strftime('%b %d, %Y') }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if app.status.value == 'submitted' %}bg-info
+                                            {% elif app.status.value == 'under_review' %}bg-primary
+                                            {% elif app.status.value == 'additional_info_required' %}bg-warning
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ app.status.value.replace('_', ' ').title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex">
+                                            <a href="{{ url_for('capital_injection.view_application', application_id=app.id) }}" class="btn btn-sm btn-info me-1" title="View Application">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if is_admin or is_analyst %}
+                                            <a href="{{ url_for('capital_injection.review_application', application_id=app.id) }}" class="btn btn-sm btn-warning" title="Review Application">
+                                                <i class="fas fa-clipboard-check"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Approved and Funded Applications -->
+    {% if approved_apps or funded_apps %}
+    <div class="row">
+        {% if approved_apps %}
+        <div class="col-md-6 mb-4">
+            <div class="card dark-card shadow-sm">
+                <div class="card-header bg-gradient-success">
+                    <h2 class="h4 mb-0">Approved Applications</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Application #</th>
+                                    <th>Institution</th>
+                                    <th>Approved Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in approved_apps %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('capital_injection.view_application', application_id=app.id) }}" class="text-primary fw-bold">
+                                            {{ app.application_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ app.institution_profile.institution_name }}</td>
+                                    <td>${{ "%.2f"|format(app.approved_amount|float) if app.approved_amount else "Pending" }} M</td>
+                                    <td>
+                                        <span class="badge bg-success">
+                                            {{ app.status.value.replace('_', ' ').title() }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if funded_apps %}
+        <div class="col-md-6 mb-4">
+            <div class="card dark-card shadow-sm">
+                <div class="card-header bg-gradient-info">
+                    <h2 class="h4 mb-0">Funded Applications</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Application #</th>
+                                    <th>Institution</th>
+                                    <th>Funded Amount</th>
+                                    <th>Funding Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in funded_apps %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('capital_injection.view_application', application_id=app.id) }}" class="text-primary fw-bold">
+                                            {{ app.application_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ app.institution_profile.institution_name }}</td>
+                                    <td>${{ "%.2f"|format(app.funding_amount|float) }} M</td>
+                                    <td>{{ app.funding_date.strftime('%b %d, %Y') if app.funding_date else "N/A" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- CSS for the process steps and highlight cards -->
+<style>
+    .highlight-card {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 102, 204, 0.2);
+    }
+    
+    .highlight-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2) !important;
+        border-color: #0077ff;
+    }
+    
+    .highlight-icon {
+        height: 80px;
+        width: 80px;
+        background-color: rgba(0, 102, 204, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+    
+    .process-step {
+        text-align: center;
+        padding: 20px 15px;
+        position: relative;
+    }
+    
+    .process-number {
+        height: 50px;
+        width: 50px;
+        background: linear-gradient(145deg, #0a1626, #162a4a);
+        color: #4db2ff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        font-size: 24px;
+        font-weight: bold;
+        border: 2px solid #0066cc;
+    }
+    
+    .text-gradient {
+        background: linear-gradient(90deg, #3399ff, #66ccff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        color: transparent;
+    }
+</style>
+{% endblock %}

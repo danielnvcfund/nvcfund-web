@@ -329,6 +329,14 @@ def create_app():
         except Exception as e:
             logger.error(f"Error importing self-liquidating loan models: {str(e)}")
             logger.warning("Application will run without self-liquidating loan functionality")
+            
+        # Import financial institution recapitalization models
+        try:
+            import models.financial_institution  # noqa: F401
+            logger.info("Financial institution recapitalization models imported successfully")
+        except Exception as e:
+            logger.error(f"Error importing financial institution recapitalization models: {str(e)}")
+            logger.warning("Application will run without financial institution recapitalization functionality")
         
         # Create database tables
         db.create_all()

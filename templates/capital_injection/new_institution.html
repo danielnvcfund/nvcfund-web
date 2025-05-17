@@ -1,0 +1,553 @@
+{% extends "layout.html" %}
+
+{% block title %}Register Financial Institution{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card dark-card shadow-sm">
+                <div class="card-header bg-gradient-dark d-flex justify-content-between align-items-center">
+                    <h1 class="h3 mb-0">Register Financial Institution</h1>
+                    <a href="{{ url_for('capital_injection.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Program
+                    </a>
+                </div>
+                <div class="card-body">
+                    <p class="lead mb-4">
+                        Register your financial institution to begin the recapitalization process. 
+                        This information will be used to evaluate your capital needs and structure appropriate solutions.
+                    </p>
+                    
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Institution Information -->
+                        <div class="form-section mb-5">
+                            <h3 class="h4 text-gradient mb-4">Institution Information</h3>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.institution_name.label(class="form-label") }}
+                                        {% if form.institution_name.errors %}
+                                            {{ form.institution_name(class="form-control is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.institution_name.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.institution_name(class="form-control") }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.institution_type.label(class="form-label") }}
+                                        {% if form.institution_type.errors %}
+                                            {{ form.institution_type(class="form-select is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.institution_type.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.institution_type(class="form-select") }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        {{ form.registration_number.label(class="form-label") }}
+                                        {% if form.registration_number.errors %}
+                                            {{ form.registration_number(class="form-control is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.registration_number.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.registration_number(class="form-control") }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        {{ form.tax_id.label(class="form-label") }}
+                                        {% if form.tax_id.errors %}
+                                            {{ form.tax_id(class="form-control is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.tax_id.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.tax_id(class="form-control") }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        {{ form.year_established.label(class="form-label") }}
+                                        {% if form.year_established.errors %}
+                                            {{ form.year_established(class="form-control is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.year_established.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.year_established(class="form-control") }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.headquarters_country.label(class="form-label") }}
+                                        {% if form.headquarters_country.errors %}
+                                            {{ form.headquarters_country(class="form-control is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.headquarters_country.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.headquarters_country(class="form-control") }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.headquarters_city.label(class="form-label") }}
+                                        {% if form.headquarters_city.errors %}
+                                            {{ form.headquarters_city(class="form-control is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.headquarters_city.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.headquarters_city(class="form-control") }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Contact Information -->
+                        <div class="form-section mb-5">
+                            <h3 class="h4 text-gradient mb-4">Primary Contact Information</h3>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.primary_contact_name.label(class="form-label") }}
+                                        {% if form.primary_contact_name.errors %}
+                                            {{ form.primary_contact_name(class="form-control is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.primary_contact_name.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.primary_contact_name(class="form-control") }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.primary_contact_title.label(class="form-label") }}
+                                        {% if form.primary_contact_title.errors %}
+                                            {{ form.primary_contact_title(class="form-control is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.primary_contact_title.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.primary_contact_title(class="form-control") }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.primary_contact_email.label(class="form-label") }}
+                                        {% if form.primary_contact_email.errors %}
+                                            {{ form.primary_contact_email(class="form-control is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.primary_contact_email.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.primary_contact_email(class="form-control") }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.primary_contact_phone.label(class="form-label") }}
+                                        {% if form.primary_contact_phone.errors %}
+                                            {{ form.primary_contact_phone(class="form-control is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.primary_contact_phone.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.primary_contact_phone(class="form-control") }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Financial Information -->
+                        <div class="form-section mb-5">
+                            <h3 class="h4 text-gradient mb-4">Financial Information</h3>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        {{ form.total_assets.label(class="form-label") }}
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            {% if form.total_assets.errors %}
+                                                {{ form.total_assets(class="form-control is-invalid") }}
+                                                <span class="input-group-text">M</span>
+                                                <div class="invalid-feedback">
+                                                    {% for error in form.total_assets.errors %}
+                                                        <span>{{ error }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                {{ form.total_assets(class="form-control") }}
+                                                <span class="input-group-text">M</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        {{ form.total_liabilities.label(class="form-label") }}
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            {% if form.total_liabilities.errors %}
+                                                {{ form.total_liabilities(class="form-control is-invalid") }}
+                                                <span class="input-group-text">M</span>
+                                                <div class="invalid-feedback">
+                                                    {% for error in form.total_liabilities.errors %}
+                                                        <span>{{ error }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                {{ form.total_liabilities(class="form-control") }}
+                                                <span class="input-group-text">M</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        {{ form.total_equity.label(class="form-label") }}
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            {% if form.total_equity.errors %}
+                                                {{ form.total_equity(class="form-control is-invalid") }}
+                                                <span class="input-group-text">M</span>
+                                                <div class="invalid-feedback">
+                                                    {% for error in form.total_equity.errors %}
+                                                        <span>{{ error }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                {{ form.total_equity(class="form-control") }}
+                                                <span class="input-group-text">M</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        {{ form.tier1_capital.label(class="form-label") }}
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            {% if form.tier1_capital.errors %}
+                                                {{ form.tier1_capital(class="form-control is-invalid") }}
+                                                <span class="input-group-text">M</span>
+                                                <div class="invalid-feedback">
+                                                    {% for error in form.tier1_capital.errors %}
+                                                        <span>{{ error }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                {{ form.tier1_capital(class="form-control") }}
+                                                <span class="input-group-text">M</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        {{ form.tier2_capital.label(class="form-label") }}
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            {% if form.tier2_capital.errors %}
+                                                {{ form.tier2_capital(class="form-control is-invalid") }}
+                                                <span class="input-group-text">M</span>
+                                                <div class="invalid-feedback">
+                                                    {% for error in form.tier2_capital.errors %}
+                                                        <span>{{ error }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                {{ form.tier2_capital(class="form-control") }}
+                                                <span class="input-group-text">M</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        {{ form.risk_weighted_assets.label(class="form-label") }}
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            {% if form.risk_weighted_assets.errors %}
+                                                {{ form.risk_weighted_assets(class="form-control is-invalid") }}
+                                                <span class="input-group-text">M</span>
+                                                <div class="invalid-feedback">
+                                                    {% for error in form.risk_weighted_assets.errors %}
+                                                        <span>{{ error }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                {{ form.risk_weighted_assets(class="form-control") }}
+                                                <span class="input-group-text">M</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Regulatory Information -->
+                        <div class="form-section mb-5">
+                            <h3 class="h4 text-gradient mb-4">Regulatory Information</h3>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.primary_regulator.label(class="form-label") }}
+                                        {% if form.primary_regulator.errors %}
+                                            {{ form.primary_regulator(class="form-control is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.primary_regulator.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.primary_regulator(class="form-control") }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.regulatory_framework.label(class="form-label") }}
+                                        {% if form.regulatory_framework.errors %}
+                                            {{ form.regulatory_framework(class="form-select is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.regulatory_framework.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.regulatory_framework(class="form-select") }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        {{ form.current_capital_ratio.label(class="form-label") }}
+                                        <div class="input-group">
+                                            {% if form.current_capital_ratio.errors %}
+                                                {{ form.current_capital_ratio(class="form-control is-invalid") }}
+                                                <span class="input-group-text">%</span>
+                                                <div class="invalid-feedback">
+                                                    {% for error in form.current_capital_ratio.errors %}
+                                                        <span>{{ error }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                {{ form.current_capital_ratio(class="form-control") }}
+                                                <span class="input-group-text">%</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        {{ form.current_tier1_ratio.label(class="form-label") }}
+                                        <div class="input-group">
+                                            {% if form.current_tier1_ratio.errors %}
+                                                {{ form.current_tier1_ratio(class="form-control is-invalid") }}
+                                                <span class="input-group-text">%</span>
+                                                <div class="invalid-feedback">
+                                                    {% for error in form.current_tier1_ratio.errors %}
+                                                        <span>{{ error }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                {{ form.current_tier1_ratio(class="form-control") }}
+                                                <span class="input-group-text">%</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        {{ form.current_leverage_ratio.label(class="form-label") }}
+                                        <div class="input-group">
+                                            {% if form.current_leverage_ratio.errors %}
+                                                {{ form.current_leverage_ratio(class="form-control is-invalid") }}
+                                                <span class="input-group-text">%</span>
+                                                <div class="invalid-feedback">
+                                                    {% for error in form.current_leverage_ratio.errors %}
+                                                        <span>{{ error }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                {{ form.current_leverage_ratio(class="form-control") }}
+                                                <span class="input-group-text">%</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        {{ form.required_capital_ratio.label(class="form-label") }}
+                                        <div class="input-group">
+                                            {% if form.required_capital_ratio.errors %}
+                                                {{ form.required_capital_ratio(class="form-control is-invalid") }}
+                                                <span class="input-group-text">%</span>
+                                                <div class="invalid-feedback">
+                                                    {% for error in form.required_capital_ratio.errors %}
+                                                        <span>{{ error }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                {{ form.required_capital_ratio(class="form-control") }}
+                                                <span class="input-group-text">%</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Document Upload -->
+                        <div class="form-section mb-5">
+                            <h3 class="h4 text-gradient mb-4">Documentation</h3>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.financial_statements.label(class="form-label") }}
+                                        {% if form.financial_statements.errors %}
+                                            {{ form.financial_statements(class="form-control is-invalid", multiple=True) }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.financial_statements.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.financial_statements(class="form-control", multiple=True) }}
+                                        {% endif %}
+                                        <div class="form-text">Upload your institution's last 3 years of financial statements.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.regulatory_reports.label(class="form-label") }}
+                                        {% if form.regulatory_reports.errors %}
+                                            {{ form.regulatory_reports(class="form-control is-invalid", multiple=True) }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.regulatory_reports.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.regulatory_reports(class="form-control", multiple=True) }}
+                                        {% endif %}
+                                        <div class="form-text">Upload recent regulatory filings and reports.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.organizational_chart.label(class="form-label") }}
+                                        {% if form.organizational_chart.errors %}
+                                            {{ form.organizational_chart(class="form-control is-invalid", multiple=True) }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.organizational_chart.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.organizational_chart(class="form-control", multiple=True) }}
+                                        {% endif %}
+                                        <div class="form-text">Upload your institution's organizational structure.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.banking_license.label(class="form-label") }}
+                                        {% if form.banking_license.errors %}
+                                            {{ form.banking_license(class="form-control is-invalid", multiple=True) }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.banking_license.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.banking_license(class="form-control", multiple=True) }}
+                                        {% endif %}
+                                        <div class="form-text">Upload your institution's banking license or charter.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('capital_injection.index') }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>{{ form.submit.label.text }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for auto-calculating total equity -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const totalAssetsInput = document.getElementById('total_assets');
+        const totalLiabilitiesInput = document.getElementById('total_liabilities');
+        const totalEquityInput = document.getElementById('total_equity');
+        
+        function calculateEquity() {
+            if(totalAssetsInput.value && totalLiabilitiesInput.value) {
+                const assets = parseFloat(totalAssetsInput.value);
+                const liabilities = parseFloat(totalLiabilitiesInput.value);
+                
+                if(!isNaN(assets) && !isNaN(liabilities)) {
+                    const equity = assets - liabilities;
+                    totalEquityInput.value = equity.toFixed(2);
+                }
+            }
+        }
+        
+        if(totalAssetsInput && totalLiabilitiesInput && totalEquityInput) {
+            totalAssetsInput.addEventListener('input', calculateEquity);
+            totalLiabilitiesInput.addEventListener('input', calculateEquity);
+        }
+    });
+</script>
+{% endblock %}
