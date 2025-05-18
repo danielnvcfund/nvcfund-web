@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=postgresql://nvcadmin:${POSTGRES_PASSWORD}@db/nvcbanking
+      - SESSION_SECRET=${SESSION_SECRET}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID}
+      - PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - INFURA_API_KEY=${INFURA_API_KEY}
+    depends_on:
+      - db
+    volumes:
+      - ./:/app
+    networks:
+      - nvcbanking-network
+
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      - POSTGRES_USER=nvcadmin
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=nvcbanking
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nvcbanking-network
+    ports:
+      - "5432:5432"
+
+  nginx:
+    image: nginx:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+      - ./static:/app/static
+    depends_on:
+      - web
+    networks:
+      - nvcbanking-network
+
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+networks:
+  nvcbanking-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
