@@ -450,19 +450,13 @@ def create_app():
         
         # Register Loan routes
         try:
-            # First try to use the new loan routes
-            from routes.loan_routes import loan_bp
-            app.register_blueprint(loan_bp)
+            # Use the self_liquidating_loan_routes which are the primary routes
+            from routes.self_liquidating_loan_routes import self_liquidating_loan_bp
+            app.register_blueprint(self_liquidating_loan_bp)
             logger.info("Loan routes registered successfully")
-        except ImportError:
-            # Fall back to old routes if new ones aren't available
-            try:
-                from routes.self_liquidating_loan_routes import self_liquidating_loan_bp as loan_bp
-                app.register_blueprint(loan_bp)
-                logger.info("Legacy loan routes registered successfully")
-            except Exception as e:
-                logger.error(f"Error registering Loan routes: {str(e)}")
-                logger.warning("Application will run without Loan functionality")
+        except Exception as e:
+            logger.error(f"Error registering Loan routes: {str(e)}")
+            logger.warning("Application will run without Loan functionality")
         
         # Register SWIFT GPI routes
         try:
