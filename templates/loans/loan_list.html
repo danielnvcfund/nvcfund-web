@@ -8,7 +8,7 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h3 mb-0 text-primary">Loan Management</h1>
-                <a href="{{ url_for('self_liquidating_loan.new_loan') }}" class="btn btn-primary">
+                <a href="#" class="btn btn-primary">
                     <i class="fas fa-plus me-1"></i> New Loan Application
                 </a>
             </div>
@@ -35,12 +35,12 @@
                                 {% for loan in loans %}
                                 <tr>
                                     <td>
-                                        <a href="{{ url_for('self_liquidating_loan.view_loan', loan_id=loan.id) }}" class="text-primary fw-bold">
+                                        <a href="{{ url_for('simple_loan.loan_detail', loan_id=loan.id) }}" class="text-primary fw-bold">
                                             {{ loan.loan_number or 'SLL-' + loan.id|string }}
                                         </a>
                                     </td>
                                     <td>{{ loan.borrower_name }}</td>
-                                    <td>{{ loan.currency }} {{ loan.loan_amount|format_number }}</td>
+                                    <td>{{ loan.currency }} {{ loan.loan_amount }}</td>
                                     <td>
                                         <span class="badge 
                                         {% if loan.status == 'ACTIVE' %}bg-success
@@ -60,10 +60,10 @@
                                                 Actions
                                             </button>
                                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                                <li><a class="dropdown-item" href="{{ url_for('self_liquidating_loan.view_loan', loan_id=loan.id) }}">View Details</a></li>
-                                                <li><a class="dropdown-item" href="{{ url_for('self_liquidating_loan.update_status', loan_id=loan.id) }}">Update Status</a></li>
-                                                <li><a class="dropdown-item" href="{{ url_for('self_liquidating_loan.add_collateral', loan_id=loan.id) }}">Add Collateral</a></li>
-                                                <li><a class="dropdown-item" href="{{ url_for('self_liquidating_loan.add_payment', loan_id=loan.id) }}">Record Payment</a></li>
+                                                <li><a class="dropdown-item" href="{{ url_for('simple_loan.loan_detail', loan_id=loan.id) }}">View Details</a></li>
+                                                <li><a class="dropdown-item" href="#">Update Status</a></li>
+                                                <li><a class="dropdown-item" href="#">Add Collateral</a></li>
+                                                <li><a class="dropdown-item" href="#">Record Payment</a></li>
                                             </ul>
                                         </div>
                                     </td>
@@ -151,7 +151,7 @@
                                 <tr>
                                     <td>{{ activity.date.strftime('%Y-%m-%d %H:%M') if activity.date else 'N/A' }}</td>
                                     <td>
-                                        <a href="{{ url_for('self_liquidating_loan.view_loan', loan_id=activity.loan_id) }}" class="text-primary">
+                                        <a href="{{ url_for('simple_loan.loan_detail', loan_id=activity.loan_id) }}" class="text-primary">
                                             {{ activity.loan_number }}
                                         </a>
                                     </td>
