@@ -328,9 +328,11 @@
                                 <div class="form-text">Minimum $10M, enter amount in whole numbers</div>
                             </div>
                             
-                            <div class="col-md-3 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label for="currency" class="form-label">Currency</label>
-                                <select class="form-select" id="currency" name="currency" required style="background-color: white; color: black; font-weight: bold;">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-globe"></i></span>
+                                    <select class="form-select" id="currency" name="currency" required style="background-color: white; color: black; font-weight: bold;">
                                     <optgroup label="Major Currencies" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
                                         <option value="USD" selected style="background-color: white; color: black; padding: 10px;">USD - US Dollar</option>
                                         <option value="EUR" style="background-color: white; color: black; padding: 10px;">EUR - Euro</option>
@@ -362,13 +364,23 @@
                                         <option value="SFN" style="background-color: white; color: black; padding: 10px;">SFN - SFN Coin</option>
                                     </optgroup>
                                 </select>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
+                        <!-- Loan Terms Section -->
+                        <div class="row mb-4 p-3" style="background-color: rgba(13, 110, 253, 0.05); border-radius: 8px; border-left: 4px solid #0d6efd;">
+                            <div class="col-12 mb-3">
+                                <h5 style="color: #0a58ca; border-bottom: 1px solid #dee2e6; padding-bottom: 10px;">
+                                    <i class="fas fa-calendar-alt me-2"></i>Loan Terms
+                                </h5>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
                                 <label for="loan_term" class="form-label">Loan Term (Months)</label>
-                                <select class="form-select" id="loan_term" name="loan_term" required style="background-color: white; color: black; font-weight: bold;">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                                    <select class="form-select" id="loan_term" name="loan_term" required style="background-color: white; color: black; font-weight: bold;">
                                     <optgroup label="Short Term" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
                                         <option value="3" style="background-color: white; color: black; padding: 10px;">3 months (Quarter)</option>
                                         <option value="6" style="background-color: white; color: black; padding: 10px;">6 months (Half Year)</option>
