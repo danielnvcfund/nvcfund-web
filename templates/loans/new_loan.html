@@ -331,7 +331,7 @@
                 <h1 class="h3 mb-0" style="color: #ffffff; font-weight: bold;">
                     <i class="fas fa-file-signature me-2"></i>New Loan Application
                 </h1>
-                <a href="{{ url_for('simple_loan.index') }}" class="btn" style="border: 2px solid #0d6efd; color: #0d6efd; font-weight: bold; padding: 8px 16px; border-radius: 5px;">
+                <a href="/simple-loans/" class="btn" style="border: 2px solid #0d6efd; color: #0d6efd; font-weight: bold; padding: 8px 16px; border-radius: 5px;">
                     <i class="fas fa-arrow-left me-1"></i> Back to Loans
                 </a>
             </div>
@@ -344,7 +344,7 @@
                     </div>
                 </div>
                 <div class="form-card-body">
-                    <form method="POST" action="{{ url_for('simple_loan.new_loan') }}">
+                    <form method="POST">
                         <!-- Borrower Information Section -->
                         <div class="row mb-4 p-3" style="background-color: #061c38; border-radius: 8px; border-left: 4px solid #0d6efd;">
                             <div class="col-12 mb-3">
