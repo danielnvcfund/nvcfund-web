@@ -4,30 +4,68 @@
 
 {% block head %}
 <style>
-    /* Override dark theme with forced light theme */
-    body, html, main, .g-sidenav-show, .bg-gray-100, .sidenav {
+    /* Completely override the dark theme - force light mode for maximum contrast */
+    body, html, main, .g-sidenav-show, .bg-gray-100, .sidenav, div, section {
         color: #000000 !important;
         background-color: #ffffff !important;
     }
     
-    /* Fix all form fields and inputs for maximum visibility */
-    input, textarea, select, .form-control, .form-select {
+    /* Browser-compatible hack for showing ALL dropdown options */
+    select {
         color: #000000 !important;
         background-color: #ffffff !important;
         border: 3px solid #0000ff !important;
         font-weight: bold !important;
         font-size: 16px !important;
-    }
-    
-    /* IMPORTANT: Fix for select dropdowns to show multiple options at once */
-    select, .form-select {
-        height: auto !important; 
-        size: 10 !important; /* Show at least 10 options at once */
+        
+        /* Critical: This makes all options visible at once */
+        size: 15 !important;
+        height: auto !important;
         padding: 10px !important;
-        background-image: none !important; /* Remove default dropdown arrow */
+        
+        /* Remove styling that might hide options */
+        background-image: none !important;
+        -webkit-appearance: listbox !important;
+        -moz-appearance: listbox !important;
+        appearance: listbox !important;
     }
     
-    /* Category styling for the select dropdown */
+    /* Force sizing for form-select (Bootstrap version) */
+    .form-select {
+        color: #000000 !important;
+        background-color: #ffffff !important;
+        border: 3px solid #0000ff !important;
+        font-weight: bold !important;
+        font-size: 16px !important;
+        
+        /* Critical: This makes all options visible at once */
+        size: 15 !important;
+        height: auto !important;
+        min-height: 200px !important;
+        padding: 10px !important;
+        
+        /* Remove styling that might hide options */
+        background-image: none !important;
+        -webkit-appearance: listbox !important;
+        -moz-appearance: listbox !important;
+        appearance: listbox !important;
+    }
+    
+    /* Hack to make Bootstrap's form-select show more than one option */
+    .form-select[multiple], .form-select[size]:not([size="1"]) {
+        padding-right: 0.75rem !important;
+        background-image: none !important;
+    }
+    
+    /* Add direct attribute targeting as fallback */
+    [name="currency"], [name="loan_term"], [name="purpose"], 
+    #currency, #loan_term, #purpose {
+        size: 15 !important;
+        height: auto !important;
+        min-height: 200px !important;
+    }
+    
+    /* Ultra-high contrast for option groups */
     optgroup {
         background-color: #0000ff !important;
         color: #ffffff !important;
@@ -35,38 +73,42 @@
         font-weight: bold !important;
         text-transform: uppercase !important;
         border: none !important;
-        padding: 10px !important;
+        padding: 12px !important;
+        margin: 0 !important;
+        letter-spacing: 1px !important;
     }
     
-    /* Option styling for the select dropdown */
+    /* Ultra-high contrast for options */
     option {
         background-color: #ffffff !important;
         color: #000000 !important;
         font-size: 16px !important;
-        padding: 10px !important;
+        padding: 12px !important;
+        margin: 2px 0 !important;
         border-bottom: 1px solid #cccccc !important;
     }
     
-    /* Selected option styling */
+    /* Make selected option very obvious */
     option:checked {
         background-color: #0000ff !important;
         color: #ffffff !important;
         font-weight: bold !important;
     }
     
-    /* Make sure labels are clearly visible */
+    /* Make sure labels are extremely visible */
     label, .form-label {
         color: #0000ff !important;
         font-weight: bold !important;
         font-size: 18px !important;
-        margin-bottom: 8px !important;
+        margin-bottom: 10px !important;
+        text-shadow: 0px 0px 1px rgba(0,0,0,0.2) !important;
     }
     
-    /* Make cards stand out */
+    /* High-contrast containers */
     .card {
         background-color: #ffffff !important;
         border: 3px solid #0000ff !important;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
         margin-bottom: 30px !important;
     }
     
@@ -76,20 +118,26 @@
         font-weight: bold !important;
         font-size: 20px !important;
         padding: 15px 20px !important;
+        letter-spacing: 1px !important;
     }
     
-    /* Fix other form elements */
-    .form-text {
+    /* All other inputs need to be highly visible too */
+    input, textarea, .form-control {
         color: #000000 !important;
-        font-weight: normal !important;
+        background-color: #ffffff !important;
+        border: 3px solid #0000ff !important;
+        padding: 12px !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
     }
     
-    /* Make buttons more visible */
+    /* High contrast buttons */
     .btn {
         font-weight: bold !important;
         font-size: 18px !important;
         padding: 12px 24px !important;
         border-radius: 5px !important;
+        letter-spacing: 1px !important;
     }
     
     .btn-primary {
@@ -104,24 +152,54 @@
         color: #0000ff !important;
     }
     
-    /* Important: Special sizing for currency dropdown to see all options */
-    #currency {
-        height: 300px !important;
-        overflow-y: auto !important;
+    /* Override any !important styles from the theme that might be causing issues */
+    [data-bs-theme="dark"] {
+        --bs-body-color: #000000 !important;
+        --bs-body-bg: #ffffff !important;
     }
     
-    /* Important: Special sizing for loan term dropdown to see all options */
-    #loan_term {
-        height: 250px !important;
-        overflow-y: auto !important;
+    /* Fix all possible dropdown styling issues */
+    .dropdown-menu {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 3px solid #0000ff !important;
+        padding: 0 !important;
     }
     
-    /* Important: Special sizing for purpose dropdown to see all options */
-    #purpose {
-        height: 250px !important;
-        overflow-y: auto !important;
+    .dropdown-item {
+        color: #000000 !important;
+        background-color: #ffffff !important;
+        padding: 12px !important;
+        font-weight: bold !important;
+    }
+    
+    .dropdown-item:hover, .dropdown-item:focus {
+        background-color: #0000ff !important;
+        color: #ffffff !important;
     }
 </style>
+
+<!-- Force the browser to show all dropdown options as lists -->
+<script>
+    // Run this right away when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Force all selects to show multiple options
+        var selects = document.querySelectorAll('select');
+        selects.forEach(function(select) {
+            // Make all selects show multiple options
+            select.setAttribute('size', '15');
+            
+            // Force them to be visible
+            select.style.height = 'auto';
+            select.style.minHeight = '200px';
+            select.style.maxHeight = '300px';
+            select.style.overflow = 'auto';
+            select.style.backgroundColor = '#ffffff';
+            select.style.color = '#000000';
+            select.style.border = '3px solid #0000ff';
+        });
+    });
+</script>
 {% endblock %}
 
 {% block content %}
@@ -156,36 +234,36 @@
                             
                             <div class="col-md-3 mb-3">
                                 <label for="currency" class="form-label">Currency</label>
-                                <select class="form-select" id="currency" name="currency" required>
-                                    <optgroup label="Major Currencies">
-                                        <option value="USD" selected>USD - US Dollar</option>
-                                        <option value="EUR">EUR - Euro</option>
-                                        <option value="GBP">GBP - British Pound</option>
-                                        <option value="JPY">JPY - Japanese Yen</option>
-                                        <option value="CHF">CHF - Swiss Franc</option>
-                                        <option value="CAD">CAD - Canadian Dollar</option>
-                                        <option value="AUD">AUD - Australian Dollar</option>
+                                <select class="form-select" id="currency" name="currency" size="15" required style="background-color: white; color: black; font-weight: bold; height: 300px;">
+                                    <optgroup label="Major Currencies" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                        <option value="USD" selected style="background-color: white; color: black; padding: 10px;">USD - US Dollar</option>
+                                        <option value="EUR" style="background-color: white; color: black; padding: 10px;">EUR - Euro</option>
+                                        <option value="GBP" style="background-color: white; color: black; padding: 10px;">GBP - British Pound</option>
+                                        <option value="JPY" style="background-color: white; color: black; padding: 10px;">JPY - Japanese Yen</option>
+                                        <option value="CHF" style="background-color: white; color: black; padding: 10px;">CHF - Swiss Franc</option>
+                                        <option value="CAD" style="background-color: white; color: black; padding: 10px;">CAD - Canadian Dollar</option>
+                                        <option value="AUD" style="background-color: white; color: black; padding: 10px;">AUD - Australian Dollar</option>
                                     </optgroup>
-                                    <optgroup label="Asian Currencies">
-                                        <option value="CNY">CNY - Chinese Yuan</option>
-                                        <option value="HKD">HKD - Hong Kong Dollar</option>
-                                        <option value="SGD">SGD - Singapore Dollar</option>
-                                        <option value="INR">INR - Indian Rupee</option>
+                                    <optgroup label="Asian Currencies" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                        <option value="CNY" style="background-color: white; color: black; padding: 10px;">CNY - Chinese Yuan</option>
+                                        <option value="HKD" style="background-color: white; color: black; padding: 10px;">HKD - Hong Kong Dollar</option>
+                                        <option value="SGD" style="background-color: white; color: black; padding: 10px;">SGD - Singapore Dollar</option>
+                                        <option value="INR" style="background-color: white; color: black; padding: 10px;">INR - Indian Rupee</option>
                                     </optgroup>
-                                    <optgroup label="Middle Eastern Currencies">
-                                        <option value="AED">AED - UAE Dirham</option>
-                                        <option value="SAR">SAR - Saudi Riyal</option>
+                                    <optgroup label="Middle Eastern Currencies" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                        <option value="AED" style="background-color: white; color: black; padding: 10px;">AED - UAE Dirham</option>
+                                        <option value="SAR" style="background-color: white; color: black; padding: 10px;">SAR - Saudi Riyal</option>
                                     </optgroup>
-                                    <optgroup label="African Currencies">
-                                        <option value="ZAR">ZAR - South African Rand</option>
-                                        <option value="NGN">NGN - Nigerian Naira</option>
-                                        <option value="KES">KES - Kenyan Shilling</option>
-                                        <option value="EGP">EGP - Egyptian Pound</option>
+                                    <optgroup label="African Currencies" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                        <option value="ZAR" style="background-color: white; color: black; padding: 10px;">ZAR - South African Rand</option>
+                                        <option value="NGN" style="background-color: white; color: black; padding: 10px;">NGN - Nigerian Naira</option>
+                                        <option value="KES" style="background-color: white; color: black; padding: 10px;">KES - Kenyan Shilling</option>
+                                        <option value="EGP" style="background-color: white; color: black; padding: 10px;">EGP - Egyptian Pound</option>
                                     </optgroup>
-                                    <optgroup label="Platform Currencies">
-                                        <option value="NVCT">NVCT - NVC Token</option>
-                                        <option value="AFD1">AFD1 - American Federation Dollar</option>
-                                        <option value="SFN">SFN - SFN Coin</option>
+                                    <optgroup label="Platform Currencies" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                        <option value="NVCT" style="background-color: white; color: black; padding: 10px;">NVCT - NVC Token</option>
+                                        <option value="AFD1" style="background-color: white; color: black; padding: 10px;">AFD1 - American Federation Dollar</option>
+                                        <option value="SFN" style="background-color: white; color: black; padding: 10px;">SFN - SFN Coin</option>
                                     </optgroup>
                                 </select>
                             </div>
@@ -194,29 +272,29 @@
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label for="loan_term" class="form-label">Loan Term (Months)</label>
-                                <select class="form-select" id="loan_term" name="loan_term" required>
-                                    <optgroup label="Short Term">
-                                        <option value="3">3 months (Quarter)</option>
-                                        <option value="6">6 months (Half Year)</option>
-                                        <option value="12">12 months (1 year)</option>
+                                <select class="form-select" id="loan_term" name="loan_term" size="15" required style="background-color: white; color: black; font-weight: bold; height: 300px;">
+                                    <optgroup label="Short Term" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                        <option value="3" style="background-color: white; color: black; padding: 10px;">3 months (Quarter)</option>
+                                        <option value="6" style="background-color: white; color: black; padding: 10px;">6 months (Half Year)</option>
+                                        <option value="12" style="background-color: white; color: black; padding: 10px;">12 months (1 year)</option>
                                     </optgroup>
-                                    <optgroup label="Medium Term">
-                                        <option value="18">18 months (1.5 years)</option>
-                                        <option value="24">24 months (2 years)</option>
-                                        <option value="36">36 months (3 years)</option>
-                                        <option value="48">48 months (4 years)</option>
-                                        <option value="60" selected>60 months (5 years)</option>
+                                    <optgroup label="Medium Term" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                        <option value="18" style="background-color: white; color: black; padding: 10px;">18 months (1.5 years)</option>
+                                        <option value="24" style="background-color: white; color: black; padding: 10px;">24 months (2 years)</option>
+                                        <option value="36" style="background-color: white; color: black; padding: 10px;">36 months (3 years)</option>
+                                        <option value="48" style="background-color: white; color: black; padding: 10px;">48 months (4 years)</option>
+                                        <option value="60" selected style="background-color: white; color: black; padding: 10px;">60 months (5 years)</option>
                                     </optgroup>
-                                    <optgroup label="Long Term">
-                                        <option value="72">72 months (6 years)</option>
-                                        <option value="84">84 months (7 years)</option>
-                                        <option value="96">96 months (8 years)</option>
-                                        <option value="108">108 months (9 years)</option>
-                                        <option value="120">120 months (10 years)</option>
-                                        <option value="180">180 months (15 years)</option>
-                                        <option value="240">240 months (20 years)</option>
-                                        <option value="300">300 months (25 years)</option>
-                                        <option value="360">360 months (30 years)</option>
+                                    <optgroup label="Long Term" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                        <option value="72" style="background-color: white; color: black; padding: 10px;">72 months (6 years)</option>
+                                        <option value="84" style="background-color: white; color: black; padding: 10px;">84 months (7 years)</option>
+                                        <option value="96" style="background-color: white; color: black; padding: 10px;">96 months (8 years)</option>
+                                        <option value="108" style="background-color: white; color: black; padding: 10px;">108 months (9 years)</option>
+                                        <option value="120" style="background-color: white; color: black; padding: 10px;">120 months (10 years)</option>
+                                        <option value="180" style="background-color: white; color: black; padding: 10px;">180 months (15 years)</option>
+                                        <option value="240" style="background-color: white; color: black; padding: 10px;">240 months (20 years)</option>
+                                        <option value="300" style="background-color: white; color: black; padding: 10px;">300 months (25 years)</option>
+                                        <option value="360" style="background-color: white; color: black; padding: 10px;">360 months (30 years)</option>
                                     </optgroup>
                                 </select>
                             </div>
@@ -229,51 +307,51 @@
                             
                             <div class="col-md-4 mb-3">
                                 <label for="purpose" class="form-label">Loan Purpose</label>
-                                <select class="form-select" id="purpose" name="purpose" required>
-                                    <optgroup label="Capital Enhancement">
-                                        <option value="Capital Injection" selected>Capital Injection</option>
-                                        <option value="Tier 1 Capital">Tier 1 Capital Enhancement</option>
-                                        <option value="Tier 2 Capital">Tier 2 Capital Enhancement</option>
-                                        <option value="Regulatory Buffer">Regulatory Buffer Capital</option>
-                                        <option value="Recapitalization">General Recapitalization</option>
-                                        <option value="Basel Compliance">Basel III/IV Compliance</option>
-                                        <option value="Liquidity Ratio">Liquidity Ratio Improvement</option>
-                                        <option value="CAR Compliance">Capital Adequacy Ratio Compliance</option>
+                                <select class="form-select" id="purpose" name="purpose" size="15" required style="background-color: white; color: black; font-weight: bold; height: 300px;">
+                                    <optgroup label="Capital Enhancement" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                        <option value="Capital Injection" selected style="background-color: white; color: black; padding: 10px;">Capital Injection</option>
+                                        <option value="Tier 1 Capital" style="background-color: white; color: black; padding: 10px;">Tier 1 Capital Enhancement</option>
+                                        <option value="Tier 2 Capital" style="background-color: white; color: black; padding: 10px;">Tier 2 Capital Enhancement</option>
+                                        <option value="Regulatory Buffer" style="background-color: white; color: black; padding: 10px;">Regulatory Buffer Capital</option>
+                                        <option value="Recapitalization" style="background-color: white; color: black; padding: 10px;">General Recapitalization</option>
+                                        <option value="Basel Compliance" style="background-color: white; color: black; padding: 10px;">Basel III/IV Compliance</option>
+                                        <option value="Liquidity Ratio" style="background-color: white; color: black; padding: 10px;">Liquidity Ratio Improvement</option>
+                                        <option value="CAR Compliance" style="background-color: white; color: black; padding: 10px;">Capital Adequacy Ratio Compliance</option>
                                     </optgroup>
-                                    <optgroup label="Growth & Expansion">
-                                        <option value="Branch Expansion">Branch Network Expansion</option>
-                                        <option value="Digital Transformation">Digital Banking Transformation</option>
-                                        <option value="Market Expansion">New Market Entry</option>
-                                        <option value="Service Expansion">New Service Development</option>
-                                        <option value="Geographic Expansion">Geographic Expansion</option>
-                                        <option value="Cross-Border Expansion">Cross-Border Banking</option>
+                                    <optgroup label="Growth & Expansion" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                        <option value="Branch Expansion" style="background-color: white; color: black; padding: 10px;">Branch Network Expansion</option>
+                                        <option value="Digital Transformation" style="background-color: white; color: black; padding: 10px;">Digital Banking Transformation</option>
+                                        <option value="Market Expansion" style="background-color: white; color: black; padding: 10px;">New Market Entry</option>
+                                        <option value="Service Expansion" style="background-color: white; color: black; padding: 10px;">New Service Development</option>
+                                        <option value="Geographic Expansion" style="background-color: white; color: black; padding: 10px;">Geographic Expansion</option>
+                                        <option value="Cross-Border Expansion" style="background-color: white; color: black; padding: 10px;">Cross-Border Banking</option>
                                     </optgroup>
-                                    <optgroup label="Strategic Initiatives">
-                                        <option value="Acquisition">Financial Institution Acquisition</option>
-                                        <option value="Merger">Merger Financing</option>
-                                        <option value="Technology Upgrade">Core Banking System Upgrade</option>
-                                        <option value="Fintech Integration">Fintech Integration/Acquisition</option>
-                                        <option value="Cybersecurity">Cybersecurity Enhancement</option>
-                                        <option value="AI Implementation">AI & ML Implementation</option>
+                                    <optgroup label="Strategic Initiatives" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                        <option value="Acquisition" style="background-color: white; color: black; padding: 10px;">Financial Institution Acquisition</option>
+                                        <option value="Merger" style="background-color: white; color: black; padding: 10px;">Merger Financing</option>
+                                        <option value="Technology Upgrade" style="background-color: white; color: black; padding: 10px;">Core Banking System Upgrade</option>
+                                        <option value="Fintech Integration" style="background-color: white; color: black; padding: 10px;">Fintech Integration/Acquisition</option>
+                                        <option value="Cybersecurity" style="background-color: white; color: black; padding: 10px;">Cybersecurity Enhancement</option>
+                                        <option value="AI Implementation" style="background-color: white; color: black; padding: 10px;">AI & ML Implementation</option>
                                     </optgroup>
-                                    <optgroup label="Debt & Restructuring">
-                                        <option value="Debt Refinancing">Debt Refinancing</option>
-                                        <option value="Bond Issuance Support">Bond Issuance Support</option>
-                                        <option value="Debt Restructuring">Debt Restructuring</option>
-                                        <option value="Non-Performing Loans">NPL Resolution</option>
-                                        <option value="Asset Quality">Asset Quality Improvement</option>
+                                    <optgroup label="Debt & Restructuring" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                        <option value="Debt Refinancing" style="background-color: white; color: black; padding: 10px;">Debt Refinancing</option>
+                                        <option value="Bond Issuance Support" style="background-color: white; color: black; padding: 10px;">Bond Issuance Support</option>
+                                        <option value="Debt Restructuring" style="background-color: white; color: black; padding: 10px;">Debt Restructuring</option>
+                                        <option value="Non-Performing Loans" style="background-color: white; color: black; padding: 10px;">NPL Resolution</option>
+                                        <option value="Asset Quality" style="background-color: white; color: black; padding: 10px;">Asset Quality Improvement</option>
                                     </optgroup>
-                                    <optgroup label="Infrastructure & Operations">
-                                        <option value="Infrastructure">Physical Infrastructure</option>
-                                        <option value="Working Capital">Working Capital</option>
-                                        <option value="Operational Efficiency">Operational Efficiency</option>
-                                        <option value="Sustainable Banking">Green Banking Initiative</option>
-                                        <option value="Regulatory Compliance">Regulatory Compliance Systems</option>
+                                    <optgroup label="Infrastructure & Operations" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                        <option value="Infrastructure" style="background-color: white; color: black; padding: 10px;">Physical Infrastructure</option>
+                                        <option value="Working Capital" style="background-color: white; color: black; padding: 10px;">Working Capital</option>
+                                        <option value="Operational Efficiency" style="background-color: white; color: black; padding: 10px;">Operational Efficiency</option>
+                                        <option value="Sustainable Banking" style="background-color: white; color: black; padding: 10px;">Green Banking Initiative</option>
+                                        <option value="Regulatory Compliance" style="background-color: white; color: black; padding: 10px;">Regulatory Compliance Systems</option>
                                     </optgroup>
-                                    <optgroup label="Other">
-                                        <option value="MSME Lending">MSME Lending Program</option>
-                                        <option value="Specialized Lending">Specialized Lending Initiative</option>
-                                        <option value="Other">Other Purpose</option>
+                                    <optgroup label="Other" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                        <option value="MSME Lending" style="background-color: white; color: black; padding: 10px;">MSME Lending Program</option>
+                                        <option value="Specialized Lending" style="background-color: white; color: black; padding: 10px;">Specialized Lending Initiative</option>
+                                        <option value="Other" style="background-color: white; color: black; padding: 10px;">Other Purpose</option>
                                     </optgroup>
                                 </select>
                             </div>
