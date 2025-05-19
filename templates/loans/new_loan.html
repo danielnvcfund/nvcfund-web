@@ -4,6 +4,98 @@
 
 {% block head %}
 <style>
+    /* Add a gradient background for a more professional look */
+    .card {
+        background: linear-gradient(to bottom, #ffffff, #f8f9fa) !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+        border-radius: 10px !important;
+        border: 1px solid #0d6efd !important;
+        overflow: hidden;
+    }
+    
+    /* Add a stylish header for the form */
+    .card-header {
+        background: linear-gradient(to right, #0d6efd, #0a58ca) !important;
+        color: white !important;
+        font-weight: 600 !important;
+        padding: 1.2rem !important;
+        border-bottom: 3px solid #0a58ca !important;
+    }
+    
+    /* Improve form section styling */
+    .form-section {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background-color: rgba(13, 110, 253, 0.05);
+        border-radius: 8px;
+        border-left: 4px solid #0d6efd;
+    }
+    
+    /* Make form controls more appealing */
+    .form-control, .form-select {
+        border: 2px solid #ced4da !important;
+        border-radius: 8px !important;
+        padding: 0.75rem !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd !important;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    }
+    
+    /* Style labels */
+    .form-label {
+        font-weight: 600 !important;
+        color: #0a58ca !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    /* Style the submit button */
+    .btn-primary {
+        background: linear-gradient(to right, #0d6efd, #0a58ca) !important;
+        border: none !important;
+        padding: 0.75rem 1.5rem !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(to right, #0a58ca, #084298) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 8px rgba(10, 88, 202, 0.3) !important;
+    }
+    
+    /* Reset button styling */
+    .btn-outline-secondary {
+        border: 2px solid #6c757d !important;
+        color: #6c757d !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: #6c757d !important;
+        color: white !important;
+    }
+    
+    /* Page title styling */
+    .h3.text-primary {
+        background: -webkit-linear-gradient(#0d6efd, #084298);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700 !important;
+    }
+    
+    /* Add icon to back button */
+    .back-link i {
+        transition: transform 0.3s ease;
+    }
+    
+    .back-link:hover i {
+        transform: translateX(-3px);
+    }
     /* Completely override the dark theme - force light mode for maximum contrast */
     body, html, main, .g-sidenav-show, .bg-gray-100, .sidenav, div, section {
         color: #000000 !important;
@@ -184,15 +276,20 @@
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0 text-primary">New Loan Application</h1>
-                <a href="{{ url_for('simple_loan.index') }}" class="btn btn-outline-primary">
+                <h1 class="h3 mb-0 text-primary">
+                    <i class="fas fa-file-signature me-2"></i>New Loan Application
+                </h1>
+                <a href="{{ url_for('simple_loan.index') }}" class="btn btn-outline-primary back-link">
                     <i class="fas fa-arrow-left me-1"></i> Back to Loans
                 </a>
             </div>
             
-            <div class="card shadow-lg border-primary">
-                <div class="card-header bg-primary-subtle">
-                    <h5 class="mb-0 text-primary">Loan Application Form</h5>
+            <div class="card shadow-lg border-0">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-university me-2 text-white" style="font-size: 1.25rem;"></i>
+                        <h5 class="mb-0 text-white">Institutional Loan Application</h5>
+                    </div>
                 </div>
                 <div class="card-body">
                     <form method="POST" action="{{ url_for('simple_loan.new_loan') }}">
