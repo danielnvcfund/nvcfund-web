@@ -61,7 +61,42 @@ class InterestPaymentFrequency(enum.Enum):
 
 
 class SelfLiquidatingLoan(db.Model):
-    """Main model for self-liquidating loans"""
+    """Main model for loans"""
+    # Underwriting fields
+    underwriting_score = db.Column(db.Integer)
+    underwriting_grade = db.Column(db.String(50))
+    underwriting_start_date = db.Column(db.DateTime)
+    underwriting_data_json = db.Column(db.Text)
+    
+    # Additional fields from comprehensive form
+    requested_amount = db.Column(db.Float)
+    preferred_term_years = db.Column(db.Integer)
+    preferred_interest_rate = db.Column(db.Float)
+    preferred_payment_frequency = db.Column(db.String(50))
+    
+    # Business details
+    industry = db.Column(db.String(100))
+    years_in_business = db.Column(db.Integer)
+    number_of_employees = db.Column(db.Integer)
+    annual_revenue = db.Column(db.Float)
+    annual_net_income = db.Column(db.Float)
+    loan_purpose = db.Column(db.Text)
+    
+    # Additional data as JSON
+    additional_contacts_json = db.Column(db.Text)
+    management_team_json = db.Column(db.Text)
+    financial_history_json = db.Column(db.Text)
+    additional_documents_json = db.Column(db.Text)
+    
+    # Collateral information
+    collateral_value = db.Column(db.Float, default=0.0)
+    collateral_description = db.Column(db.Text)
+    has_personal_guarantee = db.Column(db.Boolean, default=False)
+    
+    # Business plan
+    has_business_plan = db.Column(db.Boolean, default=False)
+    business_plan_summary = db.Column(db.Text)
+    market_analysis = db.Column(db.Text)
     id = db.Column(db.Integer, primary_key=True)
     loan_number = db.Column(db.String(64), unique=True, nullable=False)
 
@@ -236,7 +271,7 @@ class LoanCollateral(db.Model):
 
 
 class LoanPayment(db.Model):
-    """Payment records for self-liquidating loans"""
+    """Payment records for loans"""
     id = db.Column(db.Integer, primary_key=True)
     loan_id = db.Column(db.Integer,
                         db.ForeignKey('self_liquidating_loan.id'),
@@ -258,6 +293,9 @@ class LoanPayment(db.Model):
     liquidation_source = db.Column(
         db.String(255))  # Source of liquidation funds
     is_self_liquidating_payment = db.Column(db.Boolean, default=False)
+    
+    # Documents
+    payment_document_id = db.Column(db.String(255))
 
     # System Fields
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

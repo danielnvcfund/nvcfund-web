@@ -1,0 +1,1122 @@
+{% extends "base.html" %}
+
+{% block title %}Loan Details{% endblock %}
+
+{% block styles %}
+<style>
+    .loan-details-header {
+        background-color: rgba(0, 40, 85, 0.05);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border-left: 4px solid #002855;
+    }
+    
+    .loan-section {
+        background-color: rgba(0, 40, 85, 0.03);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(0, 40, 85, 0.1);
+    }
+    
+    .loan-section h3 {
+        color: #002855;
+        border-bottom: 1px solid rgba(0, 40, 85, 0.1);
+        padding-bottom: 10px;
+        margin-top: 0;
+    }
+    
+    .status-badge {
+        font-size: 0.9em;
+        padding: 5px 10px;
+        border-radius: 4px;
+        display: inline-block;
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+    
+    .status-application { background-color: #FFD580; color: #664400; }
+    .status-underwriting { background-color: #B8E0FF; color: #004080; }
+    .status-approved { background-color: #C8E6C9; color: #2E7D32; }
+    .status-funded { background-color: #BBDEFB; color: #1565C0; }
+    .status-active { background-color: #DCEDC8; color: #33691E; }
+    .status-renewal_pending { background-color: #E1BEE7; color: #6A1B9A; }
+    .status-renewed { background-color: #C5CAE9; color: #283593; }
+    .status-liquidating { background-color: #FFF9C4; color: #F57F17; }
+    .status-paid { background-color: #B2DFDB; color: #00695C; }
+    .status-defaulted { background-color: #FFCDD2; color: #C62828; }
+    .status-cancelled { background-color: #CFD8DC; color: #37474F; }
+    
+    .info-row {
+        margin-bottom: 10px;
+    }
+    
+    .info-label {
+        font-weight: bold;
+        color: #555;
+    }
+    
+    .tab-content {
+        padding: 20px 0;
+    }
+    
+    .action-buttons {
+        margin-bottom: 20px;
+    }
+    
+    .action-buttons .btn {
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .document-link {
+        margin-bottom: 5px;
+        display: block;
+    }
+    
+    .collateral-item {
+        background-color: rgba(0, 40, 85, 0.02);
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid rgba(0, 40, 85, 0.08);
+    }
+    
+    .payment-item {
+        background-color: rgba(0, 40, 85, 0.02);
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid rgba(0, 40, 85, 0.08);
+    }
+    
+    .renewal-item {
+        background-color: rgba(0, 40, 85, 0.02);
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid rgba(0, 40, 85, 0.08);
+    }
+    
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+    }
+    
+    .underwriting-score {
+        font-size: 36px;
+        font-weight: bold;
+        text-align: center;
+        margin: 15px 0;
+    }
+    
+    .underwriting-grade {
+        font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+    
+    .grade-prime-plus { color: #1B5E20; }
+    .grade-prime { color: #2E7D32; }
+    .grade-near-prime { color: #388E3C; }
+    .grade-standard { color: #43A047; }
+    .grade-standard-minus { color: #689F38; }
+    .grade-substandard { color: #FFA000; }
+    .grade-watch { color: #F57C00; }
+    .grade-special-mention { color: #E64A19; }
+    .grade-subpar { color: #D32F2F; }
+    
+    .score-summary {
+        background-color: #F5F5F5;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .category-score {
+        margin-bottom: 10px;
+    }
+    
+    .category-label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 3px;
+    }
+    
+    .progress {
+        height: 15px;
+        margin-bottom: 5px;
+    }
+    
+    .progress-bar-excellent { background-color: #1B5E20; }
+    .progress-bar-good { background-color: #43A047; }
+    .progress-bar-fair { background-color: #FFA000; }
+    .progress-bar-poor { background-color: #D32F2F; }
+    
+    .category-value {
+        font-size: 0.9em;
+        text-align: right;
+    }
+    
+    .card-body {
+        position: relative;
+    }
+    
+    .team-member {
+        background-color: rgba(0, 40, 85, 0.02);
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid rgba(0, 40, 85, 0.08);
+    }
+    
+    .financial-year {
+        background-color: rgba(0, 40, 85, 0.02);
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid rgba(0, 40, 85, 0.08);
+    }
+    
+    .contact-item {
+        background-color: rgba(0, 40, 85, 0.02);
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid rgba(0, 40, 85, 0.08);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Loan Header -->
+            <div class="loan-details-header">
+                <div class="row">
+                    <div class="col-lg-9">
+                        <h2>Loan #{{ loan.loan_number }}</h2>
+                        <h4>{{ loan.borrower_name }}</h4>
+                        <div class="mt-2">
+                            <span class="status-badge status-{{ loan.status.name.lower() }}">{{ loan.status.name }}</span>
+                            {% if loan.underwriting_grade %}
+                            <span class="ms-2 badge bg-info">{{ loan.underwriting_grade }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-lg-3 text-lg-end">
+                        <h3>{{ "${:,.2f}".format(loan.loan_amount) }} {{ loan.currency.name }}</h3>
+                        <p>{{ loan.interest_rate }}% Interest</p>
+                        <p>{{ loan.term_years }} Year Term</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{{ url_for('loan.update_status', loan_id=loan.id) }}" class="btn btn-primary">
+                    <i class="fas fa-sync-alt"></i> Update Status
+                </a>
+                <a href="{{ url_for('loan.add_collateral', loan_id=loan.id) }}" class="btn btn-info">
+                    <i class="fas fa-shield-alt"></i> Add Collateral
+                </a>
+                <a href="{{ url_for('loan.add_payment', loan_id=loan.id) }}" class="btn btn-success">
+                    <i class="fas fa-money-bill-wave"></i> Record Payment
+                </a>
+                {% if loan.is_eligible_for_renewal() %}
+                <a href="{{ url_for('loan.add_renewal', loan_id=loan.id) }}" class="btn btn-warning">
+                    <i class="fas fa-redo"></i> Request Renewal
+                </a>
+                {% endif %}
+                {% if loan.is_available_to_correspondents %}
+                <a href="{{ url_for('loan.add_correspondent_availability', loan_id=loan.id) }}" class="btn btn-secondary">
+                    <i class="fas fa-handshake"></i> Offer to Correspondent
+                </a>
+                {% endif %}
+            </div>
+            
+            <!-- Tabs -->
+            <ul class="nav nav-tabs" id="loanDetailsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
+                </li>
+                {% if underwriting_data %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="underwriting-tab" data-bs-toggle="tab" data-bs-target="#underwriting" type="button" role="tab" aria-controls="underwriting" aria-selected="false">Underwriting</button>
+                </li>
+                {% endif %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="borrower-tab" data-bs-toggle="tab" data-bs-target="#borrower" type="button" role="tab" aria-controls="borrower" aria-selected="false">Borrower</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="collateral-tab" data-bs-toggle="tab" data-bs-target="#collateral" type="button" role="tab" aria-controls="collateral" aria-selected="false">Collateral</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab" aria-controls="payments" aria-selected="false">Payments</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab" aria-controls="documents" aria-selected="false">Documents</button>
+                </li>
+                {% if renewals %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="renewals-tab" data-bs-toggle="tab" data-bs-target="#renewals" type="button" role="tab" aria-controls="renewals" aria-selected="false">Renewals</button>
+                </li>
+                {% endif %}
+                {% if correspondent_availabilities %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="correspondents-tab" data-bs-toggle="tab" data-bs-target="#correspondents" type="button" role="tab" aria-controls="correspondents" aria-selected="false">Correspondents</button>
+                </li>
+                {% endif %}
+            </ul>
+            
+            <div class="tab-content" id="loanDetailsTabsContent">
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="loan-section">
+                                <h3>Basic Information</h3>
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Status:</div>
+                                    <div class="col-sm-6">
+                                        <span class="status-badge status-{{ loan.status.name.lower() }}">{{ loan.status.name }}</span>
+                                    </div>
+                                </div>
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Loan Number:</div>
+                                    <div class="col-sm-6">{{ loan.loan_number }}</div>
+                                </div>
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Loan Amount:</div>
+                                    <div class="col-sm-6">{{ "${:,.2f}".format(loan.loan_amount) }} {{ loan.currency.name }}</div>
+                                </div>
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Interest Rate:</div>
+                                    <div class="col-sm-6">{{ loan.interest_rate }}%</div>
+                                </div>
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Term:</div>
+                                    <div class="col-sm-6">{{ loan.term_years }} Years</div>
+                                </div>
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Payment Frequency:</div>
+                                    <div class="col-sm-6">{{ loan.interest_payment_frequency.name.replace('_', ' ').title() }}</div>
+                                </div>
+                                {% if loan.loan_purpose %}
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Loan Purpose:</div>
+                                    <div class="col-sm-6">{{ loan.loan_purpose }}</div>
+                                </div>
+                                {% endif %}
+                                {% if loan.industry %}
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Industry:</div>
+                                    <div class="col-sm-6">{{ loan.industry.replace('_', ' ').title() }}</div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="loan-section">
+                                <h3>Financial Information</h3>
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Current Principal:</div>
+                                    <div class="col-sm-6">{{ "${:,.2f}".format(loan.current_principal_balance) }} {{ loan.currency.name }}</div>
+                                </div>
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Total Principal Paid:</div>
+                                    <div class="col-sm-6">{{ "${:,.2f}".format(loan.total_principal_paid) }} {{ loan.currency.name }}</div>
+                                </div>
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Total Interest Paid:</div>
+                                    <div class="col-sm-6">{{ "${:,.2f}".format(loan.total_interest_paid) }} {{ loan.currency.name }}</div>
+                                </div>
+                                {% if loan.funding_date %}
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Funding Date:</div>
+                                    <div class="col-sm-6">{{ loan.funding_date.strftime('%Y-%m-%d') }}</div>
+                                </div>
+                                {% endif %}
+                                {% if loan.maturity_date %}
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Maturity Date:</div>
+                                    <div class="col-sm-6">{{ loan.maturity_date.strftime('%Y-%m-%d') }}</div>
+                                </div>
+                                {% endif %}
+                                {% if loan.next_interest_payment_date %}
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Next Payment Due:</div>
+                                    <div class="col-sm-6">{{ loan.next_interest_payment_date.strftime('%Y-%m-%d') }}</div>
+                                </div>
+                                {% endif %}
+                                {% if loan.last_payment_date %}
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Last Payment Date:</div>
+                                    <div class="col-sm-6">{{ loan.last_payment_date.strftime('%Y-%m-%d') }}</div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="loan-section">
+                                <h3>Timeline</h3>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Event</th>
+                                                <th>Date</th>
+                                                <th>Details</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Application Submitted</td>
+                                                <td>{{ loan.application_date.strftime('%Y-%m-%d') }}</td>
+                                                <td>Loan application received</td>
+                                            </tr>
+                                            {% if loan.underwriting_start_date %}
+                                            <tr>
+                                                <td>Underwriting Started</td>
+                                                <td>{{ loan.underwriting_start_date.strftime('%Y-%m-%d') }}</td>
+                                                <td>
+                                                    {% if loan.underwriting_score %}
+                                                    Score: {{ loan.underwriting_score }}/100, Grade: {{ loan.underwriting_grade }}
+                                                    {% else %}
+                                                    Underwriting process initiated
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                            {% if loan.approval_date %}
+                                            <tr>
+                                                <td>Loan Approved</td>
+                                                <td>{{ loan.approval_date.strftime('%Y-%m-%d') }}</td>
+                                                <td>Loan approved for funding</td>
+                                            </tr>
+                                            {% endif %}
+                                            {% if loan.funding_date %}
+                                            <tr>
+                                                <td>Funding Completed</td>
+                                                <td>{{ loan.funding_date.strftime('%Y-%m-%d') }}</td>
+                                                <td>{{ "${:,.2f}".format(loan.loan_amount) }} {{ loan.currency.name }} funded</td>
+                                            </tr>
+                                            {% endif %}
+                                            {% for payment in payments[:3] %}
+                                            <tr>
+                                                <td>Payment Received</td>
+                                                <td>{{ payment.payment_date.strftime('%Y-%m-%d') }}</td>
+                                                <td>{{ "${:,.2f}".format(payment.payment_amount) }} {{ loan.currency.name }} payment</td>
+                                            </tr>
+                                            {% endfor %}
+                                            {% if payments|length > 3 %}
+                                            <tr>
+                                                <td colspan="3" class="text-center">
+                                                    <em>See Payments tab for complete payment history</em>
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Underwriting Tab -->
+                {% if underwriting_data %}
+                <div class="tab-pane fade" id="underwriting" role="tabpanel" aria-labelledby="underwriting-tab">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="loan-section">
+                                <h3>Underwriting Score</h3>
+                                <div class="underwriting-score">{{ underwriting_data.scores.final_score }}/100</div>
+                                <div class="underwriting-grade grade-{{ underwriting_data.grade.description }}">
+                                    Grade: {{ underwriting_data.grade.name.replace('_', ' ').title() }}
+                                </div>
+                                <div class="text-center mb-3">
+                                    <strong>Recommended Rate:</strong> {{ "%.2f"|format(underwriting_data.interest_rate.recommended_rate) }}%
+                                    <br>
+                                    <small>(Base Rate: {{ "%.2f"|format(underwriting_data.interest_rate.base_rate) }}%, Adjustment: {{ "%+.2f"|format(underwriting_data.interest_rate.adjustment) }}%)</small>
+                                </div>
+                            </div>
+                            
+                            <div class="loan-section mt-4">
+                                <h3>Risk Assessment</h3>
+                                {% if underwriting_data.risk_assessment.strengths %}
+                                <h5>Strengths</h5>
+                                <ul>
+                                    {% for strength in underwriting_data.risk_assessment.strengths %}
+                                    <li>{{ strength }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                                
+                                {% if underwriting_data.risk_assessment.weaknesses %}
+                                <h5>Weaknesses</h5>
+                                <ul>
+                                    {% for weakness in underwriting_data.risk_assessment.weaknesses %}
+                                    <li>{{ weakness }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                                
+                                {% if underwriting_data.risk_assessment.recommendations %}
+                                <h5>Recommendations</h5>
+                                <ul>
+                                    {% for rec in underwriting_data.risk_assessment.recommendations %}
+                                    <li>{{ rec }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <div class="loan-section">
+                                <h3>Category Scores</h3>
+                                <div class="row">
+                                    {% for category, score in underwriting_data.scores.category_scores.items() %}
+                                    <div class="col-md-6">
+                                        <div class="category-score">
+                                            <span class="category-label">{{ category.replace('_', ' ').title() }} ({{ SCORING_WEIGHTS[category] }}%)</span>
+                                            <div class="progress">
+                                                {% if score >= 80 %}
+                                                <div class="progress-bar progress-bar-excellent" role="progressbar" style="width: {{ score }}%" aria-valuenow="{{ score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                {% elif score >= 60 %}
+                                                <div class="progress-bar progress-bar-good" role="progressbar" style="width: {{ score }}%" aria-valuenow="{{ score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                {% elif score >= 40 %}
+                                                <div class="progress-bar progress-bar-fair" role="progressbar" style="width: {{ score }}%" aria-valuenow="{{ score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                {% else %}
+                                                <div class="progress-bar progress-bar-poor" role="progressbar" style="width: {{ score }}%" aria-valuenow="{{ score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="category-value">{{ score }}/100</div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="loan-section mt-4">
+                                <h3>Detailed Breakdowns</h3>
+                                <div class="accordion" id="scoreBreakdownAccordion">
+                                    {% for category, breakdown in underwriting_data.scores.breakdowns.items() %}
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="heading{{ category }}">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ category }}" aria-expanded="false" aria-controls="collapse{{ category }}">
+                                                {{ category.replace('_', ' ').title() }}
+                                            </button>
+                                        </h2>
+                                        <div id="collapse{{ category }}" class="accordion-collapse collapse" aria-labelledby="heading{{ category }}" data-bs-parent="#scoreBreakdownAccordion">
+                                            <div class="accordion-body">
+                                                <table class="table table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Metric</th>
+                                                            <th>Score</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for metric, subscore in breakdown.items() %}
+                                                        <tr>
+                                                            <td>{{ metric.replace('_', ' ').title() }}</td>
+                                                            <td>{{ subscore }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Borrower Tab -->
+                <div class="tab-pane fade" id="borrower" role="tabpanel" aria-labelledby="borrower-tab">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="loan-section">
+                                <h3>Borrower Information</h3>
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Name:</div>
+                                    <div class="col-sm-6">{{ loan.borrower_name }}</div>
+                                </div>
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Entity Type:</div>
+                                    <div class="col-sm-6">{{ loan.borrower_entity_type.replace('_', ' ').title() }}</div>
+                                </div>
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Tax ID:</div>
+                                    <div class="col-sm-6">{{ loan.borrower_tax_id }}</div>
+                                </div>
+                                {% if loan.years_in_business %}
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Years in Business:</div>
+                                    <div class="col-sm-6">{{ loan.years_in_business }}</div>
+                                </div>
+                                {% endif %}
+                                {% if loan.number_of_employees %}
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Number of Employees:</div>
+                                    <div class="col-sm-6">{{ loan.number_of_employees }}</div>
+                                </div>
+                                {% endif %}
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Address:</div>
+                                    <div class="col-sm-6">{{ loan.borrower_address }}</div>
+                                </div>
+                            </div>
+                            
+                            {% if additional_contacts %}
+                            <div class="loan-section mt-4">
+                                <h3>Additional Contacts</h3>
+                                {% for contact in additional_contacts %}
+                                <div class="contact-item">
+                                    <h5>{{ contact.name }} {% if contact.is_primary %}<span class="badge bg-primary">Primary</span>{% endif %}</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <strong>Title:</strong> {{ contact.title or 'N/A' }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Email:</strong> {{ contact.email or 'N/A' }}
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            <strong>Phone:</strong> {{ contact.phone or 'N/A' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="loan-section">
+                                <h3>Primary Contact</h3>
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Name:</div>
+                                    <div class="col-sm-6">{{ loan.borrower_contact_name }}</div>
+                                </div>
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Email:</div>
+                                    <div class="col-sm-6">{{ loan.borrower_contact_email }}</div>
+                                </div>
+                                <div class="row info-row">
+                                    <div class="col-sm-6 info-label">Phone:</div>
+                                    <div class="col-sm-6">{{ loan.borrower_contact_phone }}</div>
+                                </div>
+                            </div>
+                            
+                            {% if financial_history %}
+                            <div class="loan-section mt-4">
+                                <h3>Financial History</h3>
+                                {% for year in financial_history %}
+                                <div class="financial-year">
+                                    <h5>Fiscal Year {{ year.fiscal_year }}</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <strong>Revenue:</strong> {{ "${:,.2f}".format(year.annual_revenue) }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Net Income:</strong> {{ "${:,.2f}".format(year.annual_net_income) }}
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            <strong>Total Debt:</strong> {{ "${:,.2f}".format(year.annual_debt) }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Debt Payments:</strong> {{ "${:,.2f}".format(year.annual_debt_payments) }}
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            <strong>Total Assets:</strong> {{ "${:,.2f}".format(year.total_assets) }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Total Liabilities:</strong> {{ "${:,.2f}".format(year.total_liabilities) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            {% if management_team %}
+                            <div class="loan-section mt-4">
+                                <h3>Management Team</h3>
+                                {% for member in management_team %}
+                                <div class="team-member">
+                                    <h5>{{ member.name }}</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <strong>Title:</strong> {{ member.title or 'N/A' }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Experience:</strong> {{ member.years_experience or 'N/A' }} years
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            <strong>Education:</strong> {{ member.education or 'N/A' }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Previous Companies:</strong> {{ member.previous_companies or 'N/A' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Collateral Tab -->
+                <div class="tab-pane fade" id="collateral" role="tabpanel" aria-labelledby="collateral-tab">
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="loan-section">
+                                <h3>Collateral Summary</h3>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <table class="table">
+                                            <tr>
+                                                <th>Total Collateral Value:</th>
+                                                <td>{{ "${:,.2f}".format(loan.collateral_value or 0) }} {{ loan.currency.name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Loan-to-Value Ratio:</th>
+                                                <td>
+                                                    {% if loan.collateral_value and loan.collateral_value > 0 %}
+                                                    {{ "{:.2f}%".format((loan.loan_amount / loan.collateral_value) * 100) }}
+                                                    {% else %}
+                                                    N/A
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Personal Guarantee:</th>
+                                                <td>{{ "Yes" if loan.has_personal_guarantee else "No" }}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        {% if loan.collateral_description %}
+                                        <h5>Description</h5>
+                                        <p>{{ loan.collateral_description }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if collaterals %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h4>Collateral Items</h4>
+                            {% for collateral in collaterals %}
+                            <div class="collateral-item">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5>{{ collateral.collateral_type.name.replace('_', ' ').title() }}</h5>
+                                        <p>{{ collateral.description }}</p>
+                                    </div>
+                                    <div class="col-md-4 text-md-end">
+                                        <h5>{{ "${:,.2f}".format(collateral.value) }} {{ loan.currency.name }}</h5>
+                                        <p>Valued on {{ collateral.valuation_date.strftime('%Y-%m-%d') }}</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Valuation Source:</strong> {{ collateral.valuation_source }}</p>
+                                        {% if collateral.location %}
+                                        <p><strong>Location:</strong> {{ collateral.location }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {% if collateral.collateral_type == CollateralType.PROMISSORY_NOTE %}
+                                        <p><strong>Note Issuer:</strong> {{ collateral.note_issuer }}</p>
+                                        <p><strong>Note Maturity:</strong> {{ collateral.note_maturity_date.strftime('%Y-%m-%d') if collateral.note_maturity_date else 'N/A' }}</p>
+                                        <p><strong>Note Interest Rate:</strong> {{ "{}%".format(collateral.note_interest_rate) if collateral.note_interest_rate else 'N/A' }}</p>
+                                        {% elif collateral.collateral_type in [CollateralType.BUSINESS_ASSETS, CollateralType.RECEIVABLES] %}
+                                        <p><strong>Asset Type:</strong> {{ collateral.asset_type }}</p>
+                                        {% if collateral.receivables_aging %}
+                                        <p><strong>Receivables Aging:</strong> {{ collateral.receivables_aging }}</p>
+                                        {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md-12">
+                                        {% if collateral.collateral_document_id %}
+                                        <a href="{{ url_for('static', filename=collateral.collateral_document_id) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-file-alt"></i> Collateral Document
+                                        </a>
+                                        {% endif %}
+                                        {% if collateral.appraisal_document_id %}
+                                        <a href="{{ url_for('static', filename=collateral.appraisal_document_id) }}" target="_blank" class="btn btn-sm btn-outline-info ms-1">
+                                            <i class="fas fa-file-invoice-dollar"></i> Appraisal Document
+                                        </a>
+                                        {% endif %}
+                                        {% if collateral.perfection_document_id %}
+                                        <a href="{{ url_for('static', filename=collateral.perfection_document_id) }}" target="_blank" class="btn btn-sm btn-outline-secondary ms-1">
+                                            <i class="fas fa-file-contract"></i> Perfection Document
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No collateral items have been added yet.
+                        <a href="{{ url_for('loan.add_collateral', loan_id=loan.id) }}" class="alert-link">Add collateral</a> to secure this loan.
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Payments Tab -->
+                <div class="tab-pane fade" id="payments" role="tabpanel" aria-labelledby="payments-tab">
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="loan-section">
+                                <h3>Payment Summary</h3>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h5>Original Amount</h5>
+                                        <p class="h3">{{ "${:,.2f}".format(loan.loan_amount) }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h5>Current Principal</h5>
+                                        <p class="h3">{{ "${:,.2f}".format(loan.current_principal_balance) }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h5>Total Interest Paid</h5>
+                                        <p class="h3">{{ "${:,.2f}".format(loan.total_interest_paid) }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if payments %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h4>Payment History</h4>
+                            {% for payment in payments %}
+                            <div class="payment-item">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5>Payment on {{ payment.payment_date.strftime('%Y-%m-%d') }}</h5>
+                                        <p>
+                                            {% if payment.payment_method %}
+                                            <span class="badge bg-secondary">{{ payment.payment_method.upper() }}</span>
+                                            {% endif %}
+                                            {% if payment.payment_reference %}
+                                            <span class="text-muted">Ref: {{ payment.payment_reference }}</span>
+                                            {% endif %}
+                                            {% if payment.is_self_liquidating_payment %}
+                                            <span class="badge bg-info">Self-Liquidating</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="col-md-4 text-md-end">
+                                        <h5>{{ "${:,.2f}".format(payment.payment_amount) }} {{ loan.currency.name }}</h5>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p><strong>Principal:</strong> {{ "${:,.2f}".format(payment.principal_amount) }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>Interest:</strong> {{ "${:,.2f}".format(payment.interest_amount) }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>Fees:</strong> {{ "${:,.2f}".format(payment.fees_amount) }}</p>
+                                    </div>
+                                </div>
+                                {% if payment.liquidation_source %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <p><strong>Liquidation Source:</strong> {{ payment.liquidation_source }}</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if payment.payment_document_id %}
+                                <div class="row mt-2">
+                                    <div class="col-md-12">
+                                        <a href="{{ url_for('static', filename=payment.payment_document_id) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-file-invoice-dollar"></i> Payment Document
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No payments have been recorded yet.
+                        <a href="{{ url_for('loan.add_payment', loan_id=loan.id) }}" class="alert-link">Record a payment</a> to this loan.
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Documents Tab -->
+                <div class="tab-pane fade" id="documents" role="tabpanel" aria-labelledby="documents-tab">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="loan-section">
+                                <h3>Loan Documents</h3>
+                                <ul class="list-group">
+                                    {% if loan.loan_agreement_document_id %}
+                                    <li class="list-group-item">
+                                        <a href="{{ url_for('static', filename=loan.loan_agreement_document_id) }}" target="_blank" class="document-link">
+                                            <i class="fas fa-file-contract me-2"></i> Loan Agreement
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    {% if loan.promissory_note_document_id %}
+                                    <li class="list-group-item">
+                                        <a href="{{ url_for('static', filename=loan.promissory_note_document_id) }}" target="_blank" class="document-link">
+                                            <i class="fas fa-file-signature me-2"></i> Promissory Note
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    {% if loan.collateral_documents_json %}
+                                    {% set collateral_docs = loan.collateral_documents_json|tojson|fromjson %}
+                                    {% for key, doc_path in collateral_docs.items() %}
+                                    <li class="list-group-item">
+                                        <a href="{{ url_for('static', filename=doc_path) }}" target="_blank" class="document-link">
+                                            <i class="fas fa-file-alt me-2"></i> {{ key.replace('_', ' ').title() }}
+                                        </a>
+                                    </li>
+                                    {% endfor %}
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="loan-section">
+                                <h3>Additional Documents</h3>
+                                {% if additional_documents %}
+                                <ul class="list-group">
+                                    {% for key, doc_path in additional_documents.items() %}
+                                    <li class="list-group-item">
+                                        <a href="{{ url_for('static', filename=doc_path) }}" target="_blank" class="document-link">
+                                            <i class="fas fa-file me-2"></i> {{ key.replace('_', ' ').title() }}
+                                        </a>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                {% else %}
+                                <p class="text-muted">No additional documents available.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Renewals Tab -->
+                {% if renewals %}
+                <div class="tab-pane fade" id="renewals" role="tabpanel" aria-labelledby="renewals-tab">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="loan-section">
+                                <h3>Renewal Summary</h3>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p><strong>Renewals Used:</strong> {{ loan.renewals_used }} of {{ loan.renewal_options }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>Renewal Status:</strong> {{ loan.renewal_status.name.replace('_', ' ').title() }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>Eligible for Renewal:</strong> {{ "Yes" if loan.is_eligible_for_renewal() else "No" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h4>Renewal History</h4>
+                            {% for renewal in renewals %}
+                            <div class="renewal-item">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5>Renewal #{{ renewal.renewal_number }}</h5>
+                                        <p>
+                                            <span class="badge 
+                                                {% if renewal.status == RenewalStatus.APPROVED or renewal.status == RenewalStatus.EXECUTED %}
+                                                bg-success
+                                                {% elif renewal.status == RenewalStatus.DECLINED %}
+                                                bg-danger
+                                                {% elif renewal.status == RenewalStatus.UNDER_REVIEW %}
+                                                bg-info
+                                                {% else %}
+                                                bg-secondary
+                                                {% endif %}
+                                            ">
+                                                {{ renewal.status.name.replace('_', ' ').title() }}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-4 text-md-end">
+                                        <p><strong>Requested:</strong> {{ renewal.request_date.strftime('%Y-%m-%d') }}</p>
+                                        {% if renewal.approval_date %}
+                                        <p><strong>Approved:</strong> {{ renewal.approval_date.strftime('%Y-%m-%d') }}</p>
+                                        {% endif %}
+                                        {% if renewal.effective_date %}
+                                        <p><strong>Effective:</strong> {{ renewal.effective_date.strftime('%Y-%m-%d') }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p><strong>Previous Rate:</strong> {{ "{}%".format(renewal.previous_interest_rate) }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>New Rate:</strong> {{ "{}%".format(renewal.new_interest_rate) }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>New Maturity:</strong> {{ renewal.new_maturity_date.strftime('%Y-%m-%d') if renewal.new_maturity_date else 'N/A' }}</p>
+                                    </div>
+                                </div>
+                                {% if renewal.status_reason %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <p><strong>Status Reason:</strong> {{ renewal.status_reason }}</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if renewal.additional_terms_json %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <p><strong>Additional Terms:</strong> {{ renewal.additional_terms_json|tojson|fromjson.additional_terms }}</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if renewal.renewal_agreement_document_id %}
+                                <div class="row mt-2">
+                                    <div class="col-md-12">
+                                        <a href="{{ url_for('static', filename=renewal.renewal_agreement_document_id) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-file-contract"></i> Renewal Agreement
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if renewal.status != RenewalStatus.EXECUTED and renewal.status != RenewalStatus.DECLINED %}
+                                <div class="row mt-2">
+                                    <div class="col-md-12">
+                                        <a href="{{ url_for('loan.update_renewal', loan_id=loan.id, renewal_id=renewal.id) }}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-edit"></i> Update Status
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Correspondent Banks Tab -->
+                {% if correspondent_availabilities %}
+                <div class="tab-pane fade" id="correspondents" role="tabpanel" aria-labelledby="correspondents-tab">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="loan-section">
+                                <h3>Correspondent Bank Availability</h3>
+                                <p>This loan is {% if not loan.is_available_to_correspondents %}not {% endif %}available to correspondent banks.</p>
+                                
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Correspondent Bank</th>
+                                                <th>Offered Date</th>
+                                                <th>Expiration</th>
+                                                <th>Participation</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for avail in correspondent_availabilities %}
+                                            <tr>
+                                                <td>{{ avail.correspondent_bank.name }}</td>
+                                                <td>{{ avail.offered_date.strftime('%Y-%m-%d') }}</td>
+                                                <td>{{ avail.expiration_date.strftime('%Y-%m-%d') }}</td>
+                                                <td>{{ avail.participation_percentage }}%</td>
+                                                <td>{{ "${:,.2f}".format(avail.participation_amount) }}</td>
+                                                <td>
+                                                    {% if avail.accepted %}
+                                                    <span class="badge bg-success">Accepted</span>
+                                                    {% elif not avail.is_active %}
+                                                    <span class="badge bg-secondary">Inactive</span>
+                                                    {% elif avail.expiration_date < now %}
+                                                    <span class="badge bg-warning">Expired</span>
+                                                    {% else %}
+                                                    <span class="badge bg-primary">Active</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Activate tab based on hash in URL
+        var hash = window.location.hash;
+        if (hash) {
+            $('.nav-tabs a[href="' + hash + '"]').tab('show');
+        }
+        
+        // Update hash when tab is clicked
+        $('.nav-tabs a').click(function(e) {
+            $(this).tab('show');
+            var scrollmem = $('body').scrollTop();
+            window.location.hash = this.hash;
+            $('html,body').scrollTop(scrollmem);
+        });
+    });
+</script>
+{% endblock %}

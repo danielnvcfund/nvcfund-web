@@ -1,0 +1,1484 @@
+{% extends "base.html" %}
+
+{% block title %}Comprehensive Loan Application{% endblock %}
+
+{% block styles %}
+<style>
+    .form-section {
+        background-color: rgba(0, 40, 85, 0.05);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border-left: 4px solid #002855;
+    }
+    
+    .form-section h3 {
+        color: #002855;
+        margin-top: 0;
+        border-bottom: 1px solid rgba(0, 40, 85, 0.2);
+        padding-bottom: 10px;
+    }
+    
+    .nested-form {
+        background-color: rgba(255, 255, 255, 0.7);
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid rgba(0, 40, 85, 0.1);
+    }
+    
+    .field-help {
+        font-size: 0.85em;
+        color: #666;
+        margin-top: 3px;
+    }
+    
+    .required-field label:after {
+        content: " *";
+        color: #dc3545;
+    }
+    
+    .add-item-btn {
+        margin-bottom: 15px;
+    }
+    
+    .remove-item-btn {
+        color: #dc3545;
+        cursor: pointer;
+    }
+    
+    .certification-box {
+        background-color: rgba(0, 40, 85, 0.03);
+        border: 1px solid rgba(0, 40, 85, 0.1);
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 5px;
+    }
+    
+    .help-text {
+        background-color: rgba(0, 123, 255, 0.1);
+        border-left: 3px solid #007bff;
+        padding: 10px 15px;
+        margin-bottom: 20px;
+    }
+    
+    .custom-terms-box {
+        background-color: rgba(25, 135, 84, 0.05);
+        border: 1px solid rgba(25, 135, 84, 0.2);
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="text-center mb-4">Comprehensive Loan Application</h2>
+            
+            <div class="help-text">
+                <p><strong>Welcome to our comprehensive loan application process</strong></p>
+                <p>This application allows you to provide detailed information about your business, financial situation, and loan needs. The more information you provide, the better we can evaluate your application and offer appropriate terms.</p>
+                <p>Fields marked with an asterisk (*) are required. You can save your progress and return later if needed.</p>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data" id="loanApplicationForm">
+                {{ form.csrf_token }}
+                
+                <!-- Basic Loan Information -->
+                <div class="form-section">
+                    <h3>Basic Loan Information</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.loan_amount.label(class="form-label") }}
+                                {{ form.loan_amount(class="form-control") }}
+                                {% if form.loan_amount.description %}
+                                <div class="field-help">{{ form.loan_amount.description }}</div>
+                                {% endif %}
+                                {% if form.loan_amount.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.loan_amount.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.currency.label(class="form-label") }}
+                                {{ form.currency(class="form-select") }}
+                                {% if form.currency.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.currency.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.loan_purpose.label(class="form-label") }}
+                                {{ form.loan_purpose(class="form-control", rows=4) }}
+                                {% if form.loan_purpose.description %}
+                                <div class="field-help">{{ form.loan_purpose.description }}</div>
+                                {% endif %}
+                                {% if form.loan_purpose.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.loan_purpose.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                {{ form.interest_rate.label(class="form-label") }}
+                                {{ form.interest_rate(class="form-control") }}
+                                {% if form.interest_rate.description %}
+                                <div class="field-help">{{ form.interest_rate.description }}</div>
+                                {% endif %}
+                                {% if form.interest_rate.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.interest_rate.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.term_years.label(class="form-label") }}
+                                {{ form.term_years(class="form-control") }}
+                                {% if form.term_years.description %}
+                                <div class="field-help">{{ form.term_years.description }}</div>
+                                {% endif %}
+                                {% if form.term_years.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.term_years.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.interest_payment_frequency.label(class="form-label") }}
+                                {{ form.interest_payment_frequency(class="form-select") }}
+                                {% if form.interest_payment_frequency.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.interest_payment_frequency.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Customized Terms -->
+                <div class="form-section custom-terms-box">
+                    <h3>Customized Loan Terms</h3>
+                    <p>If you have specific preferences for your loan, you can indicate them here. These will be considered during the underwriting process.</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.customized_terms.requested_amount.label(class="form-label") }}
+                                {{ form.customized_terms.requested_amount(class="form-control") }}
+                                {% if form.customized_terms.requested_amount.description %}
+                                <div class="field-help">{{ form.customized_terms.requested_amount.description }}</div>
+                                {% endif %}
+                                {% if form.customized_terms.requested_amount.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.customized_terms.requested_amount.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.customized_terms.preferred_term_years.label(class="form-label") }}
+                                {{ form.customized_terms.preferred_term_years(class="form-control") }}
+                                {% if form.customized_terms.preferred_term_years.description %}
+                                <div class="field-help">{{ form.customized_terms.preferred_term_years.description }}</div>
+                                {% endif %}
+                                {% if form.customized_terms.preferred_term_years.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.customized_terms.preferred_term_years.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form.customized_terms.preferred_interest_rate.label(class="form-label") }}
+                                {{ form.customized_terms.preferred_interest_rate(class="form-control") }}
+                                {% if form.customized_terms.preferred_interest_rate.description %}
+                                <div class="field-help">{{ form.customized_terms.preferred_interest_rate.description }}</div>
+                                {% endif %}
+                                {% if form.customized_terms.preferred_interest_rate.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.customized_terms.preferred_interest_rate.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form.customized_terms.preferred_payment_frequency.label(class="form-label") }}
+                                {{ form.customized_terms.preferred_payment_frequency(class="form-select") }}
+                                {% if form.customized_terms.preferred_payment_frequency.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.customized_terms.preferred_payment_frequency.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <div class="form-check mt-4">
+                                    {{ form.customized_terms.needs_interest_only_period(class="form-check-input") }}
+                                    {{ form.customized_terms.needs_interest_only_period.label(class="form-check-label") }}
+                                </div>
+                                {% if form.customized_terms.needs_interest_only_period.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.customized_terms.needs_interest_only_period.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group mb-3" id="interestOnlyPeriodField">
+                                {{ form.customized_terms.interest_only_period_months.label(class="form-label") }}
+                                {{ form.customized_terms.interest_only_period_months(class="form-control") }}
+                                {% if form.customized_terms.interest_only_period_months.description %}
+                                <div class="field-help">{{ form.customized_terms.interest_only_period_months.description }}</div>
+                                {% endif %}
+                                {% if form.customized_terms.interest_only_period_months.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.customized_terms.interest_only_period_months.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Borrower Information -->
+                <div class="form-section">
+                    <h3>Borrower Information</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.borrower_name.label(class="form-label") }}
+                                {{ form.borrower_name(class="form-control") }}
+                                {% if form.borrower_name.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.borrower_name.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.borrower_entity_type.label(class="form-label") }}
+                                {{ form.borrower_entity_type(class="form-select") }}
+                                {% if form.borrower_entity_type.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.borrower_entity_type.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.borrower_industry.label(class="form-label") }}
+                                {{ form.borrower_industry(class="form-select") }}
+                                {% if form.borrower_industry.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.borrower_industry.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.years_in_business.label(class="form-label") }}
+                                {{ form.years_in_business(class="form-control") }}
+                                {% if form.years_in_business.description %}
+                                <div class="field-help">{{ form.years_in_business.description }}</div>
+                                {% endif %}
+                                {% if form.years_in_business.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.years_in_business.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="form-group mb-3">
+                                {{ form.number_of_employees.label(class="form-label") }}
+                                {{ form.number_of_employees(class="form-control") }}
+                                {% if form.number_of_employees.description %}
+                                <div class="field-help">{{ form.number_of_employees.description }}</div>
+                                {% endif %}
+                                {% if form.number_of_employees.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.number_of_employees.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.borrower_tax_id.label(class="form-label") }}
+                                {{ form.borrower_tax_id(class="form-control") }}
+                                {% if form.borrower_tax_id.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.borrower_tax_id.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form.borrower_website.label(class="form-label") }}
+                                {{ form.borrower_website(class="form-control") }}
+                                {% if form.borrower_website.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.borrower_website.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.borrower_address.label(class="form-label") }}
+                                {{ form.borrower_address(class="form-control", rows=3) }}
+                                {% if form.borrower_address.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.borrower_address.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.borrower_contact_name.label(class="form-label") }}
+                                {{ form.borrower_contact_name(class="form-control") }}
+                                {% if form.borrower_contact_name.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.borrower_contact_name.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.borrower_contact_email.label(class="form-label") }}
+                                {{ form.borrower_contact_email(class="form-control") }}
+                                {% if form.borrower_contact_email.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.borrower_contact_email.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.borrower_contact_phone.label(class="form-label") }}
+                                {{ form.borrower_contact_phone(class="form-control") }}
+                                {% if form.borrower_contact_phone.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.borrower_contact_phone.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Contacts -->
+                    <div class="mt-4">
+                        <h4>Additional Contacts</h4>
+                        <p class="field-help">Add additional contact persons for this loan application</p>
+                        
+                        <div id="additionalContacts">
+                            {% for contact_form in form.additional_contacts %}
+                            <div class="nested-form additional-contact">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            {{ contact_form.name.label(class="form-label") }}
+                                            {{ contact_form.name(class="form-control") }}
+                                            {% if contact_form.name.errors %}
+                                            <div class="text-danger">
+                                                {% for error in contact_form.name.errors %}
+                                                <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            {{ contact_form.title.label(class="form-label") }}
+                                            {{ contact_form.title(class="form-control") }}
+                                            {% if contact_form.title.errors %}
+                                            <div class="text-danger">
+                                                {% for error in contact_form.title.errors %}
+                                                <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group mb-3">
+                                            {{ contact_form.email.label(class="form-label") }}
+                                            {{ contact_form.email(class="form-control") }}
+                                            {% if contact_form.email.errors %}
+                                            <div class="text-danger">
+                                                {% for error in contact_form.email.errors %}
+                                                <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <div class="form-group mb-3">
+                                            {{ contact_form.phone.label(class="form-label") }}
+                                            {{ contact_form.phone(class="form-control") }}
+                                            {% if contact_form.phone.errors %}
+                                            <div class="text-danger">
+                                                {% for error in contact_form.phone.errors %}
+                                                <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <div class="form-group mt-4">
+                                            <div class="form-check">
+                                                {{ contact_form.is_primary(class="form-check-input") }}
+                                                {{ contact_form.is_primary.label(class="form-check-label") }}
+                                            </div>
+                                            {% if contact_form.is_primary.errors %}
+                                            <div class="text-danger">
+                                                {% for error in contact_form.is_primary.errors %}
+                                                <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-1">
+                                        <div class="form-group mt-4">
+                                            <a class="remove-item-btn remove-contact"><i class="fas fa-times"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <button type="button" class="btn btn-outline-primary add-item-btn" id="addContactBtn">
+                            <i class="fas fa-plus"></i> Add Contact
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Financial Information -->
+                <div class="form-section">
+                    <h3>Financial Information</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-4 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.annual_revenue.label(class="form-label") }}
+                                {{ form.annual_revenue(class="form-control") }}
+                                {% if form.annual_revenue.description %}
+                                <div class="field-help">{{ form.annual_revenue.description }}</div>
+                                {% endif %}
+                                {% if form.annual_revenue.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.annual_revenue.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.annual_net_income.label(class="form-label") }}
+                                {{ form.annual_net_income(class="form-control") }}
+                                {% if form.annual_net_income.description %}
+                                <div class="field-help">{{ form.annual_net_income.description }}</div>
+                                {% endif %}
+                                {% if form.annual_net_income.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.annual_net_income.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 required-field">
+                            <div class="form-group mb-3">
+                                {{ form.years_profitable.label(class="form-label") }}
+                                {{ form.years_profitable(class="form-control") }}
+                                {% if form.years_profitable.description %}
+                                <div class="field-help">{{ form.years_profitable.description }}</div>
+                                {% endif %}
+                                {% if form.years_profitable.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.years_profitable.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Financial History -->
+                    <div class="mt-4">
+                        <h4>Financial History</h4>
+                        <p class="field-help">Provide financial information for up to 5 previous years</p>
+                        
+                        <div id="financialHistory">
+                            {% for financial_form in form.financial_history %}
+                            <div class="nested-form financial-year">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group mb-3">
+                                            {{ financial_form.fiscal_year.label(class="form-label") }}
+                                            {{ financial_form.fiscal_year(class="form-control") }}
+                                            {% if financial_form.fiscal_year.errors %}
+                                            <div class="text-danger">
+                                                {% for error in financial_form.fiscal_year.errors %}
+                                                <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <div class="form-group mb-3">
+                                            {{ financial_form.annual_revenue.label(class="form-label") }}
+                                            {{ financial_form.annual_revenue(class="form-control") }}
+                                            {% if financial_form.annual_revenue.errors %}
+                                            <div class="text-danger">
+                                                {% for error in financial_form.annual_revenue.errors %}
+                                                <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <div class="form-group mb-3">
+                                            {{ financial_form.annual_net_income.label(class="form-label") }}
+                                            {{ financial_form.annual_net_income(class="form-control") }}
+                                            {% if financial_form.annual_net_income.errors %}
+                                            <div class="text-danger">
+                                                {% for error in financial_form.annual_net_income.errors %}
+                                                <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-2">
+                                        <div class="form-group mb-3">
+                                            {{ financial_form.annual_debt.label(class="form-label") }}
+                                            {{ financial_form.annual_debt(class="form-control") }}
+                                            {% if financial_form.annual_debt.errors %}
+                                            <div class="text-danger">
+                                                {% for error in financial_form.annual_debt.errors %}
+                                                <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-1">
+                                        <div class="form-group mt-4">
+                                            <a class="remove-item-btn remove-financial"><i class="fas fa-times"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group mb-3">
+                                            {{ financial_form.annual_debt_payments.label(class="form-label") }}
+                                            {{ financial_form.annual_debt_payments(class="form-control") }}
+                                            {% if financial_form.annual_debt_payments.errors %}
+                                            <div class="text-danger">
+                                                {% for error in financial_form.annual_debt_payments.errors %}
+                                                <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <div class="form-group mb-3">
+                                            {{ financial_form.total_assets.label(class="form-label") }}
+                                            {{ financial_form.total_assets(class="form-control") }}
+                                            {% if financial_form.total_assets.errors %}
+                                            <div class="text-danger">
+                                                {% for error in financial_form.total_assets.errors %}
+                                                <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <div class="form-group mb-3">
+                                            {{ financial_form.total_liabilities.label(class="form-label") }}
+                                            {{ financial_form.total_liabilities(class="form-control") }}
+                                            {% if financial_form.total_liabilities.errors %}
+                                            <div class="text-danger">
+                                                {% for error in financial_form.total_liabilities.errors %}
+                                                <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <div class="form-group mb-3">
+                                            {{ financial_form.current_assets.label(class="form-label") }}
+                                            {{ financial_form.current_assets(class="form-control") }}
+                                            {% if financial_form.current_assets.errors %}
+                                            <div class="text-danger">
+                                                {% for error in financial_form.current_assets.errors %}
+                                                <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            {{ financial_form.current_liabilities.label(class="form-label") }}
+                                            {{ financial_form.current_liabilities(class="form-control") }}
+                                            {% if financial_form.current_liabilities.errors %}
+                                            <div class="text-danger">
+                                                {% for error in financial_form.current_liabilities.errors %}
+                                                <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            {{ financial_form.cash_and_equivalents.label(class="form-label") }}
+                                            {{ financial_form.cash_and_equivalents(class="form-control") }}
+                                            {% if financial_form.cash_and_equivalents.errors %}
+                                            <div class="text-danger">
+                                                {% for error in financial_form.cash_and_equivalents.errors %}
+                                                <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <button type="button" class="btn btn-outline-primary add-item-btn" id="addFinancialBtn">
+                            <i class="fas fa-plus"></i> Add Financial Year
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Credit Information -->
+                <div class="form-section">
+                    <h3>Credit Information</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form.credit_rating.label(class="form-label") }}
+                                {{ form.credit_rating(class="form-select") }}
+                                {% if form.credit_rating.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.credit_rating.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <div class="form-check mt-4">
+                                    {{ form.has_previous_bankruptcy(class="form-check-input") }}
+                                    {{ form.has_previous_bankruptcy.label(class="form-check-label") }}
+                                    {% if form.has_previous_bankruptcy.description %}
+                                    <div class="field-help">{{ form.has_previous_bankruptcy.description }}</div>
+                                    {% endif %}
+                                </div>
+                                {% if form.has_previous_bankruptcy.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.has_previous_bankruptcy.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row" id="bankruptcyDetailsField">
+                        <div class="col-md-12">
+                            <div class="form-group mb-3">
+                                {{ form.bankruptcy_details.label(class="form-label") }}
+                                {{ form.bankruptcy_details(class="form-control", rows=3) }}
+                                {% if form.bankruptcy_details.description %}
+                                <div class="field-help">{{ form.bankruptcy_details.description }}</div>
+                                {% endif %}
+                                {% if form.bankruptcy_details.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.bankruptcy_details.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <div class="form-check">
+                                    {{ form.has_previous_defaults(class="form-check-input") }}
+                                    {{ form.has_previous_defaults.label(class="form-check-label") }}
+                                    {% if form.has_previous_defaults.description %}
+                                    <div class="field-help">{{ form.has_previous_defaults.description }}</div>
+                                    {% endif %}
+                                </div>
+                                {% if form.has_previous_defaults.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.has_previous_defaults.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row" id="defaultDetailsField">
+                        <div class="col-md-12">
+                            <div class="form-group mb-3">
+                                {{ form.default_details.label(class="form-label") }}
+                                {{ form.default_details(class="form-control", rows=3) }}
+                                {% if form.default_details.description %}
+                                <div class="field-help">{{ form.default_details.description }}</div>
+                                {% endif %}
+                                {% if form.default_details.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.default_details.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Management Team -->
+                <div class="form-section">
+                    <h3>Management Team</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form.management_experience_years.label(class="form-label") }}
+                                {{ form.management_experience_years(class="form-control") }}
+                                {% if form.management_experience_years.description %}
+                                <div class="field-help">{{ form.management_experience_years.description }}</div>
+                                {% endif %}
+                                {% if form.management_experience_years.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.management_experience_years.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="managementTeam">
+                        {% for member_form in form.management_team %}
+                        <div class="nested-form team-member">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        {{ member_form.name.label(class="form-label") }}
+                                        {{ member_form.name(class="form-control") }}
+                                        {% if member_form.name.errors %}
+                                        <div class="text-danger">
+                                            {% for error in member_form.name.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-5">
+                                    <div class="form-group mb-3">
+                                        {{ member_form.title.label(class="form-label") }}
+                                        {{ member_form.title(class="form-control") }}
+                                        {% if member_form.title.errors %}
+                                        <div class="text-danger">
+                                            {% for error in member_form.title.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-1">
+                                    <div class="form-group mt-4">
+                                        <a class="remove-item-btn remove-member"><i class="fas fa-times"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group mb-3">
+                                        {{ member_form.years_experience.label(class="form-label") }}
+                                        {{ member_form.years_experience(class="form-control") }}
+                                        {% if member_form.years_experience.errors %}
+                                        <div class="text-danger">
+                                            {% for error in member_form.years_experience.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-group mb-3">
+                                        {{ member_form.education.label(class="form-label") }}
+                                        {{ member_form.education(class="form-control") }}
+                                        {% if member_form.education.errors %}
+                                        <div class="text-danger">
+                                            {% for error in member_form.education.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-5">
+                                    <div class="form-group mb-3">
+                                        {{ member_form.previous_companies.label(class="form-label") }}
+                                        {{ member_form.previous_companies(class="form-control") }}
+                                        {% if member_form.previous_companies.errors %}
+                                        <div class="text-danger">
+                                            {% for error in member_form.previous_companies.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <button type="button" class="btn btn-outline-primary add-item-btn" id="addTeamMemberBtn">
+                        <i class="fas fa-plus"></i> Add Team Member
+                    </button>
+                </div>
+                
+                <!-- Collateral Information -->
+                <div class="form-section">
+                    <h3>Collateral Information</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <div class="form-check">
+                                    {{ form.collateral_available(class="form-check-input") }}
+                                    {{ form.collateral_available.label(class="form-check-label") }}
+                                    {% if form.collateral_available.description %}
+                                    <div class="field-help">{{ form.collateral_available.description }}</div>
+                                    {% endif %}
+                                </div>
+                                {% if form.collateral_available.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.collateral_available.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <div class="form-check">
+                                    {{ form.has_personal_guarantee(class="form-check-input") }}
+                                    {{ form.has_personal_guarantee.label(class="form-check-label") }}
+                                    {% if form.has_personal_guarantee.description %}
+                                    <div class="field-help">{{ form.has_personal_guarantee.description }}</div>
+                                    {% endif %}
+                                </div>
+                                {% if form.has_personal_guarantee.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.has_personal_guarantee.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="collateralSection">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form.collateral_types.label(class="form-label") }}
+                                    {{ form.collateral_types(class="form-select") }}
+                                    {% if form.collateral_types.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.collateral_types.errors %}
+                                        <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form.collateral_value.label(class="form-label") }}
+                                    {{ form.collateral_value(class="form-control") }}
+                                    {% if form.collateral_value.description %}
+                                    <div class="field-help">{{ form.collateral_value.description }}</div>
+                                    {% endif %}
+                                    {% if form.collateral_value.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.collateral_value.errors %}
+                                        <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    {{ form.collateral_description.label(class="form-label") }}
+                                    {{ form.collateral_description(class="form-control", rows=4) }}
+                                    {% if form.collateral_description.description %}
+                                    <div class="field-help">{{ form.collateral_description.description }}</div>
+                                    {% endif %}
+                                    {% if form.collateral_description.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.collateral_description.errors %}
+                                        <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    {{ form.collateral_document.label(class="form-label") }}
+                                    {{ form.collateral_document(class="form-control") }}
+                                    {% if form.collateral_document.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.collateral_document.errors %}
+                                        <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Business Plan -->
+                <div class="form-section">
+                    <h3>Business Plan</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group mb-3">
+                                <div class="form-check">
+                                    {{ form.has_business_plan(class="form-check-input") }}
+                                    {{ form.has_business_plan.label(class="form-check-label") }}
+                                </div>
+                                {% if form.has_business_plan.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.has_business_plan.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="businessPlanSection">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    {{ form.business_plan_summary.label(class="form-label") }}
+                                    {{ form.business_plan_summary(class="form-control", rows=5) }}
+                                    {% if form.business_plan_summary.description %}
+                                    <div class="field-help">{{ form.business_plan_summary.description }}</div>
+                                    {% endif %}
+                                    {% if form.business_plan_summary.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.business_plan_summary.errors %}
+                                        <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    {{ form.market_analysis.label(class="form-label") }}
+                                    {{ form.market_analysis(class="form-control", rows=4) }}
+                                    {% if form.market_analysis.description %}
+                                    <div class="field-help">{{ form.market_analysis.description }}</div>
+                                    {% endif %}
+                                    {% if form.market_analysis.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.market_analysis.errors %}
+                                        <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    {{ form.business_plan_document.label(class="form-label") }}
+                                    {{ form.business_plan_document(class="form-control") }}
+                                    {% if form.business_plan_document.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.business_plan_document.errors %}
+                                        <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Self-Liquidating Mechanism -->
+                <div class="form-section">
+                    <h3>Self-Liquidating Mechanism</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group mb-3">
+                                {{ form.liquidation_mechanism_description.label(class="form-label") }}
+                                {{ form.liquidation_mechanism_description(class="form-control", rows=4) }}
+                                {% if form.liquidation_mechanism_description.description %}
+                                <div class="field-help">{{ form.liquidation_mechanism_description.description }}</div>
+                                {% endif %}
+                                {% if form.liquidation_mechanism_description.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.liquidation_mechanism_description.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group mb-3">
+                                <div class="form-check">
+                                    {{ form.is_available_to_correspondents(class="form-check-input") }}
+                                    {{ form.is_available_to_correspondents.label(class="form-check-label") }}
+                                    {% if form.is_available_to_correspondents.description %}
+                                    <div class="field-help">{{ form.is_available_to_correspondents.description }}</div>
+                                    {% endif %}
+                                </div>
+                                {% if form.is_available_to_correspondents.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.is_available_to_correspondents.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Documents -->
+                <div class="form-section">
+                    <h3>Supporting Documents</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form.business_registration_document.label(class="form-label") }}
+                                {{ form.business_registration_document(class="form-control") }}
+                                {% if form.business_registration_document.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.business_registration_document.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form.financial_statements_document.label(class="form-label") }}
+                                {{ form.financial_statements_document(class="form-control") }}
+                                {% if form.financial_statements_document.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.financial_statements_document.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form.tax_returns_document.label(class="form-label") }}
+                                {{ form.tax_returns_document(class="form-control") }}
+                                {% if form.tax_returns_document.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.tax_returns_document.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form.loan_agreement_document.label(class="form-label") }}
+                                {{ form.loan_agreement_document(class="form-control") }}
+                                {% if form.loan_agreement_document.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.loan_agreement_document.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                {{ form.promissory_note_document.label(class="form-label") }}
+                                {{ form.promissory_note_document(class="form-control") }}
+                                {% if form.promissory_note_document.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.promissory_note_document.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Information -->
+                <div class="form-section">
+                    <h3>Additional Information</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group mb-3">
+                                {{ form.additional_information.label(class="form-label") }}
+                                {{ form.additional_information(class="form-control", rows=5) }}
+                                {% if form.additional_information.description %}
+                                <div class="field-help">{{ form.additional_information.description }}</div>
+                                {% endif %}
+                                {% if form.additional_information.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.additional_information.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Certifications -->
+                <div class="certification-box">
+                    <h3>Certifications</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group mb-3 required-field">
+                                <div class="form-check">
+                                    {{ form.certifies_information_accurate(class="form-check-input") }}
+                                    {{ form.certifies_information_accurate.label(class="form-check-label") }}
+                                </div>
+                                {% if form.certifies_information_accurate.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.certifies_information_accurate.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group mb-3 required-field">
+                                <div class="form-check">
+                                    {{ form.certifies_authority(class="form-check-input") }}
+                                    {{ form.certifies_authority.label(class="form-check-label") }}
+                                </div>
+                                {% if form.certifies_authority.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.certifies_authority.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    {{ form.submit(class="btn btn-primary btn-lg") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Add Contact button
+        $('#addContactBtn').click(function() {
+            var prototype = $('#additionalContacts').data('prototype');
+            var index = $('#additionalContacts .additional-contact').length;
+            var newForm = prototype.replace(/__name__/g, index);
+            $('#additionalContacts').append(newForm);
+        });
+        
+        // Add Financial Year button
+        $('#addFinancialBtn').click(function() {
+            var prototype = $('#financialHistory').data('prototype');
+            var index = $('#financialHistory .financial-year').length;
+            var newForm = prototype.replace(/__name__/g, index);
+            $('#financialHistory').append(newForm);
+        });
+        
+        // Add Team Member button
+        $('#addTeamMemberBtn').click(function() {
+            var prototype = $('#managementTeam').data('prototype');
+            var index = $('#managementTeam .team-member').length;
+            var newForm = prototype.replace(/__name__/g, index);
+            $('#managementTeam').append(newForm);
+        });
+        
+        // Remove item buttons - delegated event handling
+        $(document).on('click', '.remove-contact', function() {
+            $(this).closest('.additional-contact').remove();
+        });
+        
+        $(document).on('click', '.remove-financial', function() {
+            $(this).closest('.financial-year').remove();
+        });
+        
+        $(document).on('click', '.remove-member', function() {
+            $(this).closest('.team-member').remove();
+        });
+        
+        // Toggle display of bankruptcy details
+        $('#bankruptcyDetailsField').toggle($('#has_previous_bankruptcy').is(':checked'));
+        $('#has_previous_bankruptcy').change(function() {
+            $('#bankruptcyDetailsField').toggle($(this).is(':checked'));
+        });
+        
+        // Toggle display of default details
+        $('#defaultDetailsField').toggle($('#has_previous_defaults').is(':checked'));
+        $('#has_previous_defaults').change(function() {
+            $('#defaultDetailsField').toggle($(this).is(':checked'));
+        });
+        
+        // Toggle display of interest-only period field
+        $('#interestOnlyPeriodField').toggle($('#customized_terms-needs_interest_only_period').is(':checked'));
+        $('#customized_terms-needs_interest_only_period').change(function() {
+            $('#interestOnlyPeriodField').toggle($(this).is(':checked'));
+        });
+        
+        // Toggle display of collateral fields
+        $('#collateralSection').toggle($('#collateral_available').is(':checked'));
+        $('#collateral_available').change(function() {
+            $('#collateralSection').toggle($(this).is(':checked'));
+        });
+        
+        // Toggle display of business plan fields
+        $('#businessPlanSection').toggle($('#has_business_plan').is(':checked'));
+        $('#has_business_plan').change(function() {
+            $('#businessPlanSection').toggle($(this).is(':checked'));
+        });
+    });
+</script>
+{% endblock %}
