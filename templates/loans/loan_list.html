@@ -149,7 +149,7 @@
                             <tbody>
                                 {% for activity in recent_activity %}
                                 <tr>
-                                    <td>{{ activity.date|format_datetime }}</td>
+                                    <td>{{ activity.date.strftime('%Y-%m-%d %H:%M') if activity.date else 'N/A' }}</td>
                                     <td>
                                         <a href="{{ url_for('self_liquidating_loan.view_loan', loan_id=activity.loan_id) }}" class="text-primary">
                                             {{ activity.loan_number }}
