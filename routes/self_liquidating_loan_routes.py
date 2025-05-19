@@ -1,7 +1,7 @@
 """
-Routes for Self-Liquidating Loan Management System
+Routes for Loan Management System
 
-This module provides routes for handling self-liquidating loans, including:
+This module provides routes for handling loans, including:
 - Loan application and creation
 - Loan status management
 - Collateral management
@@ -33,7 +33,7 @@ from forms_self_liquidating_loan import (
 from models import User, FinancialInstitution, CorrespondentBank
 
 # Create Blueprint
-self_liquidating_loan_bp = Blueprint('self_liquidating_loan', __name__, url_prefix='/self-liquidating-loans')
+self_liquidating_loan_bp = Blueprint('self_liquidating_loan', __name__, url_prefix='/loans')
 
 
 def generate_loan_number():
@@ -73,12 +73,12 @@ def save_uploaded_file(file, loan_id, document_type):
 @self_liquidating_loan_bp.route('/')
 @login_required
 def index():
-    """Display list of self-liquidating loans"""
+    """Display list of loans"""
     # Get all loans, or filter by user's role/permissions
     loans = SelfLiquidatingLoan.query.order_by(desc(SelfLiquidatingLoan.created_at)).all()
     
     return render_template(
-        'self_liquidating_loans/index.html',
+        'loans/index.html',
         loans=loans,
         LoanStatus=LoanStatus
     )
@@ -87,7 +87,7 @@ def index():
 @self_liquidating_loan_bp.route('/new', methods=['GET', 'POST'])
 @login_required
 def new_loan():
-    """Create a new self-liquidating loan application"""
+    """Create a new loan application"""
     form = SelfLiquidatingLoanApplicationForm()
     
     # Get correspondent banks for the form if needed
@@ -142,11 +142,11 @@ def new_loan():
         db.session.add(loan)
         db.session.commit()
         
-        flash('Self-Liquidating Loan application created successfully!', 'success')
+        flash('Loan application created successfully!', 'success')
         return redirect(url_for('self_liquidating_loan.view_loan', loan_id=loan.id))
     
     return render_template(
-        'self_liquidating_loans/new.html',
+        'loans/new.html',
         form=form,
         correspondent_banks=correspondent_banks,
         financial_institutions=financial_institutions
@@ -166,7 +166,7 @@ def view_loan(loan_id):
     correspondent_availabilities = LoanCorrespondentAvailability.query.filter_by(loan_id=loan_id).all()
     
     return render_template(
-        'self_liquidating_loans/view.html',
+        'loans/view.html',
         loan=loan,
         collaterals=collaterals,
         payments=payments,
@@ -239,7 +239,7 @@ def update_status(loan_id):
         return redirect(url_for('self_liquidating_loan.view_loan', loan_id=loan.id))
     
     return render_template(
-        'self_liquidating_loans/update_status.html',
+        'loans/update_status.html',
         form=form,
         loan=loan,
         LoanStatus=LoanStatus
@@ -304,7 +304,7 @@ def add_collateral(loan_id):
         return redirect(url_for('self_liquidating_loan.view_loan', loan_id=loan.id))
     
     return render_template(
-        'self_liquidating_loans/add_collateral.html',
+        'loans/add_collateral.html',
         form=form,
         loan=loan,
         CollateralType=CollateralType
@@ -398,7 +398,7 @@ def add_payment(loan_id):
         return redirect(url_for('self_liquidating_loan.view_loan', loan_id=loan.id))
     
     return render_template(
-        'self_liquidating_loans/add_payment.html',
+        'loans/add_payment.html',
         form=form,
         loan=loan
     )
@@ -468,7 +468,7 @@ def process_renewal(loan_id):
         return redirect(url_for('self_liquidating_loan.view_loan', loan_id=loan.id))
     
     return render_template(
-        'self_liquidating_loans/process_renewal.html',
+        'loans/process_renewal.html',
         form=form,
         loan=loan,
         RenewalStatus=RenewalStatus
@@ -514,7 +514,7 @@ def manage_correspondent_availability(loan_id):
         return redirect(url_for('self_liquidating_loan.view_loan', loan_id=loan.id))
     
     return render_template(
-        'self_liquidating_loans/manage_correspondent_availability.html',
+        'loans/manage_correspondent_availability.html',
         form=form,
         loan=loan,
         correspondent_banks=correspondent_banks
@@ -572,7 +572,7 @@ def dashboard():
     recent_payments = LoanPayment.query.order_by(desc(LoanPayment.payment_date)).limit(5).all()
     
     return render_template(
-        'self_liquidating_loans/dashboard.html',
+        'loans/dashboard.html',
         total_loans=total_loans,
         active_loans=active_loans,
         total_loan_value=total_loan_value,

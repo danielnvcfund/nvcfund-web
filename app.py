@@ -322,13 +322,13 @@ def create_app():
             logger.error(f"Error importing payment models: {str(e)}")
             logger.warning("Application will run without payment settlement functionality")
             
-        # Import self-liquidating loan models
+        # Import loan models
         try:
-            import self_liquidating_loan  # noqa: F401
-            logger.info("Self-liquidating loan models imported successfully")
+            import self_liquidating_loan as loan_system  # noqa: F401
+            logger.info("Loan models imported successfully")
         except Exception as e:
-            logger.error(f"Error importing self-liquidating loan models: {str(e)}")
-            logger.warning("Application will run without self-liquidating loan functionality")
+            logger.error(f"Error importing loan models: {str(e)}")
+            logger.warning("Application will run without loan functionality")
             
         # Import financial institution recapitalization models
         try:
@@ -448,14 +448,14 @@ def create_app():
         from routes.document_routes import docs_bp
         app.register_blueprint(docs_bp)
         
-        # Register Self-Liquidating Loan routes
+        # Register Loan routes
         try:
-            from routes.self_liquidating_loan_routes import self_liquidating_loan_bp
-            app.register_blueprint(self_liquidating_loan_bp)
-            logger.info("Self-Liquidating Loan routes registered successfully")
+            from routes.self_liquidating_loan_routes import self_liquidating_loan_bp as loan_bp
+            app.register_blueprint(loan_bp)
+            logger.info("Loan routes registered successfully")
         except Exception as e:
-            logger.error(f"Error registering Self-Liquidating Loan routes: {str(e)}")
-            logger.warning("Application will run without Self-Liquidating Loan functionality")
+            logger.error(f"Error registering Loan routes: {str(e)}")
+            logger.warning("Application will run without Loan functionality")
         
         # Register SWIFT GPI routes
         try:
