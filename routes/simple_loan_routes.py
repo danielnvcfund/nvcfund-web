@@ -144,3 +144,68 @@ def loan_dashboard():
     except Exception as e:
         flash(f"Error loading loan dashboard: {str(e)}", "error")
         return redirect(url_for('simple_loan.index'))
+
+@simple_loan_bp.route('/new', methods=['GET', 'POST'])
+@login_required
+def new_loan():
+    """Create a new loan application"""
+    
+    if request.method == 'POST':
+        try:
+            # Extract loan information from form
+            borrower_name = request.form.get('borrower_name')
+            loan_amount = request.form.get('loan_amount')
+            currency = request.form.get('currency')
+            loan_term = request.form.get('loan_term')
+            interest_rate = request.form.get('interest_rate')
+            purpose = request.form.get('purpose')
+            
+            # Generate a unique loan number 
+            current_year = datetime.utcnow().year
+            
+            # Get the current max loan number for this year to create sequential numbering
+            max_loan_num_query = db.session.execute(
+                text("""
+                SELECT MAX(SUBSTRING(loan_number, -4)) as max_num
+                FROM self_liquidating_loan
+                WHERE loan_number LIKE :year_prefix
+                """),
+                {"year_prefix": f"SLL-{current_year}-%"}
+            ).fetchone()
+            
+            max_num = max_loan_num_query.max_num if max_loan_num_query and max_loan_num_query.max_num else 0
+            next_num = int(max_num) + 1 if max_num else 1
+            loan_number = f"SLL-{current_year}-{next_num:04d}"
+            
+            # Insert the new loan into the database
+            db.session.execute(
+                text("""
+                INSERT INTO self_liquidating_loan (
+                    loan_number, borrower_name, loan_amount, currency, 
+                    term_months, interest_rate, purpose, status, created_at
+                ) VALUES (
+                    :loan_number, :borrower_name, :loan_amount, :currency,
+                    :term_months, :interest_rate, :purpose, 'APPLICATION', NOW()
+                )
+                """),
+                {
+                    "loan_number": loan_number,
+                    "borrower_name": borrower_name,
+                    "loan_amount": float(loan_amount),
+                    "currency": currency,
+                    "term_months": int(loan_term),
+                    "interest_rate": float(interest_rate),
+                    "purpose": purpose
+                }
+            )
+            db.session.commit()
+            
+            flash(f"Loan application {loan_number} created successfully", "success")
+            return redirect(url_for('simple_loan.index'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error creating loan: {str(e)}", "error")
+    
+    # For GET requests, display the application form
+    return render_template('loans/new_loan.html')
