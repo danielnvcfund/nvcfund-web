@@ -1,206 +1,212 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Loans - NVC Banking Platform{% endblock %}
+{% block title %}Loan Management{% endblock %}
+
+{% block styles %}
+<style>
+    .loan-card {
+        transition: transform 0.2s;
+        border-left: 4px solid #004080;
+    }
+    
+    .loan-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .status-badge {
+        font-size: 0.8em;
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+    
+    .status-application { background-color: #FFD580; color: #664400; }
+    .status-underwriting { background-color: #B8E0FF; color: #004080; }
+    .status-approved { background-color: #C8E6C9; color: #2E7D32; }
+    .status-funded { background-color: #BBDEFB; color: #1565C0; }
+    .status-active { background-color: #DCEDC8; color: #33691E; }
+    .status-renewal_pending { background-color: #E1BEE7; color: #6A1B9A; }
+    .status-renewed { background-color: #C5CAE9; color: #283593; }
+    .status-liquidating { background-color: #FFF9C4; color: #F57F17; }
+    .status-paid { background-color: #B2DFDB; color: #00695C; }
+    .status-defaulted { background-color: #FFCDD2; color: #C62828; }
+    .status-cancelled { background-color: #CFD8DC; color: #37474F; }
+    
+    .search-filters {
+        background-color: rgba(0, 40, 85, 0.03);
+        border-radius: 8px;
+        border: 1px solid rgba(0, 40, 85, 0.1);
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .loan-amount {
+        font-size: 1.1em;
+        font-weight: bold;
+        color: #004080;
+    }
+    
+    .loan-actions a {
+        margin-right: 5px;
+    }
+    
+    .no-loans-message {
+        text-align: center;
+        padding: 50px 0;
+        color: #666;
+    }
+    
+    .no-loans-message i {
+        font-size: 3em;
+        color: #ccc;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container mt-4 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 text-primary">Loan Management</h1>
-        <a href="{{ url_for('self_liquidating_loan.new_loan') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> New Loan Application
+        <h2>Loan Management</h2>
+        <div>
+            <a href="{{ url_for('loan.comprehensive_application') }}" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-1"></i> New Loan Application
+            </a>
+        </div>
+    </div>
+    
+    <div class="search-filters">
+        <form method="GET" class="row">
+            <div class="col-md-3">
+                <div class="form-group mb-2">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">All Statuses</option>
+                        {% for status in LoanStatus %}
+                        <option value="{{ status.name }}" {% if request.args.get('status') == status.name %}selected{% endif %}>
+                            {{ status.name.replace('_', ' ').title() }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="form-group mb-2">
+                    <label class="form-label">Borrower</label>
+                    <input type="text" name="borrower" class="form-control form-control-sm" 
+                           placeholder="Borrower name" value="{{ request.args.get('borrower', '') }}">
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="form-group mb-2">
+                    <label class="form-label">Amount (Min)</label>
+                    <input type="number" name="amount_min" class="form-control form-control-sm" 
+                           placeholder="Min amount" value="{{ request.args.get('amount_min', '') }}">
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="form-group mb-2">
+                    <label class="form-label">Amount (Max)</label>
+                    <input type="number" name="amount_max" class="form-control form-control-sm" 
+                           placeholder="Max amount" value="{{ request.args.get('amount_max', '') }}">
+                </div>
+            </div>
+            
+            <div class="col-12 text-end mt-3">
+                <button type="submit" class="btn btn-sm btn-primary">
+                    <i class="fas fa-search me-1"></i> Filter
+                </button>
+                <a href="{{ url_for('loan.index') }}" class="btn btn-sm btn-secondary ms-1">
+                    <i class="fas fa-undo me-1"></i> Reset
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    {% if loans %}
+    <div class="row">
+        {% for loan in loans %}
+        <div class="col-md-6 mb-4">
+            <div class="card loan-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">
+                            <a href="{{ url_for('loan.view_loan', loan_id=loan.id) }}" class="text-decoration-none">
+                                {{ loan.borrower_name }}
+                            </a>
+                        </h5>
+                        <span class="status-badge status-{{ loan.status.name.lower() }}">
+                            {{ loan.status.name.replace('_', ' ').title() }}
+                        </span>
+                    </div>
+                    
+                    <p class="card-text mb-1">
+                        <strong>Loan #:</strong> {{ loan.loan_number }}
+                    </p>
+                    
+                    <p class="loan-amount mb-2">
+                        {{ "${:,.2f}".format(loan.loan_amount) }} {{ loan.currency.name }}
+                    </p>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Interest Rate:</small><br>
+                            {{ loan.interest_rate }}%
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Term:</small><br>
+                            {{ loan.term_years }} Years
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <small class="text-muted">Application Date:</small><br>
+                            {{ loan.application_date.strftime('%Y-%m-%d') if loan.application_date else 'N/A' }}
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Current Balance:</small><br>
+                            {{ "${:,.2f}".format(loan.current_principal_balance) }}
+                        </div>
+                    </div>
+                    
+                    <div class="loan-actions mt-3 text-end">
+                        <a href="{{ url_for('loan.view_loan', loan_id=loan.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye me-1"></i> View
+                        </a>
+                        
+                        {% if loan.status.name == 'ACTIVE' %}
+                        <a href="{{ url_for('loan.add_payment', loan_id=loan.id) }}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-money-bill-wave me-1"></i> Record Payment
+                        </a>
+                        {% endif %}
+                        
+                        {% if loan.status.name == 'APPLICATION' %}
+                        <a href="{{ url_for('loan.update_status', loan_id=loan.id) }}" class="btn btn-sm btn-outline-info">
+                            <i class="fas fa-arrow-right me-1"></i> Process
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-loans-message">
+        <i class="fas fa-search"></i>
+        <h4>No Loans Found</h4>
+        <p>There are no loans matching your criteria or no loans have been created yet.</p>
+        <a href="{{ url_for('loan.comprehensive_application') }}" class="btn btn-primary mt-2">
+            Create Your First Loan Application
         </a>
     </div>
-
-    <!-- NVC Fund Market Position -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card bg-dark border-0 border-bottom border-primary border-3">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-5">
-                            <h4 class="text-white mb-3">Backed by Global Financial Strength</h4>
-                            <p class="text-light mb-0">As one of the world's leading financial institutions, NVC Fund provides unparalleled security and capacity for large-scale loan facilities.</p>
-                        </div>
-                        <div class="col-md-7">
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <div class="card h-100 bg-primary bg-gradient text-white border-0">
-                                        <div class="card-body p-3 text-center">
-                                            <h6 class="text-light mb-1">Total Assets</h6>
-                                            <h3 class="display-6 fw-bold mb-0">$10+ Trillion</h3>
-                                            <small class="text-light">Leading global financial institution</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="card h-100 bg-primary bg-gradient text-white border-0">
-                                        <div class="card-body p-3 text-center">
-                                            <h6 class="text-light mb-1">Market Cap</h6>
-                                            <h3 class="display-6 fw-bold mb-0">$1+ Trillion</h3>
-                                            <small class="text-light">Top global market position</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="card h-100 bg-primary bg-gradient text-white border-0">
-                                        <div class="card-body p-3 text-center">
-                                            <h6 class="text-light mb-1">Annual Revenue</h6>
-                                            <h3 class="display-6 fw-bold mb-0">$289B</h3>
-                                            <small class="text-light">#1 in financial services</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <!-- Dashboard Summary -->
-        <div class="col-12 mb-4">
-            <div class="card bg-dark border-primary">
-                <div class="card-body">
-                    <div class="row g-4">
-                        <div class="col-md-3 col-sm-6">
-                            <div class="text-center">
-                                <h6 class="text-muted mb-2">Total Loans</h6>
-                                <h2 class="mb-0 text-primary">{{ loans|length }}</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6">
-                            <div class="text-center">
-                                <h6 class="text-muted mb-2">Active Loans</h6>
-                                <h2 class="mb-0 text-success">
-                                    {{ loans|selectattr('status', 'equalto', LoanStatus.ACTIVE)|list|length }}
-                                </h2>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6">
-                            <div class="text-center">
-                                <h6 class="text-muted mb-2">Pending Approval</h6>
-                                <h2 class="mb-0 text-warning">
-                                    {{ loans|selectattr('status', 'equalto', LoanStatus.APPLICATION)|list|length + 
-                                       loans|selectattr('status', 'equalto', LoanStatus.UNDERWRITING)|list|length }}
-                                </h2>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6">
-                            <div class="text-center">
-                                <h6 class="text-muted mb-2">Correspondent Available</h6>
-                                <h2 class="mb-0 text-info">
-                                    {{ loans|selectattr('is_available_to_correspondents', 'equalto', true)|list|length }}
-                                </h2>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Loan Table -->
-        <div class="col-12">
-            <div class="card bg-dark border-primary">
-                <div class="card-header bg-primary-subtle">
-                    <h5 class="card-title mb-0 text-primary">Loans</h5>
-                </div>
-                <div class="card-body">
-                    {% if loans %}
-                    <div class="table-responsive">
-                        <table class="table table-hover table-striped table-dark">
-                            <thead>
-                                <tr>
-                                    <th>Loan Number</th>
-                                    <th>Borrower</th>
-                                    <th>Amount</th>
-                                    <th>Interest Rate</th>
-                                    <th>Term</th>
-                                    <th>Application Date</th>
-                                    <th>Status</th>
-                                    <th>Maturity Date</th>
-                                    <th>Correspondent</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for loan in loans %}
-                                <tr>
-                                    <td>
-                                        <a href="{{ url_for('self_liquidating_loan.view_loan', loan_id=loan.id) }}" class="text-primary fw-bold">
-                                            {{ loan.loan_number }}
-                                        </a>
-                                    </td>
-                                    <td>{{ loan.borrower_name }}</td>
-                                    <td>{{ loan.currency.name }} {{ loan.loan_amount|format_number }}</td>
-                                    <td>{{ loan.interest_rate }}%</td>
-                                    <td>{{ loan.term_years }} years</td>
-                                    <td>{{ loan.application_date|datetime }}</td>
-                                    <td>
-                                        {% if loan.status == LoanStatus.APPLICATION %}
-                                        <span class="badge bg-warning">Application</span>
-                                        {% elif loan.status == LoanStatus.UNDERWRITING %}
-                                        <span class="badge bg-info">Underwriting</span>
-                                        {% elif loan.status == LoanStatus.APPROVED %}
-                                        <span class="badge bg-primary">Approved</span>
-                                        {% elif loan.status == LoanStatus.FUNDED %}
-                                        <span class="badge bg-success">Funded</span>
-                                        {% elif loan.status == LoanStatus.ACTIVE %}
-                                        <span class="badge bg-success">Active</span>
-                                        {% elif loan.status == LoanStatus.RENEWED %}
-                                        <span class="badge bg-info">Renewed</span>
-                                        {% elif loan.status == LoanStatus.LIQUIDATING %}
-                                        <span class="badge bg-warning">Liquidating</span>
-                                        {% elif loan.status == LoanStatus.PAID %}
-                                        <span class="badge bg-secondary">Paid</span>
-                                        {% elif loan.status == LoanStatus.DEFAULTED %}
-                                        <span class="badge bg-danger">Defaulted</span>
-                                        {% else %}
-                                        <span class="badge bg-secondary">{{ loan.status.name }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ loan.maturity_date|datetime if loan.maturity_date else 'N/A' }}</td>
-                                    <td>
-                                        {% if loan.is_available_to_correspondents %}
-                                        <span class="badge bg-success">Available</span>
-                                        {% else %}
-                                        <span class="badge bg-secondary">Not Available</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="actionDropdown{{ loan.id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                                Action
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="actionDropdown{{ loan.id }}">
-                                                <li><a class="dropdown-item" href="{{ url_for('self_liquidating_loan.view_loan', loan_id=loan.id) }}">View Details</a></li>
-                                                <li><a class="dropdown-item" href="{{ url_for('self_liquidating_loan.update_status', loan_id=loan.id) }}">Update Status</a></li>
-                                                <li><a class="dropdown-item" href="{{ url_for('self_liquidating_loan.add_collateral', loan_id=loan.id) }}">Add Collateral</a></li>
-                                                <li><a class="dropdown-item" href="{{ url_for('self_liquidating_loan.add_payment', loan_id=loan.id) }}">Record Payment</a></li>
-                                                {% if loan.is_eligible_for_renewal() %}
-                                                <li><a class="dropdown-item" href="{{ url_for('self_liquidating_loan.process_renewal', loan_id=loan.id) }}">Process Renewal</a></li>
-                                                {% endif %}
-                                                {% if loan.status in [LoanStatus.ACTIVE, LoanStatus.FUNDED, LoanStatus.RENEWED] %}
-                                                <li><a class="dropdown-item" href="{{ url_for('self_liquidating_loan.manage_correspondent_availability', loan_id=loan.id) }}">Correspondent Availability</a></li>
-                                                {% endif %}
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="alert alert-info">
-                        <h4 class="alert-heading">No loans found!</h4>
-                        <p>There are no loans in the system yet. Click the "New Loan Application" button to create one.</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
+    {% endif %}
 </div>
 {% endblock %}
