@@ -6,7 +6,7 @@
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0 text-primary">New Loan Application</h1>
-        <a href="{{ url_for('self_liquidating_loan.index') }}" class="btn btn-outline-primary">
+        <a href="{{ url_for('loan.index') }}" class="btn btn-outline-primary">
             <i class="fas fa-arrow-left"></i> Back to Loans
         </a>
     </div>
@@ -277,7 +277,7 @@
                         
                         <div class="row">
                             <div class="col-12 text-end">
-                                <a href="{{ url_for('self_liquidating_loan.index') }}" class="btn btn-outline-secondary me-2">Cancel</a>
+                                <a href="{{ url_for('loan.index') }}" class="btn btn-outline-secondary me-2">Cancel</a>
                                 {{ form.submit(class="btn btn-primary") }}
                             </div>
                         </div>
