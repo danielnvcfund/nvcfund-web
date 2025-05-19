@@ -151,7 +151,9 @@ def new_loan():
         try:
             # Extract loan information from form
             borrower_name = request.form.get('borrower_name')
-            loan_amount = request.form.get('loan_amount')
+            # Handle loan amount with or without commas
+            loan_amount_str = request.form.get('loan_amount', '0')
+            loan_amount = float(loan_amount_str.replace(',', '')) if loan_amount_str else 0
             currency = request.form.get('currency')
             loan_term = request.form.get('loan_term')
             interest_rate = request.form.get('interest_rate')
