@@ -2,6 +2,53 @@
 
 {% block title %}New Loan Application - NVC Banking Platform{% endblock %}
 
+{% block head %}
+<style>
+    /* Improve dropdown visibility - force light mode for all dropdowns */
+    .form-select {
+        color: #000 !important;
+        background-color: #fff !important;
+        border-color: #0d6efd !important;
+    }
+    
+    /* Make dropdown options always visible */
+    .form-select option, 
+    .form-select optgroup {
+        color: #000 !important;
+        background-color: #fff !important;
+        padding: 8px !important;
+    }
+    
+    /* Make group headers stand out clearly */
+    .form-select optgroup {
+        font-weight: bold !important;
+        color: #0d6efd !important;
+        background-color: #e9f2ff !important;
+        border-bottom: 1px solid #ccc !important;
+    }
+    
+    /* Improve dropdown option hover state */
+    .form-select option:hover,
+    .form-select option:focus,
+    .form-select option:active {
+        background-color: #0d6efd !important;
+        color: #fff !important;
+    }
+    
+    /* Improve dropdown active state */
+    .form-select:focus {
+        border-color: #0d6efd !important;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    }
+    
+    /* Add space between options for better readability */
+    .form-select option {
+        margin: 2px 0 !important;
+        border-radius: 4px !important;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid py-4">
     <div class="row">

@@ -16,7 +16,6 @@ from app import db
 simple_loan_bp = Blueprint('simple_loan', __name__, url_prefix='/simple-loans')
 
 @simple_loan_bp.route('/')
-@login_required
 def index():
     """Display the main loans index page"""
     
@@ -57,7 +56,6 @@ def index():
     return render_template('loans/loan_list.html', loans=loans, recent_activity=[])
 
 @simple_loan_bp.route('/detail/<int:loan_id>')
-@login_required
 def loan_detail(loan_id):
     """Display detailed information for a specific loan"""
     
@@ -146,7 +144,6 @@ def loan_dashboard():
         return redirect(url_for('simple_loan.index'))
 
 @simple_loan_bp.route('/new', methods=['GET', 'POST'])
-@login_required
 def new_loan():
     """Create a new loan application"""
     
