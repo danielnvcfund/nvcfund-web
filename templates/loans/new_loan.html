@@ -4,13 +4,13 @@
 
 {% block head %}
 <style>
-    /* Fundamental contrast fixes */
+    /* Light theme for better visibility */
     body {
         color: black !important;
         background-color: white !important;
     }
     
-    /* High contrast form elements */
+    /* Maximum contrast for form elements */
     .form-select, 
     .form-control,
     input,
@@ -21,37 +21,94 @@
         border: 2px solid #0d6efd !important;
     }
     
-    /* Force all dropdown options to be black text on white */
-    select option,
-    select optgroup,
+    /* Make dropdowns much taller for better visibility */
+    .form-select, select {
+        height: auto !important;
+        max-height: 300px !important; /* Allow dropdowns to be much taller */
+        overflow-y: auto !important;
+        padding: 10px !important;
+        font-size: 16px !important; /* Larger text size */
+    }
+    
+    /* High-contrast dropdown options */
     .form-select option,
-    .form-select optgroup {
+    select option {
         background-color: white !important;
         color: black !important;
-        font-weight: normal;
+        padding: 10px 15px !important;
+        margin: 5px 0 !important;
+        border-bottom: 1px solid #ccc !important;
+        font-size: 16px !important;
+        line-height: 1.5 !important;
     }
     
-    /* Blue headers for option groups */
-    select optgroup,
-    .form-select optgroup {
-        background-color: #cfe2ff !important;
-        color: #0d47a1 !important;
+    /* Extra visible group headers */
+    .form-select optgroup,
+    select optgroup {
+        background-color: #0d6efd !important;
+        color: white !important;
+        font-weight: bold !important;
+        font-size: 18px !important;
+        padding: 15px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+        margin-top: 10px !important;
+        margin-bottom: 10px !important;
+        border-radius: 5px !important;
+    }
+    
+    /* Special styling for selected option */
+    .form-select option:checked,
+    select option:checked {
+        background-color: #0d6efd !important;
+        color: white !important;
         font-weight: bold !important;
     }
     
-    /* Blue form labels for better visibility */
-    label,
-    .form-label {
+    /* Make form elements larger and more visible */
+    .form-control, input, textarea {
+        padding: 12px !important;
+        font-size: 16px !important;
+        line-height: 1.5 !important;
+        margin-bottom: 15px !important;
+    }
+    
+    /* Bold blue labels for better visibility */
+    label, .form-label {
         color: #0d6efd !important;
         font-weight: bold !important;
+        font-size: 16px !important;
+        margin-bottom: 8px !important;
     }
     
-    /* Ensure form text is visible */
-    .form-text {
-        color: #495057 !important;
+    /* High contrast card styling */
+    .card {
+        background-color: white !important;
+        border: 3px solid #0d6efd !important;
+        box-shadow: 0 8px 12px rgba(0,0,0,0.1) !important;
     }
     
-    /* Higher contrast buttons */
+    .card-header {
+        background-color: #0d6efd !important;
+        color: white !important;
+        font-weight: bold !important;
+        padding: 15px 20px !important;
+        font-size: 18px !important;
+    }
+    
+    /* Fix dark theme overrides */
+    [data-bs-theme="dark"] {
+        --bs-body-color: #000000 !important;
+        --bs-body-bg: #ffffff !important;
+    }
+    
+    /* Larger, more visible buttons */
+    .btn {
+        padding: 12px 20px !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+    }
+    
     .btn-primary {
         background-color: #0d6efd !important;
         border-color: #0d6efd !important;
@@ -61,18 +118,7 @@
     .btn-outline-secondary {
         color: #0d6efd !important;
         border-color: #0d6efd !important;
-    }
-    
-    /* Fix card visibility */
-    .card {
         background-color: white !important;
-        border: 2px solid #0d6efd !important;
-    }
-    
-    .card-header {
-        background-color: #cfe2ff !important;
-        color: #0d47a1 !important;
-        font-weight: bold !important;
     }
 </style>
 {% endblock %}
