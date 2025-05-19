@@ -155,8 +155,12 @@ def new_loan():
             loan_amount_str = request.form.get('loan_amount', '0')
             loan_amount = float(loan_amount_str.replace(',', '')) if loan_amount_str else 0
             currency = request.form.get('currency')
-            loan_term = request.form.get('loan_term')
-            interest_rate = request.form.get('interest_rate')
+            # Safely convert loan term to int
+            loan_term_str = request.form.get('loan_term', '60')
+            loan_term = int(loan_term_str) if loan_term_str and loan_term_str.isdigit() else 60
+            # Safely convert interest rate to float
+            interest_rate_str = request.form.get('interest_rate', '5.5')
+            interest_rate = float(interest_rate_str) if interest_rate_str else 5.5
             purpose = request.form.get('purpose')
             
             # Generate a unique loan number 
@@ -190,10 +194,10 @@ def new_loan():
                 {
                     "loan_number": loan_number,
                     "borrower_name": borrower_name,
-                    "loan_amount": float(loan_amount),
+                    "loan_amount": float(loan_amount) if loan_amount else 0.0,
                     "currency": currency,
-                    "term_months": int(loan_term),
-                    "interest_rate": float(interest_rate),
+                    "term_months": int(loan_term) if loan_term else 0,
+                    "interest_rate": float(interest_rate) if interest_rate else 0.0,
                     "purpose": purpose
                 }
             )

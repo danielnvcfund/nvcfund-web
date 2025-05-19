@@ -36,10 +36,11 @@
     
     /* Input/select styling */
     .form-control, .form-select {
-        padding: 10px 15px;
+        padding: 12px 15px;
         border: 2px solid #ced4da;
         border-radius: 5px;
         margin-bottom: 15px;
+        font-size: 18px !important; /* Increased font size */
     }
     
     .form-control:focus, .form-select:focus {
@@ -51,7 +52,14 @@
     .form-label {
         font-weight: bold;
         color: #0d6efd;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
+        font-size: 20px !important; /* Larger label text */
+    }
+    
+    /* Form help text */
+    .form-text {
+        font-size: 16px !important; /* Increased help text size */
+        color: #6c757d !important;
     }
     
     /* Button styling */
@@ -324,7 +332,7 @@
                         <!-- Borrower Information Section -->
                         <div class="row mb-4 p-3" style="background-color: rgba(13, 110, 253, 0.05); border-radius: 8px; border-left: 4px solid #0d6efd;">
                             <div class="col-12 mb-3">
-                                <h5 style="color: #0a58ca; border-bottom: 1px solid #dee2e6; padding-bottom: 10px;">
+                                <h5 style="color: #0a58ca; border-bottom: 2px solid #0d6efd; padding-bottom: 12px; font-size: 22px; font-weight: bold;">
                                     <i class="fas fa-building me-2"></i>Borrower Information
                                 </h5>
                             </div>
@@ -341,7 +349,7 @@
                         <!-- Loan Details Section -->
                         <div class="row mb-4 p-3" style="background-color: rgba(13, 110, 253, 0.05); border-radius: 8px; border-left: 4px solid #0d6efd;">
                             <div class="col-12 mb-3">
-                                <h5 style="color: #0a58ca; border-bottom: 1px solid #dee2e6; padding-bottom: 10px;">
+                                <h5 style="color: #0a58ca; border-bottom: 2px solid #0d6efd; padding-bottom: 12px; font-size: 22px; font-weight: bold;">
                                     <i class="fas fa-money-check-alt me-2"></i>Loan Details
                                 </h5>
                             </div>
@@ -374,22 +382,7 @@
                                         <option value="SGD" style="background-color: white; color: black; padding: 10px;">SGD - Singapore Dollar</option>
                                         <option value="INR" style="background-color: white; color: black; padding: 10px;">INR - Indian Rupee</option>
                                     </optgroup>
-                                    <optgroup label="Middle Eastern Currencies" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
-                                        <option value="AED" style="background-color: white; color: black; padding: 10px;">AED - UAE Dirham</option>
-                                        <option value="SAR" style="background-color: white; color: black; padding: 10px;">SAR - Saudi Riyal</option>
-                                    </optgroup>
-                                    <optgroup label="African Currencies" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
-                                        <option value="ZAR" style="background-color: white; color: black; padding: 10px;">ZAR - South African Rand</option>
-                                        <option value="NGN" style="background-color: white; color: black; padding: 10px;">NGN - Nigerian Naira</option>
-                                        <option value="KES" style="background-color: white; color: black; padding: 10px;">KES - Kenyan Shilling</option>
-                                        <option value="EGP" style="background-color: white; color: black; padding: 10px;">EGP - Egyptian Pound</option>
-                                    </optgroup>
-                                    <optgroup label="Platform Currencies" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
-                                        <option value="NVCT" style="background-color: white; color: black; padding: 10px;">NVCT - NVC Token</option>
-                                        <option value="AFD1" style="background-color: white; color: black; padding: 10px;">AFD1 - American Federation Dollar</option>
-                                        <option value="SFN" style="background-color: white; color: black; padding: 10px;">SFN - SFN Coin</option>
-                                    </optgroup>
-                                </select>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -397,7 +390,7 @@
                         <!-- Loan Terms Section -->
                         <div class="row mb-4 p-3" style="background-color: rgba(13, 110, 253, 0.05); border-radius: 8px; border-left: 4px solid #0d6efd;">
                             <div class="col-12 mb-3">
-                                <h5 style="color: #0a58ca; border-bottom: 1px solid #dee2e6; padding-bottom: 10px;">
+                                <h5 style="color: #0a58ca; border-bottom: 2px solid #0d6efd; padding-bottom: 12px; font-size: 22px; font-weight: bold;">
                                     <i class="fas fa-calendar-alt me-2"></i>Loan Terms
                                 </h5>
                             </div>
@@ -407,109 +400,92 @@
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-clock"></i></span>
                                     <select class="form-select" id="loan_term" name="loan_term" required style="background-color: white; color: black; font-weight: bold;">
-                                    <optgroup label="Short Term" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
-                                        <option value="3" style="background-color: white; color: black; padding: 10px;">3 months (Quarter)</option>
-                                        <option value="6" style="background-color: white; color: black; padding: 10px;">6 months (Half Year)</option>
-                                        <option value="12" style="background-color: white; color: black; padding: 10px;">12 months (1 year)</option>
-                                    </optgroup>
-                                    <optgroup label="Medium Term" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
-                                        <option value="18" style="background-color: white; color: black; padding: 10px;">18 months (1.5 years)</option>
-                                        <option value="24" style="background-color: white; color: black; padding: 10px;">24 months (2 years)</option>
-                                        <option value="36" style="background-color: white; color: black; padding: 10px;">36 months (3 years)</option>
-                                        <option value="48" style="background-color: white; color: black; padding: 10px;">48 months (4 years)</option>
-                                        <option value="60" selected style="background-color: white; color: black; padding: 10px;">60 months (5 years)</option>
-                                    </optgroup>
-                                    <optgroup label="Long Term" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
-                                        <option value="72" style="background-color: white; color: black; padding: 10px;">72 months (6 years)</option>
-                                        <option value="84" style="background-color: white; color: black; padding: 10px;">84 months (7 years)</option>
-                                        <option value="96" style="background-color: white; color: black; padding: 10px;">96 months (8 years)</option>
-                                        <option value="108" style="background-color: white; color: black; padding: 10px;">108 months (9 years)</option>
-                                        <option value="120" style="background-color: white; color: black; padding: 10px;">120 months (10 years)</option>
-                                        <option value="180" style="background-color: white; color: black; padding: 10px;">180 months (15 years)</option>
-                                        <option value="240" style="background-color: white; color: black; padding: 10px;">240 months (20 years)</option>
-                                        <option value="300" style="background-color: white; color: black; padding: 10px;">300 months (25 years)</option>
-                                        <option value="360" style="background-color: white; color: black; padding: 10px;">360 months (30 years)</option>
-                                    </optgroup>
-                                </select>
+                                        <optgroup label="Short Term" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                            <option value="3" style="background-color: white; color: black; padding: 10px;">3 months (Quarter)</option>
+                                            <option value="6" style="background-color: white; color: black; padding: 10px;">6 months (Half Year)</option>
+                                            <option value="12" style="background-color: white; color: black; padding: 10px;">12 months (1 year)</option>
+                                        </optgroup>
+                                        <optgroup label="Medium Term" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                            <option value="24" style="background-color: white; color: black; padding: 10px;">24 months (2 years)</option>
+                                            <option value="36" style="background-color: white; color: black; padding: 10px;">36 months (3 years)</option>
+                                            <option value="48" style="background-color: white; color: black; padding: 10px;">48 months (4 years)</option>
+                                        </optgroup>
+                                        <optgroup label="Long Term" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                            <option value="60" selected style="background-color: white; color: black; padding: 10px;">60 months (5 years)</option>
+                                            <option value="84" style="background-color: white; color: black; padding: 10px;">84 months (7 years)</option>
+                                            <option value="120" style="background-color: white; color: black; padding: 10px;">120 months (10 years)</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div class="form-text">Select the loan repayment term in months</div>
                             </div>
                             
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label for="interest_rate" class="form-label">Interest Rate (%)</label>
-                                <input type="number" class="form-control" id="interest_rate" name="interest_rate" min="0.1" max="12" step="0.1" value="5.5" required>
-                                <div class="form-text">Annual interest rate percentage</div>
-                            </div>
-                            
-                            <div class="col-md-4 mb-3">
-                                <label for="purpose" class="form-label">Loan Purpose</label>
-                                <select class="form-select" id="purpose" name="purpose" required style="background-color: white; color: black; font-weight: bold;">
-                                    <optgroup label="Capital Enhancement" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
-                                        <option value="Capital Injection" selected style="background-color: white; color: black; padding: 10px;">Capital Injection</option>
-                                        <option value="Tier 1 Capital" style="background-color: white; color: black; padding: 10px;">Tier 1 Capital Enhancement</option>
-                                        <option value="Tier 2 Capital" style="background-color: white; color: black; padding: 10px;">Tier 2 Capital Enhancement</option>
-                                        <option value="Regulatory Buffer" style="background-color: white; color: black; padding: 10px;">Regulatory Buffer Capital</option>
-                                        <option value="Recapitalization" style="background-color: white; color: black; padding: 10px;">General Recapitalization</option>
-                                        <option value="Basel Compliance" style="background-color: white; color: black; padding: 10px;">Basel III/IV Compliance</option>
-                                        <option value="Liquidity Ratio" style="background-color: white; color: black; padding: 10px;">Liquidity Ratio Improvement</option>
-                                        <option value="CAR Compliance" style="background-color: white; color: black; padding: 10px;">Capital Adequacy Ratio Compliance</option>
-                                    </optgroup>
-                                    <optgroup label="Growth & Expansion" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
-                                        <option value="Branch Expansion" style="background-color: white; color: black; padding: 10px;">Branch Network Expansion</option>
-                                        <option value="Digital Transformation" style="background-color: white; color: black; padding: 10px;">Digital Banking Transformation</option>
-                                        <option value="Market Expansion" style="background-color: white; color: black; padding: 10px;">New Market Entry</option>
-                                        <option value="Service Expansion" style="background-color: white; color: black; padding: 10px;">New Service Development</option>
-                                        <option value="Geographic Expansion" style="background-color: white; color: black; padding: 10px;">Geographic Expansion</option>
-                                        <option value="Cross-Border Expansion" style="background-color: white; color: black; padding: 10px;">Cross-Border Banking</option>
-                                    </optgroup>
-                                    <optgroup label="Strategic Initiatives" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
-                                        <option value="Acquisition" style="background-color: white; color: black; padding: 10px;">Financial Institution Acquisition</option>
-                                        <option value="Merger" style="background-color: white; color: black; padding: 10px;">Merger Financing</option>
-                                        <option value="Technology Upgrade" style="background-color: white; color: black; padding: 10px;">Core Banking System Upgrade</option>
-                                        <option value="Fintech Integration" style="background-color: white; color: black; padding: 10px;">Fintech Integration/Acquisition</option>
-                                        <option value="Cybersecurity" style="background-color: white; color: black; padding: 10px;">Cybersecurity Enhancement</option>
-                                        <option value="AI Implementation" style="background-color: white; color: black; padding: 10px;">AI & ML Implementation</option>
-                                    </optgroup>
-                                    <optgroup label="Debt & Restructuring" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
-                                        <option value="Debt Refinancing" style="background-color: white; color: black; padding: 10px;">Debt Refinancing</option>
-                                        <option value="Bond Issuance Support" style="background-color: white; color: black; padding: 10px;">Bond Issuance Support</option>
-                                        <option value="Debt Restructuring" style="background-color: white; color: black; padding: 10px;">Debt Restructuring</option>
-                                        <option value="Non-Performing Loans" style="background-color: white; color: black; padding: 10px;">NPL Resolution</option>
-                                        <option value="Asset Quality" style="background-color: white; color: black; padding: 10px;">Asset Quality Improvement</option>
-                                    </optgroup>
-                                    <optgroup label="Infrastructure & Operations" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
-                                        <option value="Infrastructure" style="background-color: white; color: black; padding: 10px;">Physical Infrastructure</option>
-                                        <option value="Working Capital" style="background-color: white; color: black; padding: 10px;">Working Capital</option>
-                                        <option value="Operational Efficiency" style="background-color: white; color: black; padding: 10px;">Operational Efficiency</option>
-                                        <option value="Sustainable Banking" style="background-color: white; color: black; padding: 10px;">Green Banking Initiative</option>
-                                        <option value="Regulatory Compliance" style="background-color: white; color: black; padding: 10px;">Regulatory Compliance Systems</option>
-                                    </optgroup>
-                                    <optgroup label="Other" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
-                                        <option value="MSME Lending" style="background-color: white; color: black; padding: 10px;">MSME Lending Program</option>
-                                        <option value="Specialized Lending" style="background-color: white; color: black; padding: 10px;">Specialized Lending Initiative</option>
-                                        <option value="Other" style="background-color: white; color: black; padding: 10px;">Other Purpose</option>
-                                    </optgroup>
-                                </select>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-percentage"></i></span>
+                                    <input type="text" class="form-control" id="interest_rate" name="interest_rate" required placeholder="5.5" min="0.1" max="20">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <div class="form-text">Annual interest rate between 0.1% and 20%</div>
                             </div>
                         </div>
                         
-                        <h5 class="mt-4 mb-3 text-primary">Self-Liquidating Mechanism</h5>
-                        <div class="row">
+                        <!-- Loan Purpose Section -->
+                        <div class="row mb-4 p-3" style="background-color: rgba(13, 110, 253, 0.05); border-radius: 8px; border-left: 4px solid #0d6efd;">
+                            <div class="col-12 mb-3">
+                                <h5 style="color: #0a58ca; border-bottom: 2px solid #0d6efd; padding-bottom: 12px; font-size: 22px; font-weight: bold;">
+                                    <i class="fas fa-tag me-2"></i>Loan Purpose
+                                </h5>
+                            </div>
                             <div class="col-md-12 mb-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="1" id="self_liquidating" name="self_liquidating" checked>
-                                    <label class="form-check-label" for="self_liquidating">
-                                        Enable Self-Liquidating Structure
-                                    </label>
-                                    <div class="form-text">The loan will be structured with a self-liquidating mechanism that secures repayment through designated assets or cash flows</div>
+                                <label for="purpose" class="form-label">Purpose</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-chart-line"></i></span>
+                                    <select class="form-select" id="purpose" name="purpose" required style="background-color: white; color: black; font-weight: bold;">
+                                        <optgroup label="Capital Enhancement" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                            <option value="Tier 1 Capital Enhancement" style="background-color: white; color: black; padding: 10px;">Tier 1 Capital Enhancement</option>
+                                            <option value="Tier 2 Capital Enhancement" style="background-color: white; color: black; padding: 10px;">Tier 2 Capital Enhancement</option>
+                                            <option value="Regulatory Buffer Capital" style="background-color: white; color: black; padding: 10px;">Regulatory Buffer Capital</option>
+                                            <option value="Capital Injection" style="background-color: white; color: black; padding: 10px;">Capital Injection</option>
+                                        </optgroup>
+                                        <optgroup label="Business Growth" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
+                                            <option value="Branch Expansion" style="background-color: white; color: black; padding: 10px;">Branch Expansion</option>
+                                            <option value="Digital Banking Implementation" style="background-color: white; color: black; padding: 10px;">Digital Banking Implementation</option>
+                                            <option value="Product Development" style="background-color: white; color: black; padding: 10px;">Product Development</option>
+                                        </optgroup>
+                                    </select>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            <button type="reset" class="btn btn-outline-secondary me-md-2">
-                                <i class="fas fa-undo me-1"></i> Reset
+                        <!-- Self-Liquidating Section -->
+                        <div class="row mb-4 p-3" style="background-color: rgba(13, 110, 253, 0.05); border-radius: 8px; border-left: 4px solid #0d6efd;">
+                            <div class="col-12 mb-3">
+                                <h5 style="color: #0a58ca; border-bottom: 2px solid #0d6efd; padding-bottom: 12px; font-size: 22px; font-weight: bold;">
+                                    <i class="fas fa-sync-alt me-2"></i>Self-Liquidating Mechanism
+                                </h5>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="self_liquidating" name="self_liquidating" value="1" style="width: 20px; height: 20px;">
+                                    <label class="form-check-label" for="self_liquidating" style="font-size: 18px; font-weight: bold; color: #0a58ca; margin-left: 10px;">
+                                        Enable Self-Liquidating Structure
+                                    </label>
+                                </div>
+                                <div class="form-text" style="margin-top: 10px; margin-left: 30px;">
+                                    The loan will be structured with a self-liquidating mechanism that secures repayment through designated assets or cash flows
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit button section -->
+                        <div class="d-flex justify-content-between mt-5">
+                            <button type="reset" class="btn btn-outline-secondary" style="font-size: 18px; padding: 12px 24px;">
+                                <i class="fas fa-undo me-2"></i>Reset
                             </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-paper-plane me-1"></i> Submit Application
+                            <button type="submit" class="btn btn-primary" style="font-size: 18px; padding: 12px 30px; background-color: #0d6efd; border-color: #0d6efd;">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Application
                             </button>
                         </div>
                     </form>
@@ -518,6 +494,4 @@
         </div>
     </div>
 </div>
-
-<!-- No JavaScript needed, using CSS only solution -->
 {% endblock %}
