@@ -80,8 +80,13 @@ def save_uploaded_file(file, loan_id, document_type):
 def index():
     """Display list of loans"""
     # Get all loans, or filter by user's role/permissions
-    loans = SelfLiquidatingLoan.query.order_by(desc(SelfLiquidatingLoan.created_at)).all()
-    
+    try:
+        loans = SelfLiquidatingLoan.query.order_by(desc(SelfLiquidatingLoan.created_at)).all()
+    except Exception as e:
+        current_app.logger.error(f"Error retrieving loans: {str(e)}")
+        flash(f"Could not retrieve loan data: {str(e)}", "error")
+        loans = []
+        
     return render_template(
         'loans/index.html',
         loans=loans,
