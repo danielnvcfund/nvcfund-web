@@ -450,13 +450,13 @@ def create_app():
         
         # Register Loan routes
         try:
-            # Use the self_liquidating_loan_routes which are the primary routes
-            from routes.self_liquidating_loan_routes import self_liquidating_loan_bp
-            app.register_blueprint(self_liquidating_loan_bp)
-            logger.info("Loan routes registered successfully")
+            # Register the simplified loan routes to avoid ORM model issues
+            from routes.simple_loan_routes import simple_loan_bp
+            app.register_blueprint(simple_loan_bp)
+            logger.info("Simplified loan routes registered successfully")
         except Exception as e:
-            logger.error(f"Error registering Loan routes: {str(e)}")
-            logger.warning("Application will run without Loan functionality")
+            logger.error(f"Error registering Simplified loan routes: {str(e)}")
+            logger.warning("Application will run without Simplified loan functionality")
         
         # Register SWIFT GPI routes
         try:

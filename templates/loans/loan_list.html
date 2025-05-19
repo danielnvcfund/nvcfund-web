@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Loan Management - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0 text-primary">Loan Management</h1>
+                <a href="{{ url_for('self_liquidating_loan.new_loan') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> New Loan Application
+                </a>
+            </div>
+            
+            <div class="card shadow-lg border-primary">
+                <div class="card-header bg-primary-subtle">
+                    <h5 class="mb-0 text-primary">Active Loans</h5>
+                </div>
+                <div class="card-body">
+                    {% if loans and loans|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Loan #</th>
+                                    <th>Borrower</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for loan in loans %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('self_liquidating_loan.view_loan', loan_id=loan.id) }}" class="text-primary fw-bold">
+                                            {{ loan.loan_number or 'SLL-' + loan.id|string }}
+                                        </a>
+                                    </td>
+                                    <td>{{ loan.borrower_name }}</td>
+                                    <td>{{ loan.currency }} {{ loan.loan_amount|format_number }}</td>
+                                    <td>
+                                        <span class="badge 
+                                        {% if loan.status == 'ACTIVE' %}bg-success
+                                        {% elif loan.status == 'FUNDED' %}bg-info
+                                        {% elif loan.status == 'APPROVED' %}bg-primary
+                                        {% elif loan.status in ['APPLICATION', 'UNDERWRITING'] %}bg-warning
+                                        {% elif loan.status == 'PAID' %}bg-secondary
+                                        {% elif loan.status == 'DEFAULTED' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                                            {{ loan.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ loan.created_at|format_datetime }}</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Actions
+                                            </button>
+                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                                <li><a class="dropdown-item" href="{{ url_for('self_liquidating_loan.view_loan', loan_id=loan.id) }}">View Details</a></li>
+                                                <li><a class="dropdown-item" href="{{ url_for('self_liquidating_loan.update_status', loan_id=loan.id) }}">Update Status</a></li>
+                                                <li><a class="dropdown-item" href="{{ url_for('self_liquidating_loan.add_collateral', loan_id=loan.id) }}">Add Collateral</a></li>
+                                                <li><a class="dropdown-item" href="{{ url_for('self_liquidating_loan.add_payment', loan_id=loan.id) }}">Record Payment</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> No loans have been created yet. Click "New Loan Application" to create your first loan.
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <h5 class="text-primary mb-3">Loan System Features</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="card border-primary h-100">
+                                    <div class="card-body text-center p-4">
+                                        <i class="fas fa-file-invoice-dollar fa-3x text-primary mb-3"></i>
+                                        <h5>Institutional Loans</h5>
+                                        <p class="mb-0">Manage large-scale institutional loans from $10M to $100B with flexible terms</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="card border-primary h-100">
+                                    <div class="card-body text-center p-4">
+                                        <i class="fas fa-hand-holding-usd fa-3x text-primary mb-3"></i>
+                                        <h5>Self-Liquidating Structure</h5>
+                                        <p class="mb-0">Set up and manage specialized self-liquidating loan mechanisms</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="card border-primary h-100">
+                                    <div class="card-body text-center p-4">
+                                        <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                                        <h5>Collateral Management</h5>
+                                        <p class="mb-0">Track and manage various collateral types with detailed documentation</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="card border-primary h-100">
+                                    <div class="card-body text-center p-4">
+                                        <i class="fas fa-exchange-alt fa-3x text-primary mb-3"></i>
+                                        <h5>Correspondent Availability</h5>
+                                        <p class="mb-0">Make loans available to correspondent banks and track relationships</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if recent_activity and recent_activity|length > 0 %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg border-primary">
+                <div class="card-header bg-primary-subtle d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-primary">Recent Loan Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Loan</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in recent_activity %}
+                                <tr>
+                                    <td>{{ activity.date|format_datetime }}</td>
+                                    <td>
+                                        <a href="{{ url_for('self_liquidating_loan.view_loan', loan_id=activity.loan_id) }}" class="text-primary">
+                                            {{ activity.loan_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ activity.type }}</td>
+                                    <td>{{ activity.description }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
