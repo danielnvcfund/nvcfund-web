@@ -4,47 +4,75 @@
 
 {% block head %}
 <style>
-    /* Improve dropdown visibility - force light mode for all dropdowns */
-    .form-select {
-        color: #000 !important;
-        background-color: #fff !important;
-        border-color: #0d6efd !important;
+    /* Fundamental contrast fixes */
+    body {
+        color: black !important;
+        background-color: white !important;
     }
     
-    /* Make dropdown options always visible */
-    .form-select option, 
-    .form-select optgroup {
-        color: #000 !important;
-        background-color: #fff !important;
-        padding: 8px !important;
+    /* High contrast form elements */
+    .form-select, 
+    .form-control,
+    input,
+    select,
+    textarea {
+        color: black !important;
+        background-color: white !important;
+        border: 2px solid #0d6efd !important;
     }
     
-    /* Make group headers stand out clearly */
+    /* Force all dropdown options to be black text on white */
+    select option,
+    select optgroup,
+    .form-select option,
     .form-select optgroup {
+        background-color: white !important;
+        color: black !important;
+        font-weight: normal;
+    }
+    
+    /* Blue headers for option groups */
+    select optgroup,
+    .form-select optgroup {
+        background-color: #cfe2ff !important;
+        color: #0d47a1 !important;
         font-weight: bold !important;
+    }
+    
+    /* Blue form labels for better visibility */
+    label,
+    .form-label {
         color: #0d6efd !important;
-        background-color: #e9f2ff !important;
-        border-bottom: 1px solid #ccc !important;
+        font-weight: bold !important;
     }
     
-    /* Improve dropdown option hover state */
-    .form-select option:hover,
-    .form-select option:focus,
-    .form-select option:active {
+    /* Ensure form text is visible */
+    .form-text {
+        color: #495057 !important;
+    }
+    
+    /* Higher contrast buttons */
+    .btn-primary {
         background-color: #0d6efd !important;
-        color: #fff !important;
-    }
-    
-    /* Improve dropdown active state */
-    .form-select:focus {
         border-color: #0d6efd !important;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+        color: white !important;
     }
     
-    /* Add space between options for better readability */
-    .form-select option {
-        margin: 2px 0 !important;
-        border-radius: 4px !important;
+    .btn-outline-secondary {
+        color: #0d6efd !important;
+        border-color: #0d6efd !important;
+    }
+    
+    /* Fix card visibility */
+    .card {
+        background-color: white !important;
+        border: 2px solid #0d6efd !important;
+    }
+    
+    .card-header {
+        background-color: #cfe2ff !important;
+        color: #0d47a1 !important;
+        font-weight: bold !important;
     }
 </style>
 {% endblock %}
@@ -231,4 +259,6 @@
         </div>
     </div>
 </div>
+
+<!-- No JavaScript needed, using CSS only solution -->
 {% endblock %}
