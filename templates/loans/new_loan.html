@@ -10,45 +10,24 @@
         background-color: #ffffff !important;
     }
     
-    /* Browser-compatible hack for showing ALL dropdown options */
+    /* High-contrast styling for dropdown menus */
     select {
         color: #000000 !important;
         background-color: #ffffff !important;
         border: 3px solid #0000ff !important;
         font-weight: bold !important;
         font-size: 16px !important;
-        
-        /* Critical: This makes all options visible at once */
-        size: 15 !important;
-        height: auto !important;
         padding: 10px !important;
-        
-        /* Remove styling that might hide options */
-        background-image: none !important;
-        -webkit-appearance: listbox !important;
-        -moz-appearance: listbox !important;
-        appearance: listbox !important;
     }
     
-    /* Force sizing for form-select (Bootstrap version) */
+    /* High-contrast styling for Bootstrap's form-select */
     .form-select {
         color: #000000 !important;
         background-color: #ffffff !important;
         border: 3px solid #0000ff !important;
         font-weight: bold !important;
         font-size: 16px !important;
-        
-        /* Critical: This makes all options visible at once */
-        size: 15 !important;
-        height: auto !important;
-        min-height: 200px !important;
         padding: 10px !important;
-        
-        /* Remove styling that might hide options */
-        background-image: none !important;
-        -webkit-appearance: listbox !important;
-        -moz-appearance: listbox !important;
-        appearance: listbox !important;
     }
     
     /* Hack to make Bootstrap's form-select show more than one option */
@@ -57,12 +36,13 @@
         background-image: none !important;
     }
     
-    /* Add direct attribute targeting as fallback */
+    /* Add direct attribute targeting for high contrast */
     [name="currency"], [name="loan_term"], [name="purpose"], 
     #currency, #loan_term, #purpose {
-        size: 15 !important;
         height: auto !important;
-        min-height: 200px !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 2px solid #0000ff !important;
     }
     
     /* Ultra-high contrast for option groups */
@@ -179,24 +159,21 @@
     }
 </style>
 
-<!-- Force the browser to show all dropdown options as lists -->
+<!-- Apply high-contrast styling to dropdowns -->
 <script>
     // Run this right away when the page loads
     document.addEventListener('DOMContentLoaded', function() {
-        // Force all selects to show multiple options
+        // Style select elements for better visibility
         var selects = document.querySelectorAll('select');
         selects.forEach(function(select) {
-            // Make all selects show multiple options
-            select.setAttribute('size', '15');
-            
-            // Force them to be visible
-            select.style.height = 'auto';
-            select.style.minHeight = '200px';
-            select.style.maxHeight = '300px';
-            select.style.overflow = 'auto';
+            // Apply high-contrast styling while keeping normal dropdown behavior
             select.style.backgroundColor = '#ffffff';
             select.style.color = '#000000';
-            select.style.border = '3px solid #0000ff';
+            select.style.border = '2px solid #0000ff';
+            select.style.fontWeight = 'bold';
+            
+            // Remove any size attribute to ensure dropdowns behave normally
+            select.removeAttribute('size');
         });
     });
 </script>
@@ -234,7 +211,7 @@
                             
                             <div class="col-md-3 mb-3">
                                 <label for="currency" class="form-label">Currency</label>
-                                <select class="form-select" id="currency" name="currency" size="15" required style="background-color: white; color: black; font-weight: bold; height: 300px;">
+                                <select class="form-select" id="currency" name="currency" required style="background-color: white; color: black; font-weight: bold;">
                                     <optgroup label="Major Currencies" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
                                         <option value="USD" selected style="background-color: white; color: black; padding: 10px;">USD - US Dollar</option>
                                         <option value="EUR" style="background-color: white; color: black; padding: 10px;">EUR - Euro</option>
@@ -272,7 +249,7 @@
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label for="loan_term" class="form-label">Loan Term (Months)</label>
-                                <select class="form-select" id="loan_term" name="loan_term" size="15" required style="background-color: white; color: black; font-weight: bold; height: 300px;">
+                                <select class="form-select" id="loan_term" name="loan_term" required style="background-color: white; color: black; font-weight: bold;">
                                     <optgroup label="Short Term" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
                                         <option value="3" style="background-color: white; color: black; padding: 10px;">3 months (Quarter)</option>
                                         <option value="6" style="background-color: white; color: black; padding: 10px;">6 months (Half Year)</option>
@@ -307,7 +284,7 @@
                             
                             <div class="col-md-4 mb-3">
                                 <label for="purpose" class="form-label">Loan Purpose</label>
-                                <select class="form-select" id="purpose" name="purpose" size="15" required style="background-color: white; color: black; font-weight: bold; height: 300px;">
+                                <select class="form-select" id="purpose" name="purpose" required style="background-color: white; color: black; font-weight: bold;">
                                     <optgroup label="Capital Enhancement" style="background-color: blue; color: white; font-weight: bold; text-transform: uppercase;">
                                         <option value="Capital Injection" selected style="background-color: white; color: black; padding: 10px;">Capital Injection</option>
                                         <option value="Tier 1 Capital" style="background-color: white; color: black; padding: 10px;">Tier 1 Capital Enhancement</option>
