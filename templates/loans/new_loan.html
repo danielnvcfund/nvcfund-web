@@ -35,12 +35,36 @@
                             <div class="col-md-3 mb-3">
                                 <label for="currency" class="form-label">Currency</label>
                                 <select class="form-select" id="currency" name="currency" required>
-                                    <option value="USD">USD - US Dollar</option>
-                                    <option value="EUR">EUR - Euro</option>
-                                    <option value="GBP">GBP - British Pound</option>
-                                    <option value="JPY">JPY - Japanese Yen</option>
-                                    <option value="CHF">CHF - Swiss Franc</option>
-                                    <option value="CAD">CAD - Canadian Dollar</option>
+                                    <optgroup label="Major Currencies">
+                                        <option value="USD" selected>USD - US Dollar</option>
+                                        <option value="EUR">EUR - Euro</option>
+                                        <option value="GBP">GBP - British Pound</option>
+                                        <option value="JPY">JPY - Japanese Yen</option>
+                                        <option value="CHF">CHF - Swiss Franc</option>
+                                        <option value="CAD">CAD - Canadian Dollar</option>
+                                        <option value="AUD">AUD - Australian Dollar</option>
+                                    </optgroup>
+                                    <optgroup label="Asian Currencies">
+                                        <option value="CNY">CNY - Chinese Yuan</option>
+                                        <option value="HKD">HKD - Hong Kong Dollar</option>
+                                        <option value="SGD">SGD - Singapore Dollar</option>
+                                        <option value="INR">INR - Indian Rupee</option>
+                                    </optgroup>
+                                    <optgroup label="Middle Eastern Currencies">
+                                        <option value="AED">AED - UAE Dirham</option>
+                                        <option value="SAR">SAR - Saudi Riyal</option>
+                                    </optgroup>
+                                    <optgroup label="African Currencies">
+                                        <option value="ZAR">ZAR - South African Rand</option>
+                                        <option value="NGN">NGN - Nigerian Naira</option>
+                                        <option value="KES">KES - Kenyan Shilling</option>
+                                        <option value="EGP">EGP - Egyptian Pound</option>
+                                    </optgroup>
+                                    <optgroup label="Platform Currencies">
+                                        <option value="NVCT">NVCT - NVC Token</option>
+                                        <option value="AFD1">AFD1 - American Federation Dollar</option>
+                                        <option value="SFN">SFN - SFN Coin</option>
+                                    </optgroup>
                                 </select>
                             </div>
                         </div>
@@ -49,13 +73,29 @@
                             <div class="col-md-4 mb-3">
                                 <label for="loan_term" class="form-label">Loan Term (Months)</label>
                                 <select class="form-select" id="loan_term" name="loan_term" required>
-                                    <option value="12">12 months (1 year)</option>
-                                    <option value="24">24 months (2 years)</option>
-                                    <option value="36">36 months (3 years)</option>
-                                    <option value="48">48 months (4 years)</option>
-                                    <option value="60">60 months (5 years)</option>
-                                    <option value="84">84 months (7 years)</option>
-                                    <option value="120">120 months (10 years)</option>
+                                    <optgroup label="Short Term">
+                                        <option value="3">3 months (Quarter)</option>
+                                        <option value="6">6 months (Half Year)</option>
+                                        <option value="12">12 months (1 year)</option>
+                                    </optgroup>
+                                    <optgroup label="Medium Term">
+                                        <option value="18">18 months (1.5 years)</option>
+                                        <option value="24">24 months (2 years)</option>
+                                        <option value="36">36 months (3 years)</option>
+                                        <option value="48">48 months (4 years)</option>
+                                        <option value="60" selected>60 months (5 years)</option>
+                                    </optgroup>
+                                    <optgroup label="Long Term">
+                                        <option value="72">72 months (6 years)</option>
+                                        <option value="84">84 months (7 years)</option>
+                                        <option value="96">96 months (8 years)</option>
+                                        <option value="108">108 months (9 years)</option>
+                                        <option value="120">120 months (10 years)</option>
+                                        <option value="180">180 months (15 years)</option>
+                                        <option value="240">240 months (20 years)</option>
+                                        <option value="300">300 months (25 years)</option>
+                                        <option value="360">360 months (30 years)</option>
+                                    </optgroup>
                                 </select>
                             </div>
                             
@@ -68,15 +108,51 @@
                             <div class="col-md-4 mb-3">
                                 <label for="purpose" class="form-label">Loan Purpose</label>
                                 <select class="form-select" id="purpose" name="purpose" required>
-                                    <option value="Capital Injection">Capital Injection</option>
-                                    <option value="Tier 1 Capital">Tier 1 Capital</option>
-                                    <option value="Recapitalization">Recapitalization</option>
-                                    <option value="Expansion">Expansion</option>
-                                    <option value="Acquisition">Acquisition</option>
-                                    <option value="Refinancing">Refinancing</option>
-                                    <option value="Infrastructure">Infrastructure</option>
-                                    <option value="Working Capital">Working Capital</option>
-                                    <option value="Other">Other</option>
+                                    <optgroup label="Capital Enhancement">
+                                        <option value="Capital Injection" selected>Capital Injection</option>
+                                        <option value="Tier 1 Capital">Tier 1 Capital Enhancement</option>
+                                        <option value="Tier 2 Capital">Tier 2 Capital Enhancement</option>
+                                        <option value="Regulatory Buffer">Regulatory Buffer Capital</option>
+                                        <option value="Recapitalization">General Recapitalization</option>
+                                        <option value="Basel Compliance">Basel III/IV Compliance</option>
+                                        <option value="Liquidity Ratio">Liquidity Ratio Improvement</option>
+                                        <option value="CAR Compliance">Capital Adequacy Ratio Compliance</option>
+                                    </optgroup>
+                                    <optgroup label="Growth & Expansion">
+                                        <option value="Branch Expansion">Branch Network Expansion</option>
+                                        <option value="Digital Transformation">Digital Banking Transformation</option>
+                                        <option value="Market Expansion">New Market Entry</option>
+                                        <option value="Service Expansion">New Service Development</option>
+                                        <option value="Geographic Expansion">Geographic Expansion</option>
+                                        <option value="Cross-Border Expansion">Cross-Border Banking</option>
+                                    </optgroup>
+                                    <optgroup label="Strategic Initiatives">
+                                        <option value="Acquisition">Financial Institution Acquisition</option>
+                                        <option value="Merger">Merger Financing</option>
+                                        <option value="Technology Upgrade">Core Banking System Upgrade</option>
+                                        <option value="Fintech Integration">Fintech Integration/Acquisition</option>
+                                        <option value="Cybersecurity">Cybersecurity Enhancement</option>
+                                        <option value="AI Implementation">AI & ML Implementation</option>
+                                    </optgroup>
+                                    <optgroup label="Debt & Restructuring">
+                                        <option value="Debt Refinancing">Debt Refinancing</option>
+                                        <option value="Bond Issuance Support">Bond Issuance Support</option>
+                                        <option value="Debt Restructuring">Debt Restructuring</option>
+                                        <option value="Non-Performing Loans">NPL Resolution</option>
+                                        <option value="Asset Quality">Asset Quality Improvement</option>
+                                    </optgroup>
+                                    <optgroup label="Infrastructure & Operations">
+                                        <option value="Infrastructure">Physical Infrastructure</option>
+                                        <option value="Working Capital">Working Capital</option>
+                                        <option value="Operational Efficiency">Operational Efficiency</option>
+                                        <option value="Sustainable Banking">Green Banking Initiative</option>
+                                        <option value="Regulatory Compliance">Regulatory Compliance Systems</option>
+                                    </optgroup>
+                                    <optgroup label="Other">
+                                        <option value="MSME Lending">MSME Lending Program</option>
+                                        <option value="Specialized Lending">Specialized Lending Initiative</option>
+                                        <option value="Other">Other Purpose</option>
+                                    </optgroup>
                                 </select>
                             </div>
                         </div>
