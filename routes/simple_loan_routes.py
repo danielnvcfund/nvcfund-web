@@ -25,14 +25,15 @@ def index():
     loan_info = None
     
     try:
-        # Get loans from database using raw SQL
+        # Get loans from database using raw SQL with proper text() wrapper
+        from sqlalchemy import text
         loan_info = db.session.execute(
-            """
+            text("""
             SELECT id, loan_number, borrower_name, 
                    loan_amount, currency, status, created_at
             FROM self_liquidating_loan 
             ORDER BY created_at DESC
-            """
+            """)
         ).fetchall()
         
         if loan_info:
@@ -61,11 +62,12 @@ def loan_detail(loan_id):
     
     try:
         # Fetch loan details using raw SQL to avoid ORM issues
+        from sqlalchemy import text
         loan_query = db.session.execute(
-            """
+            text("""
             SELECT * FROM self_liquidating_loan 
             WHERE id = :loan_id
-            """,
+            """),
             {"loan_id": loan_id}
         ).fetchone()
         
@@ -77,10 +79,10 @@ def loan_detail(loan_id):
         
         # Get collateral information
         collateral_query = db.session.execute(
-            """
+            text("""
             SELECT * FROM loan_collateral
             WHERE loan_id = :loan_id
-            """,
+            """),
             {"loan_id": loan_id}
         ).fetchall()
         
@@ -88,11 +90,11 @@ def loan_detail(loan_id):
         
         # Get payment history
         payment_query = db.session.execute(
-            """
+            text("""
             SELECT * FROM loan_payment
             WHERE loan_id = :loan_id
             ORDER BY payment_date DESC
-            """,
+            """),
             {"loan_id": loan_id}
         ).fetchall()
         
@@ -117,7 +119,7 @@ def loan_dashboard():
     try:
         # Get overall loan statistics
         stats_query = db.session.execute(
-            """
+            text("""
             SELECT 
                 COUNT(*) as total_loans,
                 SUM(loan_amount) as total_loan_amount,
@@ -125,7 +127,7 @@ def loan_dashboard():
                 COUNT(CASE WHEN status = 'ACTIVE' THEN 1 END) as active_loans,
                 COUNT(CASE WHEN status = 'PAID' THEN 1 END) as paid_loans
             FROM self_liquidating_loan
-            """
+            """)
         ).fetchone()
         
         stats = dict(stats_query) if stats_query else {
