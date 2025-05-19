@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}New Self-Liquidating Loan - NVC Banking Platform{% endblock %}
+{% block title %}New Loan - NVC Banking Platform{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 text-primary">New Self-Liquidating Loan Application</h1>
+        <h1 class="h3 mb-0 text-primary">New Loan Application</h1>
         <a href="{{ url_for('self_liquidating_loan.index') }}" class="btn btn-outline-primary">
             <i class="fas fa-arrow-left"></i> Back to Loans
         </a>
@@ -15,7 +15,7 @@
         <div class="col-12">
             <div class="card bg-dark border-primary">
                 <div class="card-header bg-primary-subtle">
-                    <h5 class="card-title mb-0 text-primary">Self-Liquidating Loan Details</h5>
+                    <h5 class="card-title mb-0 text-primary">Loan Details</h5>
                 </div>
                 <div class="card-body">
                     <form method="POST" enctype="multipart/form-data">
