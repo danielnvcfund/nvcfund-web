@@ -175,10 +175,10 @@
                         <button type="button" id="showStatementModal" class="btn btn-success btn-block">
                             <i class="fa fa-file-pdf"></i> Generate Account Statement
                         </button>
-                        <a href="{{ url_for('payment.transfer_form') }}?from_account={{ account.id }}" class="btn btn-primary btn-block mt-2">
+                        <a href="{{ url_for('web.main.new_payment') }}?from_account={{ account.id }}" class="btn btn-primary btn-block mt-2">
                             <i class="fa fa-exchange-alt"></i> Transfer Funds
                         </a>
-                        <a href="{{ url_for('payment.deposit_form') }}?to_account={{ account.id }}" class="btn btn-info btn-block mt-2">
+                        <a href="{{ url_for('web.main.new_payment') }}?to_account={{ account.id }}" class="btn btn-info btn-block mt-2">
                             <i class="fa fa-money-bill-wave"></i> Deposit/Fund Account
                         </a>
                         <a href="{{ url_for('account_holders.accounts', account_holder_id=account.account_holder.id) }}" class="btn btn-primary btn-block mt-2">
