@@ -2,7 +2,7 @@
 Dashboard Routes
 This module provides the routes for the client dashboard with account overview
 """
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
 
 from app import db, logger
@@ -23,7 +23,7 @@ def index():
     # If no account holder exists, redirect to create one
     if not account_holder:
         flash('Please complete your profile to generate your accounts', 'info')
-        return redirect(url_for('account.index'))
+        return redirect(url_for('dashboard.welcome'))
     
     # Get all accounts for the account holder
     accounts = BankAccount.query.filter_by(account_holder_id=account_holder.id).all()
