@@ -1,83 +1,202 @@
 {% extends 'layout.html' %}
 
-{% block title %}
-    {{ title }} - NVC Banking Platform
-{% endblock %}
-
 {% block content %}
-<div class="container-fluid">
+<div class="container py-4">
     <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Convert Currency</h3>
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-success text-white">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-white bg-opacity-25 p-2 me-3">
+                            <i class="fas fa-exchange-alt text-white"></i>
+                        </div>
+                        <h5 class="mb-0 fw-bold">Currency Exchange</h5>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <div class="alert alert-info mb-4">
-                        <i class="fas fa-info-circle me-2"></i> Convert between your accounts using NVCT as the central exchange currency.
+                        <i class="fas fa-info-circle me-2"></i> NVCT is our central currency, pegged 1:1 with USD for all exchanges.
                     </div>
                     
-                    <form method="POST" action="{{ url_for('exchange.convert') }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="from_account" class="form-label">From Account</label>
-                                <select class="form-select" id="from_account" name="from_account" required>
-                                    <option value="">Select source account</option>
-                                    {% for account in accounts %}
-                                    <option value="{{ account.id }}" data-currency="{{ account.currency.value }}" data-balance="{{ account.balance }}">
-                                        {{ account.account_name }} ({{ account.account_number }}) - {{ account.currency.value }} {{ '{:,.2f}'.format(account.balance) }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                <small class="text-muted available-balance">Available: <span id="from_balance">0.00</span></small>
+                    <form id="exchange-form" method="POST" action="{{ url_for('exchange.perform_exchange') }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label class="form-label fw-bold">From Currency</label>
+                                    <select class="form-select" id="from_currency" name="from_currency" required>
+                                        <option value="">Select Currency</option>
+                                        <option value="NVCT">NVCT (NVC Token)</option>
+                                        <option value="USD">USD (US Dollar)</option>
+                                        <option value="EUR">EUR (Euro)</option>
+                                        <option value="GBP">GBP (British Pound)</option>
+                                        <option value="NGN">NGN (Nigerian Naira)</option>
+                                        <option value="BTC">BTC (Bitcoin)</option>
+                                        <option value="ETH">ETH (Ethereum)</option>
+                                        <option value="USDT">USDT (Tether)</option>
+                                        <option value="AFD1">AFD1 (American Federation Dollar)</option>
+                                        <option value="SFN">SFN (SFN Coin)</option>
+                                        <option value="AKLUMI">AKLUMI (Ak Lumi Currency)</option>
+                                    </select>
+                                </div>
                             </div>
-                            
-                            <div class="col-md-6">
-                                <label for="to_account" class="form-label">To Account</label>
-                                <select class="form-select" id="to_account" name="to_account" required>
-                                    <option value="">Select destination account</option>
-                                    {% for account in accounts %}
-                                    <option value="{{ account.id }}" data-currency="{{ account.currency.value }}">
-                                        {{ account.account_name }} ({{ account.account_number }}) - {{ account.currency.value }} {{ '{:,.2f}'.format(account.balance) }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label class="form-label fw-bold">From Account</label>
+                                    <select class="form-select" id="from_account" name="from_account_id" required>
+                                        <option value="">Select Account</option>
+                                        {% for account in accounts %}
+                                            {% if account.status.value == 'active' %}
+                                                <option value="{{ account.id }}" data-currency="{{ account.currency.value }}" data-balance="{{ account.available_balance }}">
+                                                    {{ account.account_number }} ({{ '{:,.2f}'.format(account.available_balance) }} {{ account.currency.value }})
+                                                </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                    <small class="text-muted">Available Balance: <span id="from_balance">0.00</span></small>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <label for="amount" class="form-label">Amount to Convert</label>
-                                <div class="input-group">
-                                    <span class="input-group-text" id="from_currency_symbol">$</span>
-                                    <input type="number" step="0.01" min="0.01" class="form-control" id="amount" name="amount" required placeholder="0.00">
+                        <div class="row align-items-center my-4">
+                            <div class="col-md-5">
+                                <div class="form-group">
+                                    <label class="form-label fw-bold">Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="from_currency_symbol">$</span>
+                                        <input type="number" class="form-control" id="from_amount" name="from_amount" step="0.01" min="0.01" required>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <div class="col-md-6">
-                                <label for="converted_amount" class="form-label">Converted Amount (Estimated)</label>
-                                <div class="input-group">
-                                    <span class="input-group-text" id="to_currency_symbol">$</span>
-                                    <input type="text" class="form-control" id="converted_amount" readonly placeholder="0.00">
+                            <div class="col-md-2 text-center">
+                                <button type="button" class="btn btn-success rounded-circle swap-btn">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </button>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="form-group">
+                                    <label class="form-label fw-bold">Converted Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="to_currency_symbol">$</span>
+                                        <input type="number" class="form-control" id="to_amount" name="to_amount" step="0.01" readonly>
+                                    </div>
                                 </div>
-                                <small class="text-muted">Exchange Rate: <span id="exchange_rate">1.00</span></small>
+                            </div>
+                        </div>
+                        
+                        <div class="exchange-rate-display alert alert-light text-center my-3">
+                            <span class="fw-bold">Exchange Rate:</span>
+                            <span id="exchange_rate_display">Select currencies to see rate</span>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label class="form-label fw-bold">To Currency</label>
+                                    <select class="form-select" id="to_currency" name="to_currency" required>
+                                        <option value="">Select Currency</option>
+                                        <option value="NVCT">NVCT (NVC Token)</option>
+                                        <option value="USD">USD (US Dollar)</option>
+                                        <option value="EUR">EUR (Euro)</option>
+                                        <option value="GBP">GBP (British Pound)</option>
+                                        <option value="NGN">NGN (Nigerian Naira)</option>
+                                        <option value="BTC">BTC (Bitcoin)</option>
+                                        <option value="ETH">ETH (Ethereum)</option>
+                                        <option value="USDT">USDT (Tether)</option>
+                                        <option value="AFD1">AFD1 (American Federation Dollar)</option>
+                                        <option value="SFN">SFN (SFN Coin)</option>
+                                        <option value="AKLUMI">AKLUMI (Ak Lumi Currency)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label class="form-label fw-bold">To Account</label>
+                                    <select class="form-select" id="to_account" name="to_account_id" required>
+                                        <option value="">Select Account</option>
+                                        {% for account in accounts %}
+                                            {% if account.status.value == 'active' %}
+                                                <option value="{{ account.id }}" data-currency="{{ account.currency.value }}">
+                                                    {{ account.account_number }} ({{ account.currency.value }})
+                                                </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="form-label fw-bold">Description (Optional)</label>
+                                    <input type="text" class="form-control" id="description" name="description" placeholder="Purpose of exchange...">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-light border mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Exchange Amount:</span>
+                                <span class="fw-bold" id="summary_amount">0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Fee (0.5%):</span>
+                                <span class="fw-bold" id="summary_fee">0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>You'll Receive:</span>
+                                <span class="fw-bold" id="summary_receive">0.00</span>
                             </div>
                         </div>
                         
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-exchange-alt me-2"></i>Convert Currency
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-exchange-alt me-2"></i> Complete Exchange
                             </button>
-                            <a href="{{ url_for('exchange.rates') }}" class="btn btn-info">
-                                <i class="fas fa-list me-2"></i>View Exchange Rates
-                            </a>
-                            <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-                            </a>
                         </div>
                     </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4 border-0 shadow">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Recent Exchanges</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if recent_exchanges %}
+                                    {% for exchange in recent_exchanges %}
+                                    <tr>
+                                        <td>{{ exchange.created_at.strftime('%b %d, %Y') }}</td>
+                                        <td>{{ exchange.from_amount }} {{ exchange.from_currency.value }}</td>
+                                        <td>{{ exchange.to_amount }} {{ exchange.to_currency.value }}</td>
+                                        <td>{{ '{:,.2f}'.format(exchange.to_amount) }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if exchange.status.value == 'completed' else 'warning' }}">
+                                                {{ exchange.status.value }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-3">No recent exchanges</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -86,118 +205,190 @@
 {% endblock %}
 
 {% block scripts %}
-{{ super() }}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const fromAccountSelect = document.getElementById('from_account');
-        const toAccountSelect = document.getElementById('to_account');
-        const amountInput = document.getElementById('amount');
-        const convertedAmountInput = document.getElementById('converted_amount');
-        const fromBalanceSpan = document.getElementById('from_balance');
-        const exchangeRateSpan = document.getElementById('exchange_rate');
-        const fromCurrencySymbol = document.getElementById('from_currency_symbol');
-        const toCurrencySymbol = document.getElementById('to_currency_symbol');
-        
-        // Update source account balance display
-        fromAccountSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            if (selectedOption.value) {
-                const balance = selectedOption.getAttribute('data-balance');
-                const currency = selectedOption.getAttribute('data-currency');
-                fromBalanceSpan.textContent = `${currency} ${parseFloat(balance).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-                fromCurrencySymbol.textContent = currency;
-                
-                // Reset amount
-                amountInput.value = '';
-                convertedAmountInput.value = '';
-                
-                // Update exchange rate if both accounts selected
-                if (toAccountSelect.value) {
-                    updateExchangeRate();
-                }
-            } else {
-                fromBalanceSpan.textContent = '0.00';
-                fromCurrencySymbol.textContent = '$';
-            }
+    $(document).ready(function() {
+        // Update available from accounts when from currency changes
+        $('#from_currency').change(function() {
+            const selectedCurrency = $(this).val();
+            filterAccounts('from_account', selectedCurrency);
+            updateExchangeRate();
         });
         
-        // Update destination currency symbol
-        toAccountSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            if (selectedOption.value) {
-                const currency = selectedOption.getAttribute('data-currency');
-                toCurrencySymbol.textContent = currency;
-                
-                // Reset converted amount
-                convertedAmountInput.value = '';
-                
-                // Update exchange rate if both accounts selected
-                if (fromAccountSelect.value) {
-                    updateExchangeRate();
-                }
-            } else {
-                toCurrencySymbol.textContent = '$';
-            }
+        // Update available to accounts when to currency changes
+        $('#to_currency').change(function() {
+            const selectedCurrency = $(this).val();
+            filterAccounts('to_account', selectedCurrency);
+            updateExchangeRate();
         });
         
-        // Update converted amount when amount changes
-        amountInput.addEventListener('input', function() {
-            if (fromAccountSelect.value && toAccountSelect.value && this.value) {
-                calculateConvertedAmount();
-            } else {
-                convertedAmountInput.value = '';
-            }
-        });
-        
-        // Function to get exchange rate from the server
-        function updateExchangeRate() {
-            const fromCurrency = fromAccountSelect.options[fromAccountSelect.selectedIndex].getAttribute('data-currency');
-            const toCurrency = toAccountSelect.options[toAccountSelect.selectedIndex].getAttribute('data-currency');
+        // Update available balance when from account changes
+        $('#from_account').change(function() {
+            const selectedOption = $(this).find('option:selected');
+            const balance = selectedOption.data('balance') || 0;
+            const currency = selectedOption.data('currency') || '';
+            $('#from_balance').text(formatNumber(balance) + ' ' + currency);
             
-            if (fromCurrency && toCurrency) {
-                fetch(`/exchange/rate/${fromCurrency}/${toCurrency}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            exchangeRateSpan.textContent = `1 ${fromCurrency} = ${data.rate.toFixed(4)} ${toCurrency}`;
-                            
-                            // Recalculate amount if it exists
-                            if (amountInput.value) {
-                                calculateConvertedAmount();
-                            }
-                        } else {
-                            exchangeRateSpan.textContent = 'Rate not available';
-                            convertedAmountInput.value = '';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching exchange rate:', error);
-                        exchangeRateSpan.textContent = 'Error fetching rate';
-                    });
+            // Set the currency in the dropdown
+            if (currency) {
+                $('#from_currency').val(currency).trigger('change');
+            }
+        });
+        
+        // Update to account's currency when account is selected
+        $('#to_account').change(function() {
+            const selectedOption = $(this).find('option:selected');
+            const currency = selectedOption.data('currency') || '';
+            
+            // Set the currency in the dropdown
+            if (currency) {
+                $('#to_currency').val(currency).trigger('change');
+            }
+        });
+        
+        // Calculate conversion when amount changes
+        $('#from_amount').on('input', function() {
+            updateConvertedAmount();
+        });
+        
+        // Swap currencies and accounts
+        $('.swap-btn').click(function() {
+            const fromCurrency = $('#from_currency').val();
+            const toCurrency = $('#to_currency').val();
+            const fromAccount = $('#from_account').val();
+            const toAccount = $('#to_account').val();
+            
+            $('#from_currency').val(toCurrency).trigger('change');
+            $('#to_currency').val(fromCurrency).trigger('change');
+            
+            // Try to set accounts if possible
+            setTimeout(function() {
+                $('#from_account').val(toAccount);
+                $('#to_account').val(fromAccount);
+                
+                // Update after swapping
+                updateExchangeRate();
+                updateConvertedAmount();
+            }, 100);
+        });
+        
+        // Helper function to filter accounts based on currency
+        function filterAccounts(selectId, currency) {
+            if (!currency) return;
+            
+            const select = $('#' + selectId);
+            select.find('option').show();
+            select.find('option:not([data-currency="' + currency + '"])').hide();
+            
+            // Show the first option always (the placeholder)
+            select.find('option:first').show();
+            
+            // If the currently selected option is now hidden, reset selection
+            if (select.find('option:selected').is(':hidden')) {
+                select.val('');
+            }
+            
+            // Update currency symbol
+            if (selectId === 'from_account') {
+                updateCurrencySymbol('from_currency_symbol', currency);
+            } else {
+                updateCurrencySymbol('to_currency_symbol', currency);
             }
         }
         
-        // Function to calculate the converted amount
-        function calculateConvertedAmount() {
-            const fromCurrency = fromAccountSelect.options[fromAccountSelect.selectedIndex].getAttribute('data-currency');
-            const toCurrency = toAccountSelect.options[toAccountSelect.selectedIndex].getAttribute('data-currency');
-            const amount = parseFloat(amountInput.value);
+        // Helper function to update currency symbol
+        function updateCurrencySymbol(elementId, currency) {
+            let symbol = '$';
+            switch(currency) {
+                case 'EUR': symbol = '€'; break;
+                case 'GBP': symbol = '£'; break;
+                case 'NGN': symbol = '₦'; break;
+                case 'BTC': symbol = '₿'; break;
+                case 'ETH': symbol = 'Ξ'; break;
+                case 'NVCT': symbol = 'NV'; break;
+                default: symbol = '$';
+            }
+            $('#' + elementId).text(symbol);
+        }
+        
+        // Function to update exchange rate display
+        function updateExchangeRate() {
+            const fromCurrency = $('#from_currency').val();
+            const toCurrency = $('#to_currency').val();
             
-            fetch(`/exchange/rate/${fromCurrency}/${toCurrency}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const rate = data.rate;
-                        const converted = amount * rate;
-                        convertedAmountInput.value = converted.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                    } else {
-                        convertedAmountInput.value = 'Rate not available';
+            if (fromCurrency && toCurrency && fromCurrency !== toCurrency) {
+                // AJAX call to get current rate
+                $.ajax({
+                    url: '/exchange/api/rate/' + fromCurrency + '/' + toCurrency,
+                    method: 'GET',
+                    success: function(data) {
+                        if (data.success) {
+                            const rate = parseFloat(data.rate);
+                            $('#exchange_rate_display').html(
+                                '1 ' + fromCurrency + ' = <strong>' + formatNumber(rate) + ' ' + toCurrency + '</strong>'
+                            );
+                            // Update converted amount if amount is already entered
+                            updateConvertedAmount();
+                        } else {
+                            $('#exchange_rate_display').text('Rate not available');
+                        }
+                    },
+                    error: function() {
+                        $('#exchange_rate_display').text('Error fetching rate');
                     }
-                })
-                .catch(error => {
-                    console.error('Error calculating converted amount:', error);
-                    convertedAmountInput.value = 'Error';
                 });
+            } else {
+                $('#exchange_rate_display').text('Select currencies to see rate');
+            }
+        }
+        
+        // Function to update converted amount
+        function updateConvertedAmount() {
+            const fromCurrency = $('#from_currency').val();
+            const toCurrency = $('#to_currency').val();
+            const fromAmount = parseFloat($('#from_amount').val()) || 0;
+            
+            if (fromCurrency && toCurrency && fromAmount > 0) {
+                $.ajax({
+                    url: '/exchange/api/convert',
+                    method: 'GET',
+                    data: {
+                        from_currency: fromCurrency,
+                        to_currency: toCurrency,
+                        amount: fromAmount
+                    },
+                    success: function(data) {
+                        if (data.success) {
+                            const convertedAmount = parseFloat(data.converted_amount);
+                            const fee = parseFloat(data.fee_amount);
+                            const receiveAmount = convertedAmount - fee;
+                            
+                            $('#to_amount').val(convertedAmount.toFixed(6));
+                            
+                            // Update summary
+                            $('#summary_amount').text(formatNumber(fromAmount) + ' ' + fromCurrency);
+                            $('#summary_fee').text(formatNumber(fee) + ' ' + toCurrency);
+                            $('#summary_receive').text(formatNumber(receiveAmount) + ' ' + toCurrency);
+                        }
+                    },
+                    error: function() {
+                        $('#to_amount').val('');
+                    }
+                });
+            } else {
+                $('#to_amount').val('');
+                // Reset summary
+                $('#summary_amount').text('0.00');
+                $('#summary_fee').text('0.00');
+                $('#summary_receive').text('0.00');
+            }
+        }
+        
+        // Helper function to format numbers with commas
+        function formatNumber(num) {
+            return new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 6
+            }).format(num);
         }
     });
 </script>
