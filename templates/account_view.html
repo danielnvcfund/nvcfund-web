@@ -64,18 +64,38 @@
                                         <span>{{ account.account_number }}</span>
                                     </div>
                                 </td>
-                                <td>{{ account.account_type.value.capitalize() }}</td>
-                                <td>{{ account.currency.name }}</td>
                                 <td>
-                                    {% if account.currency.name == 'USD' %}${% endif %}
-                                    {% if account.currency.name == 'EUR' %}€{% endif %}
-                                    {{ '{:,.2f}'.format(account.balance) }}
-                                    {% if account.currency.name not in ['USD', 'EUR'] %} {{ account.currency.name }}{% endif %}
+                                    {% if account.account_type %}
+                                        {{ account.account_type.value.capitalize() }}
+                                    {% else %}
+                                        Checking
+                                    {% endif %}
                                 </td>
                                 <td>
-                                    <span class="badge {% if account.status.value == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
-                                        {{ account.status.value.upper() }}
-                                    </span>
+                                    {% if account.currency %}
+                                        {{ account.currency.name }}
+                                    {% else %}
+                                        USD
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if account.currency %}
+                                        {% if account.currency.name == 'USD' %}${% endif %}
+                                        {% if account.currency.name == 'EUR' %}€{% endif %}
+                                        {{ '{:,.2f}'.format(account.balance) }}
+                                        {% if account.currency.name not in ['USD', 'EUR'] %} {{ account.currency.name }}{% endif %}
+                                    {% else %}
+                                        {{ '{:,.2f}'.format(account.balance) }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if account.status %}
+                                        <span class="badge {% if account.status.value == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {{ account.status.value.upper() }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-success">ACTIVE</span>
+                                    {% endif %}
                                 </td>
                                 <td class="text-end pe-4">
                                     <div class="btn-group">
