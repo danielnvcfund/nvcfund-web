@@ -409,6 +409,16 @@ def create_app():
         try:
             from routes.admin_routes import admin_bp
             app.register_blueprint(admin_bp)
+        except Exception as e:
+            logger.error(f"Error registering admin routes: {str(e)}")
+            
+        # Register Account Management routes
+        try:
+            from routes.account_management_routes import account_bp
+            app.register_blueprint(account_bp)
+            logger.info("Account management routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering account management routes: {str(e)}")
             
             # Register NVC Platform integration admin routes
             from routes.nvc_platform_admin_routes import nvc_platform_admin_bp

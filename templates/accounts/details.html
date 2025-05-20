@@ -1,0 +1,154 @@
+{% extends "layout.html" %}
+
+{% block title %}Account Details{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="display-6 mb-0">Account Details</h1>
+                <a href="{{ url_for('account.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Accounts
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">{{ account.account_name }}</h5>
+                        <span class="badge {% if account.status.name == 'ACTIVE' %}bg-success{% elif account.status.name == 'PENDING' %}bg-warning{% elif account.status.name == 'SUSPENDED' %}bg-danger{% elif account.status.name == 'CLOSED' %}bg-secondary{% else %}bg-info{% endif %}">
+                            {{ account.status.name }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="mb-2 text-muted">Account Number</h6>
+                            <p class="account-number text-monospace fs-5">{{ account.account_number }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="mb-2 text-muted">Account Type</h6>
+                            <p>{{ account.account_type.name }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="mb-2 text-muted">Currency</h6>
+                            <p>{{ account.currency.name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="mb-2 text-muted">Date Opened</h6>
+                            <p>{{ account.created_at | datetime }}</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="mb-2 text-muted">Current Balance</h6>
+                            <p class="fs-4 fw-bold text-primary">{{ account.balance | format_currency(account.currency.name) }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="mb-2 text-muted">Available Balance</h6>
+                            <p class="fs-4">{{ account.available_balance | format_currency(account.currency.name) }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if account.last_transaction_at %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="text-muted mb-0 small">Last transaction: {{ account.last_transaction_at | datetime }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="card-title mb-0">Recent Transactions</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">
+                                        <div class="empty-state">
+                                            <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                                            <p>No transactions yet</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="card-title mb-0">Account Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-exchange-alt me-2"></i> Transfer Funds
+                        </a>
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-download me-2"></i> Deposit
+                        </a>
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-upload me-2"></i> Withdraw
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary">
+                            <i class="fas fa-file-alt me-2"></i> Statement
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="card-title mb-0">Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Account Holder</h6>
+                    <p>{{ account_holder.name }}</p>
+                    
+                    <h6>Account ID</h6>
+                    <p class="text-monospace">{{ account.id }}</p>
+                    
+                    {% if account.currency.name == 'NVCT' %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        This is your primary NVCT account for platform transactions.
+                    </div>
+                    {% elif account.account_type.name == 'CRYPTO' %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        This crypto custody account allows you to hold multiple cryptocurrencies.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
