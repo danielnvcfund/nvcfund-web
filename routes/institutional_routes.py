@@ -25,22 +25,22 @@ def institutional_dashboard():
     # Get all institutional and correspondent accounts
     institutional_accounts = BankAccount.query.filter_by(
         account_holder_id=account_holder.id,
-        account_type=AccountType.INSTITUTIONAL
+        account_type="institutional"
     ).all()
     
     nostro_accounts = BankAccount.query.filter_by(
         account_holder_id=account_holder.id,
-        account_type=AccountType.NOSTRO
+        account_type="nostro"
     ).all()
     
     vostro_accounts = BankAccount.query.filter_by(
         account_holder_id=account_holder.id,
-        account_type=AccountType.VOSTRO
+        account_type="vostro"
     ).all()
     
     correspondent_accounts = BankAccount.query.filter_by(
         account_holder_id=account_holder.id,
-        account_type=AccountType.CORRESPONDENT
+        account_type="correspondent"
     ).all()
     
     return render_template(
