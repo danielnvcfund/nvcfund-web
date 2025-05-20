@@ -1,41 +1,36 @@
-{% extends "layout.html" %}
+{% extends 'layout.html' %}
 
 {% block title %}Create Account Profile{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-10">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary bg-opacity-10">
-                    <h1 class="h3 mb-0">Complete Your Account Profile</h1>
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Complete Your Account Profile</h3>
+                    <p class="text-white-50">We'll set up your banking accounts after you complete this profile</p>
                 </div>
                 <div class="card-body">
-                    <p class="lead mb-4">To activate your banking services, we need some additional information about you. Once your profile is complete, we'll automatically generate your bank accounts.</p>
-                    
                     <form method="POST" action="{{ url_for('account.create_profile') }}">
                         {{ address_form.csrf_token }}
                         
                         <div class="row mb-4">
-                            <div class="col-12">
+                            <div class="col-md-12">
                                 <h4 class="mb-3">Personal Information</h4>
-                                <hr>
                             </div>
-                            
                             <div class="col-md-6 mb-3">
                                 <label for="name" class="form-label">Full Name</label>
                                 <input type="text" class="form-control" id="name" name="name" value="{{ current_user.username }}" required>
                             </div>
-                            
                             <div class="col-md-6 mb-3">
                                 <label for="phone" class="form-label">Phone Number</label>
                                 <input type="tel" class="form-control" id="phone" name="phone" required>
-                                <div class="form-text">Include country code (e.g., +1 for US numbers)</div>
                             </div>
                         </div>
                         
                         <div class="row mb-4">
-                            <div class="col-12">
+                            <div class="col-md-12">
                                 <div class="form-check mb-3">
                                     <input class="form-check-input" type="checkbox" id="is_business" name="is_business">
                                     <label class="form-check-label" for="is_business">
@@ -43,122 +38,123 @@
                                     </label>
                                 </div>
                             </div>
-                            
-                            <div class="col-md-4 mb-3 business-field d-none">
+                        </div>
+                        
+                        <div id="business_info" class="row mb-4" style="display:none;">
+                            <div class="col-md-12">
+                                <h4 class="mb-3">Business Information</h4>
+                            </div>
+                            <div class="col-md-4 mb-3">
                                 <label for="business_name" class="form-label">Business Name</label>
                                 <input type="text" class="form-control" id="business_name" name="business_name">
                             </div>
-                            
-                            <div class="col-md-4 mb-3 business-field d-none">
+                            <div class="col-md-4 mb-3">
                                 <label for="business_type" class="form-label">Business Type</label>
-                                <input type="text" class="form-control" id="business_type" name="business_type">
+                                <select class="form-control" id="business_type" name="business_type">
+                                    <option value="">Select business type</option>
+                                    <option value="sole_proprietorship">Sole Proprietorship</option>
+                                    <option value="partnership">Partnership</option>
+                                    <option value="corporation">Corporation</option>
+                                    <option value="llc">Limited Liability Company (LLC)</option>
+                                    <option value="nonprofit">Non-profit Organization</option>
+                                    <option value="financial_institution">Financial Institution</option>
+                                    <option value="government">Government Entity</option>
+                                    <option value="other">Other</option>
+                                </select>
                             </div>
-                            
-                            <div class="col-md-4 mb-3 business-field d-none">
+                            <div class="col-md-4 mb-3">
                                 <label for="tax_id" class="form-label">Tax ID / EIN</label>
                                 <input type="text" class="form-control" id="tax_id" name="tax_id">
                             </div>
                         </div>
                         
                         <div class="row mb-4">
-                            <div class="col-12">
-                                <h4 class="mb-3">Primary Address</h4>
-                                <hr>
+                            <div class="col-md-12">
+                                <h4 class="mb-3">Address Information</h4>
                             </div>
-                            
                             <div class="col-md-6 mb-3">
                                 <label for="line1" class="form-label">Address Line 1</label>
-                                {{ address_form.line1(class="form-control", placeholder="Street address") }}
+                                {{ address_form.line1(class="form-control", placeholder="Street address", required=True) }}
                                 {% if address_form.line1.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in address_form.line1.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in address_form.line1.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
-                            
                             <div class="col-md-6 mb-3">
-                                <label for="line2" class="form-label">Address Line 2 (Optional)</label>
+                                <label for="line2" class="form-label">Address Line 2</label>
                                 {{ address_form.line2(class="form-control", placeholder="Apartment, suite, unit, etc.") }}
-                            </div>
-                            
-                            <div class="col-md-4 mb-3">
-                                <label for="city" class="form-label">City</label>
-                                {{ address_form.city(class="form-control") }}
-                                {% if address_form.city.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in address_form.city.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="col-md-3 mb-3">
-                                <label for="region" class="form-label">State/Province</label>
-                                {{ address_form.region(class="form-control") }}
-                                {% if address_form.region.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in address_form.region.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="col-md-3 mb-3">
-                                <label for="zip" class="form-label">Postal/Zip Code</label>
-                                {{ address_form.zip(class="form-control") }}
-                                {% if address_form.zip.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in address_form.zip.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="col-md-2 mb-3">
-                                <label for="country" class="form-label">Country Code</label>
-                                {{ address_form.country(class="form-control", placeholder="US") }}
-                                {% if address_form.country.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in address_form.country.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                                <div class="form-text">2-letter code</div>
                             </div>
                         </div>
                         
                         <div class="row mb-4">
-                            <div class="col-12">
-                                <h4 class="mb-3">Default Bank Accounts</h4>
-                                <hr>
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    Upon completion, we'll automatically create the following accounts for you:
-                                    <ul class="mb-0 mt-2">
-                                        <li>Primary NVCT Account</li>
-                                        <li>USD Account</li>
-                                        <li>EUR Account (for international transactions)</li>
-                                        <li>Crypto Custody Account</li>
-                                        {% if is_business %}
-                                        <li>Business Account</li>
-                                        {% endif %}
-                                    </ul>
-                                </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="city" class="form-label">City</label>
+                                {{ address_form.city(class="form-control", required=True) }}
+                                {% if address_form.city.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in address_form.city.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="region" class="form-label">State/Province</label>
+                                {{ address_form.region(class="form-control", required=True) }}
+                                {% if address_form.region.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in address_form.region.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label for="zip" class="form-label">Postal Code</label>
+                                {{ address_form.zip(class="form-control", required=True) }}
+                                {% if address_form.zip.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in address_form.zip.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="country" class="form-label">Country</label>
+                                {{ address_form.country(class="form-select", required=True) }}
+                                {% if address_form.country.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in address_form.country.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
                         
-                        <div class="row">
-                            <div class="col-12 text-end">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-check-circle me-2"></i> Complete Profile & Generate Accounts
-                                </button>
-                            </div>
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>What happens next?</h5>
+                            <p>After you complete this profile, we'll automatically create the following accounts for you:</p>
+                            <ul>
+                                <li>NVCT Primary Account</li>
+                                <li>USD Account</li>
+                                <li>EUR Account</li>
+                                <li>Crypto Custody Account</li>
+                                {% if is_business %}
+                                <li>Business Account</li>
+                                {% endif %}
+                            </ul>
+                            <p class="mb-0">Each account will receive a unique account number in the format: <code>NVC-GL-XX-YYMM-XXXXXXXX</code></p>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check-circle me-2"></i>Complete Profile
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -169,29 +165,22 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Show/hide business fields based on checkbox
-    const businessCheckbox = document.getElementById('is_business');
-    const businessFields = document.querySelectorAll('.business-field');
+    const isBusinessCheckbox = document.getElementById('is_business');
+    const businessInfoSection = document.getElementById('business_info');
     
-    function toggleBusinessFields() {
-        businessFields.forEach(field => {
-            if (businessCheckbox.checked) {
-                field.classList.remove('d-none');
-                field.querySelectorAll('input').forEach(input => {
-                    input.setAttribute('required', 'required');
-                });
-            } else {
-                field.classList.add('d-none');
-                field.querySelectorAll('input').forEach(input => {
-                    input.removeAttribute('required');
-                    input.value = '';
-                });
-            }
-        });
-    }
-    
-    businessCheckbox.addEventListener('change', toggleBusinessFields);
-    toggleBusinessFields(); // Initialize on page load
+    isBusinessCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            businessInfoSection.style.display = 'flex';
+            document.querySelectorAll('#business_info input, #business_info select').forEach(function(input) {
+                input.setAttribute('required', 'required');
+            });
+        } else {
+            businessInfoSection.style.display = 'none';
+            document.querySelectorAll('#business_info input, #business_info select').forEach(function(input) {
+                input.removeAttribute('required');
+            });
+        }
+    });
 });
 </script>
 {% endblock %}

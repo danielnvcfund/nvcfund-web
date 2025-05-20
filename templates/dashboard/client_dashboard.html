@@ -1,272 +1,212 @@
-{% extends "layout.html" %}
+{% extends 'layout.html' %}
 
 {% block title %}Client Dashboard{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row mb-4">
+<div class="container mt-5">
+    <div class="row">
         <div class="col-md-12">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h2 class="mb-0">Welcome, {{ current_user.username }}</h2>
-                        <div class="badge bg-success fs-6">Client</div>
-                    </div>
-                    <p class="lead mb-0">Welcome to your NVC Banking Dashboard. Manage your accounts, track transactions, and access banking services.</p>
-                </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">Welcome, {{ account_holder.name }}</h1>
+                <a href="{{ url_for('account.new_account') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-2"></i>Open New Account
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Banking Overview -->
     <div class="row mb-4">
         <div class="col-md-12">
-            <h3 class="mb-3">Your Banking Overview</h3>
-        </div>
-        
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm h-100 border-primary">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h5 class="card-title text-primary">NVCT Primary Account</h5>
-                            <h6 class="text-muted mb-2">NVC-GL-CH-2505-X7YA2B9C</h6>
-                        </div>
-                        <div class="fs-1 text-primary">
-                            <i class="fas fa-wallet"></i>
-                        </div>
-                    </div>
-                    <h3 class="mt-3 mb-2">10,000.00 NVCT</h3>
-                    <p class="text-muted mb-0">Available Balance</p>
-                    <hr>
-                    <div class="d-grid">
-                        <button class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-exchange-alt me-1"></i> Transfer Funds
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm h-100 border-success">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h5 class="card-title text-success">USD Account</h5>
-                            <h6 class="text-muted mb-2">NVC-GL-CH-2505-H3M9N5P2</h6>
-                        </div>
-                        <div class="fs-1 text-success">
-                            <i class="fas fa-dollar-sign"></i>
-                        </div>
-                    </div>
-                    <h3 class="mt-3 mb-2">$1,000.00 USD</h3>
-                    <p class="text-muted mb-0">Available Balance</p>
-                    <hr>
-                    <div class="d-grid">
-                        <button class="btn btn-outline-success btn-sm">
-                            <i class="fas fa-exchange-alt me-1"></i> Transfer Funds
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm h-100 border-info">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h5 class="card-title text-info">EUR Account</h5>
-                            <h6 class="text-muted mb-2">NVC-GL-CH-2505-T6V3W8X1</h6>
-                        </div>
-                        <div class="fs-1 text-info">
-                            <i class="fas fa-euro-sign"></i>
-                        </div>
-                    </div>
-                    <h3 class="mt-3 mb-2">€890.00 EUR</h3>
-                    <p class="text-muted mb-0">Available Balance</p>
-                    <hr>
-                    <div class="d-grid">
-                        <button class="btn btn-outline-info btn-sm">
-                            <i class="fas fa-exchange-alt me-1"></i> Transfer Funds
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions & Crypto Account -->
-    <div class="row">
-        <div class="col-md-8 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary bg-opacity-10">
-                    <h5 class="card-title mb-0">Quick Actions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <a href="{{ url_for('account.index') }}" class="card h-100 border-0 bg-light text-decoration-none">
-                                <div class="card-body text-center">
-                                    <div class="icon-circle bg-primary bg-opacity-10 mb-3">
-                                        <i class="fas fa-university text-primary"></i>
-                                    </div>
-                                    <h6 class="card-title">Manage Accounts</h6>
-                                    <p class="card-text small text-muted">View and manage all your bank accounts</p>
-                                </div>
-                            </a>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <a href="#" class="card h-100 border-0 bg-light text-decoration-none">
-                                <div class="card-body text-center">
-                                    <div class="icon-circle bg-success bg-opacity-10 mb-3">
-                                        <i class="fas fa-exchange-alt text-success"></i>
-                                    </div>
-                                    <h6 class="card-title">Transfer Money</h6>
-                                    <p class="card-text small text-muted">Send money between accounts or to others</p>
-                                </div>
-                            </a>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <a href="{{ url_for('account.new_account') }}" class="card h-100 border-0 bg-light text-decoration-none">
-                                <div class="card-body text-center">
-                                    <div class="icon-circle bg-info bg-opacity-10 mb-3">
-                                        <i class="fas fa-plus text-info"></i>
-                                    </div>
-                                    <h6 class="card-title">Open New Account</h6>
-                                    <p class="card-text small text-muted">Create additional accounts in any currency</p>
-                                </div>
-                            </a>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <a href="#" class="card h-100 border-0 bg-light text-decoration-none">
-                                <div class="card-body text-center">
-                                    <div class="icon-circle bg-warning bg-opacity-10 mb-3">
-                                        <i class="fas fa-credit-card text-warning"></i>
-                                    </div>
-                                    <h6 class="card-title">Deposit Funds</h6>
-                                    <p class="card-text small text-muted">Add money to your accounts</p>
-                                </div>
-                            </a>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <a href="#" class="card h-100 border-0 bg-light text-decoration-none">
-                                <div class="card-body text-center">
-                                    <div class="icon-circle bg-danger bg-opacity-10 mb-3">
-                                        <i class="fas fa-chart-line text-danger"></i>
-                                    </div>
-                                    <h6 class="card-title">Exchange Currencies</h6>
-                                    <p class="card-text small text-muted">Convert between different currencies</p>
-                                </div>
-                            </a>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <a href="#" class="card h-100 border-0 bg-light text-decoration-none">
-                                <div class="card-body text-center">
-                                    <div class="icon-circle bg-secondary bg-opacity-10 mb-3">
-                                        <i class="fas fa-file-alt text-secondary"></i>
-                                    </div>
-                                    <h6 class="card-title">Statements</h6>
-                                    <p class="card-text small text-muted">View and download account statements</p>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm h-100 border-warning">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h5 class="card-title text-warning">Crypto Custody Account</h5>
-                            <h6 class="text-muted mb-2">NVC-GL-CR-2505-K8D5F2G6</h6>
-                        </div>
-                        <div class="fs-1 text-warning">
-                            <i class="fab fa-bitcoin"></i>
-                        </div>
-                    </div>
-                    <div class="mt-3">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Bitcoin (BTC)</span>
-                            <span>0.25 BTC</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Ethereum (ETH)</span>
-                            <span>5.00 ETH</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>USDC</span>
-                            <span>1,000.00 USDC</span>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="d-grid">
-                        <button class="btn btn-outline-warning btn-sm">
-                            <i class="fas fa-wallet me-1"></i> Manage Crypto Assets
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Recent Transactions -->
-    <div class="row">
-        <div class="col-md-12 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary bg-opacity-10 d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Recent Transactions</h5>
-                    <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
-                </div>
+            <div class="card shadow-lg border-0">
                 <div class="card-body p-0">
+                    <div class="row g-0">
+                        <div class="col-md-4 bg-primary text-white p-4">
+                            <h2 class="mb-3">Account Summary</h2>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-white p-3 me-3">
+                                    <i class="fas fa-university text-primary" style="font-size: 2rem;"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">{{ accounts|length }}</h5>
+                                    <p class="mb-0">Active Accounts</p>
+                                </div>
+                            </div>
+                            
+                            <p class="mb-4">Your NVC Banking accounts are ready for use. Access all your banking services from this dashboard.</p>
+                            
+                            <div class="alert alert-light" role="alert">
+                                <h5 class="alert-heading"><i class="fas fa-shield-alt me-2"></i>Account Security</h5>
+                                <p class="mb-0">Your accounts are protected by advanced security measures. For assistance, contact our support team.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-8 p-4">
+                            <h4 class="mb-3">Quick Actions</h4>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-4">
+                                    <a href="{{ url_for('account.index') }}" class="card text-center h-100 text-decoration-none border-0 shadow-sm hover-card">
+                                        <div class="card-body py-4">
+                                            <i class="fas fa-wallet text-primary mb-3" style="font-size: 2rem;"></i>
+                                            <h5>Manage Accounts</h5>
+                                            <p class="text-muted small mb-0">View and manage all your accounts</p>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card text-center h-100 border-0 shadow-sm hover-card">
+                                        <div class="card-body py-4">
+                                            <i class="fas fa-exchange-alt text-success mb-3" style="font-size: 2rem;"></i>
+                                            <h5>Transfer Funds</h5>
+                                            <p class="text-muted small mb-0">Move money between accounts</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card text-center h-100 border-0 shadow-sm hover-card">
+                                        <div class="card-body py-4">
+                                            <i class="fas fa-globe text-info mb-3" style="font-size: 2rem;"></i>
+                                            <h5>Currency Exchange</h5>
+                                            <p class="text-muted small mb-0">Exchange between different currencies</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if account_holder.kyc_verified %}
+                            <div class="alert alert-success mb-0">
+                                <i class="fas fa-check-circle me-2"></i> Your account is fully verified.
+                            </div>
+                            {% else %}
+                            <div class="alert alert-warning mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i> Complete KYC verification to unlock all account features.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h3 class="mb-3">Your Accounts</h3>
+            
+            {% if accounts %}
+            <div class="row">
+                {% for account in accounts %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center 
+                            {% if account.currency.name == 'NVCT' %}bg-primary text-white
+                            {% elif account.currency.name == 'USD' %}bg-success text-white
+                            {% elif account.currency.name == 'EUR' %}bg-info text-white
+                            {% elif account.currency.name == 'BTC' or account.currency.name == 'ETH' or account.currency.name == 'USDT' %}bg-warning
+                            {% else %}bg-secondary text-white{% endif %}">
+                            <h5 class="mb-0">
+                                {% if account.currency.name == 'NVCT' %}
+                                    <i class="fas fa-coins me-2"></i>
+                                {% elif account.currency.name == 'USD' %}
+                                    <i class="fas fa-dollar-sign me-2"></i>
+                                {% elif account.currency.name == 'EUR' %}
+                                    <i class="fas fa-euro-sign me-2"></i>
+                                {% elif account.currency.name == 'BTC' or account.currency.name == 'ETH' or account.currency.name == 'USDT' %}
+                                    <i class="fab fa-bitcoin me-2"></i>
+                                {% else %}
+                                    <i class="fas fa-money-bill-wave me-2"></i>
+                                {% endif %}
+                                {{ account.currency.name }} {{ account.account_type.name.capitalize() }} Account
+                            </h5>
+                            <span class="badge bg-light text-dark">{{ account.status.name }}</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6 class="text-muted">Account Number</h6>
+                                <div class="d-flex align-items-center">
+                                    <h5 class="mb-0 account-number" style="font-family: monospace;">{{ account.account_number }}</h5>
+                                    <button class="btn btn-sm btn-outline-primary ms-2 copy-btn" data-clipboard-text="{{ account.account_number }}">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-muted">Current Balance</h6>
+                                <h4 class="mb-0">
+                                    {% if account.currency.name == 'USD' %}${% endif %}
+                                    {% if account.currency.name == 'EUR' %}€{% endif %}
+                                    {{ '{:,.2f}'.format(account.balance) }}
+                                    {% if account.currency.name not in ['USD', 'EUR'] %} {{ account.currency.name }}{% endif %}
+                                </h4>
+                            </div>
+                            <div class="mb-0">
+                                <h6 class="text-muted">Available Balance</h6>
+                                <h4 class="mb-0">
+                                    {% if account.currency.name == 'USD' %}${% endif %}
+                                    {% if account.currency.name == 'EUR' %}€{% endif %}
+                                    {{ '{:,.2f}'.format(account.available_balance) }}
+                                    {% if account.currency.name not in ['USD', 'EUR'] %} {{ account.currency.name }}{% endif %}
+                                </h4>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-0">
+                            <div class="d-flex">
+                                <a href="{{ url_for('account.account_details', account_id=account.id) }}" class="btn btn-outline-primary flex-grow-1 me-2">
+                                    <i class="fas fa-search-dollar me-1"></i> View Details
+                                </a>
+                                <button class="btn btn-outline-secondary flex-grow-1" disabled>
+                                    <i class="fas fa-exchange-alt me-1"></i> Transfer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <h4 class="alert-heading"><i class="fas fa-info-circle me-2"></i>No accounts found</h4>
+                <p>It seems you don't have any accounts set up yet. Click the "Open New Account" button to create your first account or complete your profile to generate default accounts.</p>
+                <hr>
+                <a href="{{ url_for('account.create_profile') }}" class="btn btn-primary">Complete Your Profile</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">Account Specifications</h4>
+                </div>
+                <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Description</th>
-                                    <th>Account</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
+                        <table class="table">
                             <tbody>
                                 <tr>
-                                    <td>May 20, 2025</td>
-                                    <td>Account Opening</td>
-                                    <td>NVCT Primary Account</td>
-                                    <td class="text-success">+10,000.00 NVCT</td>
-                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <th style="width: 30%">Account Format</th>
+                                    <td>
+                                        <code>NVC-GL-XX-YYMM-XXXXXXXX</code>, where:
+                                        <ul class="mb-0 mt-2">
+                                            <li><strong>NVC-GL</strong>: NVC Global prefix</li>
+                                            <li><strong>XX</strong>: Account type code (CH for checking, SV for savings, etc.)</li>
+                                            <li><strong>YYMM</strong>: Creation date (Year and Month)</li>
+                                            <li><strong>XXXXXXXX</strong>: Unique alphanumeric identifier</li>
+                                        </ul>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td>May 20, 2025</td>
-                                    <td>Account Opening</td>
-                                    <td>USD Account</td>
-                                    <td class="text-success">+1,000.00 USD</td>
-                                    <td><span class="badge bg-success">Completed</span></td>
-                                </tr>
-                                <tr>
-                                    <td>May 20, 2025</td>
-                                    <td>Account Opening</td>
-                                    <td>EUR Account</td>
-                                    <td class="text-success">+890.00 EUR</td>
-                                    <td><span class="badge bg-success">Completed</span></td>
-                                </tr>
-                                <tr>
-                                    <td>May 20, 2025</td>
-                                    <td>Account Opening</td>
-                                    <td>Crypto Custody Account</td>
-                                    <td class="text-success">+0.25 BTC</td>
-                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <th>Default Accounts</th>
+                                    <td>
+                                        <ul class="mb-0">
+                                            <li>NVCT Primary Account</li>
+                                            <li>USD Account</li>
+                                            <li>EUR Account</li>
+                                            <li>Crypto Custody Account</li>
+                                            {% if account_holder.is_business %}
+                                            <li>Business Account</li>
+                                            {% endif %}
+                                        </ul>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -274,22 +214,57 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">Recent Activity</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-light text-center">
+                        <i class="fas fa-info-circle me-2"></i> No recent activity found
+                    </div>
+                    <p class="text-center text-muted">
+                        All your account activity will appear here once you start transacting.
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <style>
-.icon-circle {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
+.hover-card {
+    transition: transform 0.3s ease-in-out;
 }
-
-.icon-circle i {
-    font-size: 28px;
+.hover-card:hover {
+    transform: translateY(-5px);
+    cursor: pointer;
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize clipboard.js for copy buttons
+    const clipboardBtns = document.querySelectorAll('.copy-btn');
+    
+    clipboardBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const text = this.dataset.clipboardText;
+            navigator.clipboard.writeText(text).then(() => {
+                // Change button to show copied
+                this.innerHTML = '<i class="fas fa-check"></i>';
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-success');
+                
+                // Reset button after 2 seconds
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-copy"></i>';
+                    this.classList.remove('btn-success');
+                    this.classList.add('btn-outline-primary');
+                }, 2000);
+            });
+        });
+    });
+});
+</script>
 {% endblock %}
