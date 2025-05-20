@@ -497,6 +497,16 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering NVC Platform integration routes: {str(e)}")
         
+        # Register Mojoloop API integration routes
+        try:
+            from mojoloop_integration import mojoloop_bp, mojoloop_web_bp
+            app.register_blueprint(mojoloop_bp)
+            app.register_blueprint(mojoloop_web_bp)
+            logger.info("Mojoloop API integration routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Mojoloop API integration routes: {str(e)}")
+            logger.warning("Application will run without Mojoloop real-time payment capabilities")
+        
         # Initialize EDI Service
         try:
             from edi_integration import init_app as init_edi

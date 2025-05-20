@@ -292,6 +292,7 @@ class PaymentGatewayType(enum.Enum):
     # Very important: Using lowercase 'nvc_global' to match the database enum value exactly
     NVC_GLOBAL = "nvc_global"
     CUSTOM = "custom"  # Added CUSTOM type to support existing database entries
+    INTEROPERABLE_PAYMENT = "interoperable_payment"  # For Mojoloop and similar interoperable payment systems
     
 class TelexMessageStatus(enum.Enum):
     """Telex message status"""
