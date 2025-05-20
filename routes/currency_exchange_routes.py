@@ -31,9 +31,42 @@ def index():
         account_holder_id=current_user.account_holder.id
     ).order_by(CurrencyExchangeTransaction.created_at.desc()).limit(10).all()
     
+    # Get exchange rates for display
+    exchange_service = CurrencyExchangeService(db)
+    exchange_rates = {}
+    
+    # Get rates for major currencies relative to NVCT
+    base_currencies = [
+        CurrencyType.NVCT, 
+        CurrencyType.USD, 
+        CurrencyType.EUR, 
+        CurrencyType.GBP,
+        CurrencyType.BTC,
+        CurrencyType.AFD1,
+        CurrencyType.SFN,
+        CurrencyType.AKLUMI
+    ]
+    
+    # Build exchange rates dictionary
+    for base in base_currencies:
+        exchange_rates[base.value] = []
+        for target in base_currencies:
+            if base != target:
+                rate = exchange_service.get_exchange_rate(base, target)
+                if rate:
+                    inverse_rate = exchange_service.get_exchange_rate(target, base)
+                    rate_obj = {
+                        'to_currency': target.value,
+                        'rate': rate,
+                        'inverse_rate': inverse_rate or (1.0/rate if rate else 0),
+                        'last_updated': datetime.now()
+                    }
+                    exchange_rates[base.value].append(rate_obj)
+    
     return render_template('currency_exchange/index.html', 
                           form=exchange_form, 
                           transactions=recent_transactions,
+                          exchange_rates=exchange_rates,
                           title="Currency Exchange")
 
 @currency_exchange.route('/get_rate', methods=['POST'])
