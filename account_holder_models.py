@@ -45,6 +45,10 @@ class AccountType(enum.Enum):
     BUSINESS = "business"
     CUSTODY = "custody"
     CRYPTO = "crypto"
+    INSTITUTIONAL = "institutional"
+    CORRESPONDENT = "correspondent"
+    NOSTRO = "nostro"
+    VOSTRO = "vostro"
     
 class CurrencyType(enum.Enum):
     """Currency types for banking accounts"""

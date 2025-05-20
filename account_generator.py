@@ -24,7 +24,11 @@ class AccountNumberGenerator:
         AccountType.INVESTMENT: "IN",
         AccountType.BUSINESS: "BZ",
         AccountType.CUSTODY: "CU",
-        AccountType.CRYPTO: "CR"
+        AccountType.CRYPTO: "CR",
+        AccountType.INSTITUTIONAL: "IS",
+        AccountType.CORRESPONDENT: "CB",
+        AccountType.NOSTRO: "NO",
+        AccountType.VOSTRO: "VO"
     }
     
     # Default structure: NVC-GL-{TYPE}-{YEAR}{MONTH}-{8_RANDOM_CHARS}
@@ -225,4 +229,101 @@ def create_additional_account(account_holder, currency, account_type=AccountType
         if auto_commit:
             db.session.rollback()
         logger.error(f"Database error creating additional account: {str(e)}")
+        return None
+
+
+def create_institutional_account(account_holder, currency=CurrencyType.USD, auto_commit=True):
+    """
+    Create an institutional account for a financial institution
+    
+    Args:
+        account_holder: AccountHolder object to create account for
+        currency: Currency for the new account
+        auto_commit: Whether to commit changes to the database
+        
+    Returns:
+        Created BankAccount object or None on error
+    """
+    if not account_holder:
+        logger.error("Cannot create institutional account: No account holder provided")
+        return None
+        
+    try:
+        # Generate a specialized name for institutional accounts
+        account_name = f"{account_holder.name} Institutional {currency.name} Account"
+        
+        # Create the institutional account
+        inst_account = BankAccount()
+        inst_account.account_number = AccountNumberGenerator.generate_account_number(AccountType.INSTITUTIONAL)
+        inst_account.account_name = account_name
+        inst_account.account_type = AccountType.INSTITUTIONAL
+        inst_account.currency = currency
+        inst_account.balance = 0.0
+        inst_account.available_balance = 0.0
+        inst_account.status = AccountStatus.ACTIVE
+        inst_account.account_holder_id = account_holder.id
+        
+        db.session.add(inst_account)
+        
+        if auto_commit:
+            db.session.commit()
+            logger.info(f"Created institutional {currency.name} account for account holder {account_holder.id}")
+        
+        return inst_account
+        
+    except SQLAlchemyError as e:
+        if auto_commit:
+            db.session.rollback()
+        logger.error(f"Database error creating institutional account: {str(e)}")
+        return None
+    
+    
+def create_correspondent_account(account_holder, currency=CurrencyType.USD, nostro=True, auto_commit=True):
+    """
+    Create a correspondent banking account
+    
+    Args:
+        account_holder: AccountHolder object to create account for
+        currency: Currency for the new account
+        nostro: If True, creates a nostro account (we hold with them), 
+                otherwise creates a vostro account (they hold with us)
+        auto_commit: Whether to commit changes to the database
+        
+    Returns:
+        Created BankAccount object or None on error
+    """
+    if not account_holder:
+        logger.error("Cannot create correspondent account: No account holder provided")
+        return None
+        
+    account_type = AccountType.NOSTRO if nostro else AccountType.VOSTRO
+    
+    try:
+        # Special naming for correspondent accounts
+        type_name = "Nostro" if nostro else "Vostro"
+        account_name = f"{account_holder.name} {currency.name} {type_name} Account"
+        
+        # Create the correspondent account
+        corr_account = BankAccount()
+        corr_account.account_number = AccountNumberGenerator.generate_account_number(account_type)
+        corr_account.account_name = account_name
+        corr_account.account_type = account_type
+        corr_account.currency = currency
+        corr_account.balance = 0.0
+        corr_account.available_balance = 0.0
+        corr_account.status = AccountStatus.ACTIVE
+        corr_account.account_holder_id = account_holder.id
+        
+        db.session.add(corr_account)
+        
+        if auto_commit:
+            db.session.commit()
+            logger.info(f"Created {type_name} correspondent {currency.name} account for account holder {account_holder.id}")
+        
+        return corr_account
+        
+    except SQLAlchemyError as e:
+        if auto_commit:
+            db.session.rollback()
+        logger.error(f"Database error creating correspondent account: {str(e)}")
         return None

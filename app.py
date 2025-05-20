@@ -1033,8 +1033,8 @@ def create_app():
 
         # Register institutional routes
         try:
-            from routes.institutional_routes import register_routes as register_institutional_routes
-            register_institutional_routes(app)
+            from routes.institutional_routes import institutional_bp
+            app.register_blueprint(institutional_bp)
             logger.info("Institutional routes registered successfully")
         except ImportError:
             logger.warning("Institutional routes module not found")
