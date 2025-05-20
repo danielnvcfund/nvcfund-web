@@ -1,0 +1,76 @@
+{% extends 'layout.html' %}
+
+{% block title %}Account Summary{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Account Summary</h3>
+                </div>
+                <div class="card-body">
+                    <h4 class="mb-4">Your Banking Accounts</h4>
+                    
+                    {% if accounts %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Account Number</th>
+                                        <th>Account Type</th>
+                                        <th>Currency</th>
+                                        <th>Balance</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for account in accounts %}
+                                    <tr>
+                                        <td style="font-family: monospace;">{{ account.account_number }}</td>
+                                        <td>{{ account.account_type.name.capitalize() }}</td>
+                                        <td>{{ account.currency.name }}</td>
+                                        <td>
+                                            {% if account.currency.name == 'USD' %}${% endif %}
+                                            {% if account.currency.name == 'EUR' %}€{% endif %}
+                                            {{ '{:,.2f}'.format(account.balance) }}
+                                            {% if account.currency.name not in ['USD', 'EUR'] %} {{ account.currency.name }}{% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if account.status.name == 'ACTIVE' %}bg-success{% else %}bg-secondary{% endif %}">
+                                                {{ account.status.name }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('account.account_details', account_id=account.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-search me-1"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end mt-4">
+                            <a href="{{ url_for('account.new_account') }}" class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-2"></i>Open New Account
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>No accounts found</h5>
+                            <p>It seems you don't have any accounts set up yet. Complete your profile to get started with your banking accounts.</p>
+                            <a href="{{ url_for('account.create_profile') }}" class="btn btn-primary mt-2">
+                                <i class="fas fa-user-edit me-2"></i>Complete Profile
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -22,7 +22,8 @@ def index():
     
     # If no account holder exists, redirect to create one
     if not account_holder:
-        return redirect(url_for('account.create_profile'))
+        flash('Please complete your profile to generate your accounts', 'info')
+        return redirect(url_for('account.index'))
     
     # Get all accounts for the account holder
     accounts = BankAccount.query.filter_by(account_holder_id=account_holder.id).all()
@@ -31,10 +32,14 @@ def index():
     if not accounts:
         try:
             accounts = create_default_accounts_for_holder(account_holder)
-            if not accounts:
+            if accounts:
+                flash('We have created default accounts for you!', 'success')
+            else:
                 logger.error(f"Failed to create default accounts for user {current_user.id}")
+                flash('There was an issue creating your default accounts. Please contact support.', 'warning')
         except Exception as e:
             logger.error(f"Error creating default accounts: {str(e)}")
+            flash(f'Error creating accounts: {str(e)}', 'danger')
     
     return render_template(
         'dashboard/client_dashboard.html',
