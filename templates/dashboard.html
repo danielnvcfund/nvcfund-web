@@ -565,55 +565,101 @@
         <!-- Right Column (1/3) -->
         <div class="col-lg-4">
             <!-- Quick Actions Widget -->
-            <div class="card dashboard-widget border-0 shadow mb-4">
-                <div class="card-header bg-dark bg-opacity-10 border-0">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
-                                <i class="fas fa-bolt text-primary"></i>
-                            </div>
-                            <h5 class="mb-0 fw-bold">Quick Actions</h5>
+            <div class="card dashboard-widget border-0 bg-dark text-white shadow mb-4">
+                <div class="card-header bg-dark border-0">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-primary p-2 me-3">
+                            <i class="fas fa-bolt text-white"></i>
                         </div>
+                        <h5 class="mb-0 fw-bold text-white">Quick Actions</h5>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="list-group">
-                        <a href="{{ url_for('web.main.new_payment') }}" class="list-group-item list-group-item-action d-flex align-items-center">
-                            <span class="rounded-circle bg-success bg-opacity-10 p-2 me-3">
-                                <i class="fas fa-money-bill-wave text-success"></i>
-                            </span>
-                            <div>
-                                <strong>Make a Payment</strong>
-                                <div class="small text-muted">Process a new payment</div>
-                            </div>
-                        </a>
-                        <a href="{{ url_for('currency_exchange.index') }}" class="list-group-item list-group-item-action d-flex align-items-center">
-                            <span class="rounded-circle bg-info bg-opacity-10 p-2 me-3">
-                                <i class="fas fa-exchange-alt text-info"></i>
-                            </span>
-                            <div>
-                                <strong>Exchange Currency</strong>
-                                <div class="small text-muted">Convert between currencies</div>
-                            </div>
-                        </a>
-                        <a href="{{ url_for('dashboard.account_summary') }}" class="list-group-item list-group-item-action d-flex align-items-center">
-                            <span class="rounded-circle bg-warning bg-opacity-10 p-2 me-3">
-                                <i class="fas fa-wallet text-warning"></i>
-                            </span>
-                            <div>
-                                <strong>Account Summary</strong>
-                                <div class="small text-muted">Check your accounts</div>
-                            </div>
-                        </a>
-                        <a href="{{ url_for('web.main.transactions') }}" class="list-group-item list-group-item-action d-flex align-items-center">
-                            <span class="rounded-circle bg-secondary bg-opacity-10 p-2 me-3">
-                                <i class="fas fa-list-alt text-secondary"></i>
-                            </span>
-                            <div>
-                                <strong>View Transactions</strong>
-                                <div class="small text-muted">See your transaction history</div>
-                            </div>
-                        </a>
+                    <div class="row g-3">
+                        <div class="col-6 col-md-4">
+                            <a href="{{ url_for('web.main.new_payment') }}" class="text-decoration-none">
+                                <div class="card bg-white h-100 text-center py-3">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="icon-box bg-purple-light rounded-circle p-3 mb-2">
+                                            <i class="fas fa-dollar-sign text-purple fa-2x"></i>
+                                        </div>
+                                        <h6 class="text-purple mb-0">Make Payment</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <a href="{{ url_for('web.ach.new_ach_transfer') }}" class="text-decoration-none">
+                                <div class="card bg-white h-100 text-center py-3">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="icon-box bg-green-light rounded-circle p-3 mb-2">
+                                            <i class="fas fa-money-bill-wave text-green fa-2x"></i>
+                                        </div>
+                                        <h6 class="text-green mb-0">ACH Transfer</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <a href="{{ url_for('web.swift.new_fund_transfer') }}" class="text-decoration-none">
+                                <div class="card bg-white h-100 text-center py-3">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="icon-box bg-blue-light rounded-circle p-3 mb-2">
+                                            <i class="fas fa-university text-blue fa-2x"></i>
+                                        </div>
+                                        <h6 class="text-blue mb-0">SWIFT Transfer</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <a href="{{ url_for('web.documents.document_center') }}" class="text-decoration-none">
+                                <div class="card bg-white h-100 text-center py-3">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="icon-box bg-amber-light rounded-circle p-3 mb-2">
+                                            <i class="fas fa-file-alt text-amber fa-2x"></i>
+                                        </div>
+                                        <h6 class="text-amber mb-0">Document Center</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <a href="{{ url_for('correspondent.onboarding') }}" class="text-decoration-none">
+                                <div class="card bg-white h-100 text-center py-3">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="icon-box bg-red-light rounded-circle p-3 mb-2">
+                                            <i class="fas fa-handshake text-red fa-2x"></i>
+                                        </div>
+                                        <h6 class="text-red mb-0">Banking Partners</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <a href="{{ url_for('institutional.institutional_dashboard') }}" class="text-decoration-none">
+                                <div class="card bg-white h-100 text-center py-3">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="icon-box bg-teal-light rounded-circle p-3 mb-2">
+                                            <i class="fas fa-landmark text-teal fa-2x"></i>
+                                        </div>
+                                        <h6 class="text-teal mb-0">Institutional Agreements</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4 mx-auto">
+                            <a href="{{ url_for('web.main.transactions') }}" class="text-decoration-none">
+                                <div class="card bg-white h-100 text-center py-3">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="icon-box bg-gray-light rounded-circle p-3 mb-2">
+                                            <i class="fas fa-list text-gray fa-2x"></i>
+                                        </div>
+                                        <h6 class="text-gray mb-0">View Transactions</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
