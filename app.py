@@ -803,6 +803,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering Healthcheck routes: {str(e)}")
             
+        # Register Payment routes for all account types
+        try:
+            from routes.payment_routes import payment_bp
+            app.register_blueprint(payment_bp)
+            logger.info("Payment routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Payment routes: {str(e)}")
+            logger.warning("Application will run without Payment functionality")
+            
         # Register Static routes for special files (favicon, robots.txt)
         try:
             from routes.static_routes import register_static_routes

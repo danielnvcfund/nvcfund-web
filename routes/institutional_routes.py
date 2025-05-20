@@ -75,10 +75,20 @@ def create_institutional_account_route():
                 currencies=[c.name for c in CurrencyType]
             )
             
-        # Create the institutional account - currency can now be string
+        # Convert string currency to CurrencyType enum
+        try:
+            currency_enum = CurrencyType[currency]
+        except (KeyError, ValueError):
+            flash(f"Invalid currency: {currency}", "danger")
+            return render_template(
+                'institutional/create_account.html',
+                currencies=[c.name for c in CurrencyType]
+            )
+            
+        # Create the institutional account with enum value
         institutional_account = create_institutional_account(
             account_holder=account_holder,
-            currency=currency
+            currency=currency_enum
         )
         
         if institutional_account:
@@ -122,10 +132,20 @@ def create_correspondent_account_route():
         # Determine if Nostro or Vostro based on form selection
         is_nostro = (account_type == 'nostro')
         
-        # Create the correspondent account
+        # Convert string currency to CurrencyType enum
+        try:
+            currency_enum = CurrencyType[currency]
+        except (KeyError, ValueError):
+            flash(f"Invalid currency: {currency}", "danger")
+            return render_template(
+                'institutional/create_correspondent.html',
+                currencies=[c.name for c in CurrencyType]
+            )
+            
+        # Create the correspondent account with enum value
         correspondent_account = create_correspondent_account(
             account_holder=account_holder,
-            currency=currency,
+            currency=currency_enum,
             nostro=is_nostro
         )
         
