@@ -238,7 +238,7 @@ def create_institutional_account(account_holder, currency=CurrencyType.USD, auto
     
     Args:
         account_holder: AccountHolder object to create account for
-        currency: Currency for the new account
+        currency: Currency for the new account (either CurrencyType enum or string)
         auto_commit: Whether to commit changes to the database
         
     Returns:
@@ -247,6 +247,14 @@ def create_institutional_account(account_holder, currency=CurrencyType.USD, auto
     if not account_holder:
         logger.error("Cannot create institutional account: No account holder provided")
         return None
+        
+    # Handle string currency
+    if isinstance(currency, str):
+        try:
+            currency = getattr(CurrencyType, currency)
+        except (AttributeError, TypeError):
+            logger.error(f"Invalid currency: {currency}")
+            return None
         
     try:
         # Generate a specialized name for institutional accounts
@@ -284,7 +292,7 @@ def create_correspondent_account(account_holder, currency=CurrencyType.USD, nost
     
     Args:
         account_holder: AccountHolder object to create account for
-        currency: Currency for the new account
+        currency: Currency for the new account (either CurrencyType enum or string)
         nostro: If True, creates a nostro account (we hold with them), 
                 otherwise creates a vostro account (they hold with us)
         auto_commit: Whether to commit changes to the database
@@ -295,7 +303,15 @@ def create_correspondent_account(account_holder, currency=CurrencyType.USD, nost
     if not account_holder:
         logger.error("Cannot create correspondent account: No account holder provided")
         return None
-        
+    
+    # Handle string currency
+    if isinstance(currency, str):
+        try:
+            currency = getattr(CurrencyType, currency)
+        except (AttributeError, TypeError):
+            logger.error(f"Invalid currency: {currency}")
+            return None
+    
     account_type = AccountType.NOSTRO if nostro else AccountType.VOSTRO
     
     try:

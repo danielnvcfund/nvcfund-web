@@ -25,23 +25,21 @@ def institutional_dashboard():
     # Get all institutional and correspondent accounts
     institutional_accounts = BankAccount.query.filter_by(
         account_holder_id=account_holder.id,
-        account_type="institutional"
+        account_type=AccountType.INSTITUTIONAL
     ).all()
     
     nostro_accounts = BankAccount.query.filter_by(
         account_holder_id=account_holder.id,
-        account_type="nostro"
+        account_type=AccountType.NOSTRO
     ).all()
     
     vostro_accounts = BankAccount.query.filter_by(
         account_holder_id=account_holder.id,
-        account_type="vostro"
+        account_type=AccountType.VOSTRO
     ).all()
     
-    correspondent_accounts = BankAccount.query.filter_by(
-        account_holder_id=account_holder.id,
-        account_type="correspondent"
-    ).all()
+    # We don't use CORRESPONDENT type directly, accounts are either NOSTRO or VOSTRO
+    correspondent_accounts = nostro_accounts + vostro_accounts
     
     return render_template(
         'institutional/dashboard.html',
@@ -69,13 +67,18 @@ def create_institutional_account_route():
         # Get form data
         currency = request.form.get('currency')
         
-        # Convert currency string to CurrencyType enum
-        selected_currency = getattr(CurrencyType, currency)
-        
-        # Create the institutional account
+        # Check if currency is provided
+        if not currency:
+            flash("Please select a currency for the account", "danger")
+            return render_template(
+                'institutional/create_account.html',
+                currencies=[c.name for c in CurrencyType]
+            )
+            
+        # Create the institutional account - currency can now be string
         institutional_account = create_institutional_account(
             account_holder=account_holder,
-            currency=selected_currency
+            currency=currency
         )
         
         if institutional_account:
@@ -108,8 +111,13 @@ def create_correspondent_account_route():
         currency = request.form.get('currency')
         account_type = request.form.get('account_type')
         
-        # Convert currency string to CurrencyType enum
-        selected_currency = getattr(CurrencyType, currency)
+        # Check if currency and account type are provided
+        if not currency or not account_type:
+            flash("Please select both a currency and account type", "danger")
+            return render_template(
+                'institutional/create_correspondent.html',
+                currencies=[c.name for c in CurrencyType]
+            )
         
         # Determine if Nostro or Vostro based on form selection
         is_nostro = (account_type == 'nostro')
@@ -117,7 +125,7 @@ def create_correspondent_account_route():
         # Create the correspondent account
         correspondent_account = create_correspondent_account(
             account_holder=account_holder,
-            currency=selected_currency,
+            currency=currency,
             nostro=is_nostro
         )
         
