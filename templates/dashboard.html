@@ -5,94 +5,139 @@
 {% block content %}
 <div class="container">
     <!-- Dashboard Header with Welcome Message -->
-    <div class="bg-dark bg-opacity-10 rounded-3 mb-4 p-4 border border-1 border-primary border-opacity-25 shadow-sm">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="display-6 fw-bold mb-1">
-                    <i class="fas fa-tachometer-alt me-2 text-primary"></i>Dashboard
-                </h1>
-                <p class="lead text-muted mb-0">Welcome back, {{ user.username }}!</p>
-            </div>
-            <div class="d-flex gap-2">
-                {% if user.username in ['admin', 'headadmin'] %}
-                    <a href="{{ url_for('web.main.admin_dashboard') }}" class="btn btn-info btn-lg shadow-sm me-2">
-                        <i class="fas fa-user-shield me-1"></i> View Admin Dashboard
-                    </a>
-                    <a href="{{ url_for('institutional.institutional_dashboard') }}" class="btn btn-danger btn-lg shadow-sm me-2">
-                        <i class="fas fa-landmark me-1"></i> Financial Institutions
-                    </a>
-                {% endif %}
-                <div class="btn-group me-2">
-                    <a href="{{ url_for('web.main.new_payment') }}" class="btn btn-primary btn-lg shadow-sm">
-                        <i class="fas fa-credit-card me-1"></i> Make Payment
-                    </a>
-                    <a href="{{ url_for('web.ach.new_ach_transfer') }}" class="btn btn-success btn-lg shadow-sm">
-                        <i class="fas fa-money-bill-wave me-1"></i> ACH Transfer
-                    </a>
-                    <a href="{{ url_for('correspondent.onboarding') }}" class="btn btn-info btn-lg shadow-sm">
-                        <i class="fas fa-university me-1"></i> Correspondent Banking
-                    </a>
-                    <a href="{{ url_for('dashboard.account_summary') }}" class="btn btn-warning btn-lg shadow-sm">
-                        <i class="fas fa-wallet me-1"></i> View Your Accounts
-                    </a>
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body p-4 bg-gradient-dark text-white">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="rounded-circle bg-white p-2 me-3">
+                            <i class="fas fa-tachometer-alt text-dark"></i>
+                        </div>
+                        <h1 class="display-6 fw-bold mb-0 text-white">Dashboard</h1>
+                    </div>
+                    <p class="lead mb-0 ms-5 ps-1">Welcome back, {{ user.username }}!</p>
                 </div>
+                <div class="col-md-6">
+                    <div class="d-flex flex-wrap justify-content-md-end gap-2 mt-3 mt-md-0">
+                        {% if user.username in ['admin', 'headadmin'] %}
+                            <a href="{{ url_for('web.main.admin_dashboard') }}" class="btn btn-info shadow-sm">
+                                <i class="fas fa-user-shield me-1"></i> Admin Dashboard
+                            </a>
+                            <a href="{{ url_for('institutional.institutional_dashboard') }}" class="btn btn-danger shadow-sm">
+                                <i class="fas fa-landmark me-1"></i> Financial Institutions
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('dashboard.account_summary') }}" class="btn btn-light shadow-sm">
+                            <i class="fas fa-wallet me-1"></i> Your Accounts
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-light p-0">
+            <div class="d-flex flex-wrap">
+                <a href="{{ url_for('web.main.new_payment') }}" class="flex-fill btn btn-lg btn-outline-primary rounded-0 border-0">
+                    <i class="fas fa-credit-card me-1"></i> Make Payment
+                </a>
+                <a href="{{ url_for('web.ach.new_ach_transfer') }}" class="flex-fill btn btn-lg btn-outline-success rounded-0 border-0">
+                    <i class="fas fa-money-bill-wave me-1"></i> ACH Transfer
+                </a>
+                <a href="{{ url_for('correspondent.onboarding') }}" class="flex-fill btn btn-lg btn-outline-info rounded-0 border-0">
+                    <i class="fas fa-university me-1"></i> Correspondent Banking
+                </a>
+                <a href="{{ url_for('currency_exchange.index') }}" class="flex-fill btn btn-lg btn-outline-warning rounded-0 border-0">
+                    <i class="fas fa-exchange-alt me-1"></i> Currency Exchange
+                </a>
             </div>
         </div>
     </div>
     
     <!-- NVCT Exchange System Panel -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-success bg-gradient text-white">
-            <h5 class="card-title mb-0"><i class="fas fa-exchange-alt me-2"></i>NVCT Simplified Exchange System</h5>
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header bg-success text-white">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-white bg-opacity-25 p-2 me-3">
+                    <i class="fas fa-exchange-alt text-white"></i>
+                </div>
+                <h5 class="card-title mb-0">NVCT Simplified Exchange System</h5>
+            </div>
         </div>
-        <div class="card-body py-3">
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i> NVCT is our central currency for all exchanges, paired 1:1 with USD for easy conversion.
+        <div class="card-body p-4">
+            <div class="alert alert-success bg-success bg-opacity-10 border-0 mb-4">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas fa-info-circle fa-2x text-success"></i>
+                    </div>
+                    <div>
+                        <h5 class="alert-heading mb-1">1:1 USD Pegged Currency</h5>
+                        <p class="mb-0">NVCT is our central currency for all exchanges, paired 1:1 with USD for seamless global transactions.</p>
+                    </div>
+                </div>
             </div>
             
-            <div class="row g-3 mb-3">
+            <div class="row g-4 mb-4">
                 <div class="col-md-3">
-                    <div class="card border-0 bg-light h-100">
-                        <div class="card-body text-center">
-                            <h6 class="text-success mb-1">USD</h6>
+                    <div class="card h-100 border-0 shadow-sm bg-white">
+                        <div class="card-header bg-success bg-opacity-10 text-center border-0">
+                            <div class="d-flex justify-content-center">
+                                <img src="https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/US.svg" width="24" class="me-2" alt="USD">
+                                <h6 class="text-success mb-0 fw-bold">USD</h6>
+                            </div>
+                        </div>
+                        <div class="card-body text-center py-4">
                             <span class="display-6 fw-bold">1.00</span>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card border-0 bg-light h-100">
-                        <div class="card-body text-center">
-                            <h6 class="text-primary mb-1">EUR</h6>
+                    <div class="card h-100 border-0 shadow-sm bg-white">
+                        <div class="card-header bg-primary bg-opacity-10 text-center border-0">
+                            <div class="d-flex justify-content-center">
+                                <img src="https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/EU.svg" width="24" class="me-2" alt="EUR">
+                                <h6 class="text-primary mb-0 fw-bold">EUR</h6>
+                            </div>
+                        </div>
+                        <div class="card-body text-center py-4">
                             <span class="display-6 fw-bold">0.89</span>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card border-0 bg-light h-100">
-                        <div class="card-body text-center">
-                            <h6 class="text-warning mb-1">BTC</h6>
+                    <div class="card h-100 border-0 shadow-sm bg-white">
+                        <div class="card-header bg-warning bg-opacity-10 text-center border-0">
+                            <div class="d-flex justify-content-center">
+                                <i class="fab fa-bitcoin text-warning me-2"></i>
+                                <h6 class="text-warning mb-0 fw-bold">BTC</h6>
+                            </div>
+                        </div>
+                        <div class="card-body text-center py-4">
                             <span class="display-6 fw-bold">0.000017</span>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card border-0 bg-light h-100">
-                        <div class="card-body text-center">
-                            <h6 class="text-secondary mb-1">AFD1</h6>
+                    <div class="card h-100 border-0 shadow-sm bg-white">
+                        <div class="card-header bg-secondary bg-opacity-10 text-center border-0">
+                            <div class="d-flex justify-content-center">
+                                <i class="fas fa-coins text-secondary me-2"></i>
+                                <h6 class="text-secondary mb-0 fw-bold">AFD1</h6>
+                            </div>
+                        </div>
+                        <div class="card-body text-center py-4">
                             <span class="display-6 fw-bold">339.40</span>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                <a href="{{ url_for('currency_exchange.rates') }}" class="btn btn-outline-success">
+            <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+                <a href="{{ url_for('currency_exchange.rates') }}" class="btn btn-outline-success rounded-pill">
                     <i class="fas fa-list me-1"></i> View All Rates
                 </a>
-                <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-success">
+                <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-success rounded-pill">
                     <i class="fas fa-exchange-alt me-1"></i> Convert Currency
                 </a>
-                <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-outline-success">
+                <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-outline-success rounded-pill">
                     <i class="fas fa-history me-1"></i> Exchange History
                 </a>
             </div>
@@ -100,36 +145,50 @@
     </div>
     
     <!-- NVC Fund Market Position Statistics -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-primary bg-gradient text-white">
-            <h5 class="card-title mb-0"><i class="fas fa-chart-line me-2"></i>NVC Fund Global Market Position</h5>
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header bg-dark text-white">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-white bg-opacity-25 p-2 me-3">
+                    <i class="fas fa-chart-line text-white"></i>
+                </div>
+                <h5 class="card-title mb-0">NVC Fund Global Market Position</h5>
+            </div>
         </div>
-        <div class="card-body py-3">
-            <div class="row g-3">
+        <div class="card-body py-4">
+            <div class="row g-4">
                 <div class="col-md-4">
-                    <div class="card h-100 border-primary border-top border-3">
-                        <div class="card-body text-center">
-                            <h6 class="text-muted mb-1">Total Assets</h6>
-                            <h2 class="display-5 fw-bold text-primary mb-0">$10+ Trillion</h2>
-                            <p class="small text-muted mt-2">Exceeds major global banking institutions</p>
+                    <div class="card h-100 border-0 bg-primary bg-opacity-10 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-block mb-3">
+                                <i class="fas fa-landmark fa-2x text-primary"></i>
+                            </div>
+                            <h6 class="text-dark mb-3">Total Assets</h6>
+                            <h2 class="display-6 fw-bold text-primary mb-2">$10+ Trillion</h2>
+                            <p class="text-muted mb-0">Exceeds major global banking institutions</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card h-100 border-primary border-top border-3">
-                        <div class="card-body text-center">
-                            <h6 class="text-muted mb-1">Market Capitalization</h6>
-                            <h2 class="display-5 fw-bold text-primary mb-0">$1+ Trillion</h2>
-                            <p class="small text-muted mt-2">Among world's largest financial institutions</p>
+                    <div class="card h-100 border-0 bg-success bg-opacity-10 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="rounded-circle bg-success bg-opacity-10 p-3 d-inline-block mb-3">
+                                <i class="fas fa-chart-pie fa-2x text-success"></i>
+                            </div>
+                            <h6 class="text-dark mb-3">Market Capitalization</h6>
+                            <h2 class="display-6 fw-bold text-success mb-2">$1+ Trillion</h2>
+                            <p class="text-muted mb-0">Among world's largest financial institutions</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card h-100 border-primary border-top border-3">
-                        <div class="card-body text-center">
-                            <h6 class="text-muted mb-1">Annual Revenue</h6>
-                            <h2 class="display-5 fw-bold text-primary mb-0">$289 Billion</h2>
-                            <p class="small text-muted mt-2">Top-ranked global financial services company</p>
+                    <div class="card h-100 border-0 bg-info bg-opacity-10 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="rounded-circle bg-info bg-opacity-10 p-3 d-inline-block mb-3">
+                                <i class="fas fa-hand-holding-usd fa-2x text-info"></i>
+                            </div>
+                            <h6 class="text-dark mb-3">Annual Revenue</h6>
+                            <h2 class="display-6 fw-bold text-info mb-2">$289 Billion</h2>
+                            <p class="text-muted mb-0">Top-ranked global financial services company</p>
                         </div>
                     </div>
                 </div>
