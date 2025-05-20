@@ -30,7 +30,7 @@
                                     {% for account in accounts %}
                                     <tr>
                                         <td style="font-family: monospace;">{{ account.account_number }}</td>
-                                        <td>{{ account.account_type.name.capitalize() }}</td>
+                                        <td>{{ account.account_type.value.capitalize() }}</td>
                                         <td>{{ account.currency.name }}</td>
                                         <td>
                                             {% if account.currency.name == 'USD' %}${% endif %}

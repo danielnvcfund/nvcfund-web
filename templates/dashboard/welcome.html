@@ -1,0 +1,131 @@
+{% extends 'layout.html' %}
+
+{% block title %}Welcome to NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Welcome Header -->
+    <div class="bg-dark bg-opacity-10 rounded-3 mb-4 p-4 border border-1 border-primary border-opacity-25 shadow-sm">
+        <h1 class="display-6 fw-bold mb-1">
+            <i class="fas fa-handshake me-2 text-primary"></i>Welcome to NVC Banking
+        </h1>
+        <p class="lead text-muted mb-0">Let's get you set up with your new accounts.</p>
+    </div>
+
+    <!-- Main Content Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-primary bg-gradient text-white">
+            <h5 class="card-title mb-0"><i class="fas fa-university me-2"></i>Complete Your Banking Setup</h5>
+        </div>
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-md-8">
+                    <h4 class="mb-3">Your Bank Accounts Are Waiting</h4>
+                    
+                    <p class="text-muted">
+                        We've made banking easier than ever. Our automated system will create the following accounts for you:
+                    </p>
+                    
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item d-flex align-items-center">
+                            <span class="badge bg-primary rounded-pill me-3">1</span>
+                            <div>
+                                <h6 class="mb-0">NVCT Primary Account</h6>
+                                <small class="text-muted">Your main NVC Token account</small>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <span class="badge bg-primary rounded-pill me-3">2</span>
+                            <div>
+                                <h6 class="mb-0">USD Account</h6>
+                                <small class="text-muted">For US Dollar transactions</small>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <span class="badge bg-primary rounded-pill me-3">3</span>
+                            <div>
+                                <h6 class="mb-0">EUR Account</h6>
+                                <small class="text-muted">For Euro transactions</small>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <span class="badge bg-primary rounded-pill me-3">4</span>
+                            <div>
+                                <h6 class="mb-0">Crypto Custody Account</h6>
+                                <small class="text-muted">For cryptocurrency holdings</small>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <span class="badge bg-primary rounded-pill me-3">5</span>
+                            <div>
+                                <h6 class="mb-0">Business Account</h6>
+                                <small class="text-muted">(If applicable)</small>
+                            </div>
+                        </li>
+                    </ul>
+                    
+                    <div class="alert alert-info mb-4">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-info-circle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5 class="alert-heading">Account Number Format</h5>
+                                <p class="mb-0">
+                                    Each account will have a unique number in the format:<br>
+                                    <code>NVC-GL-XX-YYMM-XXXXXXXX</code><br>
+                                    Where XX is the account type code (CH for checking, SV for savings, etc.), YYMM is the current year/month, and XXXXXXXX is a unique identifier.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-3 d-md-flex">
+                        <a href="{{ url_for('dashboard.accounts') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-university me-2"></i> Create My Accounts Now
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card bg-light h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-shield-alt text-primary me-2"></i>
+                                Account Security
+                            </h5>
+                            
+                            <p class="card-text">
+                                Your NVC accounts are protected with industry-leading security features:
+                            </p>
+                            
+                            <ul class="list-group list-group-flush mb-4">
+                                <li class="list-group-item bg-transparent px-0">
+                                    <i class="fas fa-lock text-success me-2"></i>
+                                    256-bit encryption
+                                </li>
+                                <li class="list-group-item bg-transparent px-0">
+                                    <i class="fas fa-fingerprint text-success me-2"></i>
+                                    Multi-factor authentication
+                                </li>
+                                <li class="list-group-item bg-transparent px-0">
+                                    <i class="fas fa-shield-alt text-success me-2"></i>
+                                    24/7 fraud monitoring
+                                </li>
+                                <li class="list-group-item bg-transparent px-0">
+                                    <i class="fas fa-user-shield text-success me-2"></i>
+                                    Private blockchain transactions
+                                </li>
+                            </ul>
+                            
+                            <div class="text-center mt-auto">
+                                <img src="/static/images/secure-banking.svg" alt="Secure Banking" class="img-fluid" style="max-height: 180px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

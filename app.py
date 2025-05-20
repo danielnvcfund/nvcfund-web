@@ -420,6 +420,22 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering account management routes: {str(e)}")
             
+        # Register Banking Account routes
+        try:
+            from routes.account_routes import account_bp as banking_account_bp
+            app.register_blueprint(banking_account_bp)
+            logger.info("Banking account routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering banking account routes: {str(e)}")
+            
+        # Register Direct Account Generation routes
+        try:
+            from routes.direct_account_routes import direct_bp
+            app.register_blueprint(direct_bp)
+            logger.info("Direct account generation routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering direct account generation routes: {str(e)}")
+            
         # Register Dashboard routes
         try:
             from routes.dashboard_routes import dashboard_bp
