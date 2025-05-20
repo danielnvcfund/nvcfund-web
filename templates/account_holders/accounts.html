@@ -111,7 +111,7 @@
                     </div>
                     
                     <div class="mt-4">
-                        <a href="{{ url_for('currency_exchange.account_holder_exchange', account_holder_id=account_holder.id) }}" class="btn btn-success">
+                        <a href="{{ url_for('account_holders.view', account_holder_id=account_holder.id) }}" class="btn btn-success">
                             <i class="fa fa-exchange-alt"></i> Currency Exchange
                         </a>
                         <a href="{{ url_for('account_holders.view', account_holder_id=account_holder.id) }}" class="btn btn-primary">Back to Account Holder</a>
