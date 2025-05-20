@@ -420,6 +420,14 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering account management routes: {str(e)}")
             
+        # Register Dashboard routes
+        try:
+            from routes.dashboard_routes import dashboard_bp
+            app.register_blueprint(dashboard_bp)
+            logger.info("Dashboard routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering dashboard routes: {str(e)}")
+            
             # Register NVC Platform integration admin routes
             from routes.nvc_platform_admin_routes import nvc_platform_admin_bp
             app.register_blueprint(nvc_platform_admin_bp)
