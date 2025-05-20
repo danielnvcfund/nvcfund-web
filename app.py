@@ -500,6 +500,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering SWIFT GPI routes: {str(e)}")
             logger.warning("Application will run without SWIFT GPI functionality")
+            
+        # Register Simplified Exchange routes
+        try:
+            from routes.simplified_exchange_routes import register_routes as register_exchange_routes
+            register_exchange_routes(app)
+            logger.info("Simplified Exchange routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Simplified Exchange routes: {str(e)}")
+            logger.warning("Application will run without Simplified Exchange functionality")
         
         # Register Server-to-Server routes
         try:

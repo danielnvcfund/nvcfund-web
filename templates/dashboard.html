@@ -40,6 +40,65 @@
         </div>
     </div>
     
+    <!-- NVCT Exchange System Panel -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-success bg-gradient text-white">
+            <h5 class="card-title mb-0"><i class="fas fa-exchange-alt me-2"></i>NVCT Simplified Exchange System</h5>
+        </div>
+        <div class="card-body py-3">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> NVCT is our central currency for all exchanges, paired 1:1 with USD for easy conversion.
+            </div>
+            
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body text-center">
+                            <h6 class="text-success mb-1">USD</h6>
+                            <span class="display-6 fw-bold">1.00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body text-center">
+                            <h6 class="text-primary mb-1">EUR</h6>
+                            <span class="display-6 fw-bold">0.89</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body text-center">
+                            <h6 class="text-warning mb-1">BTC</h6>
+                            <span class="display-6 fw-bold">0.000017</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body text-center">
+                            <h6 class="text-secondary mb-1">AFD1</h6>
+                            <span class="display-6 fw-bold">339.40</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="{{ url_for('exchange.rates') }}" class="btn btn-outline-success">
+                    <i class="fas fa-list me-1"></i> View All Rates
+                </a>
+                <a href="{{ url_for('exchange.convert') }}" class="btn btn-success">
+                    <i class="fas fa-exchange-alt me-1"></i> Convert Currency
+                </a>
+                <a href="{{ url_for('exchange.history') }}" class="btn btn-outline-success">
+                    <i class="fas fa-history me-1"></i> Exchange History
+                </a>
+            </div>
+        </div>
+    </div>
+    
     <!-- NVC Fund Market Position Statistics -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-header bg-primary bg-gradient text-white">

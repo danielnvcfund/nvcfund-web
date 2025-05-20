@@ -1,0 +1,204 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    {{ title }} - NVC Banking Platform
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Convert Currency</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i> Convert between your accounts using NVCT as the central exchange currency.
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('exchange.convert') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="from_account" class="form-label">From Account</label>
+                                <select class="form-select" id="from_account" name="from_account" required>
+                                    <option value="">Select source account</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.id }}" data-currency="{{ account.currency.value }}" data-balance="{{ account.balance }}">
+                                        {{ account.account_name }} ({{ account.account_number }}) - {{ account.currency.value }} {{ '{:,.2f}'.format(account.balance) }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted available-balance">Available: <span id="from_balance">0.00</span></small>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="to_account" class="form-label">To Account</label>
+                                <select class="form-select" id="to_account" name="to_account" required>
+                                    <option value="">Select destination account</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.id }}" data-currency="{{ account.currency.value }}">
+                                        {{ account.account_name }} ({{ account.account_number }}) - {{ account.currency.value }} {{ '{:,.2f}'.format(account.balance) }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="amount" class="form-label">Amount to Convert</label>
+                                <div class="input-group">
+                                    <span class="input-group-text" id="from_currency_symbol">$</span>
+                                    <input type="number" step="0.01" min="0.01" class="form-control" id="amount" name="amount" required placeholder="0.00">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="converted_amount" class="form-label">Converted Amount (Estimated)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text" id="to_currency_symbol">$</span>
+                                    <input type="text" class="form-control" id="converted_amount" readonly placeholder="0.00">
+                                </div>
+                                <small class="text-muted">Exchange Rate: <span id="exchange_rate">1.00</span></small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-exchange-alt me-2"></i>Convert Currency
+                            </button>
+                            <a href="{{ url_for('exchange.rates') }}" class="btn btn-info">
+                                <i class="fas fa-list me-2"></i>View Exchange Rates
+                            </a>
+                            <a href="{{ url_for('web.main.dashboard') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fromAccountSelect = document.getElementById('from_account');
+        const toAccountSelect = document.getElementById('to_account');
+        const amountInput = document.getElementById('amount');
+        const convertedAmountInput = document.getElementById('converted_amount');
+        const fromBalanceSpan = document.getElementById('from_balance');
+        const exchangeRateSpan = document.getElementById('exchange_rate');
+        const fromCurrencySymbol = document.getElementById('from_currency_symbol');
+        const toCurrencySymbol = document.getElementById('to_currency_symbol');
+        
+        // Update source account balance display
+        fromAccountSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.value) {
+                const balance = selectedOption.getAttribute('data-balance');
+                const currency = selectedOption.getAttribute('data-currency');
+                fromBalanceSpan.textContent = `${currency} ${parseFloat(balance).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                fromCurrencySymbol.textContent = currency;
+                
+                // Reset amount
+                amountInput.value = '';
+                convertedAmountInput.value = '';
+                
+                // Update exchange rate if both accounts selected
+                if (toAccountSelect.value) {
+                    updateExchangeRate();
+                }
+            } else {
+                fromBalanceSpan.textContent = '0.00';
+                fromCurrencySymbol.textContent = '$';
+            }
+        });
+        
+        // Update destination currency symbol
+        toAccountSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.value) {
+                const currency = selectedOption.getAttribute('data-currency');
+                toCurrencySymbol.textContent = currency;
+                
+                // Reset converted amount
+                convertedAmountInput.value = '';
+                
+                // Update exchange rate if both accounts selected
+                if (fromAccountSelect.value) {
+                    updateExchangeRate();
+                }
+            } else {
+                toCurrencySymbol.textContent = '$';
+            }
+        });
+        
+        // Update converted amount when amount changes
+        amountInput.addEventListener('input', function() {
+            if (fromAccountSelect.value && toAccountSelect.value && this.value) {
+                calculateConvertedAmount();
+            } else {
+                convertedAmountInput.value = '';
+            }
+        });
+        
+        // Function to get exchange rate from the server
+        function updateExchangeRate() {
+            const fromCurrency = fromAccountSelect.options[fromAccountSelect.selectedIndex].getAttribute('data-currency');
+            const toCurrency = toAccountSelect.options[toAccountSelect.selectedIndex].getAttribute('data-currency');
+            
+            if (fromCurrency && toCurrency) {
+                fetch(`/exchange/rate/${fromCurrency}/${toCurrency}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            exchangeRateSpan.textContent = `1 ${fromCurrency} = ${data.rate.toFixed(4)} ${toCurrency}`;
+                            
+                            // Recalculate amount if it exists
+                            if (amountInput.value) {
+                                calculateConvertedAmount();
+                            }
+                        } else {
+                            exchangeRateSpan.textContent = 'Rate not available';
+                            convertedAmountInput.value = '';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching exchange rate:', error);
+                        exchangeRateSpan.textContent = 'Error fetching rate';
+                    });
+            }
+        }
+        
+        // Function to calculate the converted amount
+        function calculateConvertedAmount() {
+            const fromCurrency = fromAccountSelect.options[fromAccountSelect.selectedIndex].getAttribute('data-currency');
+            const toCurrency = toAccountSelect.options[toAccountSelect.selectedIndex].getAttribute('data-currency');
+            const amount = parseFloat(amountInput.value);
+            
+            fetch(`/exchange/rate/${fromCurrency}/${toCurrency}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const rate = data.rate;
+                        const converted = amount * rate;
+                        convertedAmountInput.value = converted.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    } else {
+                        convertedAmountInput.value = 'Rate not available';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error calculating converted amount:', error);
+                    convertedAmountInput.value = 'Error';
+                });
+        }
+    });
+</script>
+{% endblock %}
