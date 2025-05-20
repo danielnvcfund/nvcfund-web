@@ -52,10 +52,121 @@
         </div>
     </div>
     
-    <!-- Quick Actions Widget - Centered -->
-    <div class="row mb-4">
-        <div class="col-lg-5 mx-auto">
-            <div class="card dashboard-widget border-0 bg-dark text-white shadow">
+    <!-- Main Dashboard Content -->
+    <div class="row g-4">
+        <!-- Left Column (8 cols) -->
+        <div class="col-lg-8">
+            <!-- Incomplete Transfers Section (will be populated dynamically) -->
+            
+            <!-- Recent Transactions Section -->
+            <div class="card dashboard-widget border-0 shadow mb-4">
+                <div class="card-header bg-gradient-primary text-white border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-white bg-opacity-25 p-2 me-3">
+                                <i class="fas fa-exchange-alt text-white"></i>
+                            </div>
+                            <h5 class="mb-0 fw-bold">Recent Transactions</h5>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('web.main.transactions') }}" class="btn btn-sm btn-light me-2">
+                                <i class="fas fa-list me-1"></i> View All
+                            </a>
+                            <button class="btn btn-sm btn-outline-light btn-refresh" data-target="recentTransactions">
+                                <i class="fas fa-sync-alt me-1"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th class="text-end pe-4">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentTransactions">
+                                {% if recent_transactions %}
+                                    {% for tx in recent_transactions[:5] %}
+                                    <tr class="transaction-row">
+                                        <td class="ps-4">
+                                            <a href="{{ url_for('web.main.transaction_details', transaction_id=tx.transaction_id) }}" class="fw-medium">
+                                                {{ tx.transaction_id[:8] }}...
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="rounded-circle p-2 me-2
+                                                    {% if tx.transaction_type.value == 'payment' %}bg-primary bg-opacity-10
+                                                    {% elif tx.transaction_type.value == 'deposit' %}bg-success bg-opacity-10
+                                                    {% elif tx.transaction_type.value == 'withdrawal' %}bg-warning bg-opacity-10
+                                                    {% elif tx.transaction_type.value == 'transfer' %}bg-info bg-opacity-10
+                                                    {% else %}bg-secondary bg-opacity-10{% endif %}">
+                                                    <i class="
+                                                        {% if tx.transaction_type.value == 'payment' %}fas fa-credit-card text-primary
+                                                        {% elif tx.transaction_type.value == 'deposit' %}fas fa-arrow-down text-success
+                                                        {% elif tx.transaction_type.value == 'withdrawal' %}fas fa-arrow-up text-warning
+                                                        {% elif tx.transaction_type.value == 'transfer' %}fas fa-exchange-alt text-info
+                                                        {% else %}fas fa-dot-circle text-secondary{% endif %}"></i>
+                                                </span>
+                                                <span>{{ tx.transaction_type.value|capitalize }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="fw-semibold {% if tx.transaction_type.value == 'withdrawal' %}text-danger{% else %}text-primary{% endif %}">
+                                            {% if tx.transaction_type.value == 'withdrawal' %}-{% endif %}{{ tx.amount|format_currency(tx.currency) }}
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if tx.status.value == 'completed' %}bg-success
+                                                {% elif tx.status.value == 'pending' %}bg-primary text-white
+                                                {% elif tx.status.value == 'processing' %}bg-info text-white
+                                                {% elif tx.status.value == 'failed' %}bg-danger
+                                                {% else %}bg-secondary{% endif %} status-badge">
+                                                <i class="{% if tx.status.value == 'completed' %}fas fa-check-circle
+                                                    {% elif tx.status.value == 'pending' %}fas fa-clock
+                                                    {% elif tx.status.value == 'processing' %}fas fa-sync fa-spin
+                                                    {% elif tx.status.value == 'failed' %}fas fa-times-circle
+                                                    {% else %}fas fa-question-circle{% endif %} me-1"></i>
+                                                {{ tx.status.value|capitalize }}
+                                            </span>
+                                        </td>
+                                        <td class="text-end pe-4">{{ tx.created_at.strftime('%b %d, %Y') }}</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            <p class="text-muted mb-3">
+                                                <i class="fas fa-info-circle fa-2x"></i>
+                                            </p>
+                                            <p class="mb-0">No recent transactions found</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">
+                                        <p class="text-muted mb-3">
+                                            <i class="fas fa-info-circle fa-2x"></i>
+                                        </p>
+                                        <p class="mb-0">No recent transactions found</p>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column (4 cols) -->
+        <div class="col-lg-4">
+            <!-- Quick Actions Widget -->
+            <div class="card dashboard-widget border-0 bg-dark text-white shadow mb-4">
                 <div class="card-header bg-dark border-0">
                     <div class="d-flex align-items-center">
                         <div class="rounded-circle bg-primary p-2 me-3">
@@ -73,7 +184,7 @@
                                         <div class="icon-box bg-purple-light rounded-circle p-3 mb-2">
                                             <i class="fas fa-dollar-sign text-purple fa-2x"></i>
                                         </div>
-                                        <h6 class="text-purple mb-0">Make Payment</h6>
+                                        <h6 class="text-purple mb-0">Payment</h6>
                                     </div>
                                 </div>
                             </a>
@@ -85,7 +196,7 @@
                                         <div class="icon-box bg-green-light rounded-circle p-3 mb-2">
                                             <i class="fas fa-money-bill-wave text-green fa-2x"></i>
                                         </div>
-                                        <h6 class="text-green mb-0">ACH Transfer</h6>
+                                        <h6 class="text-green mb-0">ACH</h6>
                                     </div>
                                 </div>
                             </a>
@@ -97,7 +208,7 @@
                                         <div class="icon-box bg-blue-light rounded-circle p-3 mb-2">
                                             <i class="fas fa-university text-blue fa-2x"></i>
                                         </div>
-                                        <h6 class="text-blue mb-0">SWIFT Transfer</h6>
+                                        <h6 class="text-blue mb-0">SWIFT</h6>
                                     </div>
                                 </div>
                             </a>
@@ -109,7 +220,7 @@
                                         <div class="icon-box bg-amber-light rounded-circle p-3 mb-2">
                                             <i class="fas fa-file-alt text-amber fa-2x"></i>
                                         </div>
-                                        <h6 class="text-amber mb-0">Documentation</h6>
+                                        <h6 class="text-amber mb-0">Docs</h6>
                                     </div>
                                 </div>
                             </a>
@@ -121,31 +232,19 @@
                                         <div class="icon-box bg-red-light rounded-circle p-3 mb-2">
                                             <i class="fas fa-handshake text-red fa-2x"></i>
                                         </div>
-                                        <h6 class="text-red mb-0">Banking Partners</h6>
+                                        <h6 class="text-red mb-0">Partners</h6>
                                     </div>
                                 </div>
                             </a>
                         </div>
                         <div class="col-6">
-                            <a href="{{ url_for('institutional.institutional_dashboard') }}" class="text-decoration-none">
+                            <a href="{{ url_for('currency_exchange.index') }}" class="text-decoration-none">
                                 <div class="card bg-white h-100 text-center py-3">
                                     <div class="d-flex flex-column align-items-center">
                                         <div class="icon-box bg-teal-light rounded-circle p-3 mb-2">
-                                            <i class="fas fa-landmark text-teal fa-2x"></i>
+                                            <i class="fas fa-exchange-alt text-teal fa-2x"></i>
                                         </div>
-                                        <h6 class="text-teal mb-0">Institutional</h6>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-6 mx-auto">
-                            <a href="{{ url_for('web.main.transactions') }}" class="text-decoration-none">
-                                <div class="card bg-white h-100 text-center py-3">
-                                    <div class="d-flex flex-column align-items-center">
-                                        <div class="icon-box bg-gray-light rounded-circle p-3 mb-2">
-                                            <i class="fas fa-list text-gray fa-2x"></i>
-                                        </div>
-                                        <h6 class="text-gray mb-0">Transactions</h6>
+                                        <h6 class="text-teal mb-0">Exchange</h6>
                                     </div>
                                 </div>
                             </a>
@@ -153,100 +252,87 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
     
-    <!-- NVCT Exchange System Panel -->
-    <div class="card border-0 shadow mb-4">
-        <div class="card-header bg-success text-white">
-            <div class="d-flex align-items-center">
-                <div class="rounded-circle bg-white bg-opacity-25 p-2 me-3">
-                    <i class="fas fa-exchange-alt text-white"></i>
-                </div>
-                <h5 class="card-title mb-0">NVCT Simplified Exchange System</h5>
-            </div>
-        </div>
-        <div class="card-body p-4">
-            <div class="alert alert-success bg-success bg-opacity-10 border-0 mb-4">
-                <div class="d-flex">
-                    <div class="me-3">
-                        <i class="fas fa-info-circle fa-2x text-success"></i>
-                    </div>
-                    <div>
-                        <h5 class="alert-heading mb-1">1:1 USD Pegged Currency</h5>
-                        <p class="mb-0">NVCT is our central currency for all exchanges, paired 1:1 with USD for seamless global transactions.</p>
+            <!-- NVCT Exchange System Panel -->
+            <div class="card border-0 shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-white bg-opacity-25 p-2 me-3">
+                            <i class="fas fa-exchange-alt text-white"></i>
+                        </div>
+                        <h5 class="card-title mb-0">NVCT Exchange System</h5>
                     </div>
                 </div>
-            </div>
-            
-            <div class="row g-4 mb-4">
-                <div class="col-md-3">
-                    <div class="card h-100 border-0 shadow-sm bg-white">
-                        <div class="card-header bg-success bg-opacity-10 text-center border-0">
-                            <div class="d-flex justify-content-center">
-                                <img src="https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/US.svg" width="24" class="me-2" alt="USD">
-                                <h6 class="text-success mb-0 fw-bold">USD</h6>
+                <div class="card-body p-3">
+                    <div class="alert alert-success bg-success bg-opacity-10 border-0 mb-3">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-info-circle fa-2x text-success"></i>
+                            </div>
+                            <div>
+                                <h5 class="alert-heading mb-1">1:1 USD Pegged Currency</h5>
+                                <p class="mb-0">NVCT is pegged 1:1 with USD for seamless global transactions.</p>
                             </div>
                         </div>
-                        <div class="card-body text-center py-4">
-                            <span class="display-6 fw-bold">1.00</span>
-                        </div>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card h-100 border-0 shadow-sm bg-white">
-                        <div class="card-header bg-primary bg-opacity-10 text-center border-0">
-                            <div class="d-flex justify-content-center">
-                                <img src="https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/EU.svg" width="24" class="me-2" alt="EUR">
-                                <h6 class="text-primary mb-0 fw-bold">EUR</h6>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <div class="card h-100 border-0 shadow-sm bg-white">
+                                <div class="card-body text-center py-2">
+                                    <div class="d-flex justify-content-center align-items-center mb-1">
+                                        <img src="https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/US.svg" width="20" class="me-2" alt="USD">
+                                        <h6 class="text-success mb-0 fw-bold">USD</h6>
+                                    </div>
+                                    <span class="fs-5 fw-bold">1.00</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="card-body text-center py-4">
-                            <span class="display-6 fw-bold">0.89</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card h-100 border-0 shadow-sm bg-white">
-                        <div class="card-header bg-warning bg-opacity-10 text-center border-0">
-                            <div class="d-flex justify-content-center">
-                                <i class="fab fa-bitcoin text-warning me-2"></i>
-                                <h6 class="text-warning mb-0 fw-bold">BTC</h6>
+                        <div class="col-6">
+                            <div class="card h-100 border-0 shadow-sm bg-white">
+                                <div class="card-body text-center py-2">
+                                    <div class="d-flex justify-content-center align-items-center mb-1">
+                                        <img src="https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/EU.svg" width="20" class="me-2" alt="EUR">
+                                        <h6 class="text-primary mb-0 fw-bold">EUR</h6>
+                                    </div>
+                                    <span class="fs-5 fw-bold">0.89</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="card-body text-center py-4">
-                            <span class="display-6 fw-bold">0.000017</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card h-100 border-0 shadow-sm bg-white">
-                        <div class="card-header bg-secondary bg-opacity-10 text-center border-0">
-                            <div class="d-flex justify-content-center">
-                                <i class="fas fa-coins text-secondary me-2"></i>
-                                <h6 class="text-secondary mb-0 fw-bold">AFD1</h6>
+                        <div class="col-6">
+                            <div class="card h-100 border-0 shadow-sm bg-white">
+                                <div class="card-body text-center py-2">
+                                    <div class="d-flex justify-content-center align-items-center mb-1">
+                                        <i class="fab fa-bitcoin text-warning me-2"></i>
+                                        <h6 class="text-warning mb-0 fw-bold">BTC</h6>
+                                    </div>
+                                    <span class="fs-5 fw-bold">0.000017</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="card-body text-center py-4">
-                            <span class="display-6 fw-bold">339.40</span>
+                        <div class="col-6">
+                            <div class="card h-100 border-0 shadow-sm bg-white">
+                                <div class="card-body text-center py-2">
+                                    <div class="d-flex justify-content-center align-items-center mb-1">
+                                        <i class="fas fa-coins text-secondary me-2"></i>
+                                        <h6 class="text-secondary mb-0 fw-bold">AFD1</h6>
+                                    </div>
+                                    <span class="fs-5 fw-bold">339.40</span>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2 justify-content-center">
+                        <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-sm btn-success">
+                            <i class="fas fa-exchange-alt me-1"></i> Convert
+                        </a>
+                        <a href="{{ url_for('currency_exchange.rates') }}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-list me-1"></i> View Rates
+                        </a>
                     </div>
                 </div>
             </div>
-            
-            <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
-                <a href="{{ url_for('currency_exchange.rates') }}" class="btn btn-outline-success rounded-pill">
-                    <i class="fas fa-list me-1"></i> View All Rates
-                </a>
-                <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-success rounded-pill">
-                    <i class="fas fa-exchange-alt me-1"></i> Convert Currency
-                </a>
-                <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-outline-success rounded-pill">
-                    <i class="fas fa-history me-1"></i> Exchange History
-                </a>
-            </div>
-        </div>
-    </div>
     
     <!-- NVC Fund Market Position Statistics -->
     <div class="card border-0 shadow mb-4">
