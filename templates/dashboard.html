@@ -86,13 +86,13 @@
             </div>
             
             <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                <a href="{{ url_for('currency_exchange.view_rates') }}" class="btn btn-outline-success">
+                <a href="{{ url_for('web.main.dashboard') }}#exchange" class="btn btn-outline-success">
                     <i class="fas fa-list me-1"></i> View All Rates
                 </a>
-                <a href="{{ url_for('currency_exchange.account_holder_exchange', account_holder_id=current_user.account_holder.id) }}" class="btn btn-success">
+                <a href="{{ url_for('web.main.dashboard') }}#convert" class="btn btn-success">
                     <i class="fas fa-exchange-alt me-1"></i> Convert Currency
                 </a>
-                <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-outline-success">
+                <a href="{{ url_for('web.main.dashboard') }}#history" class="btn btn-outline-success">
                     <i class="fas fa-history me-1"></i> Exchange History
                 </a>
             </div>
