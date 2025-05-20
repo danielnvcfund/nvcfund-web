@@ -675,6 +675,37 @@ pre {
     padding: 1.5rem;
 }
 
+/* Quick Actions Colors */
+.bg-purple-light { background-color: rgba(155, 89, 182, 0.1) !important; }
+.text-purple { color: #9b59b6 !important; }
+
+.bg-green-light { background-color: rgba(46, 204, 113, 0.1) !important; }
+.text-green { color: #2ecc71 !important; }
+
+.bg-blue-light { background-color: rgba(52, 152, 219, 0.1) !important; }
+.text-blue { color: #3498db !important; }
+
+.bg-amber-light { background-color: rgba(243, 156, 18, 0.1) !important; }
+.text-amber { color: #f39c12 !important; }
+
+.bg-red-light { background-color: rgba(231, 76, 60, 0.1) !important; }
+.text-red { color: #e74c3c !important; }
+
+.bg-teal-light { background-color: rgba(26, 188, 156, 0.1) !important; }
+.text-teal { color: #1abc9c !important; }
+
+.bg-gray-light { background-color: rgba(127, 140, 141, 0.1) !important; }
+.text-gray { color: #7f8c8d !important; }
+
+/* Icon box styles */
+.icon-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+}
+
 .quick-stats-card {
     position: relative;
     overflow: hidden;
