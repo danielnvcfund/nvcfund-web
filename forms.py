@@ -280,6 +280,11 @@ class SwiftFundTransferForm(FlaskForm):
     """Form for SWIFT fund transfer (MT103) message"""
     sender_institution_id = SelectField('Sending Institution', coerce=int, validators=[DataRequired()])
     receiver_institution_id = SelectField('Receiving Institution', coerce=int, validators=[DataRequired()])
+    receiver_institution_name = StringField('Receiving Institution Name', validators=[Length(max=140)])
+    is_financial_institution = RadioField('Transfer Type', choices=[
+        ('0', 'Customer Transfer (MT103)'), 
+        ('1', 'Financial Institution Transfer (MT202)')
+    ], default='0')
     transaction_reference = StringField('Transaction Reference', validators=[DataRequired(), Length(min=8, max=16)])
     amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0.01)])
     currency = SelectField('Currency', choices=[
@@ -287,17 +292,38 @@ class SwiftFundTransferForm(FlaskForm):
         ('JPY', 'JPY'), ('CNY', 'CNY'), ('CAD', 'CAD'), ('AUD', 'AUD')
     ], validators=[DataRequired()])
     
-    # Ordering Customer (field 50)
-    ordering_customer_account = StringField('Ordering Customer Account', validators=[DataRequired(), Length(max=35)])
-    ordering_customer_name = StringField('Ordering Customer Name', validators=[DataRequired(), Length(max=35)])
-    ordering_customer_address = TextAreaField('Ordering Customer Address', validators=[DataRequired(), Length(max=140)])
+    # Bank Information
+    receiving_bank_name = StringField('Receiving Bank Name', validators=[Length(max=140)])
+    receiving_bank_address = TextAreaField('Receiving Bank Address', validators=[Length(max=200)])
+    receiving_bank_swift = StringField('Receiving Bank SWIFT/BIC', validators=[Length(max=11)])
+    receiving_bank_routing = StringField('Receiving Bank Routing Number', validators=[Length(max=35)])
     
-    # Beneficiary (field 59)
-    beneficiary_account = StringField('Beneficiary Account', validators=[DataRequired(), Length(max=35)])
-    beneficiary_name = StringField('Beneficiary Name', validators=[DataRequired(), Length(max=35)])
-    beneficiary_address = TextAreaField('Beneficiary Address', validators=[DataRequired(), Length(max=140)])
+    # Account Holder Details
+    account_holder_name = StringField('Account Holder Name', validators=[Length(max=140)])
+    account_number = StringField('Account Number/IBAN', validators=[Length(max=35)])
+    
+    # Correspondent & Intermediary Banks
+    correspondent_bank_name = StringField('Correspondent Bank Name', validators=[Length(max=140)])
+    correspondent_bank_swift = StringField('Correspondent Bank SWIFT/BIC', validators=[Length(max=11)])
+    intermediary_bank_name = StringField('Intermediary Bank Name', validators=[Length(max=140)])
+    intermediary_bank_swift = StringField('Intermediary Bank SWIFT/BIC', validators=[Length(max=11)])
+    
+    # Ordering Customer information
+    ordering_customer = TextAreaField('Sender Details', validators=[Length(max=140)])
+    ordering_customer_account = StringField('Ordering Customer Account', validators=[Length(max=35)])
+    ordering_customer_name = StringField('Ordering Customer Name', validators=[Length(max=35)])
+    ordering_customer_address = TextAreaField('Ordering Customer Address', validators=[Length(max=140)])
+    
+    # Beneficiary information
+    beneficiary_customer = TextAreaField('Beneficiary Details', validators=[Length(max=140)])
+    beneficiary_account = StringField('Beneficiary Account', validators=[Length(max=35)])
+    beneficiary_name = StringField('Beneficiary Name', validators=[Length(max=35)])
+    beneficiary_address = TextAreaField('Beneficiary Address', validators=[Length(max=140)])
     
     # Details of Payment (field 70)
+    details_of_payment = TextAreaField('Payment Details', validators=[Length(max=140)])
+    
+    # Older field names for backward compatibility
     payment_details = TextAreaField('Payment Details', validators=[DataRequired(), Length(max=140)])
     
     # Charges (field 71A)
