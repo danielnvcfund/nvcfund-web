@@ -9,7 +9,7 @@
                 <h5 class="mb-0 fw-bold">NVCT Exchange</h5>
             </div>
             <div>
-                <a href="{{ url_for('exchange.convert') }}" class="btn btn-sm btn-light">
+                <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-sm btn-light">
                     <i class="fas fa-exchange-alt me-1"></i> Convert Now
                 </a>
             </div>
@@ -56,10 +56,10 @@
         </div>
         
         <div class="d-grid gap-2 d-md-flex">
-            <a href="{{ url_for('exchange.rates') }}" class="btn btn-outline-success">
+            <a href="{{ url_for('currency_exchange.rates') }}" class="btn btn-outline-success">
                 <i class="fas fa-list me-1"></i> All Rates
             </a>
-            <a href="{{ url_for('exchange.history') }}" class="btn btn-outline-success">
+            <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-outline-success">
                 <i class="fas fa-history me-1"></i> History
             </a>
         </div>

@@ -7,7 +7,7 @@ import logging
 from datetime import datetime
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
 from flask_login import login_required, current_user
-from account_holder_models import CurrencyType, ExchangeType, ExchangeStatus, CurrencyExchangeTransaction
+from account_holder_models import CurrencyType, ExchangeType, ExchangeStatus, CurrencyExchangeTransaction, CurrencyExchangeRate
 from currency_exchange_service import CurrencyExchangeService
 from app import db
 from forms import CurrencyExchangeForm
@@ -68,6 +68,62 @@ def index():
                           transactions=recent_transactions,
                           exchange_rates=exchange_rates,
                           title="Currency Exchange")
+
+@currency_exchange.route('/rates')
+def rates():
+    """Display all available exchange rates - public access for demonstration"""
+    # Get exchange service
+    exchange_service = CurrencyExchangeService(db)
+    
+    # Get all exchange rates
+    rates = CurrencyExchangeRate.query.filter_by(is_active=True).all()
+    
+    # Organize rates by base currency
+    rates_by_currency = {}
+    for rate in rates:
+        if rate.from_currency.value not in rates_by_currency:
+            rates_by_currency[rate.from_currency.value] = []
+        rates_by_currency[rate.from_currency.value].append({
+            'to_currency': rate.to_currency.value,
+            'rate': rate.rate,
+            'inverse_rate': rate.inverse_rate,
+            'last_updated': rate.last_updated
+        })
+    
+    # Focus on major currencies
+    major_currencies = [
+        CurrencyType.NVCT, 
+        CurrencyType.USD, 
+        CurrencyType.EUR, 
+        CurrencyType.GBP,
+        CurrencyType.BTC,
+        CurrencyType.AFD1,
+        CurrencyType.SFN,
+        CurrencyType.AKLUMI
+    ]
+    
+    # Add dummy data if rates are empty (for demonstration)
+    if not rates_by_currency:
+        from datetime import datetime
+        rates_by_currency = {
+            'NVCT': [
+                {'to_currency': 'USD', 'rate': 10.0, 'inverse_rate': 0.1, 'last_updated': datetime.now()},
+                {'to_currency': 'EUR', 'rate': 8.9, 'inverse_rate': 0.11, 'last_updated': datetime.now()},
+                {'to_currency': 'GBP', 'rate': 7.49, 'inverse_rate': 0.13, 'last_updated': datetime.now()},
+                {'to_currency': 'BTC', 'rate': 0.00017, 'inverse_rate': 5882.35, 'last_updated': datetime.now()},
+                {'to_currency': 'AFD1', 'rate': 3394.0, 'inverse_rate': 0.00029, 'last_updated': datetime.now()}
+            ],
+            'USD': [
+                {'to_currency': 'NVCT', 'rate': 0.1, 'inverse_rate': 10.0, 'last_updated': datetime.now()},
+                {'to_currency': 'EUR', 'rate': 0.89, 'inverse_rate': 1.12, 'last_updated': datetime.now()},
+                {'to_currency': 'GBP', 'rate': 0.749, 'inverse_rate': 1.34, 'last_updated': datetime.now()}
+            ]
+        }
+    
+    return render_template('currency_exchange/rates.html',
+                           rates=rates_by_currency,
+                           major_currencies=[c.value for c in major_currencies],
+                           title="Exchange Rates")
 
 @currency_exchange.route('/get_rate', methods=['POST'])
 @login_required

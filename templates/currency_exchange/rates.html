@@ -1,132 +1,293 @@
 {% extends 'layout.html' %}
 
+{% block title %}Exchange Rates | NVC Banking{% endblock %}
+
 {% block content %}
 <div class="container-fluid py-4">
-    <div class="row mb-4">
+    <div class="row">
         <div class="col-12">
             <div class="card mb-4">
-                <div class="card-header pb-0">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <h6 class="mb-0">Exchange Rates Management</h6>
-                        </div>
-                        <div class="col-md-4 text-end">
-                            <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-sm btn-primary me-2">
-                                <i class="fas fa-arrow-left me-2"></i> Back to Exchange
-                            </a>
-                            <form method="POST" action="{{ url_for('currency_exchange.initialize_default_rates') }}" style="display: inline;">
-                                <button type="submit" class="btn btn-sm btn-success">
-                                    <i class="fas fa-sync-alt me-2"></i> Initialize Default Rates
-                                </button>
-                            </form>
-                        </div>
+                <div class="card-header pb-0 bg-gradient-primary">
+                    <div class="d-flex justify-content-between">
+                        <h6 class="text-white">NVCT Exchange Rates</h6>
+                        <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-sm btn-white">
+                            <i class="fas fa-exchange-alt me-1"></i> Convert Currency
+                        </a>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="alert alert-info mb-3">
-                        <h5><i class="fas fa-info-circle me-2"></i>About NVCT Exchange Rates</h5>
-                        <p>
-                            The NVC Token (NVCT) is pegged 1:1 with USD. You can update exchange rates for other currencies 
-                            here. The system will automatically calculate inverse rates and cross-rates as needed.
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="p-3">
+                        <p class="text-sm mb-4">
+                            <i class="fas fa-info-circle me-1"></i> 
+                            NVCT is pegged 1:1 with USD and serves as our central exchange currency. All conversions go through NVCT, providing stable and reliable rates.
                         </p>
-                    </div>
-                    
-                    <div class="alert alert-warning mb-3">
-                        <h5><i class="fas fa-coins me-2"></i>About AFD1 Exchange Rates</h5>
-                        <p>
-                            The American Federation Dollar (AFD1) is valued at 10% of the daily gold price. 
-                            At the current gold price of $3,394.00, one AFD1 is worth approximately $339.40 USD.
-                        </p>
-                        <p>
-                            The exchange rates involving AFD1 are automatically updated based on the gold price.
-                            When initializing default rates, the system will calculate the AFD1/USD rate based on 
-                            the current gold price from Kitco market data.
-                        </p>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header bg-gradient-primary text-white">
-                                    <h6 class="mb-0 text-white">Add/Update Exchange Rate</h6>
+                        
+                        <div class="nav-wrapper position-relative end-0 mb-3">
+                            <ul class="nav nav-pills nav-fill p-1" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link mb-0 px-0 py-1 active" data-bs-toggle="tab" href="#nvct-tab" role="tab" aria-controls="nvct" aria-selected="true">
+                                        <i class="fas fa-dollar-sign text-sm me-2"></i> NVCT Rates
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link mb-0 px-0 py-1" data-bs-toggle="tab" href="#fiat-tab" role="tab" aria-controls="fiat" aria-selected="false">
+                                        <i class="fas fa-money-bill-wave text-sm me-2"></i> Fiat Currencies
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link mb-0 px-0 py-1" data-bs-toggle="tab" href="#crypto-tab" role="tab" aria-controls="crypto" aria-selected="false">
+                                        <i class="fab fa-bitcoin text-sm me-2"></i> Cryptocurrencies
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link mb-0 px-0 py-1" data-bs-toggle="tab" href="#token-tab" role="tab" aria-controls="token" aria-selected="false">
+                                        <i class="fas fa-coins text-sm me-2"></i> Special Tokens
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="tab-content">
+                            <!-- NVCT Rates Tab -->
+                            <div class="tab-pane fade show active" id="nvct-tab" role="tabpanel" aria-labelledby="nvct-tab">
+                                <div class="table-responsive">
+                                    <table class="table align-items-center mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Currency</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Rate (1 NVCT =)</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Inverse (1 Currency =)</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Last Updated</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% if 'NVCT' in rates %}
+                                                {% for rate_info in rates['NVCT'] %}
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex px-2 py-1">
+                                                            <div class="d-flex flex-column justify-content-center">
+                                                                <h6 class="mb-0 text-sm currency-display">
+                                                                    <img src="{{ url_for('static', filename='images/flags/globe.svg') }}" alt="" class="currency-flag" width="16" height="16" id="flag-from-{{ rate_info.to_currency }}">
+                                                                    {{ rate_info.to_currency }}
+                                                                </h6>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <p class="text-sm font-weight-bold mb-0">{{ "%.6f"|format(rate_info.rate) }}</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="text-sm font-weight-bold mb-0">{{ "%.6f"|format(rate_info.inverse_rate) }}</p>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-xs font-weight-bold">{{ rate_info.last_updated.strftime('%Y-%m-%d %H:%M') }}</span>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="4" class="text-center">No NVCT exchange rates available</td>
+                                                </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
                                 </div>
-                                <div class="card-body">
-                                    <form method="POST" action="{{ url_for('currency_exchange.update_rate') }}">
-                                        <div class="form-group mb-3">
-                                            <label for="from_currency">From Currency</label>
-                                            <select class="form-control" id="from_currency" name="from_currency" required>
-                                                {% for currency in rates %}
-                                                <option value="{{ currency.from_currency.value }}">{{ currency.from_currency.value }}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label for="to_currency">To Currency</label>
-                                            <select class="form-control" id="to_currency" name="to_currency" required>
-                                                {% for currency in rates %}
-                                                <option value="{{ currency.to_currency.value }}">{{ currency.to_currency.value }}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label for="rate">Exchange Rate</label>
-                                            <input type="number" class="form-control" id="rate" name="rate" step="0.000001" min="0.000001" required>
-                                            <small class="form-text text-muted">
-                                                This is how many units of the target currency you get for 1 unit of the source currency.
-                                            </small>
-                                        </div>
-                                        <button type="submit" class="btn btn-primary">Update Rate</button>
-                                    </form>
+                            </div>
+                            
+                            <!-- Fiat Currencies Tab -->
+                            <div class="tab-pane fade" id="fiat-tab" role="tabpanel" aria-labelledby="fiat-tab">
+                                <div class="table-responsive">
+                                    <table class="table align-items-center mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Base Currency</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Target Currency</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Rate</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Last Updated</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% set fiat_currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD', 'CNY'] %}
+                                            {% for base in fiat_currencies %}
+                                                {% if base in rates %}
+                                                    {% for rate_info in rates[base] %}
+                                                        {% if rate_info.to_currency in fiat_currencies %}
+                                                        <tr>
+                                                            <td>
+                                                                <div class="d-flex px-2 py-1">
+                                                                    <div class="d-flex flex-column justify-content-center">
+                                                                        <h6 class="mb-0 text-sm currency-display">
+                                                                            <img src="{{ url_for('static', filename='images/flags/globe.svg') }}" alt="" class="currency-flag" width="16" height="16" id="flag-from-{{ base }}">
+                                                                            {{ base }}
+                                                                        </h6>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div class="d-flex px-2 py-1">
+                                                                    <div class="d-flex flex-column justify-content-center">
+                                                                        <h6 class="mb-0 text-sm currency-display">
+                                                                            <img src="{{ url_for('static', filename='images/flags/globe.svg') }}" alt="" class="currency-flag" width="16" height="16" id="flag-to-{{ rate_info.to_currency }}">
+                                                                            {{ rate_info.to_currency }}
+                                                                        </h6>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <p class="text-sm font-weight-bold mb-0">1 {{ base }} = {{ "%.6f"|format(rate_info.rate) }} {{ rate_info.to_currency }}</p>
+                                                            </td>
+                                                            <td>
+                                                                <span class="text-xs font-weight-bold">{{ rate_info.last_updated.strftime('%Y-%m-%d %H:%M') }}</span>
+                                                            </td>
+                                                        </tr>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Cryptocurrencies Tab -->
+                            <div class="tab-pane fade" id="crypto-tab" role="tabpanel" aria-labelledby="crypto-tab">
+                                <div class="table-responsive">
+                                    <table class="table align-items-center mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Cryptocurrency</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">USD Value</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">NVCT Value</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Last Updated</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% set crypto_currencies = ['BTC', 'ETH', 'USDT', 'BNB', 'XRP', 'ADA', 'SOL', 'DOGE', 'DOT'] %}
+                                            {% for crypto in crypto_currencies %}
+                                                {% if 'USD' in rates and crypto in rates['USD'] %}
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex px-2 py-1">
+                                                                <div class="d-flex flex-column justify-content-center">
+                                                                    <h6 class="mb-0 text-sm currency-display">
+                                                                        <img src="{{ url_for('static', filename='images/crypto/' ~ crypto.lower() ~ '.svg') }}" alt="" onerror="this.src='{{ url_for('static', filename='images/crypto/default.svg') }}'" class="currency-flag" width="16" height="16">
+                                                                        {{ crypto }}
+                                                                    </h6>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <p class="text-sm font-weight-bold mb-0">{{ "$%.2f"|format(rates['USD'][crypto].rate) }}</p>
+                                                        </td>
+                                                        <td>
+                                                            <p class="text-sm font-weight-bold mb-0">{{ "%.6f"|format(rates['NVCT'][crypto].rate if 'NVCT' in rates and crypto in rates['NVCT'] else rates['USD'][crypto].rate * 0.1) }} NVCT</p>
+                                                        </td>
+                                                        <td>
+                                                            <span class="text-xs font-weight-bold">{{ rates['USD'][crypto].last_updated.strftime('%Y-%m-%d %H:%M') }}</span>
+                                                        </td>
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Special Tokens Tab -->
+                            <div class="tab-pane fade" id="token-tab" role="tabpanel" aria-labelledby="token-tab">
+                                <div class="table-responsive">
+                                    <table class="table align-items-center mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Token</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">USD Value</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Description</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Last Updated</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% set special_tokens = ['NVCT', 'AFD1', 'SFN', 'AKLUMI'] %}
+                                            {% for token in special_tokens %}
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex px-2 py-1">
+                                                            <div class="d-flex flex-column justify-content-center">
+                                                                <h6 class="mb-0 text-sm currency-display">
+                                                                    <img src="{{ url_for('static', filename='images/tokens/' ~ token.lower() ~ '.svg') }}" alt="" onerror="this.src='{{ url_for('static', filename='images/tokens/default.svg') }}'" class="currency-flag" width="16" height="16">
+                                                                    {{ token }}
+                                                                </h6>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {% if token == 'NVCT' %}
+                                                        <p class="text-sm font-weight-bold mb-0">$0.10 USD</p>
+                                                        {% elif token == 'AFD1' %}
+                                                        <p class="text-sm font-weight-bold mb-0">$0.00295 USD</p>
+                                                        {% elif token == 'SFN' %}
+                                                        <p class="text-sm font-weight-bold mb-0">$0.05 USD</p>
+                                                        {% elif token == 'AKLUMI' %}
+                                                        <p class="text-sm font-weight-bold mb-0">$0.01 USD</p>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if token == 'NVCT' %}
+                                                        <p class="text-sm mb-0">NVC Token - Central exchange currency</p>
+                                                        {% elif token == 'AFD1' %}
+                                                        <p class="text-sm mb-0">American Federation Dollar</p>
+                                                        {% elif token == 'SFN' %}
+                                                        <p class="text-sm mb-0">SFN Coin from Swifin</p>
+                                                        {% elif token == 'AKLUMI' %}
+                                                        <p class="text-sm mb-0">Ak Lumi currency from Eco-6</p>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-xs font-weight-bold">Current</span>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="table-responsive mt-4">
-                        <table class="table align-items-center mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">From Currency</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">To Currency</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Rate</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Inverse Rate</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Source</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Last Updated</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for rate in rates %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex px-2 py-1">
-                                            <div class="d-flex flex-column justify-content-center">
-                                                <h6 class="mb-0 text-sm">{{ rate.from_currency.value }}</h6>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <p class="text-sm font-weight-bold mb-0">{{ rate.to_currency.value }}</p>
-                                    </td>
-                                    <td>
-                                        <p class="text-sm font-weight-bold mb-0">{{ rate.rate }}</p>
-                                    </td>
-                                    <td>
-                                        <p class="text-sm font-weight-bold mb-0">{{ rate.inverse_rate }}</p>
-                                    </td>
-                                    <td>
-                                        <p class="text-sm font-weight-bold mb-0">{{ rate.source }}</p>
-                                    </td>
-                                    <td>
-                                        <p class="text-sm font-weight-bold mb-0">{{ rate.last_updated.strftime('%Y-%m-%d %H:%M') }}</p>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize currency flags
+        const currencyFlags = {
+            'USD': 'us',
+            'EUR': 'eu',
+            'GBP': 'gb',
+            'JPY': 'jp',
+            'CHF': 'ch',
+            'CAD': 'ca',
+            'AUD': 'au',
+            'CNY': 'cn',
+            'BTC': 'btc',
+            'ETH': 'eth',
+            'NVCT': 'nvct',
+            'AFD1': 'afd1',
+            'SFN': 'sfn',
+            'AKLUMI': 'aklumi'
+        };
+        
+        // Update all currency flags
+        document.querySelectorAll('.currency-flag').forEach(img => {
+            const currencyCode = img.id.split('-').pop();
+            if (currencyFlags[currencyCode]) {
+                img.src = '/static/images/flags/' + currencyFlags[currencyCode] + '.svg';
+            }
+        });
+    });
+</script>
 {% endblock %}
