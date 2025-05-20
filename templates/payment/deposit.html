@@ -15,7 +15,7 @@
                 <div class="card-body">
                     {% include 'common/flash_messages.html' %}
                     
-                    <form method="POST" action="{{ url_for('payment.deposit_form') }}">
+                    <form method="POST" action="{{ url_for('web.main.new_payment') }}">
                         {{ form.csrf_token }}
                         
                         <div class="form-group mb-3">
