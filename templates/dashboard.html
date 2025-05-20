@@ -216,11 +216,11 @@
         <!-- Right Column (4 cols) -->
         <div class="col-lg-4">
             <!-- Quick Actions Widget -->
-            <div class="card border-0 bg-dark text-white shadow mb-4">
-                <div class="card-header bg-dark border-0">
+            <div class="card border-0 bg-indigo text-white shadow mb-4" style="background-color: #4b0082;">
+                <div class="card-header border-0" style="background-color: #4b0082;">
                     <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-primary p-2 me-3">
-                            <i class="fas fa-bolt text-white"></i>
+                        <div class="rounded-circle bg-white p-2 me-3">
+                            <i class="fas fa-bolt text-indigo" style="color: #4b0082;"></i>
                         </div>
                         <h5 class="mb-0 fw-bold text-white">Quick Actions</h5>
                     </div>
@@ -231,10 +231,10 @@
                             <a href="{{ url_for('web.main.new_payment') }}" class="text-decoration-none">
                                 <div class="card bg-white h-100 text-center py-2 px-1">
                                     <div class="d-flex flex-column align-items-center">
-                                        <div class="icon-box bg-purple-light rounded-circle p-2 mb-1">
-                                            <i class="fas fa-dollar-sign text-purple"></i>
+                                        <div class="icon-box rounded-circle p-2 mb-1" style="background-color: #e6d4ff;">
+                                            <i class="fas fa-dollar-sign" style="color: #6200ea;"></i>
                                         </div>
-                                        <h6 class="text-purple mb-0 small">Payment</h6>
+                                        <h6 class="mb-0 small fw-bold" style="color: #6200ea;">Payment</h6>
                                     </div>
                                 </div>
                             </a>
@@ -243,10 +243,10 @@
                             <a href="{{ url_for('web.ach.new_ach_transfer') }}" class="text-decoration-none">
                                 <div class="card bg-white h-100 text-center py-2 px-1">
                                     <div class="d-flex flex-column align-items-center">
-                                        <div class="icon-box bg-green-light rounded-circle p-2 mb-1">
-                                            <i class="fas fa-money-bill-wave text-green"></i>
+                                        <div class="icon-box rounded-circle p-2 mb-1" style="background-color: #d4edda;">
+                                            <i class="fas fa-money-bill-wave" style="color: #1b5e20;"></i>
                                         </div>
-                                        <h6 class="text-green mb-0 small">ACH</h6>
+                                        <h6 class="mb-0 small fw-bold" style="color: #1b5e20;">ACH</h6>
                                     </div>
                                 </div>
                             </a>
@@ -255,10 +255,10 @@
                             <a href="{{ url_for('web.swift.new_fund_transfer') }}" class="text-decoration-none">
                                 <div class="card bg-white h-100 text-center py-2 px-1">
                                     <div class="d-flex flex-column align-items-center">
-                                        <div class="icon-box bg-blue-light rounded-circle p-2 mb-1">
-                                            <i class="fas fa-university text-blue"></i>
+                                        <div class="icon-box rounded-circle p-2 mb-1" style="background-color: #d1ecf1;">
+                                            <i class="fas fa-university" style="color: #0c5460;"></i>
                                         </div>
-                                        <h6 class="text-blue mb-0 small">SWIFT</h6>
+                                        <h6 class="mb-0 small fw-bold" style="color: #0c5460;">SWIFT</h6>
                                     </div>
                                 </div>
                             </a>
@@ -267,10 +267,10 @@
                             <a href="{{ url_for('documentation.documentation_index') }}" class="text-decoration-none">
                                 <div class="card bg-white h-100 text-center py-2 px-1">
                                     <div class="d-flex flex-column align-items-center">
-                                        <div class="icon-box bg-amber-light rounded-circle p-2 mb-1">
-                                            <i class="fas fa-file-alt text-amber"></i>
+                                        <div class="icon-box rounded-circle p-2 mb-1" style="background-color: #fff3cd;">
+                                            <i class="fas fa-file-alt" style="color: #856404;"></i>
                                         </div>
-                                        <h6 class="text-amber mb-0 small">Docs</h6>
+                                        <h6 class="mb-0 small fw-bold" style="color: #856404;">Docs</h6>
                                     </div>
                                 </div>
                             </a>
@@ -279,10 +279,10 @@
                             <a href="{{ url_for('correspondent.onboarding') }}" class="text-decoration-none">
                                 <div class="card bg-white h-100 text-center py-2 px-1">
                                     <div class="d-flex flex-column align-items-center">
-                                        <div class="icon-box bg-red-light rounded-circle p-2 mb-1">
-                                            <i class="fas fa-handshake text-red"></i>
+                                        <div class="icon-box rounded-circle p-2 mb-1" style="background-color: #f8d7da;">
+                                            <i class="fas fa-handshake" style="color: #721c24;"></i>
                                         </div>
-                                        <h6 class="text-red mb-0 small">Partners</h6>
+                                        <h6 class="mb-0 small fw-bold" style="color: #721c24;">Partners</h6>
                                     </div>
                                 </div>
                             </a>
@@ -291,10 +291,10 @@
                             <a href="{{ url_for('currency_exchange.index') }}" class="text-decoration-none">
                                 <div class="card bg-white h-100 text-center py-2 px-1">
                                     <div class="d-flex flex-column align-items-center">
-                                        <div class="icon-box bg-teal-light rounded-circle p-2 mb-1">
-                                            <i class="fas fa-exchange-alt text-teal"></i>
+                                        <div class="icon-box rounded-circle p-2 mb-1" style="background-color: #d1f2eb;">
+                                            <i class="fas fa-exchange-alt" style="color: #0d6e6e;"></i>
                                         </div>
-                                        <h6 class="text-teal mb-0 small">Exchange</h6>
+                                        <h6 class="mb-0 small fw-bold" style="color: #0d6e6e;">Exchange</h6>
                                     </div>
                                 </div>
                             </a>
@@ -305,73 +305,73 @@
             
             <!-- NVCT Exchange System Panel -->
             <div class="card border-0 shadow mb-4">
-                <div class="card-header bg-success text-white">
+                <div class="card-header text-white" style="background-color: #00a86b;">
                     <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-white bg-opacity-25 p-2 me-3">
-                            <i class="fas fa-exchange-alt text-white"></i>
+                        <div class="rounded-circle bg-white p-2 me-3">
+                            <i class="fas fa-exchange-alt" style="color: #00a86b;"></i>
                         </div>
                         <h5 class="card-title mb-0">NVCT Exchange Rates</h5>
                     </div>
                 </div>
-                <div class="card-body p-3">
-                    <div class="alert alert-success bg-success bg-opacity-10 border-0 mb-3 p-2">
+                <div class="card-body p-3" style="background-color: #f8f9fa;">
+                    <div class="alert mb-3 p-2" style="background-color: #d4edda; border-color: #c3e6cb; color: #155724;">
                         <div class="d-flex align-items-center">
                             <div class="me-2">
-                                <i class="fas fa-info-circle text-success"></i>
+                                <i class="fas fa-info-circle" style="color: #155724;"></i>
                             </div>
-                            <p class="mb-0 small">NVCT is pegged 1:1 with USD for seamless global transactions</p>
+                            <p class="mb-0 small fw-bold">NVCT is pegged 1:1 with USD for seamless global transactions</p>
                         </div>
                     </div>
                     
                     <div class="row g-2 mb-3">
                         <div class="col-6">
-                            <div class="card h-100 border-0 shadow-sm bg-light">
-                                <div class="card-body text-center p-2">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body text-center p-2" style="background-color: #e8f5e9;">
                                     <div class="d-flex justify-content-center align-items-center mb-1">
                                         <img src="https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/US.svg" width="16" class="me-1" alt="USD">
-                                        <span class="text-success small fw-bold">USD</span>
+                                        <span class="small fw-bold" style="color: #2e7d32;">USD</span>
                                     </div>
-                                    <span class="fs-6 fw-bold">1.00</span>
+                                    <span class="fs-6 fw-bold" style="color: #1b5e20;">1.00</span>
                                 </div>
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="card h-100 border-0 shadow-sm bg-light">
-                                <div class="card-body text-center p-2">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body text-center p-2" style="background-color: #e8eaf6;">
                                     <div class="d-flex justify-content-center align-items-center mb-1">
                                         <img src="https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/EU.svg" width="16" class="me-1" alt="EUR">
-                                        <span class="text-primary small fw-bold">EUR</span>
+                                        <span class="small fw-bold" style="color: #303f9f;">EUR</span>
                                     </div>
-                                    <span class="fs-6 fw-bold">0.89</span>
+                                    <span class="fs-6 fw-bold" style="color: #1a237e;">0.89</span>
                                 </div>
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="card h-100 border-0 shadow-sm bg-light">
-                                <div class="card-body text-center p-2">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body text-center p-2" style="background-color: #fff8e1;">
                                     <div class="d-flex justify-content-center align-items-center mb-1">
-                                        <i class="fab fa-bitcoin text-warning me-1 small"></i>
-                                        <span class="text-warning small fw-bold">BTC</span>
+                                        <i class="fab fa-bitcoin me-1 small" style="color: #f57f17;"></i>
+                                        <span class="small fw-bold" style="color: #f57f17;">BTC</span>
                                     </div>
-                                    <span class="fs-6 fw-bold">0.000017</span>
+                                    <span class="fs-6 fw-bold" style="color: #e65100;">0.000017</span>
                                 </div>
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="card h-100 border-0 shadow-sm bg-light">
-                                <div class="card-body text-center p-2">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body text-center p-2" style="background-color: #e0f2f1;">
                                     <div class="d-flex justify-content-center align-items-center mb-1">
-                                        <i class="fas fa-coins text-secondary me-1 small"></i>
-                                        <span class="text-secondary small fw-bold">AFD1</span>
+                                        <i class="fas fa-coins me-1 small" style="color: #00695c;"></i>
+                                        <span class="small fw-bold" style="color: #00695c;">AFD1</span>
                                     </div>
-                                    <span class="fs-6 fw-bold">339.40</span>
+                                    <span class="fs-6 fw-bold" style="color: #004d40;">339.40</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="d-grid gap-2">
-                        <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-sm btn-success">
+                        <a href="{{ url_for('currency_exchange.index') }}" class="btn btn-success text-white fw-bold" style="background-color: #00a86b; border-color: #00a86b;">
                             <i class="fas fa-exchange-alt me-1"></i> Convert Currency
                         </a>
                     </div>
