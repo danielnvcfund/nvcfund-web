@@ -4,7 +4,7 @@ Routes for institutional and correspondent banking account management
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required, current_user
 from app import db
-from account_holder_models import AccountHolder, CurrencyType, BankAccount
+from account_holder_models import AccountHolder, CurrencyType, BankAccount, AccountType
 from account_generator import create_institutional_account, create_correspondent_account
 
 institutional_bp = Blueprint('institutional', __name__, url_prefix='/institutional')
@@ -25,22 +25,22 @@ def institutional_dashboard():
     # Get all institutional and correspondent accounts
     institutional_accounts = BankAccount.query.filter_by(
         account_holder_id=account_holder.id,
-        account_type="institutional"
+        account_type=AccountType.INSTITUTIONAL
     ).all()
     
     nostro_accounts = BankAccount.query.filter_by(
         account_holder_id=account_holder.id,
-        account_type="nostro"
+        account_type=AccountType.NOSTRO
     ).all()
     
     vostro_accounts = BankAccount.query.filter_by(
         account_holder_id=account_holder.id,
-        account_type="vostro"
+        account_type=AccountType.VOSTRO
     ).all()
     
     correspondent_accounts = BankAccount.query.filter_by(
         account_holder_id=account_holder.id,
-        account_type="correspondent"
+        account_type=AccountType.CORRESPONDENT
     ).all()
     
     return render_template(
