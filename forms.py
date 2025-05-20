@@ -339,11 +339,15 @@ class SwiftFundTransferForm(FlaskForm):
         super(SwiftFundTransferForm, self).__init__(*args, **kwargs)
         try:
             from models import FinancialInstitution
-            institutions = FinancialInstitution.query.filter_by(active=True).all()
+            # Use is_active instead of active for the filter
+            institutions = FinancialInstitution.query.filter_by(is_active=True).all()
             self.sender_institution_id.choices = [(i.id, i.name) for i in institutions]
             self.receiver_institution_id.choices = [(i.id, i.name) for i in institutions]
         except Exception as e:
             print(f"Error populating Swift transfer form: {str(e)}")
+            # Provide default empty list
+            self.sender_institution_id.choices = [(1, 'Default Institution')]
+            self.receiver_institution_id.choices = [(1, 'Default Institution')]
 
 
 class SwiftFreeFormatMessageForm(FlaskForm):

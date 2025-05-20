@@ -138,9 +138,7 @@ def new_fund_transfer():
     user_id = current_user.id
     form = SwiftFundTransferForm()
     
-    # Get all financial institutions for the select field
-    institutions = FinancialInstitution.query.filter_by(is_active=True).all()
-    form.receiver_institution_id.choices = [(i.id, f"{i.name} ({i.swift_code})") for i in institutions]
+    # The form initialization will handle the institutions choices
 
     if form.validate_on_submit():
         try:
