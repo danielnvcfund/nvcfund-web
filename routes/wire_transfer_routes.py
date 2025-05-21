@@ -199,7 +199,7 @@ def new_wire_transfer():
     
     # Prepopulate form fields with user information only if there's no saved form data
     if request.method == 'GET' and not restore_form_data_from_session(form):
-        form.originator_name.data = current_user.full_name
+        form.sender_name.data = current_user.full_name
         
     return render_template(
         'wire_transfers/new.html',
