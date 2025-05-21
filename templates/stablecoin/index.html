@@ -18,22 +18,22 @@
                     </p>
 
                     <!-- Asset-Backed Status -->
-                    <div class="card bg-light mb-4">
+                    <div class="card mb-4" style="background-color: #f8f9fa; border: 1px solid #dee2e6;">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-8">
-                                    <h4 class="card-title text-primary">$10 Trillion Asset-Backed Stablecoin</h4>
-                                    <p class="card-text">
+                                    <h4 class="card-title" style="color: #0d1b40; font-weight: bold;">$10 Trillion Asset-Backed Stablecoin</h4>
+                                    <p class="card-text" style="color: #212529; font-weight: 500;">
                                         The NVC Token Stablecoin (NVCT) is fully backed by well over $10 trillion in high-quality assets and cash equivalents held by NVC Fund Holding Trust (CUSIP# 67074B105, BLOOMBERG ID BBG000P6FW5), ensuring a stable 1:1 USD peg and providing unparalleled security and liquidity for global settlements.
                                     </p>
-                                    <a href="/documentation/nvct_stablecoin_backing" class="btn btn-outline-primary btn-sm mt-1">
+                                    <a href="/documentation/nvct_stablecoin_backing" class="btn btn-sm mt-1" style="background-color: #061c38; color: white; font-weight: 600;">
                                         <i class="fas fa-file-alt me-1"></i> View Backing Details
                                     </a>
                                 </div>
                                 <div class="col-md-4 text-center d-flex align-items-center justify-content-center">
-                                    <div class="bg-white rounded-circle p-4 shadow-sm">
-                                        <h2 class="display-6 m-0">1:1</h2>
-                                        <div class="small text-muted">USD Backing</div>
+                                    <div class="rounded-circle p-4 shadow-sm" style="background-color: #061c38;">
+                                        <h2 class="display-6 m-0 text-white">1:1</h2>
+                                        <div class="small text-white">USD Backing</div>
                                     </div>
                                 </div>
                             </div>
@@ -54,18 +54,18 @@
                     
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="card bg-light h-100">
+                            <div class="card h-100" style="background-color: #f0f2f5; border: 1px solid #dee2e6;">
                                 <div class="card-body">
-                                    <h5 class="card-title">Your Stablecoin Accounts</h5>
+                                    <h5 class="card-title" style="color: #061c38; font-weight: bold;">Your Stablecoin Accounts</h5>
                                     {% if accounts %}
                                         <div class="list-group">
                                             {% for account in accounts %}
-                                                <a href="{{ url_for('stablecoin.account_details', account_id=account.id) }}" class="list-group-item list-group-item-action">
+                                                <a href="{{ url_for('stablecoin.account_details', account_id=account.id) }}" class="list-group-item list-group-item-action" style="border: 1px solid #dee2e6; margin-bottom: 5px;">
                                                     <div class="d-flex w-100 justify-content-between">
-                                                        <h6 class="mb-1">{{ account.account_number }}</h6>
-                                                        <span class="badge rounded-pill" style="background-color: #061c38; color: white; font-weight: 600;">{{ account.balance }} {{ account.currency }}</span>
+                                                        <h6 class="mb-1" style="color: #061c38; font-weight: 600;">{{ account.account_number }}</h6>
+                                                        <span class="badge rounded-pill" style="background-color: #061c38; color: white; font-weight: 600; padding: 5px 10px;">{{ account.balance }} {{ account.currency }}</span>
                                                     </div>
-                                                    <p class="mb-1 text-muted small">{{ account.account_type }}</p>
+                                                    <p class="mb-1 small" style="color: #495057; font-weight: 500;">{{ account.account_type }}</p>
                                                 </a>
                                             {% endfor %}
                                         </div>
@@ -124,43 +124,43 @@
                     
                     <div class="row g-4">
                         <div class="col-md-4">
-                            <div class="card h-100 border-0 bg-light">
+                            <div class="card h-100 border-0" style="background-color: #061c38;">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center mb-3">
-                                        <div class="rounded-circle p-2 me-3 text-white" style="background-color: #061c38;">
+                                        <div class="rounded-circle p-2 me-3 text-white" style="background-color: #0a2e59;">
                                             <i class="fas fa-coins"></i>
                                         </div>
-                                        <h5 class="card-title mb-0">NVC Token Stablecoin</h5>
+                                        <h5 class="card-title mb-0 text-white">NVC Token Stablecoin</h5>
                                     </div>
-                                    <p class="card-text">The native digital currency of our closed-loop ecosystem, providing stable value and seamless transfers between participants.</p>
+                                    <p class="card-text text-white">The native digital currency of our closed-loop ecosystem, providing stable value and seamless transfers between participants.</p>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="col-md-4">
-                            <div class="card h-100 border-0 bg-light">
+                            <div class="card h-100 border-0" style="background-color: #061c38;">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center mb-3">
-                                        <div class="rounded-circle p-2 me-3 text-white" style="background-color: #061c38;">
+                                        <div class="rounded-circle p-2 me-3 text-white" style="background-color: #0a2e59;">
                                             <i class="fas fa-network-wired"></i>
                                         </div>
-                                        <h5 class="card-title mb-0">Peer-to-Peer Ledger</h5>
+                                        <h5 class="card-title mb-0 text-white">Peer-to-Peer Ledger</h5>
                                     </div>
-                                    <p class="card-text">Our secure distributed ledger technology tracks all transactions with full transparency and accountability between parties.</p>
+                                    <p class="card-text text-white">Our secure distributed ledger technology tracks all transactions with full transparency and accountability between parties.</p>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="col-md-4">
-                            <div class="card h-100 border-0 bg-light">
+                            <div class="card h-100 border-0" style="background-color: #061c38;">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center mb-3">
-                                        <div class="rounded-circle p-2 me-3 text-white" style="background-color: #061c38;">
+                                        <div class="rounded-circle p-2 me-3 text-white" style="background-color: #0a2e59;">
                                             <i class="fas fa-university"></i>
                                         </div>
-                                        <h5 class="card-title mb-0">Correspondent Banking</h5>
+                                        <h5 class="card-title mb-0 text-white">Correspondent Banking</h5>
                                     </div>
-                                    <p class="card-text">Our partner financial institutions provide connectivity to external financial systems when needed for settlement and exchange.</p>
+                                    <p class="card-text text-white">Our partner financial institutions provide connectivity to external financial systems when needed for settlement and exchange.</p>
                                 </div>
                             </div>
                         </div>
