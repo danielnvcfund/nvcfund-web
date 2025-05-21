@@ -130,10 +130,10 @@
                         
                         <div class="form-group mb-3">
                           <label class="form-label">Applicant Account *</label>
-                          <select name="applicant_account" class="form-select" required>
-                            <option value="">Select applicant first</option>
-                            <!-- Account options will be loaded dynamically -->
-                          </select>
+                          <input type="text" name="applicant_account" class="form-control" required 
+                                 value="{{ sblc.applicant_account_number if not is_new else request.form.get('applicant_account', '') }}"
+                                 placeholder="Enter account number (e.g., NVC-GL-CH-25-123456)">
+                          <small class="text-muted">Enter the account number directly for now</small>
                         </div>
                         
                         <div class="form-group">
