@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Standby Letter of Credit - {{ sblc.reference_number }}</title>
+  <style>
+    @page {
+      size: letter;
+      margin: 2cm;
+      @top-center {
+        content: "STANDBY LETTER OF CREDIT";
+        font-size: 10pt;
+        color: #666;
+      }
+      @bottom-center {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 10pt;
+        color: #666;
+      }
+      @bottom-right {
+        content: "Reference: {{ sblc.reference_number }}";
+        font-size: 10pt;
+        color: #666;
+      }
+    }
+    
+    body {
+      font-family: 'Helvetica', 'Arial', sans-serif;
+      font-size: 12pt;
+      line-height: 1.5;
+      color: #333;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 2cm;
+    }
+    
+    .header img {
+      width: 150px;
+      margin-bottom: 1cm;
+    }
+    
+    h1 {
+      font-size: 20pt;
+      margin-bottom: 0.2cm;
+      color: #061c38;
+    }
+    
+    h2 {
+      font-size: 16pt;
+      margin-bottom: 0.5cm;
+      color: #061c38;
+    }
+    
+    h3 {
+      font-size: 14pt;
+      margin-top: 0.8cm;
+      margin-bottom: 0.3cm;
+      color: #061c38;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 0.2cm;
+    }
+    
+    .reference {
+      font-size: 14pt;
+      font-weight: bold;
+      margin-bottom: 1cm;
+    }
+    
+    .section {
+      margin-bottom: 1cm;
+    }
+    
+    .detail-block {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      padding: 0.5cm;
+      margin-bottom: 0.5cm;
+    }
+    
+    .detail-row {
+      display: flex;
+      margin-bottom: 0.3cm;
+    }
+    
+    .detail-label {
+      font-weight: bold;
+      width: 40%;
+    }
+    
+    .detail-value {
+      width: 60%;
+    }
+    
+    .terms {
+      margin-top: 1cm;
+      margin-bottom: 1cm;
+      text-align: justify;
+    }
+    
+    .signature-area {
+      margin-top: 2cm;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .signature-block {
+      width: 45%;
+      text-align: center;
+    }
+    
+    .signature-line {
+      border-bottom: 1px solid #000;
+      height: 2cm;
+      margin-bottom: 0.3cm;
+    }
+    
+    .seal {
+      margin: 2cm auto;
+      width: 4cm;
+      height: 4cm;
+      border: 2px solid #000;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 10pt;
+    }
+    
+    .watermark {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      font-size: 80pt;
+      color: rgba(200, 200, 200, 0.15);
+      z-index: -1;
+    }
+    
+    .footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      font-size: 10pt;
+      text-align: center;
+      border-top: 1px solid #ddd;
+      padding-top: 0.3cm;
+      color: #666;
+    }
+    
+    .verification-box {
+      margin-top: 1.5cm;
+      border: 1px solid #ddd;
+      padding: 0.5cm;
+      background-color: #f9f9f9;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="watermark">
+    {% if sblc.status.value == 'draft' %}DRAFT{% endif %}
+  </div>
+  
+  <div class="header">
+    <img src="{{ url_for('static', filename='img/nvc_emblem.svg', _external=True) }}" alt="NVC Banking Emblem">
+    <h1>STANDBY LETTER OF CREDIT</h1>
+    <div class="reference">REFERENCE NUMBER: {{ sblc.reference_number }}</div>
+    <h2>SWIFT MT-760</h2>
+  </div>
+  
+  <div class="section">
+    <div class="detail-row">
+      <div class="detail-label">Date of Issue:</div>
+      <div class="detail-value">{{ sblc.issue_date.strftime('%B %d, %Y') }}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Date of Expiry:</div>
+      <div class="detail-value">{{ sblc.expiry_date.strftime('%B %d, %Y') }}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Place of Expiry:</div>
+      <div class="detail-value">{{ sblc.expiry_place }}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Amount:</div>
+      <div class="detail-value">{{ sblc.currency }} {{ sblc.amount|format_currency }}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Amount in Words:</div>
+      <div class="detail-value">{{ sblc.amount_in_words().upper() }}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Partial Drawings:</div>
+      <div class="detail-value">{% if sblc.partial_drawings %}ALLOWED{% else %}NOT ALLOWED{% endif %}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Multiple Drawings:</div>
+      <div class="detail-value">{% if sblc.multiple_drawings %}ALLOWED{% else %}NOT ALLOWED{% endif %}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Applicable Law:</div>
+      <div class="detail-value">{{ sblc.applicable_law }}</div>
+    </div>
+  </div>
+  
+  <h3>ISSUING BANK</h3>
+  <div class="detail-block">
+    <p><strong>{{ sblc.issuing_bank.name if sblc.issuing_bank else 'NVC BANKING PLATFORM' }}</strong></p>
+    <p>{{ sblc.issuing_bank.address if sblc.issuing_bank else '1 Global Financial Center, New York, NY 10001, USA' }}</p>
+    <p>SWIFT: {{ sblc.issuing_bank.swift_code if sblc.issuing_bank else 'NVCGGLOB' }}</p>
+  </div>
+  
+  <h3>APPLICANT</h3>
+  <div class="detail-block">
+    <p><strong>{{ sblc.applicant.name }}</strong></p>
+    <p>Account Number: {{ sblc.applicant_account_number }}</p>
+    <p>{{ sblc.applicant.primary_address().formatted() if sblc.applicant.primary_address() else 'Address on file' }}</p>
+    {% if sblc.applicant_contact_info %}
+    <p>Contact: {{ sblc.applicant_contact_info }}</p>
+    {% endif %}
+  </div>
+  
+  <h3>BENEFICIARY</h3>
+  <div class="detail-block">
+    <p><strong>{{ sblc.beneficiary_name }}</strong></p>
+    <p>{{ sblc.beneficiary_address }}</p>
+    {% if sblc.beneficiary_account_number %}
+    <p>Account Number: {{ sblc.beneficiary_account_number }}</p>
+    {% endif %}
+    <p>Bank: {{ sblc.beneficiary_bank_name }}</p>
+    <p>SWIFT: {{ sblc.beneficiary_bank_swift }}</p>
+    {% if sblc.beneficiary_bank_address %}
+    <p>Bank Address: {{ sblc.beneficiary_bank_address }}</p>
+    {% endif %}
+  </div>
+  
+  <h3>TERMS AND CONDITIONS</h3>
+  <div class="terms">
+    <p>
+      WE, {{ sblc.issuing_bank.name if sblc.issuing_bank else 'NVC BANKING PLATFORM' }}, HEREBY ISSUE OUR IRREVOCABLE 
+      STANDBY LETTER OF CREDIT NUMBER {{ sblc.reference_number }} BY ORDER OF AND FOR ACCOUNT OF 
+      {{ sblc.applicant.name }} ("APPLICANT") IN FAVOR OF {{ sblc.beneficiary_name }} ("BENEFICIARY") 
+      FOR AN AMOUNT NOT EXCEEDING {{ sblc.currency }} {{ sblc.amount|format_currency }} 
+      ({{ sblc.amount_in_words().upper() }}).
+    </p>
+    
+    <p>
+      THIS STANDBY LETTER OF CREDIT IS AVAILABLE BY PRESENTATION OF THE FOLLOWING DOCUMENTS:
+    </p>
+    
+    <ol>
+      <li>BENEFICIARY'S SIGNED STATEMENT CERTIFYING THAT THE APPLICANT HAS FAILED TO FULFILL THEIR 
+          CONTRACTUAL OBLIGATIONS UNDER {{ sblc.contract_name }} DATED {{ sblc.contract_date.strftime('%B %d, %Y') }}.</li>
+      <li>COPY OF COMMERCIAL INVOICE SHOWING AMOUNT DUE.</li>
+      <li>COPY OF TRANSPORT DOCUMENT EVIDENCING SHIPMENT OF GOODS OR PERFORMANCE OF SERVICES.</li>
+    </ol>
+    
+    <p>
+      ALL DOCUMENTS MUST BE IN ENGLISH AND MUST BE PRESENTED AT OUR COUNTERS AT 
+      {{ sblc.issuing_bank.address if sblc.issuing_bank else '1 Global Financial Center, New York, NY 10001, USA' }} 
+      NO LATER THAN THE EXPIRY DATE.
+    </p>
+    
+    <p>
+      PARTIAL DRAWINGS {% if sblc.partial_drawings %}ARE PERMITTED{% else %}ARE NOT PERMITTED{% endif %}.
+    </p>
+    
+    <p>
+      MULTIPLE DRAWINGS {% if sblc.multiple_drawings %}ARE PERMITTED{% else %}ARE NOT PERMITTED{% endif %}.
+    </p>
+    
+    {% if sblc.special_conditions %}
+    <p>
+      {{ sblc.special_conditions }}
+    </p>
+    {% endif %}
+    
+    <p>
+      THIS STANDBY LETTER OF CREDIT IS SUBJECT TO THE INTERNATIONAL STANDBY PRACTICES, INTERNATIONAL CHAMBER 
+      OF COMMERCE PUBLICATION NO. 590 (ISP98).
+    </p>
+  </div>
+  
+  <div class="signature-area">
+    <div class="signature-block">
+      <div class="signature-line"></div>
+      <p>Authorized Signature</p>
+      <p>Name: ______________________</p>
+      <p>Title: ______________________</p>
+    </div>
+    
+    <div class="signature-block">
+      <div class="signature-line"></div>
+      <p>Authorized Signature</p>
+      <p>Name: ______________________</p>
+      <p>Title: ______________________</p>
+    </div>
+  </div>
+  
+  <div class="seal">
+    BANK SEAL
+  </div>
+  
+  <div class="verification-box">
+    <p><strong>VERIFICATION</strong></p>
+    <p>To verify the authenticity of this Standby Letter of Credit, please contact:</p>
+    <p>{{ sblc.issuing_bank.name if sblc.issuing_bank else 'NVC BANKING PLATFORM' }}</p>
+    <p>Email: verification@nvcbanking.com | Tel: +1-555-123-4567</p>
+    <p>Reference Number: {{ sblc.reference_number }}</p>
+    {% if sblc.verification_code %}
+    <p>Verification Code: {{ sblc.verification_code }}</p>
+    {% endif %}
+  </div>
+  
+  <div class="footer">
+    This document contains security features. Hold to light to verify watermark.
+  </div>
+</body>
+</html>

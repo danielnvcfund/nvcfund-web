@@ -1,0 +1,257 @@
+{% extends "layout.html" %}
+
+{% block title %}Standby Letter of Credit - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <!-- Header with emblem and title -->
+      <div class="card mb-4 border-0 shadow">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+              <img src="/static/img/nvc_emblem.svg" alt="NVC Banking Emblem" class="img-fluid mb-3" style="max-width: 100px;">
+            </div>
+            <div class="col-md-10">
+              <h1 class="text-center text-md-start mb-1">STANDBY LETTER OF CREDIT</h1>
+              <h2 class="h4 text-center text-md-start text-secondary mb-0">MT-760</h2>
+              <div class="text-end mt-2">
+                <span class="badge bg-primary p-2">SWIFT MT-760</span>
+                <span class="badge bg-secondary p-2">ICC ISP98</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SBLC Document Content -->
+      <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0">IRREVOCABLE STANDBY LETTER OF CREDIT</h3>
+        </div>
+        <div class="card-body">
+          <!-- Document Details -->
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <p><strong>SBLC No:</strong> {{ sblc.reference_number }}</p>
+              <p><strong>Date of Issue:</strong> {{ sblc.issue_date }}</p>
+              <p><strong>Date of Expiry:</strong> {{ sblc.expiry_date }}</p>
+              <p><strong>Place of Expiry:</strong> {{ sblc.expiry_place }}</p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Amount:</strong> {{ sblc.currency }} {{ sblc.amount|format_currency }}</p>
+              <p><strong>Form:</strong> IRREVOCABLE</p>
+              <p><strong>Governing Rules:</strong> ICC ISP98</p>
+              <p><strong>Applicable Law:</strong> {{ sblc.applicable_law }}</p>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Issuing Bank -->
+          <div class="mb-4">
+            <h4 class="text-primary">ISSUING BANK</h4>
+            <div class="card border-light bg-light">
+              <div class="card-body">
+                <p class="mb-1"><strong>{{ sblc.issuing_bank.name }}</strong></p>
+                <p class="mb-1">{{ sblc.issuing_bank.address }}</p>
+                <p class="mb-1">SWIFT: {{ sblc.issuing_bank.swift_code }}</p>
+                <p class="mb-0">BANK CODE: {{ sblc.issuing_bank.bank_code }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Applicant -->
+          <div class="mb-4">
+            <h4 class="text-primary">APPLICANT</h4>
+            <div class="card border-light bg-light">
+              <div class="card-body">
+                <p class="mb-1"><strong>{{ sblc.applicant.name }}</strong></p>
+                <p class="mb-1">{{ sblc.applicant.address }}</p>
+                <p class="mb-1">Account No: {{ sblc.applicant.account_number }}</p>
+                <p class="mb-0">Contact: {{ sblc.applicant.contact_info }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Beneficiary -->
+          <div class="mb-4">
+            <h4 class="text-primary">BENEFICIARY</h4>
+            <div class="card border-light bg-light">
+              <div class="card-body">
+                <p class="mb-1"><strong>{{ sblc.beneficiary.name }}</strong></p>
+                <p class="mb-1">{{ sblc.beneficiary.address }}</p>
+                <p class="mb-1">Account No: {{ sblc.beneficiary.account_number }}</p>
+                <p class="mb-0">Bank: {{ sblc.beneficiary.bank_name }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Terms and Conditions -->
+          <div class="mb-4">
+            <h4 class="text-primary">TERMS AND CONDITIONS</h4>
+            <div class="card border-light bg-light">
+              <div class="card-body">
+                <p class="mb-3">
+                  WE, {{ sblc.issuing_bank.name }}, HEREBY ISSUE OUR IRREVOCABLE STANDBY LETTER OF CREDIT NUMBER 
+                  {{ sblc.reference_number }} BY ORDER OF AND FOR ACCOUNT OF {{ sblc.applicant.name }} 
+                  ("APPLICANT") IN FAVOR OF {{ sblc.beneficiary.name }} ("BENEFICIARY") FOR AN AMOUNT NOT EXCEEDING 
+                  {{ sblc.currency }} {{ sblc.amount|format_currency }} ({{ sblc.amount_in_words }}).
+                </p>
+                <p class="mb-3">
+                  THIS STANDBY LETTER OF CREDIT IS AVAILABLE BY PRESENTATION OF THE FOLLOWING DOCUMENTS:
+                </p>
+                <ol class="mb-3">
+                  <li>BENEFICIARY'S SIGNED STATEMENT CERTIFYING THAT THE APPLICANT HAS FAILED TO FULFILL THEIR 
+                      CONTRACTUAL OBLIGATIONS UNDER {{ sblc.underlying_contract.name }} DATED {{ sblc.underlying_contract.date }}.</li>
+                  <li>COPY OF COMMERCIAL INVOICE SHOWING AMOUNT DUE.</li>
+                  <li>COPY OF TRANSPORT DOCUMENT EVIDENCING SHIPMENT OF GOODS OR PERFORMANCE OF SERVICES.</li>
+                </ol>
+                <p class="mb-3">
+                  ALL DOCUMENTS MUST BE IN ENGLISH AND MUST BE PRESENTED AT OUR COUNTERS AT 
+                  {{ sblc.issuing_bank.address }} NO LATER THAN THE EXPIRY DATE.
+                </p>
+                <p class="mb-3">
+                  PARTIAL DRAWINGS {% if sblc.partial_drawings %}ARE PERMITTED{% else %}ARE NOT PERMITTED{% endif %}.
+                </p>
+                <p class="mb-3">
+                  MULTIPLE DRAWINGS {% if sblc.multiple_drawings %}ARE PERMITTED{% else %}ARE NOT PERMITTED{% endif %}.
+                </p>
+                <p class="mb-3">
+                  {{ sblc.special_conditions }}
+                </p>
+                <p class="mb-0">
+                  THIS STANDBY LETTER OF CREDIT IS SUBJECT TO THE INTERNATIONAL STANDBY PRACTICES, INTERNATIONAL CHAMBER 
+                  OF COMMERCE PUBLICATION NO. 590 (ISP98).
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Authentication -->
+          <div class="mb-4">
+            <h4 class="text-primary">AUTHENTICATION</h4>
+            <div class="card border-light bg-light">
+              <div class="card-body">
+                <p class="mb-1">
+                  THIS STANDBY LETTER OF CREDIT HAS BEEN TRANSMITTED BY SWIFT TO THE ADVISING BANK. 
+                  THE ADVISING BANK MAY VERIFY THE AUTHENTICITY OF THIS LETTER OF CREDIT BY CONTACTING:
+                </p>
+                <p class="mb-1">{{ sblc.issuing_bank.name }}</p>
+                <p class="mb-1">SWIFT: {{ sblc.issuing_bank.swift_code }}</p>
+                <p class="mb-1">TEL: {{ sblc.issuing_bank.phone }}</p>
+                <p class="mb-0">EMAIL: {{ sblc.issuing_bank.email }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Authorized Signature -->
+          <div class="row mt-5">
+            <div class="col-md-6">
+              <div class="border-bottom border-dark" style="height: 40px;"></div>
+              <p class="mt-1">Authorized Signature</p>
+            </div>
+            <div class="col-md-6">
+              <div class="border-bottom border-dark" style="height: 40px;"></div>
+              <p class="mt-1">Authorized Signature</p>
+            </div>
+          </div>
+
+          <!-- Bank Seal Placeholder -->
+          <div class="text-center mt-4">
+            <div class="d-inline-block border border-dark rounded-circle p-3 mb-2" style="width: 120px; height: 120px;">
+              <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                <p class="mb-0 small">BANK SEAL</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verification Info -->
+      <div class="card shadow mb-4">
+        <div class="card-header bg-secondary text-white">
+          <h4 class="mb-0">Verification Information</h4>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <p class="mb-1">To verify the authenticity of this Standby Letter of Credit, please:</p>
+            <ol>
+              <li>Contact the issuing bank via the SWIFT system</li>
+              <li>Provide the SBLC reference number: {{ sblc.reference_number }}</li>
+              <li>Verify the details with the bank's Letter of Credit department</li>
+            </ol>
+          </div>
+          <div class="alert alert-info mb-0">
+            <i class="fas fa-info-circle me-2"></i>
+            This SBLC has been digitally registered in the ICC Banking Commission Electronic Registry for enhanced security.
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex justify-content-between">
+        <a href="{{ url_for('swift.sblc_list') }}" class="btn btn-secondary">
+          <i class="fas fa-arrow-left me-1"></i> Back to List
+        </a>
+        <div>
+          <button type="button" class="btn btn-primary me-2" onclick="window.print();">
+            <i class="fas fa-print me-1"></i> Print
+          </button>
+          <button type="button" class="btn btn-success me-2" id="btnDownloadPDF">
+            <i class="fas fa-file-pdf me-1"></i> Download PDF
+          </button>
+          <button type="button" class="btn btn-info me-2" id="btnVerify">
+            <i class="fas fa-check-circle me-1"></i> Verify
+          </button>
+          {% if sblc.status == 'DRAFT' %}
+          <a href="{{ url_for('swift.edit_sblc', sblc_id=sblc.id) }}" class="btn btn-warning me-2">
+            <i class="fas fa-edit me-1"></i> Edit
+          </a>
+          <button type="button" class="btn btn-danger" id="btnIssue">
+            <i class="fas fa-paper-plane me-1"></i> Issue
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  $(document).ready(function() {
+    // PDF Download functionality
+    $('#btnDownloadPDF').click(function() {
+      window.location.href = "{{ url_for('swift.download_sblc_pdf', sblc_id=sblc.id) }}";
+    });
+
+    // Verification functionality
+    $('#btnVerify').click(function() {
+      $.get("{{ url_for('swift.verify_sblc', sblc_id=sblc.id) }}", function(data) {
+        if (data.verified) {
+          alert("This SBLC has been verified as authentic.");
+        } else {
+          alert("Verification failed. Please contact the issuing bank directly.");
+        }
+      });
+    });
+
+    // Issue functionality for draft SBLCs
+    $('#btnIssue').click(function() {
+      if (confirm("Are you sure you want to issue this SBLC? This action cannot be undone.")) {
+        $.post("{{ url_for('swift.issue_sblc', sblc_id=sblc.id) }}", function(data) {
+          if (data.success) {
+            alert("SBLC successfully issued.");
+            window.location.reload();
+          } else {
+            alert("Error issuing SBLC: " + data.message);
+          }
+        });
+      }
+    });
+  });
+</script>
+{% endblock %}
+{% endblock %}
