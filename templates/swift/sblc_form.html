@@ -130,10 +130,11 @@
                         
                         <div class="form-group mb-3">
                           <label class="form-label">Applicant Account *</label>
-                          <input type="text" name="applicant_account" class="form-control" required 
-                                 value="{{ sblc.applicant_account_number if not is_new else request.form.get('applicant_account', '') }}"
-                                 placeholder="Enter account number (e.g., NVC-GL-CH-25-123456)">
-                          <small class="text-muted">Enter the account number directly for now</small>
+                          <select name="applicant_account" class="form-select" required>
+                            <option value="">Select applicant first</option>
+                            <!-- Account options will be loaded dynamically -->
+                          </select>
+                          <small class="text-muted">Select an account from the dropdown</small>
                         </div>
                         
                         <div class="form-group">
@@ -284,15 +285,26 @@
 {% block extra_js %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    {% if not is_new %}
-    // If editing, load the accounts for the selected applicant
-    updateAccountOptions();
-    {% endif %}
+    // Add event listener to the applicant select
+    const applicantSelect = document.querySelector('select[name="applicant_id"]');
+    if (applicantSelect) {
+      applicantSelect.addEventListener('change', updateAccountOptions);
+      
+      {% if not is_new %}
+      // If editing, load the accounts for the selected applicant
+      updateAccountOptions();
+      {% endif %}
+    }
   });
   
   function updateAccountOptions() {
     const applicantSelect = document.querySelector('select[name="applicant_id"]');
     const accountSelect = document.querySelector('select[name="applicant_account"]');
+    
+    if (!applicantSelect || !accountSelect) {
+      console.error('Could not find applicant or account select elements');
+      return;
+    }
     
     if (!applicantSelect.value) {
       // Clear account options if no applicant selected
