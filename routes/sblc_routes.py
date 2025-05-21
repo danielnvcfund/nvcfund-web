@@ -142,13 +142,43 @@ def create_sblc():
             # Get form data
             applicant_id = request.form.get('applicant_id')
             applicant_account = request.form.get('applicant_account')
-            amount = float(request.form.get('amount'))
+            
+            # Process amount with comma separators
+            amount_str = request.form.get('amount', '0')
+            
+            # Validate amount format
+            if not amount_str:
+                flash("Amount is required.", 'danger')
+                return render_template('swift/sblc_form.html', 
+                                     is_new=True, 
+                                     sblc=None,
+                                     form_data=request.form,
+                                     account_holders=AccountHolder.query.all(),
+                                     banks=FinancialInstitution.query.filter_by(institution_type='bank').all())
+            
+            try:
+                # Remove commas and convert to float
+                amount = float(amount_str.replace(',', ''))
+            except ValueError:
+                flash("Invalid amount format. Please enter a valid number.", 'danger')
+                return render_template('swift/sblc_form.html', 
+                                     is_new=True, 
+                                     sblc=None,
+                                     form_data=request.form,
+                                     account_holders=AccountHolder.query.all(),
+                                     banks=FinancialInstitution.query.filter_by(institution_type='bank').all())
+            
             currency = request.form.get('currency')
             
             # Validate required fields
             if not all([applicant_id, applicant_account, amount, currency]):
                 flash("All required fields must be filled out.", 'danger')
-                return redirect(url_for('sblc.create_sblc'))
+                return render_template('swift/sblc_form.html', 
+                                     is_new=True, 
+                                     sblc=None,
+                                     form_data=request.form,
+                                     account_holders=AccountHolder.query.all(),
+                                     banks=FinancialInstitution.query.filter_by(institution_type='bank').all())
             
             # Create expiry date (1 year from now by default)
             expiry_date_str = request.form.get('expiry_date')

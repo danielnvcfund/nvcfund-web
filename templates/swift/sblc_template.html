@@ -198,8 +198,8 @@
                         <div class="ps-3 border-start border-primary">
                           <p class="mb-1 fw-bold">{{ sblc.applicant.name }}</p>
                           <p class="mb-1">Account: {{ sblc.applicant_account_number }}</p>
-                          {% if sblc.applicant.primary_address() %}
-                            <p class="mb-1">{{ sblc.applicant.primary_address().formatted()|nl2br }}</p>
+                          {% if sblc.applicant.addresses and sblc.applicant.addresses|length > 0 %}
+                            <p class="mb-1">{{ sblc.applicant.addresses[0].full_address|nl2br }}</p>
                           {% endif %}
                           {% if sblc.applicant_contact_info %}
                             <p class="mb-0">Contact: {{ sblc.applicant_contact_info }}</p>

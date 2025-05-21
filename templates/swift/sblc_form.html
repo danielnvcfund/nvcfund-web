@@ -49,8 +49,12 @@
                   
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label class="form-label">Amount *</label>
-                      <input type="number" name="amount" class="form-control" step="0.01" min="1000" required value="{{ sblc.amount if not is_new else '' }}">
+                      <label class="form-label">Amount * <small class="text-muted">(Use commas for large numbers: 1,000,000)</small></label>
+                      <input type="text" name="amount" class="form-control" required value="{{ sblc.amount if not is_new else request.form.get('amount', '') }}" 
+                             placeholder="1,000,000.00" 
+                             pattern="^[0-9,]+(\.[0-9]{1,2})?$" 
+                             title="Enter a valid amount (commas allowed)">
+                      <small class="text-muted">Enter amount with commas for readability (e.g., 1,500,000.00)</small>
                     </div>
                   </div>
                   
@@ -58,11 +62,11 @@
                     <div class="form-group">
                       <label class="form-label">Currency *</label>
                       <select name="currency" class="form-select" required>
-                        <option value="USD" {% if not is_new and sblc.currency == 'USD' %}selected{% endif %}>USD - US Dollar</option>
-                        <option value="EUR" {% if not is_new and sblc.currency == 'EUR' %}selected{% endif %}>EUR - Euro</option>
-                        <option value="GBP" {% if not is_new and sblc.currency == 'GBP' %}selected{% endif %}>GBP - British Pound</option>
-                        <option value="NVCT" {% if not is_new and sblc.currency == 'NVCT' %}selected{% endif %}>NVCT - NVC Token</option>
-                        <option value="CHF" {% if not is_new and sblc.currency == 'CHF' %}selected{% endif %}>CHF - Swiss Franc</option>
+                        <option value="USD" {% if not is_new and sblc.currency == 'USD' or (form_data and form_data.get('currency') == 'USD') %}selected{% endif %}>USD - US Dollar</option>
+                        <option value="EUR" {% if not is_new and sblc.currency == 'EUR' or (form_data and form_data.get('currency') == 'EUR') %}selected{% endif %}>EUR - Euro</option>
+                        <option value="GBP" {% if not is_new and sblc.currency == 'GBP' or (form_data and form_data.get('currency') == 'GBP') %}selected{% endif %}>GBP - British Pound</option>
+                        <option value="NVCT" {% if not is_new and sblc.currency == 'NVCT' or (form_data and form_data.get('currency') == 'NVCT') %}selected{% endif %}>NVCT - NVC Token</option>
+                        <option value="CHF" {% if not is_new and sblc.currency == 'CHF' or (form_data and form_data.get('currency') == 'CHF') %}selected{% endif %}>CHF - Swiss Franc</option>
                       </select>
                     </div>
                   </div>

@@ -545,6 +545,15 @@ def create_app():
             logger.error(f"Error registering RTGS routes: {str(e)}")
             logger.warning("Application will run without RTGS functionality")
         
+        # Register SBLC routes directly
+        try:
+            from routes.sblc_routes import sblc_bp
+            app.register_blueprint(sblc_bp, url_prefix='/sblc')
+            logger.info("SBLC routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering SBLC routes: {str(e)}")
+            logger.warning("Application will run without SBLC functionality")
+        
         # Register API routes
         from routes.api import api_bp as main_api_bp
         app.register_blueprint(main_api_bp)
