@@ -1,370 +1,272 @@
 {% extends "layout.html" %}
 
-{% block title %}Create Standby Letter of Credit - NVC Banking Platform{% endblock %}
+{% block title %}{% if is_new %}Create New SBLC{% else %}Edit SBLC{% endif %} - NVC Banking Platform{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="row justify-content-center">
-    <div class="col-lg-10">
-      <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{{ url_for('web.main.dashboard') }}">Dashboard</a></li>
-          <li class="breadcrumb-item"><a href="{{ url_for('swift.sblc_list') }}">Standby Letters of Credit</a></li>
-          <li class="breadcrumb-item active">{% if edit_mode %}Edit{% else %}Create{% endif %} SBLC</li>
-        </ol>
-      </nav>
-      
-      <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-          <h2 class="h4 mb-0">{% if edit_mode %}Edit{% else %}Create{% endif %} Standby Letter of Credit</h2>
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow mb-4">
+        <div class="card-header bg-gradient-dark text-white">
+          <div class="d-flex align-items-center">
+            <div class="rounded-circle bg-white text-dark p-2 me-3">
+              <i class="fas fa-file-contract"></i>
+            </div>
+            <h4 class="mb-0">{% if is_new %}Create New Standby Letter of Credit{% else %}Edit SBLC: {{ sblc.reference_number }}{% endif %}</h4>
+          </div>
         </div>
         <div class="card-body">
-          {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-              {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show">
-                  {{ message }}
-                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-              {% endfor %}
-            {% endif %}
-          {% endwith %}
-          
-          <div class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i>
-            Standby Letters of Credit (SBLCs) are contingent payment instruments that ensure financial obligations are met. They function as a bank guarantee to make payment in case of non-performance by the applicant.
-          </div>
-          
-          <form method="POST" id="sblc-form" class="needs-validation" novalidate>
-            {{ form.hidden_tag() }}
+          <form method="post" action="{% if is_new %}{{ url_for('sblc.create_sblc') }}{% else %}{{ url_for('sblc.edit_sblc', sblc_id=sblc.id) }}{% endif %}" id="sblcForm">
+            <!-- Form layout with tabs for better organization -->
+            <ul class="nav nav-tabs mb-4" id="sblcTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab" aria-controls="basic" aria-selected="true">Basic Details</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="parties-tab" data-bs-toggle="tab" data-bs-target="#parties" type="button" role="tab" aria-controls="parties" aria-selected="false">Parties</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="terms-tab" data-bs-toggle="tab" data-bs-target="#terms" type="button" role="tab" aria-controls="terms" aria-selected="false">Terms & Conditions</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="additional-tab" data-bs-toggle="tab" data-bs-target="#additional" type="button" role="tab" aria-controls="additional" aria-selected="false">Additional Info</button>
+              </li>
+            </ul>
             
-            <!-- SBLC Basic Information -->
-            <div class="card mb-4">
-              <div class="card-header bg-light">
-                <h3 class="h5 mb-0">SBLC Basic Information</h3>
-              </div>
-              <div class="card-body">
-                <div class="row g-3">
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.amount.id }}" class="form-label required">Amount</label>
-                    <div class="input-group">
-                      <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
-                      {{ form.amount(class="form-control", required=True, placeholder="0.00") }}
+            <div class="tab-content" id="sblcTabContent">
+              <!-- Basic Details Tab -->
+              <div class="tab-pane fade show active" id="basic" role="tabpanel" aria-labelledby="basic-tab">
+                <div class="row g-4">
+                  {% if not is_new %}
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Reference Number</label>
+                      <input type="text" class="form-control" value="{{ sblc.reference_number }}" readonly>
+                      <small class="text-muted">Automatically generated</small>
                     </div>
-                    {% if form.amount.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.amount.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
                   </div>
+                  {% endif %}
                   
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.currency.id }}" class="form-label required">Currency</label>
-                    {{ form.currency(class="form-select", required=True) }}
-                    {% if form.currency.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.currency.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                  
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.issue_date.id }}" class="form-label required">Issue Date</label>
-                    {{ form.issue_date(class="form-control", type="date", required=True) }}
-                    {% if form.issue_date.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.issue_date.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                  
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.expiry_date.id }}" class="form-label required">Expiry Date</label>
-                    {{ form.expiry_date(class="form-control", type="date", required=True) }}
-                    {% if form.expiry_date.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.expiry_date.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                  
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.expiry_place.id }}" class="form-label required">Place of Expiry</label>
-                    {{ form.expiry_place(class="form-control", required=True, placeholder="Enter location where SBLC expires") }}
-                    {% if form.expiry_place.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.expiry_place.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                  
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.applicable_law.id }}" class="form-label required">Applicable Law/Jurisdiction</label>
-                    {{ form.applicable_law(class="form-control", required=True, placeholder="E.g., Laws of England and Wales") }}
-                    {% if form.applicable_law.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.applicable_law.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                  
-                  <div class="col-md-6 mb-3">
-                    <div class="form-check form-switch">
-                      {{ form.partial_drawings(class="form-check-input") }}
-                      <label class="form-check-label" for="{{ form.partial_drawings.id }}">
-                        Allow Partial Drawings
-                      </label>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Amount *</label>
+                      <input type="number" name="amount" class="form-control" step="0.01" min="1000" required value="{{ sblc.amount if not is_new else '' }}">
                     </div>
                   </div>
                   
-                  <div class="col-md-6 mb-3">
-                    <div class="form-check form-switch">
-                      {{ form.multiple_drawings(class="form-check-input") }}
-                      <label class="form-check-label" for="{{ form.multiple_drawings.id }}">
-                        Allow Multiple Drawings
-                      </label>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Currency *</label>
+                      <select name="currency" class="form-select" required>
+                        <option value="USD" {% if not is_new and sblc.currency == 'USD' %}selected{% endif %}>USD - US Dollar</option>
+                        <option value="EUR" {% if not is_new and sblc.currency == 'EUR' %}selected{% endif %}>EUR - Euro</option>
+                        <option value="GBP" {% if not is_new and sblc.currency == 'GBP' %}selected{% endif %}>GBP - British Pound</option>
+                        <option value="NVCT" {% if not is_new and sblc.currency == 'NVCT' %}selected{% endif %}>NVCT - NVC Token</option>
+                        <option value="CHF" {% if not is_new and sblc.currency == 'CHF' %}selected{% endif %}>CHF - Swiss Franc</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Issue Date</label>
+                      <input type="date" name="issue_date" class="form-control" value="{{ sblc.issue_date.strftime('%Y-%m-%d') if not is_new and sblc.issue_date else '' }}">
+                      <small class="text-muted">Today's date by default</small>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Expiry Date *</label>
+                      <input type="date" name="expiry_date" class="form-control" required value="{{ sblc.expiry_date.strftime('%Y-%m-%d') if not is_new and sblc.expiry_date else '' }}">
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Place of Expiry</label>
+                      <input type="text" name="expiry_place" class="form-control" value="{{ sblc.expiry_place if not is_new else 'New York, NY, USA' }}">
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Issuing Bank</label>
+                      <select name="issuing_bank_id" class="form-select">
+                        <option value="">NVC Banking Platform (Default)</option>
+                        {% for bank in banks %}
+                        <option value="{{ bank.id }}" {% if not is_new and sblc.issuing_bank_id == bank.id %}selected{% endif %}>{{ bank.name }}</option>
+                        {% endfor %}
+                      </select>
+                      <small class="text-muted">Leave blank to use NVC Banking Platform as issuer</small>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            
-            <!-- Applicant Information -->
-            <div class="card mb-4">
-              <div class="card-header bg-light">
-                <h3 class="h5 mb-0">Applicant Information</h3>
-              </div>
-              <div class="card-body">
-                <div class="row g-3">
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.applicant_id.id }}" class="form-label required">Select Applicant</label>
-                    {{ form.applicant_id(class="form-select", required=True) }}
-                    {% if form.applicant_id.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.applicant_id.errors %}
-                          {{ error }}
-                        {% endfor %}
+              
+              <!-- Parties Tab -->
+              <div class="tab-pane fade" id="parties" role="tabpanel" aria-labelledby="parties-tab">
+                <div class="row g-4">
+                  <!-- Applicant Information -->
+                  <div class="col-md-6">
+                    <div class="card mb-4">
+                      <div class="card-header bg-light">
+                        <h5 class="mb-0">Applicant Information</h5>
                       </div>
-                    {% endif %}
-                  </div>
-                  
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.applicant_account_number.id }}" class="form-label required">Applicant Account Number</label>
-                    {{ form.applicant_account_number(class="form-control", required=True, placeholder="Enter account number") }}
-                    {% if form.applicant_account_number.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.applicant_account_number.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                  
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.applicant_contact_info.id }}" class="form-label">Contact Information</label>
-                    {{ form.applicant_contact_info(class="form-control", placeholder="Contact person, email, phone") }}
-                    {% if form.applicant_contact_info.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.applicant_contact_info.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Beneficiary Information -->
-            <div class="card mb-4">
-              <div class="card-header bg-light">
-                <h3 class="h5 mb-0">Beneficiary Information</h3>
-              </div>
-              <div class="card-body">
-                <div class="row g-3">
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.beneficiary_name.id }}" class="form-label required">Beneficiary Name</label>
-                    {{ form.beneficiary_name(class="form-control", required=True, placeholder="Enter full legal name") }}
-                    {% if form.beneficiary_name.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.beneficiary_name.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                  
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.beneficiary_address.id }}" class="form-label required">Beneficiary Address</label>
-                    {{ form.beneficiary_address(class="form-control", required=True, rows=3, placeholder="Enter complete address") }}
-                    {% if form.beneficiary_address.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.beneficiary_address.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                  
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.beneficiary_account_number.id }}" class="form-label">Beneficiary Account Number</label>
-                    {{ form.beneficiary_account_number(class="form-control", placeholder="Enter account number") }}
-                    {% if form.beneficiary_account_number.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.beneficiary_account_number.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                  
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.beneficiary_bank_name.id }}" class="form-label required">Beneficiary's Bank Name</label>
-                    {{ form.beneficiary_bank_name(class="form-control", required=True, placeholder="Enter bank name") }}
-                    {% if form.beneficiary_bank_name.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.beneficiary_bank_name.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                  
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.beneficiary_bank_swift.id }}" class="form-label required">Beneficiary's Bank SWIFT Code</label>
-                    {{ form.beneficiary_bank_swift(class="form-control", required=True, placeholder="Enter SWIFT/BIC code") }}
-                    {% if form.beneficiary_bank_swift.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.beneficiary_bank_swift.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                  
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.beneficiary_bank_address.id }}" class="form-label">Beneficiary's Bank Address</label>
-                    {{ form.beneficiary_bank_address(class="form-control", rows=3, placeholder="Enter bank address") }}
-                    {% if form.beneficiary_bank_address.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.beneficiary_bank_address.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Underlying Transaction -->
-            <div class="card mb-4">
-              <div class="card-header bg-light">
-                <h3 class="h5 mb-0">Underlying Transaction</h3>
-              </div>
-              <div class="card-body">
-                <div class="row g-3">
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.contract_name.id }}" class="form-label required">Contract/Agreement Name</label>
-                    {{ form.contract_name(class="form-control", required=True, placeholder="Enter name of the underlying contract") }}
-                    {% if form.contract_name.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.contract_name.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                  
-                  <div class="col-md-6 mb-3">
-                    <label for="{{ form.contract_date.id }}" class="form-label required">Contract/Agreement Date</label>
-                    {{ form.contract_date(class="form-control", type="date", required=True) }}
-                    {% if form.contract_date.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.contract_date.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                  
-                  <div class="col-md-12 mb-3">
-                    <label for="{{ form.contract_details.id }}" class="form-label">Contract/Agreement Details</label>
-                    {{ form.contract_details(class="form-control", rows=4, placeholder="Brief description of the underlying contract") }}
-                    {% if form.contract_details.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.contract_details.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Terms and Conditions -->
-            <div class="card mb-4">
-              <div class="card-header bg-light">
-                <h3 class="h5 mb-0">Terms and Conditions</h3>
-              </div>
-              <div class="card-body">
-                <div class="row g-3">
-                  <div class="col-md-12 mb-3">
-                    <label for="{{ form.special_conditions.id }}" class="form-label">Special Conditions</label>
-                    {{ form.special_conditions(class="form-control", rows=6, placeholder="Enter any special terms and conditions for this SBLC") }}
-                    {% if form.special_conditions.errors %}
-                      <div class="invalid-feedback d-block">
-                        {% for error in form.special_conditions.errors %}
-                          {{ error }}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                    <div class="form-text">Include any special instructions, drawing conditions, or additional clauses.</div>
-                  </div>
-                  
-                  <div class="col-md-12">
-                    <div class="form-check">
-                      {{ form.confirm_terms(class="form-check-input", required=True) }}
-                      <label class="form-check-label required" for="{{ form.confirm_terms.id }}">
-                        I confirm that all information provided is accurate and complete. This SBLC will be subject to the International Standby Practices, International Chamber of Commerce Publication No. 590 (ISP98).
-                      </label>
-                      {% if form.confirm_terms.errors %}
-                        <div class="invalid-feedback d-block">
-                          {% for error in form.confirm_terms.errors %}
-                            {{ error }}
-                          {% endfor %}
+                      <div class="card-body">
+                        <div class="form-group mb-3">
+                          <label class="form-label">Applicant *</label>
+                          <select name="applicant_id" class="form-select" required onchange="updateAccountOptions()">
+                            <option value="">Select an account holder</option>
+                            {% for holder in account_holders %}
+                            <option value="{{ holder.id }}" {% if not is_new and sblc.applicant_id == holder.id %}selected{% endif %}>{{ holder.name }}</option>
+                            {% endfor %}
+                          </select>
                         </div>
-                      {% endif %}
+                        
+                        <div class="form-group mb-3">
+                          <label class="form-label">Applicant Account *</label>
+                          <select name="applicant_account" class="form-select" required>
+                            <option value="">Select applicant first</option>
+                            <!-- Account options will be loaded dynamically -->
+                          </select>
+                        </div>
+                        
+                        <div class="form-group">
+                          <label class="form-label">Contact Information</label>
+                          <input type="text" name="applicant_contact_info" class="form-control" value="{{ sblc.applicant_contact_info if not is_new else '' }}">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Beneficiary Information -->
+                  <div class="col-md-6">
+                    <div class="card mb-4">
+                      <div class="card-header bg-light">
+                        <h5 class="mb-0">Beneficiary Information</h5>
+                      </div>
+                      <div class="card-body">
+                        <div class="form-group mb-3">
+                          <label class="form-label">Beneficiary Name *</label>
+                          <input type="text" name="beneficiary_name" class="form-control" required value="{{ sblc.beneficiary_name if not is_new else '' }}">
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                          <label class="form-label">Beneficiary Address *</label>
+                          <textarea name="beneficiary_address" class="form-control" rows="3" required>{{ sblc.beneficiary_address if not is_new else '' }}</textarea>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                          <label class="form-label">Beneficiary Account Number</label>
+                          <input type="text" name="beneficiary_account" class="form-control" value="{{ sblc.beneficiary_account_number if not is_new else '' }}">
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                          <label class="form-label">Beneficiary Bank Name *</label>
+                          <input type="text" name="beneficiary_bank" class="form-control" required value="{{ sblc.beneficiary_bank_name if not is_new else '' }}">
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                          <label class="form-label">Beneficiary Bank SWIFT Code *</label>
+                          <input type="text" name="beneficiary_swift" class="form-control" required value="{{ sblc.beneficiary_bank_swift if not is_new else '' }}">
+                        </div>
+                        
+                        <div class="form-group">
+                          <label class="form-label">Beneficiary Bank Address</label>
+                          <textarea name="beneficiary_bank_address" class="form-control" rows="2">{{ sblc.beneficiary_bank_address if not is_new else '' }}</textarea>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Terms & Conditions Tab -->
+              <div class="tab-pane fade" id="terms" role="tabpanel" aria-labelledby="terms-tab">
+                <div class="row g-4">
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">Contract Name *</label>
+                      <input type="text" name="contract_name" class="form-control" required value="{{ sblc.contract_name if not is_new else '' }}">
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                      <label class="form-label">Contract Date *</label>
+                      <input type="date" name="contract_date" class="form-control" required value="{{ sblc.contract_date.strftime('%Y-%m-%d') if not is_new and sblc.contract_date else '' }}">
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                      <label class="form-label">Applicable Law</label>
+                      <input type="text" name="applicable_law" class="form-control" value="{{ sblc.applicable_law if not is_new else 'International Standby Practices ISP98' }}">
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="partial_drawings" id="partialDrawings" {% if not is_new and sblc.partial_drawings %}checked{% endif %}>
+                        <label class="form-check-label" for="partialDrawings">
+                          Allow Partial Drawings
+                        </label>
+                      </div>
+                      <small class="text-muted">If checked, the beneficiary can draw partial amounts against this SBLC</small>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="multiple_drawings" id="multipleDrawings" {% if not is_new and sblc.multiple_drawings %}checked{% endif %}>
+                        <label class="form-check-label" for="multipleDrawings">
+                          Allow Multiple Drawings
+                        </label>
+                      </div>
+                      <small class="text-muted">If checked, the beneficiary can make multiple draws against this SBLC</small>
+                    </div>
+                    
+                    <div class="form-group">
+                      <label class="form-label">Special Conditions</label>
+                      <textarea name="special_conditions" class="form-control" rows="5">{{ sblc.special_conditions if not is_new else '' }}</textarea>
+                      <small class="text-muted">Any additional terms or special conditions that apply to this SBLC</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Additional Info Tab -->
+              <div class="tab-pane fade" id="additional" role="tabpanel" aria-labelledby="additional-tab">
+                <div class="alert alert-info mb-4">
+                  <i class="fas fa-info-circle me-2"></i>
+                  Additional information and options for the SBLC.
+                </div>
+                
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="card mb-4">
+                      <div class="card-header bg-light">
+                        <h5 class="mb-0">Important Notes</h5>
+                      </div>
+                      <div class="card-body">
+                        <ul>
+                          <li>Once an SBLC is issued, it cannot be edited - only amended.</li>
+                          <li>The SBLC will be generated as a PDF document.</li>
+                          <li>A SWIFT MT760 message will be created for this SBLC.</li>
+                          <li>The applicant's account must have sufficient funds for any potential draws against this SBLC.</li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
             
-            <!-- Submit Buttons -->
-            <div class="d-flex justify-content-between">
-              <a href="{{ url_for('swift.sblc_list') }}" class="btn btn-secondary">
-                <i class="fas fa-times me-1"></i> Cancel
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+              <a href="{{ url_for('sblc.sblc_list') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to List
               </a>
               <div>
-                <button type="submit" name="save_draft" value="true" class="btn btn-primary me-2">
-                  <i class="fas fa-save me-1"></i> Save as Draft
-                </button>
-                <button type="submit" class="btn btn-success">
-                  <i class="fas fa-check-circle me-1"></i> {% if edit_mode %}Update{% else %}Create{% endif %} SBLC
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save me-1"></i> {% if is_new %}Create SBLC{% else %}Save Changes{% endif %}
                 </button>
               </div>
             </div>
@@ -377,36 +279,49 @@
 
 {% block extra_js %}
 <script>
-  $(document).ready(function() {
-    // Auto-populate applicant account number based on selected applicant
-    $('#{{ form.applicant_id.id }}').change(function() {
-      var applicantId = $(this).val();
-      if (applicantId) {
-        $.get("{{ url_for('swift.get_applicant_details') }}", {applicant_id: applicantId}, function(data) {
-          if (data.success) {
-            $('#{{ form.applicant_account_number.id }}').val(data.account_number);
-          }
-        });
-      }
-    });
-    
-    // Form validation
-    (function() {
-      'use strict';
-      window.addEventListener('load', function() {
-        var forms = document.getElementsByClassName('needs-validation');
-        Array.prototype.filter.call(forms, function(form) {
-          form.addEventListener('submit', function(event) {
-            if (form.checkValidity() === false) {
-              event.preventDefault();
-              event.stopPropagation();
-            }
-            form.classList.add('was-validated');
-          }, false);
-        });
-      }, false);
-    })();
+  document.addEventListener('DOMContentLoaded', function() {
+    {% if not is_new %}
+    // If editing, load the accounts for the selected applicant
+    updateAccountOptions();
+    {% endif %}
   });
+  
+  function updateAccountOptions() {
+    const applicantSelect = document.querySelector('select[name="applicant_id"]');
+    const accountSelect = document.querySelector('select[name="applicant_account"]');
+    
+    if (!applicantSelect.value) {
+      // Clear account options if no applicant selected
+      accountSelect.innerHTML = '<option value="">Select applicant first</option>';
+      return;
+    }
+    
+    // In a real implementation, we would fetch accounts from the server
+    // For now, we'll add some placeholder options
+    accountSelect.innerHTML = '';
+    
+    // Add a placeholder option (this would be replaced with real data from an API call)
+    const currentAccount = '{{ sblc.applicant_account_number if not is_new else "" }}';
+    
+    // Generate some sample account numbers (in production, fetch from API)
+    const accountTypes = ['CHECKING', 'SAVINGS', 'BUSINESS', 'CUSTODY'];
+    const currencies = ['USD', 'EUR', 'NVCT'];
+    
+    for (let type of accountTypes) {
+      for (let currency of currencies) {
+        const accountNumber = `NVC-GL-${type.substring(0,2)}-${new Date().getFullYear().toString().substring(2)}-${Math.floor(100000 + Math.random() * 900000)}`;
+        const option = document.createElement('option');
+        option.value = accountNumber;
+        option.text = `${accountNumber} (${type} - ${currency})`;
+        
+        if (accountNumber === currentAccount) {
+          option.selected = true;
+        }
+        
+        accountSelect.appendChild(option);
+      }
+    }
+  }
 </script>
 {% endblock %}
 {% endblock %}

@@ -1,257 +1,344 @@
 {% extends "layout.html" %}
 
-{% block title %}Standby Letter of Credit - NVC Banking Platform{% endblock %}
+{% block title %}SBLC {{ sblc.reference_number }} - NVC Banking Platform{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="row justify-content-center">
-    <div class="col-lg-10">
-      <!-- Header with emblem and title -->
-      <div class="card mb-4 border-0 shadow">
-        <div class="card-body">
-          <div class="row align-items-center">
-            <div class="col-md-2 text-center">
-              <img src="/static/img/nvc_emblem.svg" alt="NVC Banking Emblem" class="img-fluid mb-3" style="max-width: 100px;">
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12 mb-4">
+      <div class="card shadow">
+        <div class="card-header bg-gradient-dark text-white d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <div class="rounded-circle bg-white text-dark p-2 me-3">
+              <i class="fas fa-file-contract"></i>
             </div>
-            <div class="col-md-10">
-              <h1 class="text-center text-md-start mb-1">STANDBY LETTER OF CREDIT</h1>
-              <h2 class="h4 text-center text-md-start text-secondary mb-0">MT-760</h2>
-              <div class="text-end mt-2">
-                <span class="badge bg-primary p-2">SWIFT MT-760</span>
-                <span class="badge bg-secondary p-2">ICC ISP98</span>
+            <h4 class="mb-0">Standby Letter of Credit: {{ sblc.reference_number }}</h4>
+          </div>
+          <div>
+            <span class="badge bg-{{ 'success' if sblc.status.value == 'issued' else 'warning' if sblc.status.value == 'draft' else 'info' if sblc.status.value == 'amended' else 'danger' }} fs-6">
+              {{ sblc.status.name.replace('_', ' ').title() }}
+            </span>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <!-- SBLC Action Buttons -->
+          <div class="bg-light p-3 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+              <span class="me-3">
+                <i class="far fa-calendar-alt me-1"></i> Issued: {{ sblc.issue_date.strftime('%b %d, %Y') }}
+              </span>
+              <span class="me-3">
+                <i class="far fa-calendar-check me-1"></i> Expires: {{ sblc.expiry_date.strftime('%b %d, %Y') }}
+              </span>
+              {% if sblc.days_until_expiry() is not none %}
+                {% if sblc.days_until_expiry() <= 30 %}
+                  <span class="badge bg-warning text-dark">
+                    {{ sblc.days_until_expiry() }} days until expiry
+                  </span>
+                {% else %}
+                  <span class="badge bg-success">
+                    {{ sblc.days_until_expiry() }} days until expiry
+                  </span>
+                {% endif %}
+              {% else %}
+                <span class="badge bg-danger">
+                  Expired
+                </span>
+              {% endif %}
+            </div>
+            
+            <div>
+              <div class="btn-group">
+                <a href="{{ url_for('sblc.download_sblc_pdf', sblc_id=sblc.id) }}" class="btn btn-sm btn-outline-primary">
+                  <i class="fas fa-file-pdf me-1"></i> Download PDF
+                </a>
+                <a href="{{ url_for('sblc.download_swift', sblc_id=sblc.id) }}" class="btn btn-sm btn-outline-primary">
+                  <i class="fas fa-download me-1"></i> SWIFT MT760
+                </a>
+                {% if sblc.status.value == 'draft' %}
+                  <a href="{{ url_for('sblc.edit_sblc', sblc_id=sblc.id) }}" class="btn btn-sm btn-outline-warning">
+                    <i class="fas fa-edit me-1"></i> Edit
+                  </a>
+                  <form action="{{ url_for('sblc.issue_sblc', sblc_id=sblc.id) }}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Are you sure you want to issue this SBLC? It cannot be edited after issuance.');">
+                      <i class="fas fa-check-circle me-1"></i> Issue
+                    </button>
+                  </form>
+                {% elif sblc.status.value == 'issued' %}
+                  <a href="{{ url_for('sblc.create_amendment', sblc_id=sblc.id) }}" class="btn btn-sm btn-outline-info">
+                    <i class="fas fa-file-contract me-1"></i> Amend
+                  </a>
+                  {% if sblc.can_be_drawn() %}
+                    <a href="{{ url_for('sblc.create_draw', sblc_id=sblc.id) }}" class="btn btn-sm btn-outline-primary">
+                      <i class="fas fa-money-bill-wave me-1"></i> Draw
+                    </a>
+                  {% endif %}
+                {% endif %}
+                {% if sblc.status.value in ['draft', 'issued'] %}
+                  <form action="{{ url_for('sblc.cancel_sblc', sblc_id=sblc.id) }}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to cancel this SBLC?');">
+                      <i class="fas fa-times-circle me-1"></i> Cancel
+                    </button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          
+          <!-- SBLC Details -->
+          <div class="p-4">
+            <div class="row">
+              <!-- Left Column -->
+              <div class="col-md-6">
+                <!-- Basic Details Card -->
+                <div class="card mb-4 border-0 shadow-sm">
+                  <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Basic Details</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Amount</h6>
+                        <h5 class="fw-bold">{{ sblc.currency }} {{ "{:,.2f}".format(sblc.amount) }}</h5>
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Currency</h6>
+                        <h5 class="fw-bold">{{ sblc.currency }}</h5>
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Issue Date</h6>
+                        <p>{{ sblc.issue_date.strftime('%B %d, %Y') }}</p>
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Expiry Date</h6>
+                        <p>{{ sblc.expiry_date.strftime('%B %d, %Y') }}</p>
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Place of Expiry</h6>
+                        <p>{{ sblc.expiry_place }}</p>
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Issuing Bank</h6>
+                        <p>{{ sblc.issuing_bank.name if sblc.issuing_bank else 'NVC Banking Platform' }}</p>
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Reference Number</h6>
+                        <p class="fw-bold">{{ sblc.reference_number }}</p>
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Verification Code</h6>
+                        <p class="font-monospace">{{ sblc.verification_code }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Contract Details Card -->
+                <div class="card mb-4 border-0 shadow-sm">
+                  <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-signature me-2"></i>Contract Details</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Contract Name</h6>
+                        <p>{{ sblc.contract_name }}</p>
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Contract Date</h6>
+                        <p>{{ sblc.contract_date.strftime('%B %d, %Y') }}</p>
+                      </div>
+                      <div class="col-md-12 mb-3">
+                        <h6 class="text-muted mb-1">Applicable Law</h6>
+                        <p>{{ sblc.applicable_law }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Drawing Options Card -->
+                <div class="card mb-4 border-0 shadow-sm">
+                  <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-money-check-alt me-2"></i>Drawing Options</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Partial Drawings</h6>
+                        <p>{% if sblc.partial_drawings %}<span class="badge bg-success">Allowed</span>{% else %}<span class="badge bg-danger">Not Allowed</span>{% endif %}</p>
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Multiple Drawings</h6>
+                        <p>{% if sblc.multiple_drawings %}<span class="badge bg-success">Allowed</span>{% else %}<span class="badge bg-danger">Not Allowed</span>{% endif %}</p>
+                      </div>
+                      {% if sblc.status.value == 'issued' or sblc.status.value == 'amended' or sblc.status.value == 'drawn' %}
+                      <div class="col-md-12 mb-3">
+                        <h6 class="text-muted mb-1">Remaining Balance</h6>
+                        <h5 class="fw-bold">{{ sblc.currency }} {{ "{:,.2f}".format(sblc.remaining_amount()) }} 
+                          <small class="text-muted">({{ (sblc.remaining_amount() / sblc.amount * 100)|round|int }}% of original amount)</small>
+                        </h5>
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Right Column -->
+              <div class="col-md-6">
+                <!-- Parties Card -->
+                <div class="card mb-4 border-0 shadow-sm">
+                  <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-handshake me-2"></i>Parties</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-12 mb-4">
+                        <h6 class="text-primary mb-2">Applicant</h6>
+                        <div class="ps-3 border-start border-primary">
+                          <p class="mb-1 fw-bold">{{ sblc.applicant.name }}</p>
+                          <p class="mb-1">Account: {{ sblc.applicant_account_number }}</p>
+                          {% if sblc.applicant.primary_address() %}
+                            <p class="mb-1">{{ sblc.applicant.primary_address().formatted()|nl2br }}</p>
+                          {% endif %}
+                          {% if sblc.applicant_contact_info %}
+                            <p class="mb-0">Contact: {{ sblc.applicant_contact_info }}</p>
+                          {% endif %}
+                        </div>
+                      </div>
+                      
+                      <div class="col-md-12 mb-3">
+                        <h6 class="text-primary mb-2">Beneficiary</h6>
+                        <div class="ps-3 border-start border-primary">
+                          <p class="mb-1 fw-bold">{{ sblc.beneficiary_name }}</p>
+                          <p class="mb-1">{{ sblc.beneficiary_address|nl2br }}</p>
+                          {% if sblc.beneficiary_account_number %}
+                            <p class="mb-0">Account: {{ sblc.beneficiary_account_number }}</p>
+                          {% endif %}
+                        </div>
+                      </div>
+                      
+                      <div class="col-md-12 mb-3">
+                        <h6 class="text-primary mb-2">Beneficiary Bank</h6>
+                        <div class="ps-3 border-start border-primary">
+                          <p class="mb-1 fw-bold">{{ sblc.beneficiary_bank_name }}</p>
+                          <p class="mb-1">SWIFT: {{ sblc.beneficiary_bank_swift }}</p>
+                          {% if sblc.beneficiary_bank_address %}
+                            <p class="mb-0">{{ sblc.beneficiary_bank_address|nl2br }}</p>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Special Conditions Card -->
+                {% if sblc.special_conditions %}
+                <div class="card mb-4 border-0 shadow-sm">
+                  <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Special Conditions</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-12">
+                        <p>{{ sblc.special_conditions|nl2br }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+                
+                <!-- Draws Card -->
+                {% if sblc.draws %}
+                <div class="card mb-4 border-0 shadow-sm">
+                  <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Draws</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="table-responsive">
+                      <table class="table table-hover">
+                        <thead>
+                          <tr>
+                            <th>Reference</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for draw in sblc.draws %}
+                          <tr>
+                            <td>{{ draw.draw_reference }}</td>
+                            <td>{{ draw.request_date.strftime('%b %d, %Y') }}</td>
+                            <td>{{ sblc.currency }} {{ "{:,.2f}".format(draw.amount) }}</td>
+                            <td>
+                              {% if draw.status.value == 'pending' %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                              {% elif draw.status.value == 'approved' %}
+                                <span class="badge bg-info">Approved</span>
+                              {% elif draw.status.value == 'completed' %}
+                                <span class="badge bg-success">Completed</span>
+                              {% else %}
+                                <span class="badge bg-danger">Rejected</span>
+                              {% endif %}
+                            </td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+                
+                <!-- Amendments Card -->
+                {% if sblc.amendments %}
+                <div class="card mb-4 border-0 shadow-sm">
+                  <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Amendments</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="table-responsive">
+                      <table class="table table-hover">
+                        <thead>
+                          <tr>
+                            <th>Number</th>
+                            <th>Date</th>
+                            <th>Changes</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for amendment in sblc.amendments %}
+                          <tr>
+                            <td>{{ amendment.amendment_number }}</td>
+                            <td>{{ amendment.issue_date.strftime('%b %d, %Y') }}</td>
+                            <td>{{ amendment.changes_description|truncate(50) }}</td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- SBLC Document Content -->
+    </div>
+    
+    <!-- SWIFT Message Box -->
+    <div class="col-12">
       <div class="card shadow mb-4">
-        <div class="card-header bg-primary text-white">
-          <h3 class="mb-0">IRREVOCABLE STANDBY LETTER OF CREDIT</h3>
+        <div class="card-header bg-gradient-dark text-white">
+          <h5 class="mb-0"><i class="fas fa-comment-dots me-2"></i>SWIFT MT760 Message</h5>
         </div>
         <div class="card-body">
-          <!-- Document Details -->
-          <div class="row mb-4">
-            <div class="col-md-6">
-              <p><strong>SBLC No:</strong> {{ sblc.reference_number }}</p>
-              <p><strong>Date of Issue:</strong> {{ sblc.issue_date }}</p>
-              <p><strong>Date of Expiry:</strong> {{ sblc.expiry_date }}</p>
-              <p><strong>Place of Expiry:</strong> {{ sblc.expiry_place }}</p>
-            </div>
-            <div class="col-md-6">
-              <p><strong>Amount:</strong> {{ sblc.currency }} {{ sblc.amount|format_currency }}</p>
-              <p><strong>Form:</strong> IRREVOCABLE</p>
-              <p><strong>Governing Rules:</strong> ICC ISP98</p>
-              <p><strong>Applicable Law:</strong> {{ sblc.applicable_law }}</p>
-            </div>
-          </div>
-
-          <hr class="my-4">
-
-          <!-- Issuing Bank -->
-          <div class="mb-4">
-            <h4 class="text-primary">ISSUING BANK</h4>
-            <div class="card border-light bg-light">
-              <div class="card-body">
-                <p class="mb-1"><strong>{{ sblc.issuing_bank.name }}</strong></p>
-                <p class="mb-1">{{ sblc.issuing_bank.address }}</p>
-                <p class="mb-1">SWIFT: {{ sblc.issuing_bank.swift_code }}</p>
-                <p class="mb-0">BANK CODE: {{ sblc.issuing_bank.bank_code }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Applicant -->
-          <div class="mb-4">
-            <h4 class="text-primary">APPLICANT</h4>
-            <div class="card border-light bg-light">
-              <div class="card-body">
-                <p class="mb-1"><strong>{{ sblc.applicant.name }}</strong></p>
-                <p class="mb-1">{{ sblc.applicant.address }}</p>
-                <p class="mb-1">Account No: {{ sblc.applicant.account_number }}</p>
-                <p class="mb-0">Contact: {{ sblc.applicant.contact_info }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Beneficiary -->
-          <div class="mb-4">
-            <h4 class="text-primary">BENEFICIARY</h4>
-            <div class="card border-light bg-light">
-              <div class="card-body">
-                <p class="mb-1"><strong>{{ sblc.beneficiary.name }}</strong></p>
-                <p class="mb-1">{{ sblc.beneficiary.address }}</p>
-                <p class="mb-1">Account No: {{ sblc.beneficiary.account_number }}</p>
-                <p class="mb-0">Bank: {{ sblc.beneficiary.bank_name }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Terms and Conditions -->
-          <div class="mb-4">
-            <h4 class="text-primary">TERMS AND CONDITIONS</h4>
-            <div class="card border-light bg-light">
-              <div class="card-body">
-                <p class="mb-3">
-                  WE, {{ sblc.issuing_bank.name }}, HEREBY ISSUE OUR IRREVOCABLE STANDBY LETTER OF CREDIT NUMBER 
-                  {{ sblc.reference_number }} BY ORDER OF AND FOR ACCOUNT OF {{ sblc.applicant.name }} 
-                  ("APPLICANT") IN FAVOR OF {{ sblc.beneficiary.name }} ("BENEFICIARY") FOR AN AMOUNT NOT EXCEEDING 
-                  {{ sblc.currency }} {{ sblc.amount|format_currency }} ({{ sblc.amount_in_words }}).
-                </p>
-                <p class="mb-3">
-                  THIS STANDBY LETTER OF CREDIT IS AVAILABLE BY PRESENTATION OF THE FOLLOWING DOCUMENTS:
-                </p>
-                <ol class="mb-3">
-                  <li>BENEFICIARY'S SIGNED STATEMENT CERTIFYING THAT THE APPLICANT HAS FAILED TO FULFILL THEIR 
-                      CONTRACTUAL OBLIGATIONS UNDER {{ sblc.underlying_contract.name }} DATED {{ sblc.underlying_contract.date }}.</li>
-                  <li>COPY OF COMMERCIAL INVOICE SHOWING AMOUNT DUE.</li>
-                  <li>COPY OF TRANSPORT DOCUMENT EVIDENCING SHIPMENT OF GOODS OR PERFORMANCE OF SERVICES.</li>
-                </ol>
-                <p class="mb-3">
-                  ALL DOCUMENTS MUST BE IN ENGLISH AND MUST BE PRESENTED AT OUR COUNTERS AT 
-                  {{ sblc.issuing_bank.address }} NO LATER THAN THE EXPIRY DATE.
-                </p>
-                <p class="mb-3">
-                  PARTIAL DRAWINGS {% if sblc.partial_drawings %}ARE PERMITTED{% else %}ARE NOT PERMITTED{% endif %}.
-                </p>
-                <p class="mb-3">
-                  MULTIPLE DRAWINGS {% if sblc.multiple_drawings %}ARE PERMITTED{% else %}ARE NOT PERMITTED{% endif %}.
-                </p>
-                <p class="mb-3">
-                  {{ sblc.special_conditions }}
-                </p>
-                <p class="mb-0">
-                  THIS STANDBY LETTER OF CREDIT IS SUBJECT TO THE INTERNATIONAL STANDBY PRACTICES, INTERNATIONAL CHAMBER 
-                  OF COMMERCE PUBLICATION NO. 590 (ISP98).
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Authentication -->
-          <div class="mb-4">
-            <h4 class="text-primary">AUTHENTICATION</h4>
-            <div class="card border-light bg-light">
-              <div class="card-body">
-                <p class="mb-1">
-                  THIS STANDBY LETTER OF CREDIT HAS BEEN TRANSMITTED BY SWIFT TO THE ADVISING BANK. 
-                  THE ADVISING BANK MAY VERIFY THE AUTHENTICITY OF THIS LETTER OF CREDIT BY CONTACTING:
-                </p>
-                <p class="mb-1">{{ sblc.issuing_bank.name }}</p>
-                <p class="mb-1">SWIFT: {{ sblc.issuing_bank.swift_code }}</p>
-                <p class="mb-1">TEL: {{ sblc.issuing_bank.phone }}</p>
-                <p class="mb-0">EMAIL: {{ sblc.issuing_bank.email }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Authorized Signature -->
-          <div class="row mt-5">
-            <div class="col-md-6">
-              <div class="border-bottom border-dark" style="height: 40px;"></div>
-              <p class="mt-1">Authorized Signature</p>
-            </div>
-            <div class="col-md-6">
-              <div class="border-bottom border-dark" style="height: 40px;"></div>
-              <p class="mt-1">Authorized Signature</p>
-            </div>
-          </div>
-
-          <!-- Bank Seal Placeholder -->
-          <div class="text-center mt-4">
-            <div class="d-inline-block border border-dark rounded-circle p-3 mb-2" style="width: 120px; height: 120px;">
-              <div class="w-100 h-100 d-flex align-items-center justify-content-center">
-                <p class="mb-0 small">BANK SEAL</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Verification Info -->
-      <div class="card shadow mb-4">
-        <div class="card-header bg-secondary text-white">
-          <h4 class="mb-0">Verification Information</h4>
-        </div>
-        <div class="card-body">
-          <div class="mb-3">
-            <p class="mb-1">To verify the authenticity of this Standby Letter of Credit, please:</p>
-            <ol>
-              <li>Contact the issuing bank via the SWIFT system</li>
-              <li>Provide the SBLC reference number: {{ sblc.reference_number }}</li>
-              <li>Verify the details with the bank's Letter of Credit department</li>
-            </ol>
-          </div>
-          <div class="alert alert-info mb-0">
-            <i class="fas fa-info-circle me-2"></i>
-            This SBLC has been digitally registered in the ICC Banking Commission Electronic Registry for enhanced security.
-          </div>
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="d-flex justify-content-between">
-        <a href="{{ url_for('swift.sblc_list') }}" class="btn btn-secondary">
-          <i class="fas fa-arrow-left me-1"></i> Back to List
-        </a>
-        <div>
-          <button type="button" class="btn btn-primary me-2" onclick="window.print();">
-            <i class="fas fa-print me-1"></i> Print
-          </button>
-          <button type="button" class="btn btn-success me-2" id="btnDownloadPDF">
-            <i class="fas fa-file-pdf me-1"></i> Download PDF
-          </button>
-          <button type="button" class="btn btn-info me-2" id="btnVerify">
-            <i class="fas fa-check-circle me-1"></i> Verify
-          </button>
-          {% if sblc.status == 'DRAFT' %}
-          <a href="{{ url_for('swift.edit_sblc', sblc_id=sblc.id) }}" class="btn btn-warning me-2">
-            <i class="fas fa-edit me-1"></i> Edit
-          </a>
-          <button type="button" class="btn btn-danger" id="btnIssue">
-            <i class="fas fa-paper-plane me-1"></i> Issue
-          </button>
-          {% endif %}
+          <pre class="bg-light p-3 font-monospace small" style="white-space: pre-wrap;">{{ swift_message }}</pre>
         </div>
       </div>
     </div>
   </div>
 </div>
-
-{% block extra_js %}
-<script>
-  $(document).ready(function() {
-    // PDF Download functionality
-    $('#btnDownloadPDF').click(function() {
-      window.location.href = "{{ url_for('swift.download_sblc_pdf', sblc_id=sblc.id) }}";
-    });
-
-    // Verification functionality
-    $('#btnVerify').click(function() {
-      $.get("{{ url_for('swift.verify_sblc', sblc_id=sblc.id) }}", function(data) {
-        if (data.verified) {
-          alert("This SBLC has been verified as authentic.");
-        } else {
-          alert("Verification failed. Please contact the issuing bank directly.");
-        }
-      });
-    });
-
-    // Issue functionality for draft SBLCs
-    $('#btnIssue').click(function() {
-      if (confirm("Are you sure you want to issue this SBLC? This action cannot be undone.")) {
-        $.post("{{ url_for('swift.issue_sblc', sblc_id=sblc.id) }}", function(data) {
-          if (data.success) {
-            alert("SBLC successfully issued.");
-            window.location.reload();
-          } else {
-            alert("Error issuing SBLC: " + data.message);
-          }
-        });
-      }
-    });
-  });
-</script>
-{% endblock %}
 {% endblock %}

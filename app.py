@@ -412,6 +412,23 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering admin routes: {str(e)}")
             
+        # Register SBLC routes
+        try:
+            from routes.sblc_routes import sblc_bp
+            app.register_blueprint(sblc_bp)
+            logger.info("SBLC routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering SBLC routes: {str(e)}")
+            logger.warning("Application will run without SBLC functionality")
+            
+        # Import SBLC models
+        try:
+            import sblc_models  # noqa: F401
+            logger.info("SBLC models imported successfully")
+        except Exception as e:
+            logger.error(f"Error importing SBLC models: {str(e)}")
+            logger.warning("Application will run without SBLC functionality")ng admin routes: {str(e)}")
+            
         # Register Account Management routes
         try:
             from routes.account_management_routes import account_bp

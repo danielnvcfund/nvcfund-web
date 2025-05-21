@@ -1,13 +1,21 @@
 """
 Standby Letter of Credit (SBLC) Models
-This module provides database models for Standby Letters of Credit and related entities.
+This module defines the database models for the SBLC issuance system.
 """
-import enum
-from datetime import datetime
-from sqlalchemy import Enum, Text
+import logging
+import uuid
+from datetime import datetime, timedelta
+from enum import Enum
+from sqlalchemy import Column, String, Integer, Float, Boolean, Text, ForeignKey, DateTime, Enum as SQLEnum
+from sqlalchemy.orm import relationship
 from app import db
+from models import User
+from account_holder_models import AccountHolder, Address
+from num2words import num2words
 
-class SBLCStatus(enum.Enum):
+logger = logging.getLogger(__name__)
+
+class SBLCStatus(Enum):
     """Status of a Standby Letter of Credit"""
     DRAFT = "draft"
     ISSUED = "issued"
@@ -15,176 +23,200 @@ class SBLCStatus(enum.Enum):
     DRAWN = "drawn"
     EXPIRED = "expired"
     CANCELLED = "cancelled"
-    REJECTED = "rejected"
-    HONORED = "honored"
 
-class SBLCType(enum.Enum):
-    """Types of Standby Letters of Credit"""
-    PERFORMANCE = "performance"  # Ensures performance of non-financial contractual obligations
-    FINANCIAL = "financial"      # Ensures payment of financial obligations
-    ADVANCE_PAYMENT = "advance_payment"  # Protects against non-delivery after advance payment
-    BID_BOND = "bid_bond"        # Ensures bidder will honor their bid and sign a contract
-    DIRECT_PAY = "direct_pay"    # Primary payment method rather than contingent
-    CLEAN = "clean"              # No documents required for drawing, just a statement of default
-    REVOLVING = "revolving"      # Automatically renews for a set period
+class SBLCDrawStatus(Enum):
+    """Status of a draw against an SBLC"""
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    COMPLETED = "completed"
 
 class StandbyLetterOfCredit(db.Model):
-    """Standby Letter of Credit model for NVC Banking Platform"""
+    """Standby Letter of Credit (SBLC) model"""
     __tablename__ = 'standby_letter_of_credit'
     
-    id = db.Column(db.Integer, primary_key=True)
-    reference_number = db.Column(db.String(64), unique=True, nullable=False)
+    id = Column(Integer, primary_key=True)
+    reference_number = Column(String(50), unique=True, nullable=False)
     
-    # Basic SBLC details
-    amount = db.Column(db.Numeric(precision=20, scale=2), nullable=False)
-    currency = db.Column(db.String(10), nullable=False)
-    issue_date = db.Column(db.Date, nullable=False)
-    expiry_date = db.Column(db.Date, nullable=False)
-    expiry_place = db.Column(db.String(100), nullable=False)
-    applicable_law = db.Column(db.String(100), nullable=False)
+    # Parties
+    applicant_id = Column(Integer, ForeignKey('account_holder.id'), nullable=False)
+    applicant = relationship("AccountHolder", foreign_keys=[applicant_id])
+    applicant_account_number = Column(String(50), nullable=False)
+    applicant_contact_info = Column(String(255), nullable=True)
     
-    # Drawing conditions
-    partial_drawings = db.Column(db.Boolean, default=True)
-    multiple_drawings = db.Column(db.Boolean, default=True)
+    beneficiary_name = Column(String(255), nullable=False)
+    beneficiary_address = Column(Text, nullable=False)
+    beneficiary_account_number = Column(String(50), nullable=True)
+    beneficiary_bank_name = Column(String(255), nullable=False)
+    beneficiary_bank_swift = Column(String(50), nullable=False)
+    beneficiary_bank_address = Column(Text, nullable=True)
     
-    # Issuing bank details (NVC)
-    issuing_bank_id = db.Column(db.Integer, db.ForeignKey('financial_institution.id'))
-    issuing_bank = db.relationship('FinancialInstitution', foreign_keys=[issuing_bank_id])
+    # Issuing bank (if not NVC Banking Platform)
+    issuing_bank_id = Column(Integer, ForeignKey('financial_institution.id'), nullable=True)
+    issuing_bank = relationship("FinancialInstitution", foreign_keys=[issuing_bank_id])
     
-    # Applicant details
-    applicant_id = db.Column(db.Integer, db.ForeignKey('account_holder.id'), nullable=False)
-    applicant = db.relationship('AccountHolder', foreign_keys=[applicant_id])
-    applicant_account_number = db.Column(db.String(50), nullable=False)
-    applicant_contact_info = db.Column(db.String(200))
+    # SBLC details
+    amount = Column(Float, nullable=False)
+    currency = Column(String(3), nullable=False, default="USD")
+    issue_date = Column(DateTime, nullable=False, default=datetime.utcnow)
+    expiry_date = Column(DateTime, nullable=False)
+    expiry_place = Column(String(255), nullable=False, default="New York, NY, USA")
     
-    # Beneficiary details
-    beneficiary_name = db.Column(db.String(255), nullable=False)
-    beneficiary_address = db.Column(db.Text, nullable=False)
-    beneficiary_account_number = db.Column(db.String(50))
-    beneficiary_bank_name = db.Column(db.String(255), nullable=False)
-    beneficiary_bank_swift = db.Column(db.String(11), nullable=False)
-    beneficiary_bank_address = db.Column(db.Text)
+    # Contract details
+    contract_name = Column(String(255), nullable=False)
+    contract_date = Column(DateTime, nullable=False)
     
-    # Underlying transaction
-    contract_name = db.Column(db.String(255), nullable=False)
-    contract_date = db.Column(db.Date, nullable=False)
-    contract_details = db.Column(db.Text)
+    # Drawing options
+    partial_drawings = Column(Boolean, default=False)
+    multiple_drawings = Column(Boolean, default=False)
     
-    # Terms and conditions
-    special_conditions = db.Column(db.Text)
-    sblc_type = db.Column(Enum(SBLCType), default=SBLCType.PERFORMANCE)
+    # Legal and verification
+    applicable_law = Column(String(255), nullable=False, default="International Standby Practices ISP98")
+    verification_code = Column(String(50), nullable=True)
+    special_conditions = Column(Text, nullable=True)
     
-    # Status tracking
-    status = db.Column(Enum(SBLCStatus), default=SBLCStatus.DRAFT)
-    mt760_message = db.Column(db.Text)  # SWIFT MT760 message content
-    swift_confirmation = db.Column(db.String(100))  # Confirmation received from SWIFT system
-    verification_code = db.Column(db.String(64))  # Code for verifying authenticity
+    # Tracking
+    status = Column(SQLEnum(SBLCStatus), nullable=False, default=SBLCStatus.DRAFT)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    last_updated_by_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    last_updated_by = relationship("User", foreign_keys=[last_updated_by_id])
     
-    # Timestamps and tracking
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    issued_at = db.Column(db.DateTime)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    created_by = db.relationship('User', foreign_keys=[created_by_id])
+    # Relationships
+    amendments = relationship("SBLCAmendment", back_populates="sblc", cascade="all, delete-orphan")
+    draws = relationship("SBLCDraw", back_populates="sblc", cascade="all, delete-orphan")
     
-    # Drawing details
-    drawings = db.relationship('SBLCDrawing', backref='sblc', lazy=True)
-    
-    def __repr__(self):
-        return f"<SBLC {self.reference_number}: {self.currency} {self.amount} - {self.status.value}>"
-    
-    def amount_in_words(self):
-        """Convert the amount to words for formal documents"""
-        try:
-            from num2words import num2words
-            return num2words(float(self.amount), to='currency', currency=self.currency)
-        except:
-            # Fallback if num2words fails or is not available
-            return f"{float(self.amount)} {self.currency}"
+    def __init__(self, **kwargs):
+        """Initialize a new SBLC with a unique reference number"""
+        if 'reference_number' not in kwargs:
+            # Generate unique reference number: NVC-SBLC-YYMMDD-XXXXX
+            today = datetime.utcnow()
+            random_part = str(uuid.uuid4().int)[:5]
+            kwargs['reference_number'] = f"NVC-SBLC-{today.strftime('%y%m%d')}-{random_part}"
+        
+        # Set default verification code
+        if 'verification_code' not in kwargs:
+            kwargs['verification_code'] = str(uuid.uuid4().hex)[:8].upper()
+            
+        super().__init__(**kwargs)
     
     def days_until_expiry(self):
         """Calculate days remaining until expiry"""
-        if self.expiry_date:
-            from datetime import date
-            today = date.today()
-            if self.expiry_date > today:
-                return (self.expiry_date - today).days
-            return 0
-        return None
+        if not self.expiry_date:
+            return None
+            
+        now = datetime.utcnow()
+        if self.expiry_date < now:
+            return None  # Already expired
+            
+        delta = self.expiry_date - now
+        return delta.days
     
-    def is_active(self):
-        """Check if the SBLC is currently active"""
-        return self.status in [SBLCStatus.ISSUED, SBLCStatus.AMENDED]
+    def is_expired(self):
+        """Check if the SBLC is expired"""
+        return self.expiry_date < datetime.utcnow()
     
-    def generate_reference_number(self):
-        """Generate a unique reference number for the SBLC"""
-        import random
-        import string
-        from datetime import datetime
-        
-        # Format: SBLC-YYYYMMDD-XXXXX
-        date_part = datetime.utcnow().strftime("%Y%m%d")
-        random_part = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
-        return f"SBLC-{date_part}-{random_part}"
-
-class SBLCDrawing(db.Model):
-    """Record of drawings against a Standby Letter of Credit"""
-    __tablename__ = 'sblc_drawing'
+    def can_be_drawn(self):
+        """Check if the SBLC can be drawn"""
+        return (
+            self.status == SBLCStatus.ISSUED and 
+            not self.is_expired() and
+            self.remaining_amount() > 0
+        )
     
-    id = db.Column(db.Integer, primary_key=True)
-    sblc_id = db.Column(db.Integer, db.ForeignKey('standby_letter_of_credit.id'), nullable=False)
+    def remaining_amount(self):
+        """Calculate remaining drawable amount"""
+        drawn_amount = sum(draw.amount for draw in self.draws if draw.status in [SBLCDrawStatus.APPROVED, SBLCDrawStatus.COMPLETED])
+        return self.amount - drawn_amount
     
-    # Drawing details
-    amount = db.Column(db.Numeric(precision=20, scale=2), nullable=False)
-    currency = db.Column(db.String(10), nullable=False)
-    drawing_date = db.Column(db.Date, nullable=False)
-    beneficiary_statement = db.Column(db.Text, nullable=False)  # Beneficiary's statement claiming default
-    supporting_documents = db.Column(db.Text)  # Description of supporting docs provided
-    
-    # Processing details
-    is_compliant = db.Column(db.Boolean)  # Whether the drawing request meets requirements
-    review_notes = db.Column(db.Text)  # Notes from document review
-    decision = db.Column(db.String(20))  # HONORED, REJECTED, PENDING
-    payment_date = db.Column(db.Date)  # Date when payment was made
-    payment_reference = db.Column(db.String(100))  # Reference for the payment transaction
-    
-    # Timestamps and tracking
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    processed_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    processed_by = db.relationship('User')
-    
-    def __repr__(self):
-        return f"<SBLCDrawing {self.id}: {self.currency} {self.amount} - {self.decision}>"
+    def amount_in_words(self):
+        """Convert amount to words"""
+        try:
+            return num2words(self.amount, lang='en', to='currency', currency=self.currency)
+        except:
+            # Fallback method if num2words fails
+            return f"{self.amount} {self.currency}"
 
 class SBLCAmendment(db.Model):
-    """Records of amendments to a Standby Letter of Credit"""
+    """Amendment to a Standby Letter of Credit"""
     __tablename__ = 'sblc_amendment'
     
-    id = db.Column(db.Integer, primary_key=True)
-    sblc_id = db.Column(db.Integer, db.ForeignKey('standby_letter_of_credit.id'), nullable=False)
-    sblc = db.relationship('StandbyLetterOfCredit', backref='amendments')
+    id = Column(Integer, primary_key=True)
+    sblc_id = Column(Integer, ForeignKey('standby_letter_of_credit.id'), nullable=False)
+    sblc = relationship("StandbyLetterOfCredit", back_populates="amendments")
+    
+    amendment_number = Column(String(50), nullable=False)
+    issue_date = Column(DateTime, nullable=False, default=datetime.utcnow)
+    effective_date = Column(DateTime, nullable=False)
     
     # Amendment details
-    amendment_number = db.Column(db.Integer, nullable=False)  # Sequential number for amendments
-    amendment_date = db.Column(db.Date, nullable=False)
+    changes_description = Column(Text, nullable=False)
+    new_amount = Column(Float, nullable=True)  # If amount is changed
+    new_expiry_date = Column(DateTime, nullable=True)  # If expiry date is changed
     
-    # Fields that can be amended
-    new_expiry_date = db.Column(db.Date)
-    new_amount = db.Column(db.Numeric(precision=20, scale=2))
-    new_currency = db.Column(db.String(10))
-    amendment_text = db.Column(db.Text, nullable=False)  # Detailed description of changes
+    # Additional fields to track other changes
+    beneficiary_changed = Column(Boolean, default=False)
+    terms_changed = Column(Boolean, default=False)
+    drawing_options_changed = Column(Boolean, default=False)
     
-    # Processing details
-    is_accepted = db.Column(db.Boolean)  # Whether beneficiary accepted the amendment
-    acceptance_date = db.Column(db.Date)
-    mt767_message = db.Column(db.Text)  # SWIFT MT767 message content for amendment
+    # Changes detail JSON (to store specific changes)
+    changes_json = Column(Text, nullable=True)
     
-    # Timestamps and tracking
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    created_by = db.relationship('User')
+    # Tracking
+    status = Column(String(20), nullable=False, default="pending")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_by_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    created_by = relationship("User")
     
-    def __repr__(self):
-        return f"<SBLCAmendment {self.amendment_number}: {self.sblc_id}>"
+    def __init__(self, **kwargs):
+        """Initialize a new SBLC Amendment with a sequential amendment number"""
+        if 'amendment_number' not in kwargs and 'sblc' in kwargs:
+            sblc = kwargs['sblc']
+            amendment_count = len(sblc.amendments) + 1
+            kwargs['amendment_number'] = f"{sblc.reference_number}-A{amendment_count:02d}"
+        
+        super().__init__(**kwargs)
+
+class SBLCDraw(db.Model):
+    """Draw against a Standby Letter of Credit"""
+    __tablename__ = 'sblc_draw'
+    
+    id = Column(Integer, primary_key=True)
+    sblc_id = Column(Integer, ForeignKey('standby_letter_of_credit.id'), nullable=False)
+    sblc = relationship("StandbyLetterOfCredit", back_populates="draws")
+    
+    draw_reference = Column(String(50), nullable=False)
+    request_date = Column(DateTime, nullable=False, default=datetime.utcnow)
+    amount = Column(Float, nullable=False)
+    
+    # Beneficiary bank account details for the draw
+    beneficiary_account = Column(String(255), nullable=False)
+    beneficiary_bank = Column(String(255), nullable=False)
+    beneficiary_swift = Column(String(50), nullable=False)
+    
+    # Draw details
+    reason = Column(Text, nullable=False)
+    supporting_documents = Column(Text, nullable=True)  # JSON list of document references
+    
+    # Review and approval
+    reviewer_id = Column(Integer, ForeignKey('user.id'), nullable=True)
+    reviewer = relationship("User", foreign_keys=[reviewer_id])
+    review_date = Column(DateTime, nullable=True)
+    review_notes = Column(Text, nullable=True)
+    
+    # Status tracking
+    status = Column(SQLEnum(SBLCDrawStatus), nullable=False, default=SBLCDrawStatus.PENDING)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __init__(self, **kwargs):
+        """Initialize a new SBLC Draw with a unique reference number"""
+        if 'draw_reference' not in kwargs and 'sblc' in kwargs:
+            sblc = kwargs['sblc']
+            draw_count = len(sblc.draws) + 1
+            today = datetime.utcnow()
+            kwargs['draw_reference'] = f"{sblc.reference_number}-D{draw_count:02d}-{today.strftime('%y%m%d')}"
+        
+        super().__init__(**kwargs)
