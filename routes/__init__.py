@@ -57,6 +57,6 @@ web_blueprint.register_blueprint(swift, url_prefix='/swift')
 web_blueprint.register_blueprint(ach, url_prefix='/ach')
 web_blueprint.register_blueprint(correspondent, url_prefix='/correspondent')
 web_blueprint.register_blueprint(institutional_bp, url_prefix='/institutional')
-web_blueprint.register_blueprint(sblc_bp, url_prefix='/sblc')  # Register our new SBLC routes
+# SBLC routes are registered directly in app.py, not here
 web_blueprint.register_blueprint(payment_history_bp)
 web_blueprint.register_blueprint(pdf_receipt_bp)
