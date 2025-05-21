@@ -1093,6 +1093,26 @@ def create_app():
             logger.warning("Institutional routes module not found")
         except Exception as e:
             logger.error(f"Error registering institutional routes: {str(e)}")
+            
+        # Register Treasury to Stablecoin Transfer routes
+        try:
+            from routes.treasury_stablecoin import treasury_bp
+            app.register_blueprint(treasury_bp)
+            logger.info("Treasury to Stablecoin transfer routes registered successfully")
+        except ImportError:
+            logger.warning("Treasury to Stablecoin transfer routes module not found")
+        except Exception as e:
+            logger.error(f"Error registering Treasury to Stablecoin transfer routes: {str(e)}")
+            
+        # Register Payment Options routes
+        try:
+            from routes.payment_routes import payment_bp
+            app.register_blueprint(payment_bp)
+            logger.info("Payment options routes registered successfully")
+        except ImportError:
+            logger.warning("Payment options routes module not found")
+        except Exception as e:
+            logger.error(f"Error registering Payment options routes: {str(e)}")
 
         logger.info("Application initialized successfully")
 
