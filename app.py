@@ -818,6 +818,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering Direct Static File routes: {str(e)}")
             logger.warning("Application will run without Direct Static File functionality")
+            
+        # Register Stripe NVCT Payment routes
+        try:
+            from routes.stripe_nvct_routes import stripe_bp as stripe_nvct_bp
+            app.register_blueprint(stripe_nvct_bp)
+            logger.info("Stripe NVCT payment routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Stripe NVCT payment routes: {str(e)}")
+            logger.warning("Application will run without Stripe NVCT payment functionality")
         
         # Register Institutional Agreements routes
         try:
