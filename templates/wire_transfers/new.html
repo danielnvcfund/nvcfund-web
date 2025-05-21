@@ -93,11 +93,11 @@
                     </div>
                     
                     <div class="col-md-6 form-group">
-                        {{ form.originator_account.label(class="form-label") }}
-                        {{ form.originator_account(class="form-control") }}
-                        {% if form.originator_account.errors %}
+                        {{ form.sender_account.label(class="form-label") }}
+                        {{ form.sender_account(class="form-control") }}
+                        {% if form.sender_account.errors %}
                             <div class="invalid-feedback d-block">
-                                {% for error in form.originator_account.errors %}
+                                {% for error in form.sender_account.errors %}
                                     {{ error }}
                                 {% endfor %}
                             </div>
