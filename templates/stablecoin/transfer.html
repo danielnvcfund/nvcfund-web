@@ -27,8 +27,8 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="from_account_id" class="form-label">From Account</label>
-                                        <select class="form-select" id="from_account_id" name="from_account_id" required>
+                                        <label for="from_account_id" class="form-label fw-bold">From Account</label>
+                                        <select class="form-select" id="from_account_id" name="from_account_id" required style="color: #000; background-color: #fff; border: 1px solid #375a7f;">
                                             <option value="" selected disabled>Select source account</option>
                                             {% for account in accounts %}
                                                 <option value="{{ account.id }}" 
@@ -39,30 +39,32 @@
                                                 </option>
                                             {% endfor %}
                                         </select>
-                                        <div class="form-text">Select the account to transfer funds from.</div>
+                                        <div class="form-text fw-medium">Select the account to transfer funds from.</div>
                                     </div>
                                 </div>
                                 
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="to_account_number" class="form-label">To Account Number</label>
+                                        <label for="to_account_number" class="form-label fw-bold">To Account Number</label>
                                         <input type="text" class="form-control" id="to_account_number" name="to_account_number" 
                                                placeholder="NVCT-XXXXXX" required pattern="NVCT-[A-Z0-9]+" 
-                                               title="Enter a valid NVC Token account number starting with NVCT-">
-                                        <div class="form-text">Enter the recipient's account number (e.g., NVCT-1A2B3C).</div>
+                                               title="Enter a valid NVC Token account number starting with NVCT-"
+                                               style="color: #000; background-color: #fff; border: 1px solid #375a7f;">
+                                        <div class="form-text fw-medium">Enter the recipient's account number (e.g., NVCT-1A2B3C).</div>
                                     </div>
                                 </div>
                                 
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="amount" class="form-label">Amount</label>
+                                        <label for="amount" class="form-label fw-bold">Amount</label>
                                         <div class="input-group">
                                             <input type="number" class="form-control" id="amount" name="amount" 
-                                                   step="0.01" min="0.01" required>
-                                            <span class="input-group-text" id="currency-addon">NVCT</span>
+                                                   step="0.01" min="0.01" required
+                                                   style="color: #000; background-color: #fff; border: 1px solid #375a7f;">
+                                            <span class="input-group-text" id="currency-addon" style="color: #000; background-color: #e9ecef; border: 1px solid #375a7f;">NVCT</span>
                                         </div>
-                                        <div class="form-text">Enter the amount to transfer.</div>
-                                        <div id="balance-warning" class="text-danger small mt-1 d-none">
+                                        <div class="form-text fw-medium">Enter the amount to transfer.</div>
+                                        <div id="balance-warning" class="text-danger fw-bold small mt-1 d-none">
                                             Insufficient balance in the selected account.
                                         </div>
                                     </div>
@@ -70,43 +72,44 @@
                                 
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="description" class="form-label">Description (Optional)</label>
+                                        <label for="description" class="form-label fw-bold">Description (Optional)</label>
                                         <input type="text" class="form-control" id="description" name="description" 
-                                               placeholder="Payment for services">
-                                        <div class="form-text">Enter a description for this transfer.</div>
+                                               placeholder="Payment for services"
+                                               style="color: #000; background-color: #fff; border: 1px solid #375a7f;">
+                                        <div class="form-text fw-medium">Enter a description for this transfer.</div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="card bg-light my-4">
+                            <div class="card my-4" style="background-color: #e9ecef; border: 1px solid #375a7f;">
                                 <div class="card-body">
-                                    <h5 class="card-title h6">Transfer Summary</h5>
+                                    <h5 class="card-title h6 fw-bold" style="color: #000;">Transfer Summary</h5>
                                     <div class="row">
                                         <div class="col-md-6">
                                             <p class="mb-2">
-                                                <span class="text-muted">From: </span>
-                                                <span id="summary-from">Select an account</span>
+                                                <span class="fw-bold" style="color: #333;">From: </span>
+                                                <span id="summary-from" style="color: #000;">Select an account</span>
                                             </p>
                                             <p class="mb-2">
-                                                <span class="text-muted">To: </span>
-                                                <span id="summary-to">Enter an account number</span>
+                                                <span class="fw-bold" style="color: #333;">To: </span>
+                                                <span id="summary-to" style="color: #000;">Enter an account number</span>
                                             </p>
                                         </div>
                                         <div class="col-md-6">
                                             <p class="mb-2">
-                                                <span class="text-muted">Amount: </span>
-                                                <span id="summary-amount">0.00 NVCT</span>
+                                                <span class="fw-bold" style="color: #333;">Amount: </span>
+                                                <span id="summary-amount" style="color: #000;">0.00 NVCT</span>
                                             </p>
                                             <p class="mb-2">
-                                                <span class="text-muted">Fee: </span>
-                                                <span id="summary-fee">0.00 NVCT</span>
+                                                <span class="fw-bold" style="color: #333;">Fee: </span>
+                                                <span id="summary-fee" style="color: #000;">0.00 NVCT</span>
                                             </p>
                                         </div>
                                     </div>
-                                    <hr>
+                                    <hr style="border-color: #375a7f;">
                                     <div class="d-flex justify-content-between">
-                                        <span class="text-muted">Total:</span>
-                                        <span id="summary-total" class="fw-bold">0.00 NVCT</span>
+                                        <span class="fw-bold" style="color: #333;">Total:</span>
+                                        <span id="summary-total" class="fw-bold" style="color: #000;">0.00 NVCT</span>
                                     </div>
                                 </div>
                             </div>
