@@ -383,12 +383,12 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('sblc.new_standby_letter_of_credit') }}">
+                                <a class="dropdown-item" href="/sblc/new">
                                     <i class="fas fa-shield-alt me-1"></i> Standby Letter of Credit (SBLC)
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('sblc.list_sblcs') }}">
+                                <a class="dropdown-item" href="/sblc/list">
                                     <i class="fas fa-list me-1"></i> Manage SBLCs
                                 </a>
                             </li>
@@ -1010,7 +1010,7 @@
                 <a href="{{ url_for('web.swift.swift_messages') }}" class="btn btn-outline-light">
                     <i class="fas fa-university me-1"></i> SWIFT Banking
                 </a>
-                <a href="{{ url_for('sblc.new_standby_letter_of_credit') }}" class="btn btn-outline-success">
+                <a href="/sblc/new" class="btn btn-outline-success">
                     <i class="fas fa-shield-alt me-1"></i> New SBLC
                 </a>
                 <a href="{{ url_for('web.swift.new_fund_transfer') }}" class="btn btn-outline-primary">
