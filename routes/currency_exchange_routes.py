@@ -5,7 +5,7 @@ This module provides routes for currency exchange operations
 
 import logging
 from datetime import datetime
-from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, session
 from flask_login import login_required, current_user
 from account_holder_models import CurrencyType, ExchangeType, ExchangeStatus, CurrencyExchangeTransaction, CurrencyExchangeRate
 from currency_exchange_service import CurrencyExchangeService
@@ -222,7 +222,15 @@ def convert():
             db.session.commit()
             
             flash(f"Successfully exchanged {amount} {from_currency.value} to {converted_amount} {to_currency.value}", "success")
-            return redirect(url_for('currency_exchange.index'))
+            
+            # Store the transaction ID in session for the success page
+            session['last_exchange_id'] = exchange_tx.id
+            
+            # Redirect to success page with next action options
+            return redirect(url_for('currency_exchange.exchange_success', 
+                           to_currency=to_currency.value, 
+                           amount=converted_amount,
+                           tx_id=exchange_tx.id))
         
         except Exception as e:
             db.session.rollback()
@@ -266,6 +274,42 @@ def rates():
                           rate_matrix=rate_matrix,
                           currencies=major_currencies,
                           title="Exchange Rates")
+
+@currency_exchange.route('/exchange-success')
+@login_required
+def exchange_success():
+    """Display exchange success page with next steps"""
+    # Get parameters
+    to_currency = request.args.get('to_currency')
+    amount = float(request.args.get('amount', 0))
+    tx_id = request.args.get('tx_id')
+    
+    # Try to get from session if not in URL
+    if not tx_id and 'last_exchange_id' in session:
+        tx_id = session.pop('last_exchange_id')
+    
+    if not tx_id:
+        flash("No transaction information found", "warning")
+        return redirect(url_for('currency_exchange.index'))
+    
+    # Get transaction details
+    transaction = CurrencyExchangeTransaction.query.get(tx_id)
+    if not transaction:
+        flash("Transaction not found", "warning")
+        return redirect(url_for('currency_exchange.index'))
+    
+    # Make sure this transaction belongs to the current user
+    if transaction.account_holder_id != current_user.account_holder.id:
+        flash("You don't have permission to view this transaction", "danger")
+        return redirect(url_for('currency_exchange.index'))
+    
+    return render_template(
+        'currency_exchange/exchange_success.html',
+        to_currency=to_currency or transaction.to_currency,
+        amount=amount or transaction.to_amount,
+        transaction=transaction,
+        title="Exchange Completed Successfully"
+    )
 
 @currency_exchange.route('/transactions')
 @login_required
