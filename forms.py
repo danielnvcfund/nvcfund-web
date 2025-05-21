@@ -1346,23 +1346,68 @@ class SwiftMT542Form(FlaskForm):
 
 class LetterOfCreditForm(FlaskForm):
     """Form for creating a Standby Letter of Credit (SBLC) via SWIFT"""
+    # Bank selection fields
+    issuing_bank_id = SelectField('Issuing Bank', coerce=int, validators=[DataRequired()])
+    advising_bank_id = SelectField('Advising Bank', coerce=int, validators=[DataRequired()])
+    
+    # Basic LC details
     receiver_institution_id = SelectField('Financial Institution', coerce=int, validators=[DataRequired()])
     amount = FloatField('Amount', validators=[DataRequired()])
     currency = SelectField('Currency', choices=[
         ('USD', 'USD'), ('EUR', 'EUR'), ('GBP', 'GBP'), ('CHF', 'CHF'), 
         ('JPY', 'JPY'), ('CNY', 'CNY'), ('CAD', 'CAD'), ('AUD', 'AUD')
     ], validators=[DataRequired()])
-    beneficiary = TextAreaField('Beneficiary', validators=[DataRequired(), Length(min=5, max=200)], 
-                               description="Name and address of the beneficiary")
-    expiry_date = DateField('Expiry Date', validators=[DataRequired()], 
-                           format='%Y-%m-%d')
-    terms_and_conditions = TextAreaField('Terms and Conditions', 
-                                        validators=[DataRequired(), Length(min=10, max=2000)],
-                                        description="Full terms and conditions of the letter of credit")
+    
+    # Beneficiary information fields
+    beneficiary_name = StringField('Beneficiary Name', validators=[DataRequired(), Length(max=100)])
+    beneficiary_address = TextAreaField('Beneficiary Address', validators=[DataRequired(), Length(max=200)])
+    beneficiary_account = StringField('Beneficiary Account', validators=[Optional(), Length(max=50)])
+    beneficiary_bank = StringField('Beneficiary Bank', validators=[Optional(), Length(max=100)])
+    beneficiary_bank_swift = StringField('Beneficiary Bank SWIFT', validators=[Optional(), Length(max=11)])
+    
+    # Applicant information
+    applicant_name = StringField('Applicant Name', validators=[DataRequired(), Length(max=100)])
+    applicant_address = TextAreaField('Applicant Address', validators=[DataRequired(), Length(max=200)])
+    applicant_reference = StringField('Applicant Reference', validators=[Optional(), Length(max=50)])
+    
+    # Date fields
+    issue_date = DateField('Issue Date', validators=[DataRequired()], format='%Y-%m-%d')
+    expiry_date = DateField('Expiry Date', validators=[DataRequired()], format='%Y-%m-%d')
+    expiry_place = StringField('Expiry Place', validators=[DataRequired(), Length(max=100)])
+    
+    # Additional fields
+    available_with = StringField('Available With', validators=[Optional(), Length(max=100)])
+    transaction_type = SelectField('Transaction Type', choices=[
+        ('standby', 'Standby Letter of Credit'),
+        ('commercial', 'Commercial Letter of Credit'),
+        ('performance', 'Performance Guarantee')
+    ], validators=[DataRequired()])
+    
+    # Document and goods fields
+    goods_description = TextAreaField('Goods Description', validators=[Optional(), Length(max=500)])
+    documents_required = TextAreaField('Documents Required', validators=[Optional(), Length(max=500)])
+    special_conditions = TextAreaField('Special Conditions', validators=[Optional(), Length(max=500)])
+    
+    # Terms and conditions
+    charges = StringField('Charges', validators=[Optional(), Length(max=100)])
+    partial_shipments = SelectField('Partial Shipments', choices=[
+        ('allowed', 'Allowed'),
+        ('not_allowed', 'Not Allowed')
+    ], default='allowed')
+    transferable = BooleanField('Transferable', default=False)
+    confirmation_instructions = StringField('Confirmation Instructions', validators=[Optional(), Length(max=100)])
+    presentation_period = StringField('Presentation Period', validators=[Optional(), Length(max=100)])
+    remarks = TextAreaField('Additional Remarks', validators=[Optional(), Length(max=500)])
+    
+    # Legacy fields for backward compatibility
+    beneficiary = TextAreaField('Beneficiary', validators=[Optional(), Length(min=5, max=200)])
+    terms_and_conditions = TextAreaField('Terms and Conditions', validators=[Optional(), Length(min=10, max=2000)])
 
     def __init__(self, *args, **kwargs):
         super(LetterOfCreditForm, self).__init__(*args, **kwargs)
-        # Set default expiry date to 6 months from now
+        # Set default dates
+        if not self.issue_date.data:
+            self.issue_date.data = datetime.now()
         if not self.expiry_date.data:
             self.expiry_date.data = datetime.now() + timedelta(days=180)
 
