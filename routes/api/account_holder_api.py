@@ -33,7 +33,7 @@ def get_accounts(account_holder_id):
                 'id': account.id,
                 'account_number': account.account_number,
                 'account_type': account.account_type.value if hasattr(account, 'account_type') and account.account_type else 'Unknown',
-                'currency': account.currency,
+                'currency': account.currency.value if hasattr(account.currency, 'value') else str(account.currency),
                 'balance': float(account.balance) if hasattr(account, 'balance') else 0.0
             })
         
