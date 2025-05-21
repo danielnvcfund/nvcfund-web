@@ -81,11 +81,11 @@
                     </div>
                     
                     <div class="col-md-6 form-group">
-                        {{ form.originator_name.label(class="form-label") }}
-                        {{ form.originator_name(class="form-control") }}
-                        {% if form.originator_name.errors %}
+                        {{ form.sender_name.label(class="form-label") }}
+                        {{ form.sender_name(class="form-control") }}
+                        {% if form.sender_name.errors %}
                             <div class="invalid-feedback d-block">
-                                {% for error in form.originator_name.errors %}
+                                {% for error in form.sender_name.errors %}
                                     {{ error }}
                                 {% endfor %}
                             </div>
