@@ -1097,7 +1097,7 @@ def create_app():
         # Register Treasury to Stablecoin Transfer routes
         try:
             from routes.treasury_stablecoin import treasury_bp
-            app.register_blueprint(treasury_bp)
+            app.register_blueprint(treasury_bp, name='treasury_stablecoin_bp')
             logger.info("Treasury to Stablecoin transfer routes registered successfully")
         except ImportError:
             logger.warning("Treasury to Stablecoin transfer routes module not found")
@@ -1107,7 +1107,7 @@ def create_app():
         # Register Payment Options routes
         try:
             from routes.payment_routes import payment_bp
-            app.register_blueprint(payment_bp)
+            app.register_blueprint(payment_bp, name='payment_options_bp')
             logger.info("Payment options routes registered successfully")
         except ImportError:
             logger.warning("Payment options routes module not found")

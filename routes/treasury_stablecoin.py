@@ -17,7 +17,7 @@ from decorators import roles_required
 from utils import generate_transaction_id, format_currency
 
 # Blueprint Definition
-treasury_bp = Blueprint('treasury', __name__, url_prefix='/treasury')
+treasury_bp = Blueprint('treasury_stablecoin', __name__, url_prefix='/treasury-stablecoin')
 
 @treasury_bp.route('/transfer-to-stablecoin', methods=['GET', 'POST'])
 @login_required
