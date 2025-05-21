@@ -774,6 +774,15 @@ def create_app():
             logger.error(f"Error registering Document Download Center routes: {str(e)}")
             logger.warning("Application will run without Document Download Center functionality")
             
+        # Register Standby Letter of Credit (SBLC) routes
+        try:
+            from routes.sblc_routes import sblc_bp
+            app.register_blueprint(sblc_bp)
+            logger.info("SBLC routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering SBLC routes: {str(e)}")
+            logger.warning("Application will run without SBLC functionality")
+            
         # Register Client Dashboard routes
         try:
             from routes.client_dashboard_routes import register_client_dashboard_routes

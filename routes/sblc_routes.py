@@ -135,7 +135,8 @@ def sblc_list():
         flash(f"An error occurred: {str(e)}", 'danger')
         return redirect(url_for('web.main.dashboard'))
 
-@sblc_bp.route('/create', methods=['GET', 'POST'])
+@sblc_bp.route('/new', methods=['GET', 'POST'])
+@sblc_bp.route('/create', methods=['GET', 'POST'])  # Keep old route for backward compatibility
 @login_required
 @admin_or_bank_officer_required
 def create_sblc():
