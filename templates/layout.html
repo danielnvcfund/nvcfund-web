@@ -370,14 +370,31 @@
 
                     <!-- SWIFT Banking dropdown -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if '/swift/' in request.path %}active fw-bold{% endif %}" href="#" id="swiftDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle {% if '/swift/' in request.path or '/sblc/' in request.path %}active fw-bold{% endif %}" href="#" id="swiftDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-university me-1"></i> SWIFT Banking
                         </a>
                         <ul class="dropdown-menu dropdown-menu-animated" aria-labelledby="swiftDropdown">
                             <li>
+                                <h6 class="dropdown-header">Letter of Credit Services</h6>
+                            </li>
+                            <li>
                                 <a class="dropdown-item" href="{{ url_for('web.swift.new_letter_of_credit') }}">
-                                    <i class="fas fa-file-contract me-1"></i> Letter of Credit (MT760)
+                                    <i class="fas fa-file-contract me-1"></i> Traditional Letter of Credit
                                 </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('sblc.new_standby_letter_of_credit') }}">
+                                    <i class="fas fa-shield-alt me-1"></i> Standby Letter of Credit (SBLC)
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('sblc.list_sblcs') }}">
+                                    <i class="fas fa-list me-1"></i> Manage SBLCs
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <h6 class="dropdown-header">Fund Transfers</h6>
                             </li>
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('web.swift.new_fund_transfer') }}">
@@ -993,11 +1010,14 @@
                 <a href="{{ url_for('web.swift.swift_messages') }}" class="btn btn-outline-light">
                     <i class="fas fa-university me-1"></i> SWIFT Banking
                 </a>
+                <a href="{{ url_for('sblc.new_standby_letter_of_credit') }}" class="btn btn-outline-success">
+                    <i class="fas fa-shield-alt me-1"></i> New SBLC
+                </a>
                 <a href="{{ url_for('web.swift.new_fund_transfer') }}" class="btn btn-outline-primary">
-                    <i class="fas fa-money-bill-wave me-1"></i> New Fund Transfer
+                    <i class="fas fa-money-bill-wave me-1"></i> Fund Transfer
                 </a>
                 <a href="{{ url_for('web.swift.new_free_format_message') }}" class="btn btn-outline-light">
-                    <i class="fas fa-envelope me-1"></i> New SWIFT Message
+                    <i class="fas fa-envelope me-1"></i> SWIFT Message
                 </a>
             </div>
             

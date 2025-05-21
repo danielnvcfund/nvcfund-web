@@ -1402,6 +1402,9 @@ class LetterOfCreditForm(FlaskForm):
     # Legacy fields for backward compatibility
     beneficiary = TextAreaField('Beneficiary', validators=[Optional(), Length(min=5, max=200)])
     terms_and_conditions = TextAreaField('Terms and Conditions', validators=[Optional(), Length(min=10, max=2000)])
+    
+    # Submit button
+    submit = SubmitField('Create Letter of Credit')
 
     def __init__(self, *args, **kwargs):
         super(LetterOfCreditForm, self).__init__(*args, **kwargs)
