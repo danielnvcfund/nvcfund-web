@@ -128,8 +128,18 @@ function getCurrencyMetadata(currencyCode) {
  * @returns {string} HTML string with flag and currency code
  */
 function formatCurrencyOption(currencyCode) {
-    const metadata = getCurrencyMetadata(currencyCode);
-    return `<img src="${metadata.flag}" alt="${metadata.country}" class="currency-flag" width="16" height="16"> ${currencyCode} - ${metadata.name}`;
+    try {
+        const metadata = getCurrencyMetadata(currencyCode);
+        // Check if metadata properties exist before using them
+        const flag = metadata && metadata.flag ? metadata.flag : '/static/images/flags/globe.svg';
+        const country = metadata && metadata.country ? metadata.country : 'Global';
+        const name = metadata && metadata.name ? metadata.name : currencyCode;
+        
+        return `<img src="${flag}" alt="${country}" class="currency-flag" width="16" height="16"> ${currencyCode} - ${name}`;
+    } catch (error) {
+        console.error("Error formatting currency option:", error);
+        return `${currencyCode}`;
+    }
 }
 
 /**
@@ -140,17 +150,31 @@ function formatCurrencyOption(currencyCode) {
 function initCurrencyDropdowns(fromSelectId = 'from_currency', toSelectId = 'to_currency') {
     // Helper function to update select options
     function updateSelectOptions(selectId) {
-        const select = document.getElementById(selectId);
-        if (!select) return;
-        
-        // For each option in the select
-        Array.from(select.options).forEach(option => {
-            const currencyCode = option.value;
-            option.innerHTML = formatCurrencyOption(currencyCode);
-        });
+        try {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            
+            // For each option in the select
+            Array.from(select.options).forEach(option => {
+                try {
+                    const currencyCode = option.value;
+                    option.innerHTML = formatCurrencyOption(currencyCode);
+                } catch (error) {
+                    console.error(`Error formatting option for ${option.value}:`, error);
+                    // Provide a failsafe fallback display
+                    option.innerHTML = option.value;
+                }
+            });
+        } catch (error) {
+            console.error(`Error updating select options for ${selectId}:`, error);
+        }
     }
     
-    // Update both selects
-    updateSelectOptions(fromSelectId);
-    updateSelectOptions(toSelectId);
+    try {
+        // Update both selects
+        updateSelectOptions(fromSelectId);
+        updateSelectOptions(toSelectId);
+    } catch (error) {
+        console.error("Error initializing currency dropdowns:", error);
+    }
 }

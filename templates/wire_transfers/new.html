@@ -81,11 +81,11 @@
                     </div>
                     
                     <div class="col-md-6 form-group">
-                        {{ form.sender_name.label(class="form-label") }}
-                        {{ form.sender_name(class="form-control") }}
-                        {% if form.sender_name.errors %}
+                        {{ form.originator_name.label(class="form-label") }}
+                        {{ form.originator_name(class="form-control") }}
+                        {% if form.originator_name.errors %}
                             <div class="invalid-feedback d-block">
-                                {% for error in form.sender_name.errors %}
+                                {% for error in form.originator_name.errors %}
                                     {{ error }}
                                 {% endfor %}
                             </div>
@@ -93,23 +93,35 @@
                     </div>
                     
                     <div class="col-md-6 form-group">
-                        {{ form.sender_account.label(class="form-label") }}
-                        {{ form.sender_account(class="form-control") }}
-                        {% if form.sender_account.errors %}
+                        {{ form.originator_account.label(class="form-label") }}
+                        {{ form.originator_account(class="form-control") }}
+                        {% if form.originator_account.errors %}
                             <div class="invalid-feedback d-block">
-                                {% for error in form.sender_account.errors %}
+                                {% for error in form.originator_account.errors %}
                                     {{ error }}
                                 {% endfor %}
                             </div>
                         {% endif %}
                     </div>
                     
-                    <div class="col-md-12 form-group">
+                    <div class="col-md-6 form-group">
                         {{ form.originator_address.label(class="form-label") }}
-                        {{ form.originator_address(class="form-control", rows=3) }}
+                        {{ form.originator_address(class="form-control") }}
                         {% if form.originator_address.errors %}
                             <div class="invalid-feedback d-block">
                                 {% for error in form.originator_address.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.originator_bank_swift.label(class="form-label") }}
+                        {{ form.originator_bank_swift(class="form-control") }}
+                        {% if form.originator_bank_swift.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.originator_bank_swift.errors %}
                                     {{ error }}
                                 {% endfor %}
                             </div>
@@ -119,10 +131,9 @@
                 
                 <div class="row mb-4">
                     <div class="col-md-12">
-                        <h4 class="text-primary"><i class="fas fa-user-plus"></i> Beneficiary Information</h4>
+                        <h4 class="text-primary"><i class="fas fa-user-check"></i> Recipient Information</h4>
                         <hr>
                     </div>
-                    
                     <div class="col-md-6 form-group">
                         {{ form.beneficiary_name.label(class="form-label") }}
                         {{ form.beneficiary_name(class="form-control") }}
@@ -162,7 +173,7 @@
                 
                 <div class="row mb-4">
                     <div class="col-md-12">
-                        <h4 class="text-primary"><i class="fas fa-landmark"></i> Beneficiary Bank Information</h4>
+                        <h4 class="text-primary"><i class="fas fa-landmark"></i> Recipient Bank Information</h4>
                         <hr>
                     </div>
                     
@@ -188,7 +199,18 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <small class="form-text text-muted">{{ form.beneficiary_bank_swift.description }}</small>
+                    </div>
+                    
+                    <div class="col-md-12 form-group">
+                        {{ form.beneficiary_bank_address.label(class="form-label") }}
+                        {{ form.beneficiary_bank_address(class="form-control", rows=2) }}
+                        {% if form.beneficiary_bank_address.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.beneficiary_bank_address.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                     
                     <div class="col-md-6 form-group">
@@ -202,58 +224,15 @@
                             </div>
                         {% endif %}
                     </div>
-                    
-                    <div class="col-md-6 form-group">
-                        {{ form.beneficiary_bank_address.label(class="form-label") }}
-                        {{ form.beneficiary_bank_address(class="form-control", rows=3) }}
-                        {% if form.beneficiary_bank_address.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.beneficiary_bank_address.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
                 </div>
                 
                 <div class="row mb-4">
                     <div class="col-md-12">
-                        <h4 class="text-primary"><i class="fas fa-exchange-alt"></i> Intermediary Bank (Optional)</h4>
+                        <h4 class="text-primary"><i class="fas fa-shield-alt"></i> Additional Information</h4>
                         <hr>
                     </div>
                     
                     <div class="col-md-6 form-group">
-                        {{ form.intermediary_bank_name.label(class="form-label") }}
-                        {{ form.intermediary_bank_name(class="form-control") }}
-                        {% if form.intermediary_bank_name.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.intermediary_bank_name.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="col-md-6 form-group">
-                        {{ form.intermediary_bank_swift.label(class="form-label") }}
-                        {{ form.intermediary_bank_swift(class="form-control") }}
-                        {% if form.intermediary_bank_swift.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.intermediary_bank_swift.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <div class="row mb-4">
-                    <div class="col-md-12">
-                        <h4 class="text-primary"><i class="fas fa-comment"></i> Additional Information</h4>
-                        <hr>
-                    </div>
-                    
-                    <div class="col-md-12 form-group">
                         {{ form.message_to_beneficiary.label(class="form-label") }}
                         {{ form.message_to_beneficiary(class="form-control", rows=3) }}
                         {% if form.message_to_beneficiary.errors %}
@@ -263,7 +242,36 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <small class="form-text text-muted">{{ form.message_to_beneficiary.description }}</small>
+                        <small class="form-text text-muted">Include any special instructions or references for the beneficiary.</small>
+                    </div>
+                    
+                    <div class="col-md-6 form-group">
+                        {{ form.purpose.label(class="form-label") }}
+                        {{ form.purpose(class="form-control", rows=3) }}
+                        {% if form.purpose.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.purpose.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Specify the purpose of this transfer (e.g., payment for services, investment).</small>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-12 form-group">
+                        <div class="form-check">
+                            {{ form.terms_agree(class="form-check-input") }}
+                            {{ form.terms_agree.label(class="form-check-label") }}
+                            {% if form.terms_agree.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.terms_agree.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 

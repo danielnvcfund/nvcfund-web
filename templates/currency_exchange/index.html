@@ -355,35 +355,73 @@
                     }
                     
                     // Get metadata for currencies
-                    const fromMeta = getCurrencyMetadata(fromCurrency);
-                    const toMeta = getCurrencyMetadata(toCurrency);
+                    // Safely get currency metadata with fallbacks
+                    let fromMeta;
+                    let toMeta;
+                    
+                    try {
+                        fromMeta = getCurrencyMetadata(fromCurrency) || { 
+                            flag: '/static/images/flags/globe.svg', 
+                            country: 'Global',
+                            name: fromCurrency
+                        };
+                    } catch (error) {
+                        console.error("Error getting metadata for " + fromCurrency, error);
+                        fromMeta = { 
+                            flag: '/static/images/flags/globe.svg', 
+                            country: 'Global',
+                            name: fromCurrency
+                        };
+                    }
+                    
+                    try {
+                        toMeta = getCurrencyMetadata(toCurrency) || {
+                            flag: '/static/images/flags/globe.svg', 
+                            country: 'Global',
+                            name: toCurrency
+                        };
+                    } catch (error) {
+                        console.error("Error getting metadata for " + toCurrency, error);
+                        toMeta = { 
+                            flag: '/static/images/flags/globe.svg', 
+                            country: 'Global',
+                            name: toCurrency
+                        };
+                    }
+                    
+                    // Ensure all required properties are available
+                    const fromFlag = fromMeta && fromMeta.flag ? fromMeta.flag : '/static/images/flags/globe.svg';
+                    const fromCountry = fromMeta && fromMeta.country ? fromMeta.country : 'Global';
+                    
+                    const toFlag = toMeta && toMeta.flag ? toMeta.flag : '/static/images/flags/globe.svg';
+                    const toCountry = toMeta && toMeta.country ? toMeta.country : 'Global';
                     
                     // Build HTML with flags
                     const rateHTML = `
                       <span class="currency-display">
-                        <img src="${fromMeta.flag}" alt="${fromMeta.country}" class="currency-flag" width="16" height="16">
+                        <img src="${fromFlag}" alt="${fromCountry}" class="currency-flag" width="16" height="16">
                         1 ${fromCurrency}
                       </span> = 
                       <span class="currency-display">
-                        <img src="${toMeta.flag}" alt="${toMeta.country}" class="currency-flag" width="16" height="16">
+                        <img src="${toFlag}" alt="${toCountry}" class="currency-flag" width="16" height="16">
                         ${formatNumber(data.rate)} ${toCurrency}
                       </span>`;
                       
                     const amountHTML = `
                       <span class="currency-display">
-                        <img src="${fromMeta.flag}" alt="${fromMeta.country}" class="currency-flag" width="16" height="16">
+                        <img src="${fromFlag}" alt="${fromCountry}" class="currency-flag" width="16" height="16">
                         ${formatNumber(amount)} ${fromCurrency}
                       </span>`;
                       
                     const feeHTML = `
                       <span class="currency-display">
-                        <img src="${fromMeta.flag}" alt="${fromMeta.country}" class="currency-flag" width="16" height="16">
+                        <img src="${fromFlag}" alt="${fromCountry}" class="currency-flag" width="16" height="16">
                         ${formatNumber(data.fee_amount.toFixed(2))} ${fromCurrency}
                       </span>`;
                       
                     const finalHTML = `
                       <span class="currency-display">
-                        <img src="${toMeta.flag}" alt="${toMeta.country}" class="currency-flag" width="16" height="16">
+                        <img src="${toFlag}" alt="${toCountry}" class="currency-flag" width="16" height="16">
                         ${formatNumber(data.converted_amount.toFixed(2))} ${toCurrency}
                       </span>`;
                     
