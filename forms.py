@@ -936,6 +936,7 @@ class WireTransferForm(FlaskForm):
     recipient_address = TextAreaField('Recipient Address', validators=[DataRequired(), Length(min=5, max=200)])
     
     amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=0.0)
+    purpose = TextAreaField('Purpose of Transfer', validators=[DataRequired(), Length(min=5, max=200)])
     currency = SelectField('Currency', choices=[
         ('USD', 'US Dollar (USD)'),
         ('EUR', 'Euro (EUR)'),
