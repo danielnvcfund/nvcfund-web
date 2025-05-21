@@ -300,31 +300,52 @@
       return;
     }
     
-    // In a real implementation, we would fetch accounts from the server
-    // For now, we'll add some placeholder options
-    accountSelect.innerHTML = '';
+    // Show loading indicator
+    accountSelect.innerHTML = '<option value="">Loading accounts...</option>';
     
-    // Add a placeholder option (this would be replaced with real data from an API call)
-    const currentAccount = '{{ sblc.applicant_account_number if not is_new else "" }}';
-    
-    // Generate some sample account numbers (in production, fetch from API)
-    const accountTypes = ['CHECKING', 'SAVINGS', 'BUSINESS', 'CUSTODY'];
-    const currencies = ['USD', 'EUR', 'NVCT'];
-    
-    for (let type of accountTypes) {
-      for (let currency of currencies) {
-        const accountNumber = `NVC-GL-${type.substring(0,2)}-${new Date().getFullYear().toString().substring(2)}-${Math.floor(100000 + Math.random() * 900000)}`;
-        const option = document.createElement('option');
-        option.value = accountNumber;
-        option.text = `${accountNumber} (${type} - ${currency})`;
+    // Fetch real account data from the server
+    fetch(`/api/account-holder/${applicantSelect.value}/accounts`)
+      .then(response => response.json())
+      .then(data => {
+        // Clear the loading indicator
+        accountSelect.innerHTML = '';
         
-        if (accountNumber === currentAccount) {
-          option.selected = true;
+        // Get the previously selected account number
+        const currentAccount = '{{ sblc.applicant_account_number if not is_new else request.form.get("applicant_account", "") }}';
+        
+        // Add accounts from the server response
+        if (data.accounts && data.accounts.length > 0) {
+          // Add default option
+          const defaultOption = document.createElement('option');
+          defaultOption.value = '';
+          defaultOption.text = 'Select an account';
+          accountSelect.appendChild(defaultOption);
+          
+          // Add each account
+          data.accounts.forEach(account => {
+            const option = document.createElement('option');
+            option.value = account.account_number;
+            option.text = `${account.account_number} (${account.currency} - ${account.account_type})`;
+            
+            // Select this option if it matches the current account
+            if (account.account_number === currentAccount) {
+              option.selected = true;
+            }
+            
+            accountSelect.appendChild(option);
+          });
+        } else {
+          // No accounts found
+          const option = document.createElement('option');
+          option.value = '';
+          option.text = 'No accounts available';
+          accountSelect.appendChild(option);
         }
-        
-        accountSelect.appendChild(option);
-      }
-    }
+      })
+      .catch(error => {
+        console.error('Error fetching accounts:', error);
+        accountSelect.innerHTML = '<option value="">Error loading accounts</option>';
+      });
   }
 </script>
 {% endblock %}
