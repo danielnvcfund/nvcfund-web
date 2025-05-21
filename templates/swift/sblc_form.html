@@ -120,17 +120,18 @@
                       <div class="card-body">
                         <div class="form-group mb-3">
                           <label class="form-label">Applicant *</label>
-                          <select name="applicant_id" class="form-select" required onchange="updateAccountOptions()">
+                          <select name="applicant_id" id="applicant_select" class="form-select" required onchange="updateAccountOptions()">
                             <option value="">Select an account holder</option>
                             {% for holder in account_holders %}
                             <option value="{{ holder.id }}" {% if not is_new and sblc.applicant_id == holder.id %}selected{% endif %}>{{ holder.name }}</option>
                             {% endfor %}
                           </select>
+                          <small class="text-muted">Select an applicant to load their accounts</small>
                         </div>
                         
                         <div class="form-group mb-3">
                           <label class="form-label">Applicant Account *</label>
-                          <select name="applicant_account" class="form-select" required>
+                          <select name="applicant_account" id="account_select" class="form-select" required>
                             <option value="">Select applicant first</option>
                             <!-- Account options will be loaded dynamically -->
                           </select>
@@ -285,28 +286,42 @@
 {% block extra_js %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM loaded, setting up event listeners");
+    
     // Add event listener to the applicant select
-    const applicantSelect = document.querySelector('select[name="applicant_id"]');
+    const applicantSelect = document.getElementById('applicant_select');
     if (applicantSelect) {
-      applicantSelect.addEventListener('change', updateAccountOptions);
+      console.log("Applicant select found, adding change listener");
+      applicantSelect.addEventListener('change', function() {
+        console.log("Applicant changed to:", applicantSelect.value);
+        updateAccountOptions();
+      });
       
       {% if not is_new %}
       // If editing, load the accounts for the selected applicant
+      console.log("Editing mode, loading accounts for selected applicant");
       updateAccountOptions();
       {% endif %}
+    } else {
+      console.error("Applicant select element not found!");
     }
   });
   
   function updateAccountOptions() {
-    const applicantSelect = document.querySelector('select[name="applicant_id"]');
-    const accountSelect = document.querySelector('select[name="applicant_account"]');
+    console.log("updateAccountOptions called");
+    
+    const applicantSelect = document.getElementById('applicant_select');
+    const accountSelect = document.getElementById('account_select');
     
     if (!applicantSelect || !accountSelect) {
       console.error('Could not find applicant or account select elements');
       return;
     }
     
-    if (!applicantSelect.value) {
+    const applicantId = applicantSelect.value;
+    console.log("Applicant ID:", applicantId);
+    
+    if (!applicantId) {
       // Clear account options if no applicant selected
       accountSelect.innerHTML = '<option value="">Select applicant first</option>';
       return;
@@ -316,17 +331,26 @@
     accountSelect.innerHTML = '<option value="">Loading accounts...</option>';
     
     // Fetch real account data from the server
-    fetch(`/api/account-holder/${applicantSelect.value}/accounts`)
-      .then(response => response.json())
+    console.log(`Fetching accounts for applicant ${applicantId}`);
+    fetch(`/api/account-holder/${applicantId}/accounts`)
+      .then(response => {
+        console.log("API response received:", response.status);
+        return response.json();
+      })
       .then(data => {
+        console.log("Account data received:", data);
+        
         // Clear the loading indicator
         accountSelect.innerHTML = '';
         
         // Get the previously selected account number
         const currentAccount = '{{ sblc.applicant_account_number if not is_new else request.form.get("applicant_account", "") }}';
+        console.log("Previously selected account:", currentAccount);
         
         // Add accounts from the server response
-        if (data.accounts && data.accounts.length > 0) {
+        if (data.success && data.accounts && data.accounts.length > 0) {
+          console.log(`Found ${data.accounts.length} accounts`);
+          
           // Add default option
           const defaultOption = document.createElement('option');
           defaultOption.value = '';
@@ -335,6 +359,7 @@
           
           // Add each account
           data.accounts.forEach(account => {
+            console.log("Adding account option:", account.account_number);
             const option = document.createElement('option');
             option.value = account.account_number;
             option.text = `${account.account_number} (${account.currency} - ${account.account_type})`;
@@ -342,21 +367,23 @@
             // Select this option if it matches the current account
             if (account.account_number === currentAccount) {
               option.selected = true;
+              console.log("Auto-selecting this account");
             }
             
             accountSelect.appendChild(option);
           });
         } else {
           // No accounts found
+          console.log("No accounts found or API error");
           const option = document.createElement('option');
           option.value = '';
-          option.text = 'No accounts available';
+          option.text = data.message || 'No accounts available for this applicant';
           accountSelect.appendChild(option);
         }
       })
       .catch(error => {
         console.error('Error fetching accounts:', error);
-        accountSelect.innerHTML = '<option value="">Error loading accounts</option>';
+        accountSelect.innerHTML = '<option value="">Error loading accounts: ' + error.message + '</option>';
       });
   }
 </script>
