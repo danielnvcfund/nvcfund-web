@@ -427,7 +427,7 @@ def create_app():
             logger.info("SBLC models imported successfully")
         except Exception as e:
             logger.error(f"Error importing SBLC models: {str(e)}")
-            logger.warning("Application will run without SBLC functionality")ng admin routes: {str(e)}")
+            logger.warning("Application will run without SBLC functionality")
             
         # Register Account Management routes
         try:
