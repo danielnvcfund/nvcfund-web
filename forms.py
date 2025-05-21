@@ -919,6 +919,11 @@ class PayPalPaymentForm(FlaskForm):
 
 class WireTransferForm(FlaskForm):
     """Form for wire transfers"""
+    # Source account selection
+    treasury_account_id = SelectField('Source Account', coerce=int, validators=[DataRequired()])
+    correspondent_bank_id = SelectField('Correspondent Bank', coerce=int, validators=[DataRequired()])
+    
+    # Sender information - auto-filled based on selected accounts
     sender_name = StringField('Sender Name', validators=[DataRequired(), Length(min=2, max=100)])
     sender_account = StringField('Sender Account', validators=[DataRequired(), Length(min=5, max=50)])
     sender_bank = StringField('Sending Bank', validators=[DataRequired(), Length(min=2, max=100)])
