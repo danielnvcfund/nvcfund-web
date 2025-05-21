@@ -21,6 +21,7 @@ from routes.api_access_routes import api_access_bp
 from routes.institutional_routes import institutional_bp
 from routes.correspondent_banking_routes import correspondent
 from routes.recapitalization_routes import recapitalization
+from routes.sblc_routes import sblc_bp  # Import our new SBLC routes
 
 # Import payment and transaction routes
 from routes.payment_history_routes import payment_history_bp
@@ -56,5 +57,6 @@ web_blueprint.register_blueprint(swift, url_prefix='/swift')
 web_blueprint.register_blueprint(ach, url_prefix='/ach')
 web_blueprint.register_blueprint(correspondent, url_prefix='/correspondent')
 web_blueprint.register_blueprint(institutional_bp, url_prefix='/institutional')
+web_blueprint.register_blueprint(sblc_bp, url_prefix='/sblc')  # Register our new SBLC routes
 web_blueprint.register_blueprint(payment_history_bp)
 web_blueprint.register_blueprint(pdf_receipt_bp)

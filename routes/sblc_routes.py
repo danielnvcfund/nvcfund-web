@@ -15,8 +15,8 @@ from io import BytesIO
 
 from app import db
 from sblc_models import StandbyLetterOfCredit, SBLCAmendment, SBLCDraw, SBLCStatus, SBLCDrawStatus
-from models import User
-from account_holder_models import AccountHolder, FinancialInstitution
+from models import User, FinancialInstitution
+from account_holder_models import AccountHolder
 from swift_integration import SwiftService
 
 logger = logging.getLogger(__name__)
