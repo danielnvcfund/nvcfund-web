@@ -172,6 +172,63 @@ def get_rate():
     except Exception as e:
         logger.error(f"Error getting exchange rate: {str(e)}")
         return jsonify({'success': False, 'error': 'An error occurred processing your request'}), 500
+        
+@currency_exchange.route('/calculate', methods=['POST'])
+@login_required
+def calculate():
+    """API endpoint for the currency exchange calculator"""
+    from_currency = request.form.get('from_currency')
+    to_currency = request.form.get('to_currency')
+    
+    try:
+        amount = float(request.form.get('amount', '0').replace(',', ''))
+    except ValueError:
+        return jsonify({'success': False, 'error': 'Invalid amount format'}), 400
+    
+    if not from_currency or not to_currency:
+        return jsonify({'success': False, 'error': 'Missing currency parameters'}), 400
+    
+    try:
+        # Convert string to enum
+        from_currency_enum = CurrencyType[from_currency]
+        to_currency_enum = CurrencyType[to_currency]
+        
+        # Create a local exchange service instance
+        local_exchange_service = CurrencyExchangeService(db)
+        
+        # Get exchange rate
+        rate = local_exchange_service.get_exchange_rate(from_currency_enum, to_currency_enum)
+        
+        if rate is None:
+            return jsonify({'success': False, 'error': 'Exchange rate not available for these currencies'}), 400
+            
+        # Calculate conversion
+        converted_amount = amount * rate
+        
+        # Calculate fee (0.5%)
+        fee_amount = converted_amount * 0.005
+        
+        # Final amount after fee
+        final_amount = converted_amount - fee_amount
+        
+        # Format amount with commas for display
+        formatted_amount = "{:,.2f}".format(amount)
+        
+        return jsonify({
+            'success': True,
+            'rate': "{:,.4f}".format(rate),
+            'formatted_amount': formatted_amount,
+            'converted_amount': "{:,.2f}".format(converted_amount),
+            'fee_amount': "{:,.2f}".format(fee_amount),
+            'final_amount': "{:,.2f}".format(final_amount)
+        })
+    
+    except KeyError as e:
+        logger.error(f"Invalid currency code: {str(e)}")
+        return jsonify({'success': False, 'error': f'Invalid currency code: {str(e)}'}), 400
+    except Exception as e:
+        logger.error(f"Error calculating exchange: {str(e)}")
+        return jsonify({'success': False, 'error': 'An error occurred processing your request'}), 500
 
 @currency_exchange.route('/convert', methods=['POST'])
 @login_required
