@@ -13,8 +13,13 @@
                 <div class="card-body">
                     <h3 class="text-center mb-4">$5 Billion Liquidity Facility</h3>
                     
-                    <div class="alert alert-info">
-                        <strong>Partnership Status:</strong> Letter of Intent (LOI) prepared and ready for review
+                    <div class="alert alert-info d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Partnership Status:</strong> Letter of Intent (LOI) prepared and ready for review
+                        </div>
+                        <a href="{{ url_for('bridge_xyz.download_bridge_loi') }}" class="btn btn-success">
+                            <i class="fas fa-file-pdf mr-2"></i> Download LOI PDF
+                        </a>
                     </div>
                     
                     <div class="row">
