@@ -168,6 +168,7 @@
         const descriptionInput = document.getElementById('description');
         const balanceWarning = document.getElementById('balance-warning');
         const submitButton = document.getElementById('submit-transfer');
+        const form = document.querySelector('form');
         
         // Format numbers with commas as they type
         amountInput.addEventListener('input', function(e) {
@@ -222,14 +223,23 @@
             }
             
             // Update Amount summary
-            const amount = parseFloat(amountInput.value) || 0;
-            summaryAmount.textContent = amount.toFixed(2) + ' USD';
+            // Remove commas before parsing
+            const rawAmount = amountInput.value.replace(/,/g, '');
+            const amount = parseFloat(rawAmount) || 0;
+            
+            // Format with commas for display
+            const formattedAmount = amount.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            
+            summaryAmount.textContent = formattedAmount + ' USD';
             
             // Fee is always 0 in this system
             summaryFee.textContent = '0.00 USD';
             
             // Update Total
-            summaryTotal.textContent = amount.toFixed(2) + ' USD';
+            summaryTotal.textContent = formattedAmount + ' USD';
             
             // Check if amount exceeds balance
             if (treasuryAccountSelect.selectedIndex > 0 && amount > 0) {
@@ -259,6 +269,27 @@
         
         // Initialize summary
         updateSummary();
+        
+        // Handle form submission
+        form.addEventListener('submit', function(e) {
+            // First check if fields are filled
+            if (!treasuryAccountSelect.value || !nvctAccountSelect.value || !amountInput.value) {
+                e.preventDefault();
+                alert('Please fill in all required fields');
+                return false;
+            }
+            
+            // Make sure amount is a valid number
+            const rawAmount = amountInput.value.replace(/,/g, '');
+            if (isNaN(rawAmount) || parseFloat(rawAmount) <= 0) {
+                e.preventDefault();
+                alert('Please enter a valid amount');
+                return false;
+            }
+            
+            // All validation passed, form will submit
+            return true;
+        });
     });
 </script>
 {% endblock %}

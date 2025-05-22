@@ -42,7 +42,15 @@ def transfer_to_stablecoin():
             # Get form data
             treasury_account_id = request.form.get('treasury_account_id', type=int)
             nvct_account_id = request.form.get('nvct_account_id', type=int)
-            amount = request.form.get('amount', type=float)
+            
+            # Handle amount with comma separators
+            amount_str = request.form.get('amount', '')
+            try:
+                # Remove commas and convert to float
+                amount = float(amount_str.replace(',', ''))
+            except ValueError:
+                amount = None
+                
             description = request.form.get('description', '')
             
             # Basic validation
