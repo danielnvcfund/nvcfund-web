@@ -273,23 +273,45 @@ def generate_bridge_xyz_loi():
     elements.append(Paragraph("If the terms outlined in this LOI are acceptable, please indicate your acceptance by signing below.", justify_style))
     elements.append(Spacer(1, 0.5*inch))
     
-    # Create a table for signatures
+    # Create a more professional signature block
+    elements.append(Spacer(1, 0.5*inch))
+    
+    # Create two-column layout for signatures
     signature_data = [
-        ['NVC FUND HOLDING TRUST', 'BRIDGE.XYZ'],
-        ['________________________', '________________________'],
-        ['Name:', 'Name:'],
-        ['Title:', 'Title:'],
-        ['Date:', 'Date:']
+        # Headers
+        [Paragraph('<b>FOR NVC FUND HOLDING TRUST:</b>', justify_style), 
+         Paragraph('<b>FOR BRIDGE.XYZ:</b>', justify_style)],
+         
+        # Spacing
+        [Spacer(1, 0.6*inch), Spacer(1, 0.6*inch)],
+        
+        # Signature lines
+        [Paragraph('__________________________________', justify_style),
+         Paragraph('__________________________________', justify_style)],
+         
+        # Name lines
+        [Paragraph('Name: ___________________________', justify_style),
+         Paragraph('Name: ___________________________', justify_style)],
+         
+        # Title lines
+        [Paragraph('Title: ____________________________', justify_style),
+         Paragraph('Title: ____________________________', justify_style)],
+         
+        # Date lines
+        [Paragraph('Date: ____________________________', justify_style),
+         Paragraph('Date: ____________________________', justify_style)],
     ]
     
-    signature_table = Table(signature_data, colWidths=[2.25*inch, 2.25*inch])
+    # Create signature table with better spacing and formatting
+    signature_table = Table(signature_data, colWidths=[2.75*inch, 2.75*inch], spaceBefore=20, spaceAfter=20)
     signature_table.setStyle(TableStyle([
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('FONTNAME', (0, 0), (1, 0), 'Helvetica-Bold'),
-        ('LINEBELOW', (0, 1), (1, 1), 1, colors.black),
-        ('TOPPADDING', (0, 0), (-1, -1), 5),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
     ]))
     
     elements.append(signature_table)
