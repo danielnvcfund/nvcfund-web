@@ -285,7 +285,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="exchange-form" action="{{ url_for('currency_exchange.create') }}" method="post">
+                <form id="exchange-form" action="{{ url_for('currency_exchange.rates') }}" method="post">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     
                     <div class="form-group mb-3">
