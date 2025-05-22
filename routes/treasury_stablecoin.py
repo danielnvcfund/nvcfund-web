@@ -61,21 +61,21 @@ def transfer_to_stablecoin():
             
             if not treasury_account:
                 flash("Selected treasury account not found", "danger")
-                return redirect(url_for('treasury.transfer_to_stablecoin'))
+                return redirect(url_for('treasury_stablecoin_bp.transfer_to_stablecoin'))
                 
             if not nvct_account:
                 flash("Selected NVCT account not found", "danger")
-                return redirect(url_for('treasury.transfer_to_stablecoin'))
+                return redirect(url_for('treasury_stablecoin_bp.transfer_to_stablecoin'))
             
             # Check sufficient funds
             if treasury_account.available_balance < amount:
                 flash("Insufficient funds in treasury account", "danger")
-                return redirect(url_for('treasury.transfer_to_stablecoin'))
+                return redirect(url_for('treasury_stablecoin_bp.transfer_to_stablecoin'))
             
             # Check NVCT account ownership
             if nvct_account.account_holder_id != account_holder.id:
                 flash("You do not have permission to fund this NVCT account", "danger")
-                return redirect(url_for('treasury.transfer_to_stablecoin'))
+                return redirect(url_for('treasury_stablecoin_bp.transfer_to_stablecoin'))
             
             try:
                 # Generate transaction ID

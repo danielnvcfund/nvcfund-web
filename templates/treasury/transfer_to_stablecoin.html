@@ -22,7 +22,7 @@
                     </div>
                     
                     {% if treasury_accounts and nvct_accounts %}
-                        <form action="{{ url_for('treasury.transfer_to_stablecoin') }}" method="POST">
+                        <form action="{{ url_for('treasury_stablecoin_bp.transfer_to_stablecoin') }}" method="POST">
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <div class="mb-3">
