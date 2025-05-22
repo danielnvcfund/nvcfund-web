@@ -125,7 +125,8 @@ def transfer_to_stablecoin():
                 db.session.commit()
                 
                 flash(f"Successfully transferred {format_currency(amount, 'USD')} from Treasury to NVCT account", "success")
-                return redirect(url_for('stablecoin.account_details', account_id=nvct_account.id))
+                # Redirect to the stablecoin dashboard instead of the account details page
+                return redirect(url_for('stablecoin.index'))
                 
             except SQLAlchemyError as e:
                 db.session.rollback()
