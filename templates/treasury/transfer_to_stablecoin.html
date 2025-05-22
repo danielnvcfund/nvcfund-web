@@ -58,12 +58,12 @@
                                     <div class="mb-3">
                                         <label for="amount" class="form-label fw-bold">Amount</label>
                                         <div class="input-group">
-                                            <input type="number" class="form-control" id="amount" name="amount" 
-                                                   step="0.01" min="0.01" required
+                                            <input type="text" class="form-control" id="amount" name="amount" 
+                                                   required
                                                    style="color: #000; background-color: #fff; border: 1px solid #375a7f;">
                                             <span class="input-group-text" id="currency-addon" style="color: #000; background-color: #e9ecef; border: 1px solid #375a7f;">USD</span>
                                         </div>
-                                        <div class="form-text fw-medium">Enter the amount to transfer.</div>
+                                        <div class="form-text fw-medium">Enter the amount to transfer. You can use commas as separators (e.g., 1,000,000).</div>
                                         <div id="balance-warning" class="text-danger fw-bold small mt-1 d-none">
                                             Insufficient balance in the selected account.
                                         </div>
@@ -168,6 +168,34 @@
         const descriptionInput = document.getElementById('description');
         const balanceWarning = document.getElementById('balance-warning');
         const submitButton = document.getElementById('submit-transfer');
+        
+        // Format numbers with commas as they type
+        amountInput.addEventListener('input', function(e) {
+            // Store cursor position
+            const cursorPos = this.selectionStart;
+            
+            // Get value and remove all non-digits except decimal point
+            let value = this.value.replace(/[^\d.]/g, '');
+            
+            // Check if it's a valid number
+            if (value && !isNaN(value)) {
+                // Split into integer and decimal parts
+                let parts = value.split('.');
+                let integerPart = parts[0];
+                let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+                
+                // Add commas to integer part
+                integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                
+                // Calculate new cursor position (accounting for added commas)
+                const newValue = integerPart + decimalPart;
+                this.value = newValue;
+                
+                // Calculate new cursor position
+                const newCursorPos = cursorPos + (newValue.length - value.length);
+                this.setSelectionRange(newCursorPos, newCursorPos);
+            }
+        });
         
         // Summary elements
         const summaryFrom = document.getElementById('summary-from');
