@@ -50,7 +50,7 @@
                                     <tr>
                                         <td><code>{{ account.account_number }}</code></td>
                                         <td>{{ account.account_type }}</td>
-                                        <td><strong>{{ account.balance }} {{ account.currency }}</strong></td>
+                                        <td><strong>{{ "{:,.1f}".format(account.balance) }} {{ account.currency }}</strong></td>
                                         <td>{{ account.created_at.strftime('%Y-%m-%d') }}</td>
                                         <td>
                                             {% if account.is_active %}

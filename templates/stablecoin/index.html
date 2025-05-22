@@ -63,7 +63,7 @@
                                                 <a href="{{ url_for('stablecoin.account_details', account_id=account.id) }}" class="list-group-item list-group-item-action" style="background-color: #f8f9fa; border: 1px solid #dee2e6; margin-bottom: 8px;">
                                                     <div class="d-flex w-100 justify-content-between">
                                                         <h6 class="mb-1" style="color: #061c38; font-weight: 600; font-size: 1.1rem;">{{ account.account_number }}</h6>
-                                                        <span class="badge rounded-pill" style="background-color: #061c38; color: white; font-weight: 600; padding: 5px 10px; font-size: 0.9rem;">{{ account.balance }} {{ account.currency }}</span>
+                                                        <span class="badge rounded-pill" style="background-color: #061c38; color: white; font-weight: 600; padding: 5px 10px; font-size: 0.9rem;">{{ "{:,.1f}".format(account.balance) }} {{ account.currency }}</span>
                                                     </div>
                                                     <p class="mb-1" style="color: #495057; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">{{ account.account_type }}</p>
                                                 </a>
