@@ -845,6 +845,15 @@ def create_app():
         except Exception as e:
             logger.error(f"Error registering Institutional Agreements routes: {str(e)}")
             logger.warning("Application will run without Institutional Agreements functionality")
+            
+        # Register Bridge.xyz Partnership routes
+        try:
+            from routes.bridge_xyz_routes import bridge_xyz_bp
+            app.register_blueprint(bridge_xyz_bp, url_prefix='/bridge')
+            logger.info("Bridge.xyz Partnership routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Bridge.xyz Partnership routes: {str(e)}")
+            logger.warning("Application will run without Bridge.xyz Partnership functionality")
         
         # Create PHP test integration user
         try:

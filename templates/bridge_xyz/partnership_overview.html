@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+
+{% block title %}Bridge.xyz Strategic Partnership{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card bg-dark text-white mb-4">
+                <div class="card-header bg-primary">
+                    <h2 class="mb-0">Strategic Partnership with Bridge.xyz</h2>
+                </div>
+                <div class="card-body">
+                    <h3 class="text-center mb-4">$5 Billion Liquidity Facility</h3>
+                    
+                    <div class="alert alert-info">
+                        <strong>Partnership Status:</strong> Letter of Intent (LOI) prepared and ready for review
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Key Partnership Elements</h4>
+                            <ul class="list-group list-group-flush bg-transparent">
+                                <li class="list-group-item bg-dark text-white border-secondary">Initial $500M liquidity phase with scaling to $5B</li>
+                                <li class="list-group-item bg-dark text-white border-secondary">Multi-tier transaction fee model (0.25-0.40%)</li>
+                                <li class="list-group-item bg-dark text-white border-secondary">Stablecoin settlement integration</li>
+                                <li class="list-group-item bg-dark text-white border-secondary">Cross-chain bridge development</li>
+                                <li class="list-group-item bg-dark text-white border-secondary">36-month term with renewal options</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Partnership Benefits</h4>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item bg-dark text-white border-secondary">Enhanced liquidity for NVCToken</li>
+                                <li class="list-group-item bg-dark text-white border-secondary">Global stablecoin infrastructure access</li>
+                                <li class="list-group-item bg-dark text-white border-secondary">Access to $10+ trillion asset base</li>
+                                <li class="list-group-item bg-dark text-white border-secondary">Revenue sharing model (70/30 split)</li>
+                                <li class="list-group-item bg-dark text-white border-secondary">Market expansion opportunities</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <a href="{{ url_for('bridge_xyz.download_bridge_loi') }}" class="btn btn-success btn-lg">
+                            <i class="fas fa-file-pdf mr-2"></i> Download Letter of Intent (PDF)
+                        </a>
+                    </div>
+                    
+                    <div class="mt-5">
+                        <h4>Implementation Timeline</h4>
+                        <div class="progress" style="height: 30px; background-color: #17263b;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">Phase 1: LOI (Complete)</div>
+                            <div class="progress-bar bg-info" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">Phase 2: Definitive Agreements</div>
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">Phase 3: Technical Integration</div>
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">Phase 4: Operational Launch</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <p class="mb-0">
+                        <i class="fas fa-info-circle mr-2"></i> This strategic partnership aligns with NVC Fund's focus on creating liquidity channels and establishing key institutional relationships rather than traditional capital raising activities.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
