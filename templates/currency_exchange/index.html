@@ -379,20 +379,30 @@
 <script>
 $(document).ready(function() {
     // Format numbers with commas as they type
-    $('#amount').on('input', function() {
-        // Get the raw value without commas
-        let value = $(this).val().replace(/,/g, '');
+    $('#amount').on('input', function(e) {
+        // Store cursor position
+        const cursorPos = this.selectionStart;
         
-        // Only format if it's a valid number
-        if (!isNaN(value) && value.length > 0) {
-            // Format with commas for thousands
-            let formattedValue = parseFloat(value).toLocaleString('en-US', {
-                maximumFractionDigits: 2,
-                minimumFractionDigits: 0
-            });
+        // Get value and remove all non-digits except decimal point
+        let value = $(this).val().replace(/[^\d.]/g, '');
+        
+        // Check if it's a valid number
+        if (value && !isNaN(value)) {
+            // Split into integer and decimal parts
+            let parts = value.split('.');
+            let integerPart = parts[0];
+            let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
             
-            // Update the field with comma-formatted value
-            $(this).val(formattedValue);
+            // Add commas to integer part
+            integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            
+            // Calculate new cursor position (accounting for added commas)
+            const newValue = integerPart + decimalPart;
+            $(this).val(newValue);
+            
+            // Calculate new cursor position
+            const newCursorPos = cursorPos + (newValue.length - value.length);
+            this.setSelectionRange(newCursorPos, newCursorPos);
         }
     });
     
