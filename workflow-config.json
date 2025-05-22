@@ -1,0 +1,8 @@
+{
+  "workflows": [
+    {
+      "name": "Color Demo",
+      "command": "python serve_demo.py"
+    }
+  ]
+}
