@@ -113,9 +113,14 @@
                     </div>
                     
                     <div class="mt-4 text-center">
-                        <a href="{{ url_for('bridge_xyz.download_bridge_loi') }}" class="btn btn-success btn-lg">
-                            <i class="fas fa-file-pdf mr-2"></i> Download Letter of Intent (PDF)
-                        </a>
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('bridge_xyz.download_bridge_loi') }}" class="btn btn-success btn-lg">
+                                <i class="fas fa-file-pdf mr-2"></i> Download LOI (PDF)
+                            </a>
+                            <a href="{{ url_for('bridge_xyz.download_bridge_loi_docx') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-file-word mr-2"></i> Download Editable LOI (Word)
+                            </a>
+                        </div>
                     </div>
                     
                     <div class="mt-5">
