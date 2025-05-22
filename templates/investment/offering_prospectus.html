@@ -1,0 +1,374 @@
+{% extends "layout.html" %}
+
+{% block title %}NVC Banking Platform - Investment Prospectus{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .prospectus-page {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px;
+        background-color: #ffffff;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .prospectus-header {
+        border-bottom: 2px solid #061c38;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .prospectus-logo {
+        max-width: 180px;
+        margin-bottom: 20px;
+    }
+    
+    .prospectus-title {
+        font-size: 28px;
+        color: #061c38;
+        margin-bottom: 10px;
+    }
+    
+    .prospectus-subtitle {
+        font-size: 18px;
+        color: #555;
+        margin-bottom: 5px;
+    }
+    
+    .prospectus-date {
+        font-size: 14px;
+        color: #888;
+    }
+    
+    .section-title {
+        color: #061c38;
+        font-size: 22px;
+        font-weight: 600;
+        margin: 30px 0 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .highlight-box {
+        background-color: #f8f9fa;
+        border-left: 4px solid #061c38;
+        padding: 15px;
+        margin: 20px 0;
+    }
+    
+    .highlight-box h4 {
+        margin-top: 0;
+        color: #061c38;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+    
+    .data-table th {
+        background-color: #061c38;
+        color: white;
+        text-align: left;
+        padding: 10px;
+    }
+    
+    .data-table td {
+        border: 1px solid #ddd;
+        padding: 10px;
+    }
+    
+    .data-table tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+    
+    .key-metric {
+        font-size: 24px;
+        font-weight: 700;
+        color: #061c38;
+    }
+    
+    .metric-label {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .disclaimer {
+        font-size: 12px;
+        color: #777;
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+    
+    .print-btn {
+        display: inline-block;
+        background-color: #061c38;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-top: 20px;
+    }
+    
+    .print-btn:hover {
+        background-color: #0a2a4e;
+    }
+    
+    @media print {
+        body {
+            background-color: white;
+        }
+        
+        .prospectus-page {
+            box-shadow: none;
+            padding: 0;
+        }
+        
+        .no-print {
+            display: none;
+        }
+        
+        a {
+            text-decoration: none;
+            color: #061c38;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="prospectus-page">
+        <div class="text-end no-print">
+            <button onclick="window.print()" class="print-btn"><i class="fas fa-print me-2"></i> Print / Save as PDF</button>
+        </div>
+        
+        <div class="prospectus-header text-center">
+            <img src="/static/images/logo.png" alt="NVC Banking" class="prospectus-logo">
+            <h1 class="prospectus-title">NVC BANKING PLATFORM</h1>
+            <h2 class="prospectus-subtitle">$50 Million Strategic Investment Opportunity</h2>
+            <p class="prospectus-date">Confidential Offering Prospectus - May 2025</p>
+        </div>
+        
+        <div class="highlight-box">
+            <h4>Executive Summary</h4>
+            <p>NVC Banking Platform is raising $50 million to accelerate the expansion of its established global financial infrastructure. This investment opportunity offers an exceptional combination of institutional-grade security and attractive 18-24% annual returns, backed by over $10 trillion in assets under management.</p>
+        </div>
+        
+        <h2 class="section-title">Investment Highlights</h2>
+        
+        <div class="row mb-4">
+            <div class="col-md-3 text-center mb-3">
+                <p class="key-metric">$10T+</p>
+                <p class="metric-label">Total Assets</p>
+            </div>
+            <div class="col-md-3 text-center mb-3">
+                <p class="key-metric">$1T+</p>
+                <p class="metric-label">Market Cap</p>
+            </div>
+            <div class="col-md-3 text-center mb-3">
+                <p class="key-metric">$289B</p>
+                <p class="metric-label">Annual Revenue</p>
+            </div>
+            <div class="col-md-3 text-center mb-3">
+                <p class="key-metric">18-24%</p>
+                <p class="metric-label">Projected Annual ROI</p>
+            </div>
+        </div>
+        
+        <h2 class="section-title">Company Overview</h2>
+        <p>NVC Banking Platform is a sophisticated blockchain-powered financial institution offering comprehensive multi-gateway payment processing and advanced financial services. The platform serves as a bridge between traditional banking and next-generation financial technologies, with a specialized focus on:</p>
+        
+        <ul>
+            <li>Financial institution recapitalization</li>
+            <li>Treasury management</li>
+            <li>Global settlement infrastructure</li>
+            <li>Multi-currency transaction processing</li>
+            <li>Standby Letter of Credit (SBLC) issuance</li>
+        </ul>
+        
+        <h2 class="section-title">Investment Security</h2>
+        <p>This investment opportunity offers exceptional security through multiple institutional safeguards:</p>
+        
+        <table class="data-table">
+            <tr>
+                <th>Security Factor</th>
+                <th>Details</th>
+            </tr>
+            <tr>
+                <td>Asset Backing</td>
+                <td>$10+ trillion in high-quality assets and cash equivalents held by NVC Fund Holding Trust</td>
+            </tr>
+            <tr>
+                <td>Regulatory Compliance</td>
+                <td>SEC-registered securities with CUSIP/ISIN identifiers and independent verification</td>
+            </tr>
+            <tr>
+                <td>Bloomberg Verification</td>
+                <td>Listed on Bloomberg (3387420Z US, BBGID: BBG000P6FW5)</td>
+            </tr>
+            <tr>
+                <td>Corporate Governance</td>
+                <td>Independent board oversight, regular audits, and transparent financial reporting</td>
+            </tr>
+            <tr>
+                <td>Risk Management</td>
+                <td>Sophisticated treasury controls, diversified asset allocation, and compliance frameworks</td>
+            </tr>
+        </table>
+        
+        <h2 class="section-title">Investment Return Profile</h2>
+        <p>The projected 18-24% annual return is derived from multiple revenue streams:</p>
+        
+        <table class="data-table">
+            <tr>
+                <th>Revenue Source</th>
+                <th>Description</th>
+                <th>Contribution to ROI</th>
+            </tr>
+            <tr>
+                <td>Transaction Fees</td>
+                <td>Revenue from global payment processing across multiple gateways</td>
+                <td>5-7%</td>
+            </tr>
+            <tr>
+                <td>Banking Services</td>
+                <td>Correspondent banking, custody services, and treasury management</td>
+                <td>6-8%</td>
+            </tr>
+            <tr>
+                <td>SBLC Issuance</td>
+                <td>Fees from Standby Letter of Credit issuance</td>
+                <td>3-4%</td>
+            </tr>
+            <tr>
+                <td>Recapitalization Programs</td>
+                <td>Fees from financial institution recapitalization services</td>
+                <td>4-5%</td>
+            </tr>
+        </table>
+        
+        <h2 class="section-title">Strategic Use of Investment Capital</h2>
+        <p>The $50 million investment will be strategically allocated to accelerate growth and enhance infrastructure:</p>
+        
+        <ul>
+            <li><strong>Technology Infrastructure (40%)</strong> - Expanding technical capabilities, enhancing blockchain integration, and scaling systems architecture</li>
+            <li><strong>Regulatory Compliance & Licensing (25%)</strong> - Securing additional banking licenses and expanding regulatory framework</li>
+            <li><strong>Global Market Expansion (20%)</strong> - Establishing operations in key markets and building strategic partnerships</li>
+            <li><strong>Security & Compliance (10%)</strong> - Implementing additional security protocols and compliance mechanisms</li>
+            <li><strong>Operational Reserve (5%)</strong> - Maintaining contingency funds for unexpected opportunities or challenges</li>
+        </ul>
+        
+        <h2 class="section-title">Investment Tiers</h2>
+        
+        <table class="data-table">
+            <tr>
+                <th>Investment Tier</th>
+                <th>Investment Amount</th>
+                <th>Projected Annual ROI</th>
+                <th>Key Benefits</th>
+            </tr>
+            <tr>
+                <td>Institutional Partner</td>
+                <td>$10,000,000+</td>
+                <td>22-24%</td>
+                <td>Board Observer Rights, Strategic Input, Special Fee Structure</td>
+            </tr>
+            <tr>
+                <td>Strategic Investor</td>
+                <td>$5,000,000 - $9,999,999</td>
+                <td>20-22%</td>
+                <td>Advisory Committee Seat, Priority Services, Quarterly Reports</td>
+            </tr>
+            <tr>
+                <td>Growth Partner</td>
+                <td>$1,000,000 - $4,999,999</td>
+                <td>18-20%</td>
+                <td>Enhanced Services, Investor Portal Access, Quarterly Updates</td>
+            </tr>
+        </table>
+        
+        <h2 class="section-title">Platform Capabilities & Achievements</h2>
+        <p>The NVC Banking Platform has established a robust financial infrastructure with diverse capabilities:</p>
+        
+        <ul>
+            <li><strong>Multi-Gateway Payment Processing</strong> - Integrated Stripe, PayPal, SWIFT, ACH, Wire Transfer, and Mojoloop</li>
+            <li><strong>Correspondent Banking Network</strong> - Global banking relationships with real-time settlement capabilities</li>
+            <li><strong>NVCT Stablecoin Ecosystem</strong> - 1:1 USD-pegged stablecoin with multi-currency exchange capabilities</li>
+            <li><strong>SBLC Issuance System</strong> - Comprehensive Standby Letter of Credit issuance platform</li>
+            <li><strong>Financial Institution Recapitalization</strong> - Specialized capital injection programs with regulatory compliance</li>
+            <li><strong>Blockchain Settlement Infrastructure</strong> - Multi-blockchain architecture with smart contract capabilities</li>
+        </ul>
+        
+        <h2 class="section-title">Implementation Timeline</h2>
+        <p>The strategic investment will be deployed according to the following timeline:</p>
+        
+        <table class="data-table">
+            <tr>
+                <th>Timeline</th>
+                <th>Milestone</th>
+                <th>Key Activities</th>
+            </tr>
+            <tr>
+                <td>Q3 2025</td>
+                <td>Capital Raise Completion</td>
+                <td>Close $50M investment and finalize deployment strategy</td>
+            </tr>
+            <tr>
+                <td>Q4 2025</td>
+                <td>Infrastructure Expansion</td>
+                <td>Scale platform infrastructure, enhance security protocols</td>
+            </tr>
+            <tr>
+                <td>Q1 2026</td>
+                <td>Regulatory Framework</td>
+                <td>Secure additional licenses, expand compliance framework</td>
+            </tr>
+            <tr>
+                <td>Q2 2026</td>
+                <td>Global Market Entry</td>
+                <td>Launch in strategic new markets, expand banking network</td>
+            </tr>
+            <tr>
+                <td>Q3-Q4 2026</td>
+                <td>Integration & Scale</td>
+                <td>Complete system integrations, achieve operational scale</td>
+            </tr>
+        </table>
+        
+        <h2 class="section-title">Institutional Credibility</h2>
+        <p>NVC Banking Platform maintains the highest levels of institutional credibility through:</p>
+        
+        <ul>
+            <li><strong>Unit Investment Trust</strong> - CUSIP# 67074B105, ISIN# US67074B1052</li>
+            <li><strong>NVC Fund Bond</strong> - CUSIP# 62944AAA4, ISIN# US62944AAA43</li>
+            <li><strong>Bloomberg Listings</strong> - Bloomberg Identifier: 3387420Z US, BBGID: BBG000P6FW5</li>
+            <li><strong>SEC Registered Transfer Agent</strong> - Transferonline Inc. (since 2009)</li>
+        </ul>
+        
+        <h2 class="section-title">Contact Information</h2>
+        <p>To discuss this investment opportunity in more detail, please contact our Investor Relations team:</p>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Phone:</strong> +1 (XXX) XXX-XXXX</p>
+                <p><strong>Email:</strong> investors@nvcbanking.com</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Website:</strong> www.nvcbanking.com/investors</p>
+                <p><strong>Address:</strong> [Corporate Headquarters Address]</p>
+            </div>
+        </div>
+        
+        <div class="disclaimer">
+            <p><strong>Disclaimer:</strong> This document is for informational purposes only and does not constitute an offer to sell or a solicitation of an offer to buy any securities. The information contained herein is subject to change without notice. NVC Banking Platform does not make any representation or warranty as to the accuracy or completeness of the information contained herein. Investments involve risk and are not guaranteed. Prospective investors should consult with their financial, legal, and tax advisors before investing.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

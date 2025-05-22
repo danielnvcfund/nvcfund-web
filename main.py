@@ -2,9 +2,11 @@ from app import app  # noqa: F401
 from flask import send_file
 from routes.currency_exchange_routes import register_currency_exchange_routes
 from routes.portfolio_routes import portfolio_bp
+from routes.investment_routes import investment_bp
 
 # Register blueprints
 app.register_blueprint(portfolio_bp)
+app.register_blueprint(investment_bp)
 
 # Register the currency exchange routes
 register_currency_exchange_routes(app)
