@@ -347,6 +347,7 @@
             })
             .then(response => response.json())
             .then(data => {
+                console.log("API response:", data);
                 if (data.success) {
                     // Display the result
                     // Add function to format numbers with comma separators
@@ -413,16 +414,34 @@
                         ${formatNumber(amount)} ${fromCurrency}
                       </span>`;
                       
+                    // Safely handle fee data
+                    let fee = 0;
+                    if (typeof data.fee === 'number') {
+                        fee = data.fee;
+                    } else if (typeof data.fee_amount === 'number') {
+                        fee = data.fee_amount;
+                    }
+                    
                     const feeHTML = `
                       <span class="currency-display">
                         <img src="${fromFlag}" alt="${fromCountry}" class="currency-flag" width="16" height="16">
-                        ${formatNumber(data.fee_amount.toFixed(2))} ${fromCurrency}
+                        ${formatNumber(fee.toFixed(2))} ${fromCurrency}
                       </span>`;
                       
+                    // Safely handle converted amount
+                    let convertedAmount = 0;
+                    if (typeof data.converted_amount === 'number') {
+                        convertedAmount = data.converted_amount;
+                    } else if (typeof data.to_amount === 'number') {
+                        convertedAmount = data.to_amount;
+                    } else if (typeof data.rate === 'number') {
+                        convertedAmount = amount * data.rate;
+                    }
+                    
                     const finalHTML = `
                       <span class="currency-display">
                         <img src="${toFlag}" alt="${toCountry}" class="currency-flag" width="16" height="16">
-                        ${formatNumber(data.converted_amount.toFixed(2))} ${toCurrency}
+                        ${formatNumber(convertedAmount.toFixed(2))} ${toCurrency}
                       </span>`;
                     
                     document.getElementById('result-rate').innerHTML = rateHTML;

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Exchange Calculator Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .calculator-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-top: 20px;
+        }
+        .result-container {
+            background-color: #061c38;
+            color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .currency-flag {
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        .currency-display {
+            display: inline-flex;
+            align-items: center;
+            font-weight: 500;
+        }
+        h1 {
+            color: #061c38;
+            margin-bottom: 20px;
+        }
+        .form-label {
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Currency Exchange Calculator Demo</h1>
+        <p class="lead">This demo shows the fixed JavaScript calculator with robust error handling and field name compatibility.</p>
+        
+        <div class="calculator-container">
+            <form id="exchange-calculator-form">
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label for="from-currency" class="form-label">From Currency</label>
+                        <select class="form-select" id="from-currency" required>
+                            <option value="USD">USD - US Dollar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="JPY">JPY - Japanese Yen</option>
+                            <option value="NVCT">NVCT - NVC Token</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="to-currency" class="form-label">To Currency</label>
+                        <select class="form-select" id="to-currency" required>
+                            <option value="NVCT">NVCT - NVC Token</option>
+                            <option value="USD">USD - US Dollar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="JPY">JPY - Japanese Yen</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <label for="amount" class="form-label">Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text" id="currency-symbol">$</span>
+                            <input type="number" class="form-control" id="amount" placeholder="Enter amount" required min="0.01" step="0.01">
+                        </div>
+                    </div>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">Calculate Exchange</button>
+                </div>
+            </form>
+            
+            <div id="calculation-result" class="result-container d-none">
+                <h4 class="mb-4">Exchange Calculation Results</h4>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <p class="text-muted mb-1">Exchange Rate:</p>
+                        <p class="h5" id="result-rate"></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <p class="text-muted mb-1">Your Amount:</p>
+                        <p class="h5" id="result-amount"></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <p class="text-muted mb-1">Fee:</p>
+                        <p class="h5" id="result-fee"></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <p class="text-muted mb-1">You'll Receive:</p>
+                        <p class="h5" id="result-final"></p>
+                    </div>
+                </div>
+                <div class="alert alert-info mt-3" role="alert">
+                    <strong>Note:</strong> This is a demonstration with simulated exchange rates.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('exchange-calculator-form');
+            const calculationResult = document.getElementById('calculation-result');
+            const fromCurrencySelect = document.getElementById('from-currency');
+            const toCurrencySelect = document.getElementById('to-currency');
+            
+            // Currency metadata for display
+            const currencyMetadata = {
+                'USD': {
+                    flag: 'https://flagcdn.com/w20/us.png',
+                    country: 'United States',
+                    name: 'US Dollar',
+                    symbol: '$'
+                },
+                'EUR': {
+                    flag: 'https://flagcdn.com/w20/eu.png',
+                    country: 'European Union',
+                    name: 'Euro',
+                    symbol: '€'
+                },
+                'GBP': {
+                    flag: 'https://flagcdn.com/w20/gb.png',
+                    country: 'United Kingdom',
+                    name: 'British Pound',
+                    symbol: '£'
+                },
+                'JPY': {
+                    flag: 'https://flagcdn.com/w20/jp.png',
+                    country: 'Japan',
+                    name: 'Japanese Yen',
+                    symbol: '¥'
+                },
+                'NVCT': {
+                    flag: 'https://nvcfund.org/wp-content/uploads/2022/12/NVCFUND-logo.png',
+                    country: 'Global',
+                    name: 'NVC Token',
+                    symbol: 'NVCT'
+                }
+            };
+            
+            // Mock exchange rates (simulating API response)
+            const exchangeRates = {
+                'USD': {
+                    'NVCT': 0.1,
+                    'EUR': 0.883,
+                    'GBP': 0.745,
+                    'JPY': 143.74
+                },
+                'EUR': {
+                    'USD': 1.13,
+                    'NVCT': 0.113,
+                    'GBP': 0.84,
+                    'JPY': 162.3
+                },
+                'GBP': {
+                    'USD': 1.34,
+                    'EUR': 1.19,
+                    'NVCT': 0.134,
+                    'JPY': 193.1
+                },
+                'JPY': {
+                    'USD': 0.00695,
+                    'EUR': 0.00616,
+                    'GBP': 0.00518,
+                    'NVCT': 0.000695
+                },
+                'NVCT': {
+                    'USD': 10.0,
+                    'EUR': 8.83,
+                    'GBP': 7.45,
+                    'JPY': 1437.4
+                }
+            };
+            
+            // Function to safely get currency metadata with robust error handling
+            function getCurrencyMetadata(code) {
+                try {
+                    return currencyMetadata[code] || { 
+                        flag: 'https://flagcdn.com/w20/un.png', 
+                        country: 'Global',
+                        name: code,
+                        symbol: code
+                    };
+                } catch (error) {
+                    console.error("Error getting metadata for " + code, error);
+                    return { 
+                        flag: 'https://flagcdn.com/w20/un.png', 
+                        country: 'Global',
+                        name: code,
+                        symbol: code
+                    };
+                }
+            }
+            
+            // Update currency symbol when from-currency changes
+            fromCurrencySelect.addEventListener('change', function() {
+                const meta = getCurrencyMetadata(this.value);
+                document.getElementById('currency-symbol').textContent = meta.symbol;
+            });
+            
+            // Initial symbol set
+            document.getElementById('currency-symbol').textContent = getCurrencyMetadata(fromCurrencySelect.value).symbol;
+            
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const fromCurrency = fromCurrencySelect.value;
+                const toCurrency = toCurrencySelect.value;
+                const amount = parseFloat(document.getElementById('amount').value);
+                
+                // Simulate API call with our mock data
+                setTimeout(function() {
+                    // Create simulated API response
+                    const rate = exchangeRates[fromCurrency][toCurrency];
+                    
+                    // Calculate fee (0.1% of amount)
+                    const fee = amount * 0.001;
+                    
+                    // Calculate final amount
+                    const convertedAmount = amount * rate;
+                    
+                    // Create simulated API response
+                    const response = {
+                        success: true,
+                        rate: rate,
+                        from_currency: fromCurrency,
+                        to_currency: toCurrency,
+                        amount: amount,
+                        converted_amount: convertedAmount,
+                        fee: fee, // Some APIs use fee
+                        fee_amount: fee, // Some APIs use fee_amount
+                        net_amount: convertedAmount - fee,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    // Process the response
+                    console.log("API response:", response);
+                    const data = response;
+                    
+                    if (data.success) {
+                        // Display the result
+                        // Add function to format numbers with comma separators
+                        function formatNumber(num) {
+                            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                        }
+                        
+                        // Get metadata for currencies
+                        // Safely get currency metadata with fallbacks
+                        let fromMeta;
+                        let toMeta;
+                        
+                        try {
+                            fromMeta = getCurrencyMetadata(fromCurrency) || { 
+                                flag: 'https://flagcdn.com/w20/un.png', 
+                                country: 'Global',
+                                name: fromCurrency
+                            };
+                        } catch (error) {
+                            console.error("Error getting metadata for " + fromCurrency, error);
+                            fromMeta = { 
+                                flag: 'https://flagcdn.com/w20/un.png', 
+                                country: 'Global',
+                                name: fromCurrency
+                            };
+                        }
+                        
+                        try {
+                            toMeta = getCurrencyMetadata(toCurrency) || {
+                                flag: 'https://flagcdn.com/w20/un.png', 
+                                country: 'Global',
+                                name: toCurrency
+                            };
+                        } catch (error) {
+                            console.error("Error getting metadata for " + toCurrency, error);
+                            toMeta = { 
+                                flag: 'https://flagcdn.com/w20/un.png', 
+                                country: 'Global',
+                                name: toCurrency
+                            };
+                        }
+                        
+                        // Ensure all required properties are available
+                        const fromFlag = fromMeta && fromMeta.flag ? fromMeta.flag : 'https://flagcdn.com/w20/un.png';
+                        const fromCountry = fromMeta && fromMeta.country ? fromMeta.country : 'Global';
+                        
+                        const toFlag = toMeta && toMeta.flag ? toMeta.flag : 'https://flagcdn.com/w20/un.png';
+                        const toCountry = toMeta && toMeta.country ? toMeta.country : 'Global';
+                        
+                        // Build HTML with flags
+                        const rateHTML = `
+                          <span class="currency-display">
+                            <img src="${fromFlag}" alt="${fromCountry}" class="currency-flag" width="16" height="16">
+                            1 ${fromCurrency}
+                          </span> = 
+                          <span class="currency-display">
+                            <img src="${toFlag}" alt="${toCountry}" class="currency-flag" width="16" height="16">
+                            ${formatNumber(data.rate)} ${toCurrency}
+                          </span>`;
+                          
+                        const amountHTML = `
+                          <span class="currency-display">
+                            <img src="${fromFlag}" alt="${fromCountry}" class="currency-flag" width="16" height="16">
+                            ${formatNumber(amount)} ${fromCurrency}
+                          </span>`;
+                          
+                        // Safely handle fee data
+                        let fee = 0;
+                        if (typeof data.fee === 'number') {
+                            fee = data.fee;
+                        } else if (typeof data.fee_amount === 'number') {
+                            fee = data.fee_amount;
+                        }
+                        
+                        const feeHTML = `
+                          <span class="currency-display">
+                            <img src="${fromFlag}" alt="${fromCountry}" class="currency-flag" width="16" height="16">
+                            ${formatNumber(fee.toFixed(2))} ${fromCurrency}
+                          </span>`;
+                          
+                        // Safely handle converted amount
+                        let convertedAmount = 0;
+                        if (typeof data.converted_amount === 'number') {
+                            convertedAmount = data.converted_amount;
+                        } else if (typeof data.to_amount === 'number') {
+                            convertedAmount = data.to_amount;
+                        } else if (typeof data.rate === 'number') {
+                            convertedAmount = amount * data.rate;
+                        }
+                        
+                        const finalHTML = `
+                          <span class="currency-display">
+                            <img src="${toFlag}" alt="${toCountry}" class="currency-flag" width="16" height="16">
+                            ${formatNumber(convertedAmount.toFixed(2))} ${toCurrency}
+                          </span>`;
+                        
+                        document.getElementById('result-rate').innerHTML = rateHTML;
+                        document.getElementById('result-amount').innerHTML = amountHTML;
+                        document.getElementById('result-fee').innerHTML = feeHTML;
+                        document.getElementById('result-final').innerHTML = finalHTML;
+                        
+                        // Show the result container
+                        calculationResult.classList.remove('d-none');
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                }, 500); // Simulate network delay
+            });
+        });
+    </script>
+</body>
+</html>
