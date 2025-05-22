@@ -385,7 +385,7 @@ $(document).ready(function() {
         const amount = $('#amount').val().replace(/,/g, '');
         
         $.ajax({
-            url: "{{ url_for('currency_exchange.get_rate') }}",
+            url: "{{ url_for('currency_exchange.calculate') }}",
             type: "POST",
             data: {
                 from_currency: fromCurrency,
@@ -395,9 +395,9 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     $('#result-rate').text(response.rate);
-                    $('#result-amount').text(response.amount + " " + fromCurrency);
-                    $('#result-fee').text(response.fee + " " + toCurrency);
-                    $('#result-final').text(response.net_amount + " " + toCurrency);
+                    $('#result-amount').text(response.formatted_amount + " " + fromCurrency);
+                    $('#result-fee').text(response.fee_amount + " " + toCurrency);
+                    $('#result-final').text(response.final_amount + " " + toCurrency);
                     $('#calculation-result').removeClass('d-none');
                 } else {
                     alert("Error: " + response.error);
@@ -459,7 +459,7 @@ $(document).ready(function() {
         const amount = $('#exchange_amount').val().replace(/,/g, '');
         
         $.ajax({
-            url: "{{ url_for('currency_exchange.get_rate') }}",
+            url: "{{ url_for('currency_exchange.calculate') }}",
             type: "POST",
             data: {
                 from_currency: fromCurrency,
@@ -469,9 +469,9 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     $('#preview-rate').text(response.rate);
-                    $('#preview-amount').text(response.amount + " " + fromCurrency);
-                    $('#preview-fee').text(response.fee + " " + toCurrency);
-                    $('#preview-final').text(response.net_amount + " " + toCurrency);
+                    $('#preview-amount').text(response.formatted_amount + " " + fromCurrency);
+                    $('#preview-fee').text(response.fee_amount + " " + toCurrency);
+                    $('#preview-final').text(response.final_amount + " " + toCurrency);
                     $('#exchange-preview').show();
                 } else {
                     alert("Error: " + response.error);
