@@ -90,56 +90,6 @@
                                                 </optgroup>
                                             </select>
                                         </div>
-                                        <div class="form-group mb-3">
-                                            <label for="to_currency">To Currency</label>
-                                            <select class="form-control" id="to_currency" name="to_currency" required>
-                                                <optgroup label="NVC Currencies">
-                                                    <option value="NVCT">NVCT</option>
-                                                    <option value="AFD1">AFD1</option>
-                                                    <option value="SFN">SFN</option>
-                                                    <option value="AKLUMI">AKLUMI</option>
-                                                </optgroup>
-                                                <optgroup label="Fiat Currencies">
-                                                    <option value="USD" selected>USD</option>
-                                                    <option value="EUR">EUR</option>
-                                                    <option value="GBP">GBP</option>
-                                                    <option value="JPY">JPY</option>
-                                                    <option value="CHF">CHF</option>
-                                                    <option value="NGN">NGN</option>
-                                                </optgroup>
-                                                <optgroup label="Cryptocurrencies">
-                                                    <option value="BTC">BTC</option>
-                                                    <option value="ETH">ETH</option>
-                                                    <option value="USDT">USDT</option>
-                                                </optgroup>
-                                            </select>
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label for="amount">Amount</label>
-                                            <input type="text" class="form-control" id="amount" name="amount" value="100" required 
-                                                   pattern="^[0-9,.]*$" title="Please enter a valid amount (commas allowed for thousands)">
-                                            <small class="form-text text-muted">You can use commas as separators (e.g., 1,000,000)</small>
-                                        </div>
-                                        <button type="button" id="calculate-btn" class="btn btn-primary">Calculate</button>
-                                    </form>
-                                    
-                                    <div id="calculation-result" class="mt-4 d-none">
-                                        <div class="alert alert-success">
-                                            <h6 class="mb-2">Exchange Result</h6>
-                                            <p class="mb-1">Rate: <span id="result-rate"></span></p>
-                                            <p class="mb-1">Amount: <span id="result-amount"></span></p>
-                                            <p class="mb-1">Fee (0.5%): <span id="result-fee"></span></p>
-                                            <p class="mb-1">You'll receive: <span id="result-final"></span></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     
     <div class="row mb-4">
         <div class="col-12">
