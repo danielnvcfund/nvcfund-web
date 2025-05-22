@@ -378,6 +378,24 @@
 <script src="{{ url_for('static', filename='js/currency-metadata.js') }}"></script>
 <script>
 $(document).ready(function() {
+    // Format numbers with commas as they type
+    $('#amount').on('input', function() {
+        // Get the raw value without commas
+        let value = $(this).val().replace(/,/g, '');
+        
+        // Only format if it's a valid number
+        if (!isNaN(value) && value.length > 0) {
+            // Format with commas for thousands
+            let formattedValue = parseFloat(value).toLocaleString('en-US', {
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 0
+            });
+            
+            // Update the field with comma-formatted value
+            $(this).val(formattedValue);
+        }
+    });
+    
     // Quick calculator
     $('#calculate-btn').click(function() {
         const fromCurrency = $('#from_currency').val();
