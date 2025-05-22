@@ -113,8 +113,10 @@ def transfer_to_stablecoin():
                 transaction.tx_metadata_json = json.dumps(metadata)
                 
                 # Update account balances
-                treasury_account.balance -= amount
+                # TreasuryAccount only has available_balance, not balance
                 treasury_account.available_balance -= amount
+                
+                # Update NVCT account balances
                 nvct_account.balance += amount
                 nvct_account.available_balance += amount
                 
