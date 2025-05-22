@@ -1,0 +1,510 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="mb-0">NVCT Stablecoin Exchange</h6>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{{ url_for('currency_exchange.rates') }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-exchange-alt me-2"></i> View Exchange Rates
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="row p-4">
+                        <div class="col-md-6">
+                            <div class="alert alert-info mb-3">
+                                <h5><i class="fas fa-info-circle me-2"></i>About NVCT Stablecoin</h5>
+                                <p>
+                                    The NVC Token (NVCT) is a stablecoin fully backed by cash and cash equivalents at well over $10 trillion.
+                                    NVCT maintains a 1:1 peg with USD and is designed to be convertible to any digital or fiat currency.
+                                </p>
+                                <p>
+                                    <strong>Key Benefits:</strong>
+                                </p>
+                                <ul>
+                                    <li>Stable 1:1 USD peg</li>
+                                    <li>Fully backed by real assets</li>
+                                    <li>Seamless conversion to other currencies</li>
+                                    <li>Fast settlement times</li>
+                                    <li>Secure blockchain-based transactions</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="alert alert-warning">
+                                <h5><i class="fas fa-coins me-2"></i>About AFD1 (American Federation Dollar)</h5>
+                                <p>
+                                    The American Federation Dollar (AFD1) is a liquidity pool administered by Saint Crown Industrial Bank, 
+                                    consisting of high-quality assets managed by NVC Fund Bank.
+                                </p>
+                                <p>
+                                    <strong>Key Characteristics:</strong>
+                                </p>
+                                <ul>
+                                    <li><strong>Gold-linked Value:</strong> Each AFD1 is valued at 10% of the daily gold price</li>
+                                    <li><strong>Current Value:</strong> Approximately $339.40 USD (based on $3,394.00 gold price)</li>
+                                    <li><strong>Asset-backed:</strong> Part of the Saint Crown AFD1 liquidity pool</li>
+                                    <li><strong>Convertible:</strong> Seamlessly exchange with NVCT and other currencies</li>
+                                </ul>
+                                <p class="mb-0">
+                                    <small>Learn more at <span class="bg-white px-1 rounded"><a href="https://saint-crown.com" target="_blank" style="color: #000000; font-weight: bold;">saint-crown.com</a></span></small>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-gradient-primary text-white">
+                                    <h6 class="mb-0 text-white">Quick Exchange Calculator</h6>
+                                </div>
+                                <div class="card-body">
+                                    <form id="calculator-form">
+                                        <div class="form-group mb-3">
+                                            <label for="from_currency">From Currency</label>
+                                            <select class="form-control" id="from_currency" name="from_currency" required>
+                                                <optgroup label="NVC Currencies">
+                                                    <option value="NVCT" selected>NVCT</option>
+                                                    <option value="AFD1">AFD1</option>
+                                                    <option value="SFN">SFN</option>
+                                                    <option value="AKLUMI">AKLUMI</option>
+                                                </optgroup>
+                                                <optgroup label="Fiat Currencies">
+                                                    <option value="USD">USD</option>
+                                                    <option value="EUR">EUR</option>
+                                                    <option value="GBP">GBP</option>
+                                                    <option value="JPY">JPY</option>
+                                                    <option value="CHF">CHF</option>
+                                                    <option value="NGN">NGN</option>
+                                                </optgroup>
+                                                <optgroup label="Cryptocurrencies">
+                                                    <option value="BTC">BTC</option>
+                                                    <option value="ETH">ETH</option>
+                                                    <option value="USDT">USDT</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label for="amount">Amount</label>
+                                            <input type="text" class="form-control" id="amount" name="amount" value="100" required 
+                                                   pattern="^[0-9,.]*$" title="Please enter a valid amount (commas allowed for thousands)">
+                                            <small class="form-text text-muted">You can use commas as separators (e.g., 1,000,000)</small>
+                                        </div>
+                                        <button type="button" id="calculate-btn" class="btn btn-primary">Calculate</button>
+                                    </form>
+                                    
+                                    <div id="calculation-result" class="mt-4 d-none">
+                                        <div class="alert alert-success">
+                                            <h6 class="mb-2">Exchange Result</h6>
+                                            <p class="mb-1">Rate: <span id="result-rate"></span></p>
+                                            <p class="mb-1">Amount: <span id="result-amount"></span></p>
+                                            <p class="mb-1">Fee (0.5%): <span id="result-fee"></span></p>
+                                            <p class="mb-1">You'll receive: <span id="result-final"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="row p-4">
+                        <div class="col-md-6">
+                            <div class="alert alert-success h-100">
+                                <h5><i class="fas fa-coins me-2"></i>About SFN Coin (Swifin)</h5>
+                                <p>
+                                    SFN Coin is the native utility token from Swifin, a leading financial technology platform
+                                    providing innovative payment and digital asset solutions.
+                                </p>
+                                <p>
+                                    <strong>Key Characteristics:</strong>
+                                </p>
+                                <ul>
+                                    <li><strong>Stable Value:</strong> Each SFN is valued at approximately $2.50 USD</li>
+                                    <li><strong>Utility Token:</strong> Used within the Swifin ecosystem for payments and services</li>
+                                    <li><strong>Cross-Platform:</strong> Compatible with multiple blockchains</li>
+                                    <li><strong>Integration:</strong> Now fully integrated with NVCT for seamless exchanges</li>
+                                </ul>
+                                <p class="mb-0">
+                                    <small>Learn more at <span class="bg-white px-1 rounded"><a href="https://swifin.com" target="_blank" style="color: #000000; font-weight: bold;">swifin.com</a></span></small>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-info h-100">
+                                <h5><i class="fas fa-coins me-2"></i>About Ak Lumi (Eco-6)</h5>
+                                <p>
+                                    Ak Lumi is the digital currency from Eco-6, a sustainable blockchain ecosystem focused on 
+                                    environmental conservation and regenerative finance.
+                                </p>
+                                <p>
+                                    <strong>Key Characteristics:</strong>
+                                </p>
+                                <ul>
+                                    <li><strong>Premium Value:</strong> Each Ak Lumi is valued at approximately $3.25 USD</li>
+                                    <li><strong>Sustainability Focus:</strong> Supports eco-friendly projects and initiatives</li>
+                                    <li><strong>Green Technology:</strong> Built on energy-efficient blockchain architecture</li>
+                                    <li><strong>Global Network:</strong> Now integrated with NVCT for worldwide accessibility</li>
+                                </ul>
+                                <p class="mb-0">
+                                    <small>Learn more at <span class="bg-white px-1 rounded"><a href="https://www.eco-6.com" target="_blank" style="color: #000000; font-weight: bold;">eco-6.com</a></span></small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+                                        <div class="form-group mb-3">
+                                            <label for="to_currency">To Currency</label>
+                                            <select class="form-control" id="to_currency" name="to_currency" required>
+                                                <optgroup label="NVC Currencies">
+                                                    <option value="NVCT">NVCT</option>
+                                                    <option value="AFD1">AFD1</option>
+                                                    <option value="SFN">SFN</option>
+                                                    <option value="AKLUMI">AKLUMI</option>
+                                                </optgroup>
+                                                <optgroup label="Fiat Currencies">
+                                                    <option value="USD" selected>USD</option>
+                                                    <option value="EUR">EUR</option>
+                                                    <option value="GBP">GBP</option>
+                                                    <option value="JPY">JPY</option>
+                                                    <option value="CHF">CHF</option>
+                                                    <option value="NGN">NGN</option>
+                                                </optgroup>
+                                                <optgroup label="Cryptocurrencies">
+                                                    <option value="BTC">BTC</option>
+                                                    <option value="ETH">ETH</option>
+                                                    <option value="USDT">USDT</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label for="amount">Amount</label>
+                                            <input type="text" class="form-control" id="amount" name="amount" value="100" required 
+                                                   pattern="^[0-9,.]*$" title="Please enter a valid amount (commas allowed for thousands)">
+                                            <small class="form-text text-muted">You can use commas as separators (e.g., 1,000,000)</small>
+                                        </div>
+                                        <button type="button" id="calculate-btn" class="btn btn-primary">Calculate</button>
+                                    </form>
+                                    
+                                    <div id="calculation-result" class="mt-4 d-none">
+                                        <div class="alert alert-success">
+                                            <h6 class="mb-2">Exchange Result</h6>
+                                            <p class="mb-1">Rate: <span id="result-rate"></span></p>
+                                            <p class="mb-1">Amount: <span id="result-amount"></span></p>
+                                            <p class="mb-1">Fee (0.5%): <span id="result-fee"></span></p>
+                                            <p class="mb-1">You'll receive: <span id="result-final"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6 class="mb-0">Current Exchange Rates</h6>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Base Currency</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Quote Currency</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Rate</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Inverse Rate</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Last Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for base_currency, rates in exchange_rates.items() %}
+                                    {% for rate in rates %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex px-2 py-1">
+                                                <div class="d-flex flex-column justify-content-center">
+                                                    <h6 class="mb-0 text-sm currency-display">
+                                                        <img src="{{ url_for('static', filename='images/flags/globe.svg') }}" alt="" class="currency-flag" width="16" height="16" id="flag-from-{{ base_currency }}">
+                                                        {{ base_currency }}
+                                                    </h6>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-bold mb-0 currency-display">
+                                                <img src="{{ url_for('static', filename='images/flags/globe.svg') }}" alt="" class="currency-flag" width="16" height="16" id="flag-to-{{ rate.to_currency }}">
+                                                {{ rate.to_currency }}
+                                            </p>
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-bold mb-0">{{ '{:,.6f}'.format(rate.rate) }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-bold mb-0">{{ '{:,.6f}'.format(rate.inverse_rate) }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-sm font-weight-bold mb-0">{{ rate.last_updated.strftime('%Y-%m-%d %H:%M') }}</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6 class="mb-0">Find Account Holder for Exchange</h6>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('account_holders.search') }}">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="Search by name, email, username..." name="q" required>
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <p class="mt-3">
+                        Find an account holder to perform currency exchanges between their accounts.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Include currency metadata and flags JS -->
+<script src="{{ url_for('static', filename='js/currency-metadata.js') }}"></script>
+
+<script>
+    // Function to update all flag icons in the exchange rates table
+    function updateTableFlags() {
+        // Update "from" currency flags
+        document.querySelectorAll('[id^="flag-from-"]').forEach(flagImg => {
+            const currencyCode = flagImg.id.replace('flag-from-', '');
+            const metadata = getCurrencyMetadata(currencyCode);
+            flagImg.src = metadata.flag;
+            flagImg.alt = metadata.country;
+        });
+        
+        // Update "to" currency flags
+        document.querySelectorAll('[id^="flag-to-"]').forEach(flagImg => {
+            const currencyCode = flagImg.id.replace('flag-to-', '');
+            const metadata = getCurrencyMetadata(currencyCode);
+            flagImg.src = metadata.flag;
+            flagImg.alt = metadata.country;
+        });
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update flags in table
+        updateTableFlags();
+        const calculateBtn = document.getElementById('calculate-btn');
+        const calculationResult = document.getElementById('calculation-result');
+        const amountInput = document.getElementById('amount');
+        
+        // Initialize currency dropdowns with flags
+        initCurrencyDropdowns('from_currency', 'to_currency');
+        
+        // Format amount with commas as user types
+        amountInput.addEventListener('input', function(e) {
+            // Store cursor position
+            const cursorPos = this.selectionStart;
+            const prevLength = this.value.length;
+            
+            // Remove all non-digits (except decimal point)
+            let value = this.value.replace(/[^\d.]/g, '');
+            
+            // Format with commas
+            if (value) {
+                // Handle decimal part separately
+                const parts = value.split('.');
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                value = parts.join('.');
+            }
+            
+            // Update the value
+            this.value = value;
+            
+            // Restore cursor position accounting for added/removed chars
+            const newLength = this.value.length;
+            const newCursorPos = cursorPos + (newLength - prevLength);
+            this.setSelectionRange(newCursorPos, newCursorPos);
+        });
+        
+        calculateBtn.addEventListener('click', function() {
+            const fromCurrency = document.getElementById('from_currency').value;
+            const toCurrency = document.getElementById('to_currency').value;
+            // Parse amount with comma separators - remove commas before parsing
+            const rawAmount = document.getElementById('amount').value;
+            const amount = parseFloat(rawAmount.replace(/,/g, ''));
+            
+            if (!fromCurrency || !toCurrency || isNaN(amount) || amount <= 0) {
+                alert('Please enter valid values for all fields');
+                return;
+            }
+            
+            // Call the API to calculate the exchange
+            fetch("{{ url_for('currency_exchange.get_rate') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    from_currency: fromCurrency,
+                    to_currency: toCurrency,
+                    amount: amount
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("API response:", data);
+                if (data.success) {
+                    // Display the result
+                    // Add function to format numbers with comma separators
+                    function formatNumber(num) {
+                        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                    }
+                    
+                    // Get metadata for currencies
+                    // Safely get currency metadata with fallbacks
+                    let fromMeta;
+                    let toMeta;
+                    
+                    try {
+                        fromMeta = getCurrencyMetadata(fromCurrency) || { 
+                            flag: '/static/images/flags/globe.svg', 
+                            country: 'Global',
+                            name: fromCurrency
+                        };
+                    } catch (error) {
+                        console.error("Error getting metadata for " + fromCurrency, error);
+                        fromMeta = { 
+                            flag: '/static/images/flags/globe.svg', 
+                            country: 'Global',
+                            name: fromCurrency
+                        };
+                    }
+                    
+                    try {
+                        toMeta = getCurrencyMetadata(toCurrency) || {
+                            flag: '/static/images/flags/globe.svg', 
+                            country: 'Global',
+                            name: toCurrency
+                        };
+                    } catch (error) {
+                        console.error("Error getting metadata for " + toCurrency, error);
+                        toMeta = { 
+                            flag: '/static/images/flags/globe.svg', 
+                            country: 'Global',
+                            name: toCurrency
+                        };
+                    }
+                    
+                    // Ensure all required properties are available
+                    const fromFlag = fromMeta && fromMeta.flag ? fromMeta.flag : '/static/images/flags/globe.svg';
+                    const fromCountry = fromMeta && fromMeta.country ? fromMeta.country : 'Global';
+                    
+                    const toFlag = toMeta && toMeta.flag ? toMeta.flag : '/static/images/flags/globe.svg';
+                    const toCountry = toMeta && toMeta.country ? toMeta.country : 'Global';
+                    
+                    // Build HTML with flags
+                    const rateHTML = `
+                      <span class="currency-display">
+                        <img src="${fromFlag}" alt="${fromCountry}" class="currency-flag" width="16" height="16">
+                        1 ${fromCurrency}
+                      </span> = 
+                      <span class="currency-display">
+                        <img src="${toFlag}" alt="${toCountry}" class="currency-flag" width="16" height="16">
+                        ${formatNumber(data.rate)} ${toCurrency}
+                      </span>`;
+                      
+                    const amountHTML = `
+                      <span class="currency-display">
+                        <img src="${fromFlag}" alt="${fromCountry}" class="currency-flag" width="16" height="16">
+                        ${formatNumber(amount)} ${fromCurrency}
+                      </span>`;
+                      
+                    // Safely handle fee data
+                    let fee = 0;
+                    if (typeof data.fee === 'number') {
+                        fee = data.fee;
+                    } else if (typeof data.fee_amount === 'number') {
+                        fee = data.fee_amount;
+                    }
+                    
+                    const feeHTML = `
+                      <span class="currency-display">
+                        <img src="${fromFlag}" alt="${fromCountry}" class="currency-flag" width="16" height="16">
+                        ${formatNumber(fee.toFixed(2))} ${fromCurrency}
+                      </span>`;
+                      
+                    // Safely handle converted amount
+                    let convertedAmount = 0;
+                    if (typeof data.converted_amount === 'number') {
+                        convertedAmount = data.converted_amount;
+                    } else if (typeof data.to_amount === 'number') {
+                        convertedAmount = data.to_amount;
+                    } else if (typeof data.rate === 'number') {
+                        convertedAmount = amount * data.rate;
+                    }
+                    
+                    const finalHTML = `
+                      <span class="currency-display">
+                        <img src="${toFlag}" alt="${toCountry}" class="currency-flag" width="16" height="16">
+                        ${formatNumber(convertedAmount.toFixed(2))} ${toCurrency}
+                      </span>`;
+                    
+                    document.getElementById('result-rate').innerHTML = rateHTML;
+                    document.getElementById('result-amount').innerHTML = amountHTML;
+                    document.getElementById('result-fee').innerHTML = feeHTML;
+                    document.getElementById('result-final').innerHTML = finalHTML;
+                    
+                    // Show the result container
+                    calculationResult.classList.remove('d-none');
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while calculating the exchange. Please try again.');
+            });
+        });
+    });
+</script>
+{% endblock %}
