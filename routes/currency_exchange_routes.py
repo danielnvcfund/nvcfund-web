@@ -134,7 +134,7 @@ def get_rate():
     amount = float(request.form.get('amount', 1.0))
     
     if not from_currency or not to_currency:
-        return jsonify({'error': 'Missing currency parameters'}), 400
+        return jsonify({'success': False, 'error': 'Missing currency parameters'}), 400
     
     try:
         # Convert string to enum
@@ -146,11 +146,16 @@ def get_rate():
         
         # Get exchange rate
         rate = local_exchange_service.get_exchange_rate(from_currency_enum, to_currency_enum)
+        
+        if rate is None:
+            return jsonify({'success': False, 'error': 'Exchange rate not available for these currencies'}), 400
+            
         converted_amount = amount * rate
         fee = local_exchange_service.calculate_fee(amount, from_currency_enum)
         net_amount = converted_amount - fee if from_currency == to_currency else converted_amount
         
         return jsonify({
+            'success': True,
             'rate': rate,
             'from_currency': from_currency,
             'to_currency': to_currency,
@@ -161,9 +166,12 @@ def get_rate():
             'timestamp': datetime.now().isoformat()
         })
     
+    except KeyError as e:
+        logger.error(f"Invalid currency code: {str(e)}")
+        return jsonify({'success': False, 'error': f'Invalid currency code: {str(e)}'}), 400
     except Exception as e:
         logger.error(f"Error getting exchange rate: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'An error occurred processing your request'}), 500
 
 @currency_exchange.route('/convert', methods=['POST'])
 @login_required
