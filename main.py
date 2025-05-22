@@ -1,5 +1,9 @@
 from app import app  # noqa: F401
 from routes.currency_exchange_routes import register_currency_exchange_routes
+from routes.portfolio_routes import portfolio_bp
+
+# Register blueprints
+app.register_blueprint(portfolio_bp)
 
 # Register the currency exchange routes
 register_currency_exchange_routes(app)

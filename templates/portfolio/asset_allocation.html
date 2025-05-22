@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+
+{% block title %}Portfolio Asset Allocation{% endblock %}
+
+{% block styles %}
+<style>
+    .asset-allocation-table {
+        background-color: #061c38; /* Dark navy background */
+        color: #ffffff;
+        border-collapse: collapse;
+        width: 100%;
+    }
+    
+    .asset-allocation-table th {
+        background-color: #051832;
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: bold;
+        color: #ffffff;
+    }
+    
+    .asset-allocation-table td {
+        padding: 10px 15px;
+        border-bottom: 1px solid #0a2b4d;
+    }
+    
+    /* Bright, readable links */
+    .asset-allocation-table a {
+        color: #66ccff; /* Bright, light blue */
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .asset-allocation-table a:hover {
+        color: #99e6ff; /* Even brighter on hover */
+        text-decoration: underline;
+    }
+    
+    .percentage-column {
+        text-align: right;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h3 class="mb-0">NVC Fund Asset Allocation</h3>
+                </div>
+                <div class="card-body">
+                    <p>The NVC Fund maintains a conservative asset allocation strategy with an emphasis on liquidity and stability.</p>
+                    
+                    <div class="table-responsive">
+                        <table class="asset-allocation-table">
+                            <thead>
+                                <tr>
+                                    <th>Asset Category</th>
+                                    <th>Description</th>
+                                    <th class="percentage-column">% of Portfolio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><a href="#">Cash & Equivalents</a></td>
+                                    <td>Short-term treasury bills, government securities, and cash reserves</td>
+                                    <td class="percentage-column">40%</td>
+                                </tr>
+                                <tr>
+                                    <td><a href="#">Sovereign Debt</a></td>
+                                    <td>High-quality sovereign bonds from stable economies</td>
+                                    <td class="percentage-column">25%</td>
+                                </tr>
+                                <tr>
+                                    <td><a href="#">Investment-Grade Corporate Debt</a></td>
+                                    <td>AAA to A-rated corporate bonds with strong fundamentals</td>
+                                    <td class="percentage-column">15%</td>
+                                </tr>
+                                <tr>
+                                    <td><a href="#">Gold & Precious Metals</a></td>
+                                    <td>Physical gold and other precious metals stored in secure vaults</td>
+                                    <td class="percentage-column">10%</td>
+                                </tr>
+                                <tr>
+                                    <td><a href="#">Supranational Assets</a></td>
+                                    <td>Special Drawing Rights and other supranational financial instruments</td>
+                                    <td class="percentage-column">10%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>Asset Allocation Strategy</h5>
+                        <p>
+                            Our portfolio is designed to minimize risk while maintaining adequate liquidity to meet institutional obligations.
+                            The current allocation reflects our conservative approach to asset management during periods of market volatility.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
