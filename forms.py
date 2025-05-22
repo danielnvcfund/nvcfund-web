@@ -923,20 +923,42 @@ class WireTransferForm(FlaskForm):
     treasury_account_id = SelectField('Source Account', coerce=int, validators=[DataRequired()])
     correspondent_bank_id = SelectField('Correspondent Bank', coerce=int, validators=[DataRequired()])
     
-    # Sender information - auto-filled based on selected accounts
+    # Amount and purpose
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=0.0)
+    purpose = TextAreaField('Purpose of Transfer', validators=[DataRequired(), Length(min=5, max=200)])
+    
+    # Originator information (sender) - auto-filled based on selected accounts
+    originator_name = StringField('Originator Name', validators=[DataRequired(), Length(min=2, max=100)])
+    originator_account = StringField('Originator Account', validators=[DataRequired(), Length(min=5, max=50)])
+    originator_address = TextAreaField('Originator Address', validators=[DataRequired(), Length(min=5, max=200)])
+    originator_bank_swift = StringField('Originator Bank SWIFT/BIC', validators=[DataRequired(), Length(min=8, max=11)])
+    
+    # Backward compatibility for older templates
     sender_name = StringField('Sender Name', validators=[DataRequired(), Length(min=2, max=100)])
     sender_account = StringField('Sender Account', validators=[DataRequired(), Length(min=5, max=50)])
     sender_bank = StringField('Sending Bank', validators=[DataRequired(), Length(min=2, max=100)])
     sender_swift = StringField('Sender SWIFT/BIC', validators=[DataRequired(), Length(min=8, max=11)])
     
+    # Beneficiary information (recipient)
+    beneficiary_name = StringField('Beneficiary Name', validators=[DataRequired(), Length(min=2, max=100)])
+    beneficiary_account = StringField('Beneficiary Account/IBAN', validators=[DataRequired(), Length(min=5, max=50)])
+    beneficiary_address = TextAreaField('Beneficiary Address', validators=[DataRequired(), Length(min=5, max=200)])
+    
+    # Beneficiary bank information
+    beneficiary_bank_name = StringField('Beneficiary Bank', validators=[DataRequired(), Length(min=2, max=100)])
+    beneficiary_bank_swift = StringField('Beneficiary SWIFT/BIC', validators=[DataRequired(), Length(min=8, max=11)])
+    beneficiary_bank_address = TextAreaField('Beneficiary Bank Address', validators=[Optional(), Length(min=5, max=200)])
+    beneficiary_bank_routing = StringField('Beneficiary Bank Routing Number', validators=[Optional(), Length(max=20)])
+    
+    # Backward compatibility for older templates
     recipient_name = StringField('Recipient Name', validators=[DataRequired(), Length(min=2, max=100)])
     recipient_account = StringField('Recipient Account/IBAN', validators=[DataRequired(), Length(min=5, max=50)])
     recipient_bank = StringField('Recipient Bank', validators=[DataRequired(), Length(min=2, max=100)])
     recipient_swift = StringField('Recipient SWIFT/BIC', validators=[DataRequired(), Length(min=8, max=11)])
     recipient_address = TextAreaField('Recipient Address', validators=[DataRequired(), Length(min=5, max=200)])
     
-    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=0.01)], default=0.0)
-    purpose = TextAreaField('Purpose of Transfer', validators=[DataRequired(), Length(min=5, max=200)])
+    # Additional information
+    message_to_beneficiary = TextAreaField('Message to Beneficiary', validators=[Optional(), Length(max=200)])
     currency = SelectField('Currency', choices=[
         ('USD', 'US Dollar (USD)'),
         ('EUR', 'Euro (EUR)'),
@@ -946,10 +968,13 @@ class WireTransferForm(FlaskForm):
         ('JPY', 'Japanese Yen (JPY)')
     ], validators=[DataRequired()], default='USD')
     
-    transfer_purpose = TextAreaField('Purpose of Transfer', validators=[DataRequired(), Length(min=5, max=200)])
-    reference = StringField('Reference Number', validators=[DataRequired(), Length(min=3, max=35)])
+    reference = StringField('Reference Number', validators=[Optional(), Length(min=3, max=35)])
     
     # Intermediary bank (if any)
+    intermediary_bank_name = StringField('Intermediary Bank', validators=[Optional(), Length(max=100)])
+    intermediary_bank_swift = StringField('Intermediary SWIFT/BIC', validators=[Optional(), Length(min=8, max=11)])
+    
+    # For backward compatibility
     intermediary_bank = StringField('Intermediary Bank', validators=[Optional(), Length(max=100)])
     intermediary_swift = StringField('Intermediary SWIFT/BIC', validators=[Optional(), Length(min=8, max=11)])
     
@@ -958,7 +983,7 @@ class WireTransferForm(FlaskForm):
         ('OUR', 'OUR - Sender pays all fees'),
         ('SHA', 'SHA - Shared fees'),
         ('BEN', 'BEN - Beneficiary pays all fees')
-    ], validators=[DataRequired()], default='SHA')
+    ], validators=[Optional()], default='SHA')
     
     # Compliance information
     compliance_purpose = SelectField('Purpose Category', choices=[
@@ -974,10 +999,10 @@ class WireTransferForm(FlaskForm):
         ('PENS', 'Pension Payment'),
         ('TAXS', 'Tax Payment'),
         ('OTHR', 'Other')
-    ], validators=[DataRequired()])
+    ], validators=[Optional()])
     
-    compliance_source = TextAreaField('Source of Funds', validators=[DataRequired(), Length(min=5, max=200)])
-    compliance_relationship = TextAreaField('Relationship to Beneficiary', validators=[DataRequired(), Length(min=5, max=200)])
+    compliance_source = TextAreaField('Source of Funds', validators=[Optional(), Length(min=5, max=200)])
+    compliance_relationship = TextAreaField('Relationship to Beneficiary', validators=[Optional(), Length(min=5, max=200)])
     
     terms_agree = BooleanField('I confirm all details are correct and consent to this wire transfer', validators=[DataRequired()])
     
