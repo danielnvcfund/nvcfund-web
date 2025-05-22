@@ -57,52 +57,8 @@
                                     <small>Learn more at <span class="bg-white px-1 rounded"><a href="https://saint-crown.com" target="_blank" style="color: #000000; font-weight: bold;">saint-crown.com</a></span></small>
                                 </p>
                             </div>
-                            
-                            <div class="row mt-3">
-                                <div class="col-md-6">
-                                    <div class="alert alert-success h-100">
-                                        <h5><i class="fas fa-coins me-2"></i>About SFN Coin (Swifin)</h5>
-                                        <p>
-                                            SFN Coin is the native utility token from Swifin, a leading financial technology platform
-                                            providing innovative payment and digital asset solutions.
-                                        </p>
-                                        <p>
-                                            <strong>Key Characteristics:</strong>
-                                        </p>
-                                        <ul>
-                                            <li><strong>Stable Value:</strong> Each SFN is valued at approximately $2.50 USD</li>
-                                            <li><strong>Utility Token:</strong> Used within the Swifin ecosystem for payments and services</li>
-                                            <li><strong>Cross-Platform:</strong> Compatible with multiple blockchains</li>
-                                            <li><strong>Integration:</strong> Now fully integrated with NVCT for seamless exchanges</li>
-                                        </ul>
-                                        <p class="mb-0">
-                                            <small>Learn more at <span class="bg-white px-1 rounded"><a href="https://swifin.com" target="_blank" style="color: #000000; font-weight: bold;">swifin.com</a></span></small>
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="alert alert-info h-100">
-                                        <h5><i class="fas fa-coins me-2"></i>About Ak Lumi (Eco-6)</h5>
-                                        <p>
-                                            Ak Lumi is the digital currency from Eco-6, a sustainable blockchain ecosystem focused on 
-                                            environmental conservation and regenerative finance.
-                                        </p>
-                                        <p>
-                                            <strong>Key Characteristics:</strong>
-                                        </p>
-                                        <ul>
-                                            <li><strong>Premium Value:</strong> Each Ak Lumi is valued at approximately $3.25 USD</li>
-                                            <li><strong>Sustainability Focus:</strong> Supports eco-friendly projects and initiatives</li>
-                                            <li><strong>Green Technology:</strong> Built on energy-efficient blockchain architecture</li>
-                                            <li><strong>Global Network:</strong> Now integrated with NVCT for worldwide accessibility</li>
-                                        </ul>
-                                        <p class="mb-0">
-                                            <small>Learn more at <span class="bg-white px-1 rounded"><a href="https://www.eco-6.com" target="_blank" style="color: #000000; font-weight: bold;">eco-6.com</a></span></small>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
+
                         <div class="col-md-6">
                             <div class="card mb-4">
                                 <div class="card-header bg-gradient-primary text-white">
@@ -134,6 +90,109 @@
                                                 </optgroup>
                                             </select>
                                         </div>
+                                        <div class="form-group mb-3">
+                                            <label for="to_currency">To Currency</label>
+                                            <select class="form-control" id="to_currency" name="to_currency" required>
+                                                <optgroup label="NVC Currencies">
+                                                    <option value="NVCT">NVCT</option>
+                                                    <option value="AFD1">AFD1</option>
+                                                    <option value="SFN">SFN</option>
+                                                    <option value="AKLUMI">AKLUMI</option>
+                                                </optgroup>
+                                                <optgroup label="Fiat Currencies">
+                                                    <option value="USD" selected>USD</option>
+                                                    <option value="EUR">EUR</option>
+                                                    <option value="GBP">GBP</option>
+                                                    <option value="JPY">JPY</option>
+                                                    <option value="CHF">CHF</option>
+                                                    <option value="NGN">NGN</option>
+                                                </optgroup>
+                                                <optgroup label="Cryptocurrencies">
+                                                    <option value="BTC">BTC</option>
+                                                    <option value="ETH">ETH</option>
+                                                    <option value="USDT">USDT</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label for="amount">Amount</label>
+                                            <input type="text" class="form-control" id="amount" name="amount" value="100" required 
+                                                   pattern="^[0-9,.]*$" title="Please enter a valid amount (commas allowed for thousands)">
+                                            <small class="form-text text-muted">You can use commas as separators (e.g., 1,000,000)</small>
+                                        </div>
+                                        <button type="button" id="calculate-btn" class="btn btn-primary">Calculate</button>
+                                    </form>
+                                    
+                                    <div id="calculation-result" class="mt-4 d-none">
+                                        <div class="alert alert-success">
+                                            <h6 class="mb-2">Exchange Result</h6>
+                                            <p class="mb-1">Rate: <span id="result-rate"></span></p>
+                                            <p class="mb-1">Amount: <span id="result-amount"></span></p>
+                                            <p class="mb-1">Fee (0.5%): <span id="result-fee"></span></p>
+                                            <p class="mb-1">You'll receive: <span id="result-final"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="row p-4">
+                        <div class="col-md-6">
+                            <div class="alert alert-success h-100">
+                                <h5><i class="fas fa-coins me-2"></i>About SFN Coin (Swifin)</h5>
+                                <p>
+                                    SFN Coin is the native utility token from Swifin, a leading financial technology platform
+                                    providing innovative payment and digital asset solutions.
+                                </p>
+                                <p>
+                                    <strong>Key Characteristics:</strong>
+                                </p>
+                                <ul>
+                                    <li><strong>Stable Value:</strong> Each SFN is valued at approximately $2.50 USD</li>
+                                    <li><strong>Utility Token:</strong> Used within the Swifin ecosystem for payments and services</li>
+                                    <li><strong>Cross-Platform:</strong> Compatible with multiple blockchains</li>
+                                    <li><strong>Integration:</strong> Now fully integrated with NVCT for seamless exchanges</li>
+                                </ul>
+                                <p class="mb-0">
+                                    <small>Learn more at <span class="bg-white px-1 rounded"><a href="https://swifin.com" target="_blank" style="color: #000000; font-weight: bold;">swifin.com</a></span></small>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-info h-100">
+                                <h5><i class="fas fa-coins me-2"></i>About Ak Lumi (Eco-6)</h5>
+                                <p>
+                                    Ak Lumi is the digital currency from Eco-6, a sustainable blockchain ecosystem focused on 
+                                    environmental conservation and regenerative finance.
+                                </p>
+                                <p>
+                                    <strong>Key Characteristics:</strong>
+                                </p>
+                                <ul>
+                                    <li><strong>Premium Value:</strong> Each Ak Lumi is valued at approximately $3.25 USD</li>
+                                    <li><strong>Sustainability Focus:</strong> Supports eco-friendly projects and initiatives</li>
+                                    <li><strong>Green Technology:</strong> Built on energy-efficient blockchain architecture</li>
+                                    <li><strong>Global Network:</strong> Now integrated with NVCT for worldwide accessibility</li>
+                                </ul>
+                                <p class="mb-0">
+                                    <small>Learn more at <span class="bg-white px-1 rounded"><a href="https://www.eco-6.com" target="_blank" style="color: #000000; font-weight: bold;">eco-6.com</a></span></small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
                                         <div class="form-group mb-3">
                                             <label for="to_currency">To Currency</label>
                                             <select class="form-control" id="to_currency" name="to_currency" required>
