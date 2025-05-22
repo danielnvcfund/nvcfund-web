@@ -2,7 +2,7 @@ modules = ["python-3.11", "postgresql-16", "python3"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["fontconfig", "ghostscript", "glib", "gmp", "harfbuzz", "pango"]
+packages = ["fontconfig", "freetype", "ghostscript", "glib", "glibcLocales", "gmp", "harfbuzz", "pango"]
 
 [deployment]
 deploymentTarget = "autoscale"
