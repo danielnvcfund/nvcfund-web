@@ -40,6 +40,73 @@
                         </div>
                     </div>
                     
+                    <!-- Fee Structure Explanation -->
+                    <div class="mt-5">
+                        <h4>Transaction Fee Structure Explained</h4>
+                        <div class="card bg-dark border-secondary mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">Tiered Fee Model with Examples</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-dark table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Tier</th>
+                                                <th>Transaction Volume</th>
+                                                <th>Fee Rate</th>
+                                                <th>Example ($1M Transaction)</th>
+                                                <th>Revenue Split</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Tier 1</td>
+                                                <td>$0 - $500M</td>
+                                                <td>0.40%</td>
+                                                <td>$4,000 fee</td>
+                                                <td>NVC: $2,800 (70%) | Bridge: $1,200 (30%)</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Tier 2</td>
+                                                <td>$500M - $2B</td>
+                                                <td>0.30%</td>
+                                                <td>$3,000 fee</td>
+                                                <td>NVC: $2,100 (70%) | Bridge: $900 (30%)</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Tier 3</td>
+                                                <td>$2B - $5B</td>
+                                                <td>0.25%</td>
+                                                <td>$2,500 fee</td>
+                                                <td>NVC: $1,750 (70%) | Bridge: $750 (30%)</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="card-text mt-3">
+                                    <p class="text-light">
+                                        <strong>Calculation Method:</strong> Fee = Transaction Amount × Fee Rate<br>
+                                        <em>For a $1,000,000 transaction at 0.40% rate: $1,000,000 × 0.004 = $4,000</em>
+                                    </p>
+                                    
+                                    <p class="text-light">
+                                        <strong>Minimum Volume Commitments:</strong><br>
+                                        Year 1: $2 billion<br>
+                                        Year 2: $5 billion<br>
+                                        Year 3: $8 billion
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-info-circle mr-2"></i> Transaction fees decrease as volume increases, incentivizing greater utilization of the partnership.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="mt-4 text-center">
                         <a href="{{ url_for('bridge_xyz.download_bridge_loi') }}" class="btn btn-success btn-lg">
                             <i class="fas fa-file-pdf mr-2"></i> Download Letter of Intent (PDF)
