@@ -597,6 +597,15 @@ def create_app():
             logger.error(f"Error registering Customer Support routes: {str(e)}")
             logger.warning("Application will run without AI Customer Support functionality")
             
+        # Register Investment Offering routes
+        try:
+            from routes.investment_routes import investment_bp
+            app.register_blueprint(investment_bp)
+            logger.info("Investment Offering routes registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Investment Offering routes: {str(e)}")
+            logger.warning("Application will run without Investment Offering functionality")
+            
         # Register Admin Tools routes
         try:
             from routes.admin_tools_routes import admin_tools_bp
